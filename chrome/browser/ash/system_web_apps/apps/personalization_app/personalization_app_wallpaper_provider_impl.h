@@ -24,7 +24,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/values.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -93,6 +92,8 @@ class PersonalizationAppWallpaperProviderImpl
   // Not all users can see google photos. Requires a gaia account to be able to
   // fetch photos.
   bool IsEligibleForGooglePhotos() override;
+
+  bool IsManagedSeaPenEnabled() override;
 
   // ash::personalization_app::mojom::WallpaperProvider:
 

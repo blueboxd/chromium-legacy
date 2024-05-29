@@ -2001,7 +2001,6 @@
       'compositor_unittests': {},
       'content_browsertests': {
         'args': [
-          '--gtest_filter=-All/DumpAccessibility*/fuchsia',
           '--test-arg=--disable-gpu',
           '--test-arg=--headless',
           '--test-arg=--ozone-platform=headless',
@@ -3922,7 +3921,11 @@
     },
 
     'ios_eg2_tests': {
-      'ios_chrome_bookmarks_eg2tests_module': {},
+      'ios_chrome_bookmarks_eg2tests_module': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'ios_chrome_settings_eg2tests_module': {
         'mixins': [
           'ios_parallel_simulators',
@@ -6719,11 +6722,17 @@
 
     'chromeos_octopus_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_RELEASE_LKGM',
         ],
       },
       'chromeos_device_only_gtests': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_RELEASE_LKGM',
         ],
@@ -7471,6 +7480,9 @@
 
     'lacros_skylab_tests_amd64_generic': {
       'lacros_skylab_tests': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_BRYA_RELEASE_LKGM',
           'CROS_FIZZ_RELEASE_LKGM',
@@ -7479,6 +7491,9 @@
         ],
       },
       'lacros_skylab_tests_version_skew': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_BRYA_RELEASE_BETA',
           'CROS_BRYA_RELEASE_DEV',
@@ -7495,6 +7510,9 @@
         ],
       },
       'lacros_skylab_tests_with_gtests': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_BRYA_RELEASE_LKGM',
           'CROS_FIZZ_RELEASE_LKGM',
@@ -7503,6 +7521,9 @@
         ],
       },
       'lacros_skylab_tests_with_gtests_version_skew': {
+        'mixins': [
+          'skylab-cft',
+        ],
         'variants': [
           'CROS_BRYA_RELEASE_BETA',
           'CROS_BRYA_RELEASE_DEV',

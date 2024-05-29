@@ -9,8 +9,7 @@
 
 @protocol IncognitoGridMediatorDelegate;
 @class IncognitoReauthSceneAgent;
-@protocol TabCollectionConsumer;
-class PrefService;
+@protocol TabGroupsCommands;
 
 // Mediates between model layer and incognito grid UI layer.
 @interface IncognitoGridMediator : BaseGridMediator

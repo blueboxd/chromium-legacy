@@ -108,7 +108,8 @@ class ProfilePickerWidget : public views::Widget {
  public:
   explicit ProfilePickerWidget(ProfilePickerView* profile_picker_view)
       : profile_picker_view_(profile_picker_view) {
-    views::Widget::InitParams params;
+    views::Widget::InitParams params(
+        views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
     params.delegate = profile_picker_view_;
     Init(std::move(params));
   }
@@ -509,6 +510,10 @@ void ProfilePickerView::Clear() {
   }
 
   WindowClosing();
+  // TODO(crbug.com/40232473): Here we set owned by widget to ensure the
+  // DeleteDelegate() call deletes this instance. Once the full migration to
+  // "client owns delegate" is done, this will need to change.
+  SetOwnedByWidget(true);
   DeleteDelegate();
 }
 

@@ -7,11 +7,99 @@
 #include <memory>
 
 #include "base/functional/callback_helpers.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/compose/core/browser/compose_metrics.h"
 #include "components/compose/core/browser/config.h"
 #include "components/segmentation_platform/public/constants.h"
+#include "components/segmentation_platform/public/input_context.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace compose {
+namespace {
+using segmentation_platform::processing::ProcessedValue;
+
+scoped_refptr<segmentation_platform::InputContext> PopulateInputContextForField(
+    const ProactiveNudgeTracker::Signals& signals) {
+  auto input_context =
+      base::MakeRefCounted<segmentation_platform::InputContext>();
+
+  input_context->metadata_args.emplace(
+      "field_max_length",
+      ProcessedValue::FromFloat(signals.field.max_length()));
+  input_context->metadata_args.emplace(
+      "field_width_pixels",
+      ProcessedValue::FromFloat(signals.field.bounds().width()));
+  input_context->metadata_args.emplace(
+      "field_height_pixels",
+      ProcessedValue::FromFloat(signals.field.bounds().height()));
+  input_context->metadata_args.emplace(
+      "field_form_control_type", ProcessedValue::FromFloat(base::to_underlying(
+                                     signals.field.form_control_type())));
+  input_context->metadata_args.emplace(
+      "total_field_count",
+      ProcessedValue::FromFloat(signals.form.fields.size()));
+
+  int multiline_field_count = 0;
+  for (const auto& f : signals.form.fields) {
+    if (f.form_control_type() == autofill::FormControlType::kTextArea ||
+        f.form_control_type() == autofill::FormControlType::kContentEditable) {
+      ++multiline_field_count;
+    }
+  }
+  input_context->metadata_args.emplace(
+      "multiline_field_count",
+      ProcessedValue::FromFloat(multiline_field_count));
+  input_context->metadata_args.emplace(
+      "time_spent_on_page",
+      ProcessedValue::FromFloat(
+          (base::TimeTicks::Now() - signals.page_change_time).InSecondsF()));
+
+  input_context->metadata_args.emplace(
+      "field_signature",
+      ProcessedValue(autofill::HashFieldSignature(
+          autofill::CalculateFieldSignatureForField(signals.field))));
+  input_context->metadata_args.emplace(
+      "form_signature", ProcessedValue(autofill::HashFormSignature(
+                            autofill::CalculateFormSignature(signals.form))));
+
+  input_context->metadata_args.emplace("page_url",
+                                       ProcessedValue(signals.page_url));
+  input_context->metadata_args.emplace(
+      "origin", ProcessedValue(signals.page_origin.GetURL()));
+
+  input_context->metadata_args.emplace(
+      "field_value", ProcessedValue(base::UTF16ToUTF8(signals.field.value())));
+  input_context->metadata_args.emplace(
+      "field_selected_text",
+      ProcessedValue(base::UTF16ToUTF8(signals.field.selected_text())));
+  input_context->metadata_args.emplace(
+      "field_placeholder_text",
+      ProcessedValue(base::UTF16ToUTF8(signals.field.placeholder())));
+  input_context->metadata_args.emplace(
+      "field_label", ProcessedValue(base::UTF16ToUTF8(signals.field.label())));
+  input_context->metadata_args.emplace(
+      "field_aria_label",
+      ProcessedValue(base::UTF16ToUTF8(signals.field.aria_label())));
+  input_context->metadata_args.emplace(
+      "field_aria_description",
+      ProcessedValue(base::UTF16ToUTF8(signals.field.aria_description())));
+  return input_context;
+}
+
+}  // namespace
+
+ProactiveNudgeTracker::Signals::Signals() = default;
+ProactiveNudgeTracker::Signals::~Signals() = default;
+ProactiveNudgeTracker::Signals::Signals(Signals&&) = default;
+ProactiveNudgeTracker::Signals& ProactiveNudgeTracker::Signals::operator=(
+    Signals&&) = default;
 
 // Tracks user engagement as a result of the nudge.
 class ProactiveNudgeTracker::EngagementTracker {
@@ -70,6 +158,14 @@ class ProactiveNudgeTracker::EngagementTracker {
 ProactiveNudgeTracker::State::State() = default;
 ProactiveNudgeTracker::State::~State() = default;
 
+float ProactiveNudgeTracker::Delegate::SegmentationFallbackShowResult() {
+  return base::RandFloat();
+}
+
+float ProactiveNudgeTracker::Delegate::SegmentationForceShowResult() {
+  return base::RandFloat();
+}
+
 ProactiveNudgeTracker::ProactiveNudgeTracker(
     segmentation_platform::SegmentationPlatformService* segmentation_service,
     Delegate* delegate)
@@ -92,14 +188,14 @@ ProactiveNudgeTracker::~ProactiveNudgeTracker() {
 }
 
 bool ProactiveNudgeTracker::ProactiveNudgeRequestedForFormField(
-    const autofill::FormFieldData& field_to_track) {
+    Signals signals) {
   DVLOG(2) << "ProactiveNudgeTracker: ProactiveNudgeRequestedForFormField";
   if (!SegmentationStateIsValid()) {
     // Unable to show proactive nudge if configuration is not consistent.
     return false;
   }
-  if (MatchesCurrentField(field_to_track.renderer_form_id(),
-                          field_to_track.global_id())) {
+  if (MatchesCurrentField(signals.field.renderer_form_id(),
+                          signals.field.global_id())) {
     DVLOG(2) << "ProactiveNudgeTracker: Init with matching field";
     if (state_->show_state == ShowState::kCanBeShown) {
       state_->show_state = ShowState::kShown;
@@ -112,15 +208,17 @@ bool ProactiveNudgeTracker::ProactiveNudgeRequestedForFormField(
   ResetState();
   state_ = std::make_unique<State>();
 
-  state_->form = field_to_track.renderer_form_id();
-  state_->field = field_to_track.global_id();
-  state_->initial_text_value = field_to_track.value();
+  state_->form = signals.field.renderer_form_id();
+  state_->field = signals.field.global_id();
+  state_->initial_text_value = signals.field.value();
 
   if (compose::GetComposeConfig().proactive_nudge_segmentation) {
     segmentation_platform::PredictionOptions options;
     options.on_demand_execution = true;
+
     segmentation_service_->GetClassificationResult(
-        segmentation_platform::kComposePromotionKey, options, nullptr,
+        segmentation_platform::kComposePromotionKey, options,
+        PopulateInputContextForField(signals),
         base::BindOnce(&ProactiveNudgeTracker::GotClassificationResult,
                        weak_ptr_factory_.GetWeakPtr(), state_->AsWeakPtr()));
   }
@@ -151,6 +249,7 @@ bool ProactiveNudgeTracker::ShouldShow(const State& state) {
     return true;
   }
   return state.segmentation_result &&
+         !state.segmentation_result->ordered_labels.empty() &&
          state.segmentation_result->ordered_labels[0] ==
              segmentation_platform::kComposePrmotionLabelShow;
 }
@@ -210,7 +309,10 @@ void ProactiveNudgeTracker::MaybeShowProactiveNudge() {
 
   // Transition to the SHOWN state.
 
-  if (state_->segmentation_result) {
+  if (state_->segmentation_result &&
+      (state_->segmentation_result_ignored_for_training ||
+       compose::GetComposeConfig()
+           .proactive_nudge_always_collect_training_data)) {
     engagement_trackers_[state_->field.renderer_id] =
         std::make_unique<EngagementTracker>(
             state_->field.renderer_id, state_->segmentation_result->request_id,
@@ -227,13 +329,27 @@ void ProactiveNudgeTracker::GotClassificationResult(
     return;
   }
 
-  if (result.status != segmentation_platform::PredictionStatus::kSucceeded) {
-    // Do not want to continue with proactive nudge if the segmentation platform
-    // had a failure.
-    ResetState();
-    return;
+  state_->segmentation_result = result;
+
+  switch (result.status) {
+    case segmentation_platform::PredictionStatus::kFailed:
+    case segmentation_platform::PredictionStatus::kNotReady:
+      if (delegate_->SegmentationFallbackShowResult() <
+          compose::GetComposeConfig().proactive_nudge_show_probability) {
+        // Override default DontShow decision.
+        state_->segmentation_result->ordered_labels.emplace_back(
+            segmentation_platform::kComposePrmotionLabelShow);
+      }
+      break;
+    case segmentation_platform::PredictionStatus::kSucceeded:
+      if (delegate_->SegmentationForceShowResult() <
+          compose::GetComposeConfig().proactive_nudge_force_show_probability) {
+        state_->segmentation_result->ordered_labels = {
+            segmentation_platform::kComposePrmotionLabelShow};
+        state_->segmentation_result_ignored_for_training = true;
+      }
+      break;
   }
-  state->segmentation_result = std::move(result);
 
   MaybeShowProactiveNudge();
 }
@@ -242,7 +358,8 @@ void ProactiveNudgeTracker::CollectTrainingData(
     const segmentation_platform::TrainingRequestId training_request_id,
     ProactiveNudgeDerivedEngagement engagement) {
   segmentation_platform::TrainingLabels training_labels;
-  // TODO(harringtond): Add UMA for Compose.ProactiveNudge.DerivedEngagement.
+  base::UmaHistogramEnumeration("Compose.ProactiveNudge.DerivedEngagement",
+                                engagement);
   training_labels.output_metric =
       std::make_pair("Compose.ProactiveNudge.DerivedEngagement",
                      static_cast<base::HistogramBase::Sample>(engagement));

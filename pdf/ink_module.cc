@@ -5,7 +5,6 @@
 #include "pdf/ink_module.h"
 
 #include <memory>
-#include <numbers>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -18,14 +17,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "pdf/ink/ink_brush.h"
-#include "pdf/ink/ink_brush_family.h"
-#include "pdf/ink/ink_brush_paint.h"
-#include "pdf/ink/ink_brush_tip.h"
 #include "pdf/ink/ink_in_progress_stroke.h"
 #include "pdf/ink/ink_stroke.h"
 #include "pdf/ink/ink_stroke_input_batch.h"
 #include "pdf/input_utils.h"
 #include "pdf/pdf_features.h"
+#include "pdf/pdf_ink_brush.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,66 +33,38 @@ namespace chrome_pdf {
 
 namespace {
 
-std::string CreateBrushUri() {
-  // TODO(crbug.com/335524380): Use real value here.
-  return "ink://ink/texture:test-texture";
+// Default to a black pen brush.
+std::unique_ptr<PdfInkBrush> CreateDefaultBrush() {
+  const PdfInkBrush::Params kDefaultBrushParams = {SK_ColorBLACK, 1.0f};
+  return std::make_unique<PdfInkBrush>(PdfInkBrush::Type::kPen,
+                                       kDefaultBrushParams);
 }
 
-std::unique_ptr<InkBrush> CreateBrush() {
-  // TODO(crbug.com/335524380): Use real values here.
-  InkBrushTip tip;
-  tip.corner_rounding = 0;
-  tip.opacity_multiplier = 1.0f;
-
-  InkBrushPaint::TextureLayer layer;
-  layer.color_texture_uri = CreateBrushUri();
-  layer.mapping = InkBrushPaint::TextureMapping::kWinding;
-  layer.size_unit = InkBrushPaint::TextureSizeUnit::kBrushSize;
-  layer.size_x = 3;
-  layer.size_y = 5;
-  layer.size_jitter_x = 0.1;
-  layer.size_jitter_y = 2;
-  layer.keyframes = {
-      {.progress = 0.1, .rotation_in_radians = std::numbers::pi_v<float> / 4}};
-  layer.blend_mode = InkBrushPaint::BlendMode::kSrcIn;
-
-  InkBrushPaint paint;
-  paint.texture_layers.push_back(layer);
-  auto family = InkBrushFamily::Create(tip, paint, "");
-  CHECK(family);
-  return InkBrush::Create(std::move(family),
-                          /*color=*/SkColorSetRGB(0x18, 0x80, 0x38),
-                          /*size=*/1.0f, /*epsilon=*/0.1f);
+// Check if `color` is a valid color value within range.
+void CheckColorIsWithinRange(int color) {
+  CHECK_GE(color, 0);
+  CHECK_LE(color, 255);
 }
 
 }  // namespace
 
 InkModule::InkModule(Client& client) : client_(client) {
   CHECK(base::FeatureList::IsEnabled(features::kPdfInk2));
+  CHECK(is_drawing_stroke());
+  drawing_stroke_state().ink_brush = CreateDefaultBrush();
 }
 
 InkModule::~InkModule() = default;
 
 void InkModule::Draw(SkCanvas& canvas) {
-  auto stroke = InkInProgressStroke::Create();
-  // TODO(crbug.com/339682315): This should not fail with the wrapper.
-  if (!stroke) {
-    return;
+  // TODO(crbug.com/335524380): Draw `ink_strokes_` with InkSkiaRenderer.
+  // Add more parameters as needed.
+
+  auto in_progress_stroke = CreateInProgressStrokeFromInputs();
+  if (in_progress_stroke) {
+    // TODO(crbug.com/335524380): Draw `in_progress_stroke` with
+    // InkSkiaRenderer.
   }
-
-  std::unique_ptr<InkBrush> brush = CreateBrush();
-  CHECK(brush);
-  stroke->Start(*brush);
-  auto input_batch = InkStrokeInputBatch::Create(ink_inputs_);
-  CHECK(input_batch);
-  bool enqueue_results = stroke->EnqueueInputs(input_batch.get(), nullptr);
-  CHECK(enqueue_results);
-  stroke->FinishInputs();
-  bool update_results = stroke->UpdateShape(0);
-  CHECK(update_results);
-
-  // TODO(crbug.com/335524380): Draw with InkSkiaRenderer. Add more parameters
-  // as needed.
 }
 
 bool InkModule::HandleInputEvent(const blink::WebInputEvent& event) {
@@ -134,6 +103,10 @@ bool InkModule::OnMessage(const base::Value::Dict& message) {
   return true;
 }
 
+const PdfInkBrush* InkModule::GetPdfInkBrushForTesting() const {
+  return is_drawing_stroke() ? drawing_stroke_state().ink_brush.get() : nullptr;
+}
+
 bool InkModule::OnMouseDown(const blink::WebMouseEvent& event) {
   CHECK(enabled());
 
@@ -142,21 +115,10 @@ bool InkModule::OnMouseDown(const blink::WebMouseEvent& event) {
     return false;
   }
 
-  // TODO(crbug.com/335517471): Adjust `point` if needed.
-  gfx::PointF point = normalized_event.PositionInWidget();
-  if (client_->VisiblePageIndexFromPoint(point) < 0) {
-    // Do not draw when not on a page.
-    return false;
-  }
-
-  CHECK(!ink_start_time_.has_value());
-  ink_start_time_ = base::Time::Now();
-  ink_inputs_.push_back({
-      .position_x = point.x(),
-      .position_y = point.y(),
-      .elapsed_time_seconds = 0,
-  });
-  return true;
+  // TODO(crbug.com/335517471): Adjust `position` if needed.
+  gfx::PointF position = normalized_event.PositionInWidget();
+  return is_drawing_stroke() ? StartInkStroke(position)
+                             : StartEraseInkStroke(position);
 }
 
 bool InkModule::OnMouseUp(const blink::WebMouseEvent& event) {
@@ -166,34 +128,48 @@ bool InkModule::OnMouseUp(const blink::WebMouseEvent& event) {
     return false;
   }
 
-  if (!ink_start_time_.has_value()) {
-    // Ignore when not drawing.
-    return false;
-  }
-
-  ConvertInkInputsIntoStroke();
-
-  // Reset input fields.
-  ink_inputs_.clear();
-
-  ink_start_time_ = std::nullopt;
-  return true;
+  return is_drawing_stroke() ? FinishInkStroke() : FinishEraseInkStroke();
 }
 
 bool InkModule::OnMouseMove(const blink::WebMouseEvent& event) {
   CHECK(enabled());
 
-  if (!ink_start_time_.has_value()) {
+  // TODO(crbug.com/335517471): Adjust `position` if needed.
+  gfx::PointF position = event.PositionInWidget();
+  return is_drawing_stroke() ? ContinueInkStroke(position)
+                             : ContinueEraseInkStroke(position);
+}
+
+bool InkModule::StartInkStroke(const gfx::PointF& position) {
+  if (client_->VisiblePageIndexFromPoint(position) < 0) {
+    // Do not draw when not on a page.
+    return false;
+  }
+
+  CHECK(is_drawing_stroke());
+  DrawingStrokeState& state = drawing_stroke_state();
+  CHECK(!state.ink_start_time.has_value());
+  state.ink_start_time = base::Time::Now();
+  state.ink_inputs.push_back({
+      .position_x = position.x(),
+      .position_y = position.y(),
+      .elapsed_time_seconds = 0,
+  });
+  return true;
+}
+
+bool InkModule::ContinueInkStroke(const gfx::PointF& position) {
+  CHECK(is_drawing_stroke());
+  DrawingStrokeState& state = drawing_stroke_state();
+  if (!state.ink_start_time.has_value()) {
     // Ignore when not drawing.
     return false;
   }
 
-  // TODO(crbug.com/335517471): Adjust `point` if needed.
-  gfx::PointF point = event.PositionInWidget();
-  base::TimeDelta time_diff = base::Time::Now() - ink_start_time_.value();
-  ink_inputs_.push_back({
-      .position_x = point.x(),
-      .position_y = point.y(),
+  base::TimeDelta time_diff = base::Time::Now() - state.ink_start_time.value();
+  state.ink_inputs.push_back({
+      .position_x = position.x(),
+      .position_y = position.y(),
       .elapsed_time_seconds = static_cast<float>(time_diff.InSecondsF()),
   });
 
@@ -201,9 +177,84 @@ bool InkModule::OnMouseMove(const blink::WebMouseEvent& event) {
   return true;
 }
 
+bool InkModule::FinishInkStroke() {
+  CHECK(is_drawing_stroke());
+  DrawingStrokeState& state = drawing_stroke_state();
+  if (!state.ink_start_time.has_value()) {
+    // Ignore when not drawing.
+    return false;
+  }
+
+  // TODO(crbug.com/335524380): Add this method's caller's `event` to
+  // `ink_inputs_` before creating `in_progress_stroke`?
+  auto in_progress_stroke = CreateInProgressStrokeFromInputs();
+  if (in_progress_stroke) {
+    ink_strokes_.push_back(in_progress_stroke->CopyToStroke());
+  }
+
+  // Reset input fields.
+  state.ink_inputs.clear();
+  state.ink_start_time = std::nullopt;
+  return true;
+}
+
+bool InkModule::StartEraseInkStroke(const gfx::PointF& position) {
+  CHECK(is_erasing_stroke());
+  // TODO(crbug.com/335524381): Implement.
+  return false;
+}
+
+bool InkModule::ContinueEraseInkStroke(const gfx::PointF& position) {
+  CHECK(is_erasing_stroke());
+  // TODO(crbug.com/335524381): Implement.
+  return false;
+}
+
+bool InkModule::FinishEraseInkStroke() {
+  CHECK(is_erasing_stroke());
+  // TODO(crbug.com/335524381): Implement.
+  return false;
+}
+
 void InkModule::HandleSetAnnotationBrushMessage(
     const base::Value::Dict& message) {
-  // TODO(crbug.com/335524382): Implement setting the brush for Ink2.
+  CHECK(enabled_);
+
+  const std::string& brush_type_string = *message.FindString("brushType");
+  if (brush_type_string == "eraser") {
+    current_tool_state_.emplace<EraserState>();
+    return;
+  }
+
+  // All brush types except the eraser should have a color and size.
+  int color_r = message.FindInt("colorR").value();
+  int color_g = message.FindInt("colorG").value();
+  int color_b = message.FindInt("colorB").value();
+  double size = message.FindDouble("size").value();
+
+  CheckColorIsWithinRange(color_r);
+  CheckColorIsWithinRange(color_g);
+  CheckColorIsWithinRange(color_b);
+
+  PdfInkBrush::Params params;
+  params.color = SkColorSetRGB(color_r, color_g, color_b);
+
+  // TODO(crbug.com/341282609): Properly scale the brush size here. The
+  // extension uses values from range [0, 1], which will be translated to range
+  // [1, 8] for now.
+  CHECK_GE(size, 0);
+  CHECK_LE(size, 1);
+
+  constexpr float kSizeScaleFactor = 7.0f;
+  constexpr float kMinSize = 1.0f;
+  params.size = (static_cast<float>(size) * kSizeScaleFactor) + kMinSize;
+
+  std::optional<PdfInkBrush::Type> brush_type =
+      PdfInkBrush::StringToType(brush_type_string);
+  CHECK(brush_type.has_value());
+  current_tool_state_.emplace<DrawingStrokeState>();
+  drawing_stroke_state().ink_brush =
+      std::make_unique<PdfInkBrush>(brush_type.value(), params);
 }
 
 void InkModule::HandleSetAnnotationModeMessage(
@@ -211,21 +262,37 @@ void InkModule::HandleSetAnnotationModeMessage(
   enabled_ = message.FindBool("enable").value();
 }
 
-void InkModule::ConvertInkInputsIntoStroke() {
+std::unique_ptr<InkInProgressStroke>
+InkModule::CreateInProgressStrokeFromInputs() const {
+  if (!is_drawing_stroke()) {
+    return nullptr;
+  }
+
+  const DrawingStrokeState& state = drawing_stroke_state();
+  if (state.ink_inputs.empty()) {
+    return nullptr;
+  }
+
   auto stroke = InkInProgressStroke::Create();
-  CHECK(stroke);
-  std::unique_ptr<InkBrush> brush = CreateBrush();
-  CHECK(brush);
-  stroke->Start(*brush);
-  // TODO(crbug.com/335524380): Add `event` to `ink_inputs_`?
-  auto input_batch = InkStrokeInputBatch::Create(ink_inputs_);
+  // TODO(crbug.com/339682315): This should not fail with the wrapper.
+  if (!stroke) {
+    return nullptr;
+  }
+
+  auto input_batch = InkStrokeInputBatch::Create(state.ink_inputs);
   CHECK(input_batch);
+
+  stroke->Start(state.ink_brush->GetInkBrush());
   bool enqueue_results = stroke->EnqueueInputs(input_batch.get(), nullptr);
   CHECK(enqueue_results);
   stroke->FinishInputs();
   bool update_results = stroke->UpdateShape(0);
   CHECK(update_results);
-  ink_strokes_.push_back(stroke->CopyToStroke());
+  return stroke;
 }
+
+InkModule::DrawingStrokeState::DrawingStrokeState() = default;
+
+InkModule::DrawingStrokeState::~DrawingStrokeState() = default;
 
 }  // namespace chrome_pdf

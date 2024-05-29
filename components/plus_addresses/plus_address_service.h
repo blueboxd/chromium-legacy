@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/plus_addresses/affiliations/plus_address_affiliation_match_helper.h"
 #include "components/plus_addresses/plus_address_types.h"
 #include "components/plus_addresses/webdata/plus_address_webdata_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -26,7 +27,9 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/origin.h"
 
-class PrefService;
+namespace affiliations {
+class AffiliationService;
+}
 
 namespace signin {
 class IdentityManager;
@@ -67,9 +70,9 @@ class PlusAddressService : public KeyedService,
 
   PlusAddressService(
       signin::IdentityManager* identity_manager,
-      PrefService* pref_service,
       std::unique_ptr<PlusAddressHttpClient> plus_address_http_client,
-      scoped_refptr<PlusAddressWebDataService> webdata_service);
+      scoped_refptr<PlusAddressWebDataService> webdata_service,
+      affiliations::AffiliationService* affiliation_service);
   ~PlusAddressService() override;
 
   void AddObserver(Observer* o) { observers_.AddObserver(o); }
@@ -78,13 +81,21 @@ class PlusAddressService : public KeyedService,
   // autofill::AutofillPlusAddressDelegate:
   // Checks whether the passed-in string is a known plus address.
   bool IsPlusAddress(const std::string& potential_plus_address) const override;
-  std::vector<autofill::Suggestion> GetSuggestions(
+  void GetSuggestions(
       const url::Origin& last_committed_primary_main_frame_origin,
       bool is_off_the_record,
       autofill::AutofillClient::PasswordFormType focused_form_type,
       std::u16string_view focused_field_value,
-      autofill::AutofillSuggestionTriggerSource trigger_source) override;
+      autofill::AutofillSuggestionTriggerSource trigger_source,
+      GetSuggestionsCallback callback) override;
   void RecordAutofillSuggestionEvent(SuggestionEvent suggestion_event) override;
+  void OnPlusAddressSuggestionShown(
+      autofill::AutofillManager& manager,
+      autofill::FormGlobalId form,
+      autofill::FieldGlobalId field,
+      SuggestionContext suggestion_context,
+      autofill::AutofillClient::PasswordFormType form_type,
+      autofill::SuggestionType suggestion_type) override;
 
   // PlusAddressWebDataService::Observer:
   void OnWebDataChangedBySync(
@@ -192,6 +203,16 @@ class PlusAddressService : public KeyedService,
   // TODO(b/322147254): Remove once integration has finished.
   void UpdatePlusAddressMap(const PlusAddressMap& map);
 
+  // Called when PlusAddressService::OnGetAffiliatedPlusProfiles is resolved.
+  // Builds a list of suggestions from the list of `affiliated_profiles` and
+  // returns it via the `callback`.
+  void OnGetAffiliatedPlusProfiles(
+      autofill::AutofillClient::PasswordFormType focused_form_type,
+      std::u16string_view focused_field_value,
+      autofill::AutofillSuggestionTriggerSource trigger_source,
+      GetSuggestionsCallback callback,
+      std::vector<PlusProfile> affiliated_profiles);
+
   // The user's existing set of `PlusProfile`s, ordered by facet. Since only a
   // single address per facet is supported, this can be used as the comparator.
   base::flat_set<PlusProfile, PlusProfileFacetComparator> plus_profiles_
@@ -206,10 +227,6 @@ class PlusAddressService : public KeyedService,
   // PlusAddressService and can be null during tests.
   const raw_ptr<signin::IdentityManager> identity_manager_;
 
-  // Stores pointer to a PrefService to create `repeating_timer_` when the user
-  // signs in after PlusAddressService is created.
-  const raw_ptr<PrefService> pref_service_;
-
   // A timer to periodically retrieve all plus addresses from a remote server
   // to keep this service in sync.
   base::RepeatingTimer polling_timer_;
@@ -222,6 +239,10 @@ class PlusAddressService : public KeyedService,
 
   // Responsible for allocating new plus addresses.
   const std::unique_ptr<PlusAddressAllocator> plus_address_allocator_;
+
+  // Responsible for supplying a list of plus profiles with domains affiliated
+  // to the the originally requested facet.
+  PlusAddressAffiliationMatchHelper plus_address_match_helper_;
 
   // Store set of excluded sites ETLD+1 where PlusAddressService is not
   // supported.
@@ -251,6 +272,8 @@ class PlusAddressService : public KeyedService,
   base::ObserverList<Observer> observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PlusAddressService> weak_factory_{this};
 };
 
 }  // namespace plus_addresses

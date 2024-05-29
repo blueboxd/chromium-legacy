@@ -138,12 +138,6 @@ void ContentCacheImpl::Evict(const base::FilePath& file_path) {
   EvictItems(file_paths);
 }
 
-void ContentCacheImpl::SetOnItemEvictedCallback(
-    OnItemEvictedCallback on_item_evicted_callback) {
-  DCHECK(on_item_evicted_callback_.is_null());
-  on_item_evicted_callback_ = std::move(on_item_evicted_callback);
-}
-
 void ContentCacheImpl::RemoveItems(
     std::vector<const base::FilePath>& fsp_paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -275,8 +269,9 @@ void ContentCacheImpl::EvictItems(
     VLOG(1) << "Evicting '" << file_path << "'";
     ctx.set_evicted(true);
     evicted_cache_items_++;
-    if (on_item_evicted_callback_) {
-      on_item_evicted_callback_.Run(file_path);
+    // Notify all observers.
+    for (auto& observer : observers_) {
+      observer.OnItemEvicted(file_path);
     }
   }
   RemoveItems(file_paths);
@@ -359,6 +354,10 @@ void ContentCacheImpl::ReadBytes(
     VLOG(1) << "Cache miss: not possible to read the file on disk";
     callback.Run(/*bytes_read=*/-1, /*has_more=*/false,
                  base::File::FILE_ERROR_NOT_FOUND);
+    if (file.version_tag != ctx.version_tag()) {
+      // The cached file is out of date.
+      Evict(file.file_path);
+    }
     return;
   }
 
@@ -430,6 +429,7 @@ void ContentCacheImpl::WriteBytes(const OpenedCloudFile& file,
   }
 
   // Add a new CacheFileContext to the lru_cache.
+  VLOG(1) << "Adding '" << file.file_path << "' to the cache";
   it = lru_cache_.Put(
       PathContextPair(file.file_path, CacheFileContext(file.version_tag)));
   EvictExcessItems();

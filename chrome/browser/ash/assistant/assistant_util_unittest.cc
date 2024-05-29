@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -105,7 +106,6 @@ class ScopedLogIn {
         return;
       case user_manager::UserType::kPublicAccount:
       case user_manager::UserType::kKioskApp:
-      case user_manager::UserType::kArcKioskApp:
       case user_manager::UserType::kWebKioskApp:
         EXPECT_FALSE(IsGaiaAccount());
         return;
@@ -126,9 +126,6 @@ class ScopedLogIn {
         return;
       case user_manager::UserType::kKioskApp:
         fake_user_manager_->AddKioskAppUser(account_id_);
-        return;
-      case user_manager::UserType::kArcKioskApp:
-        fake_user_manager_->AddArcKioskAppUser(account_id_);
         return;
       case user_manager::UserType::kWebKioskApp:
         fake_user_manager_->AddWebKioskAppUser(account_id_);
@@ -341,15 +338,6 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_KioskApp) {
   ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     GetNonGaiaUserAccountId(profile()),
                     user_manager::UserType::kKioskApp);
-
-  EXPECT_EQ(ash::assistant::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE,
-            IsAssistantAllowedForProfile(profile()));
-}
-
-TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_ArcKioskApp) {
-  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
-                    GetNonGaiaUserAccountId(profile()),
-                    user_manager::UserType::kArcKioskApp);
 
   EXPECT_EQ(ash::assistant::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE,
             IsAssistantAllowedForProfile(profile()));

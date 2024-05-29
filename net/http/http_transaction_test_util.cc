@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "net/http/http_transaction_test_util.h"
 
 #include <algorithm>
@@ -387,7 +392,7 @@ bool MockNetworkTransaction::IsReadyToRestartForAuth() {
       status_line.find(" 407 ") != std::string::npos;
 }
 
-int MockNetworkTransaction::Read(net::IOBuffer* buf,
+int MockNetworkTransaction::Read(IOBuffer* buf,
                                  int buf_len,
                                  CompletionOnceCallback callback) {
   const MockTransaction* t = FindMockTransaction(current_request_.url);
@@ -731,7 +736,7 @@ void MockNetworkTransaction::SetBeforeNetworkStartCallback(
 }
 
 void MockNetworkTransaction::SetModifyRequestHeadersCallback(
-    base::RepeatingCallback<void(net::HttpRequestHeaders*)> callback) {
+    base::RepeatingCallback<void(HttpRequestHeaders*)> callback) {
   modify_request_headers_callback_ = std::move(callback);
 }
 
@@ -863,7 +868,7 @@ int ConnectedHandler::OnConnected(const TransportInfo& info,
   if (run_callback_) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result_));
-    return net::ERR_IO_PENDING;
+    return ERR_IO_PENDING;
   }
   return result_;
 }

@@ -321,13 +321,6 @@ BASE_FEATURE(kDrawCutoutEdgeToEdge,
              "DrawCutoutEdgeToEdge",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable early swapping of RenderFrameHosts during some back/forward
-// navigations. This is an experimental feature intended to support new kinds of
-// navigation transitions. See https://crbug.com/1480129.
-BASE_FEATURE(kEarlyDocumentSwapForBackForwardTransitions,
-             "EarlyDocumentSwapForBackForwardTransitions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable establishing the GPU channel early in renderer startup.
 BASE_FEATURE(kEarlyEstablishGpuChannel,
              "EarlyEstablishGpuChannel",
@@ -473,9 +466,10 @@ BASE_FEATURE(kIsolatedWebApps,
 
 // Enables a new Automatic Fullscreen content setting that lets allowlisted
 // origins use the HTML Fullscreen API without transient activation.
+// https://chromestatus.com/feature/6218822004768768
 BASE_FEATURE(kAutomaticFullscreenContentSetting,
              "AutomaticFullscreenContentSetting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables process isolation of fenced content (content inside fenced frames)
 // from non-fenced content. See
@@ -926,6 +920,15 @@ BASE_FEATURE(kSiteIsolationForCrossOriginOpenerPolicy,
 #endif
 );
 
+// This feature controls whether the renderer should use SkiaFontManager to
+// fetch fonts from the Browser's SkiaFontService. It is currently scoped to
+// just Windows. See crbug.com/335680565.
+#if BUILDFLAG(IS_WIN)
+BASE_FEATURE(kSkiaFontService,
+             "SkiaFontService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_WIN)
+
 // This feature param (true by default) controls whether sites are persisted
 // across restarts.
 const base::FeatureParam<bool>
@@ -1030,7 +1033,7 @@ BASE_FEATURE(kUserActivationSameOriginVisibility,
 // RenderFrameHostImpl::VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch.
 BASE_FEATURE(kVerifyDidCommitParams,
              "VerifyDidCommitParams",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables future V8 VM features
 BASE_FEATURE(kV8VmFuture, "V8VmFuture", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1181,11 +1184,6 @@ BASE_FEATURE(kReduceGpuPriorityOnBackground,
 // clicks (i.e. right click) with respect to text selection.
 BASE_FEATURE(kMouseAndTrackpadDropdownMenu,
              "MouseAndTrackpadDropdownMenu",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Request Desktop Site based on window width for Android.
-BASE_FEATURE(kRequestDesktopSiteWindowSetting,
-             "RequestDesktopSiteWindowSetting",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Apply text selection menu order correction logic for Android.

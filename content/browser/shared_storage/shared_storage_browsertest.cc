@@ -1054,12 +1054,19 @@ class SharedStorageBrowserTestBase : public ContentBrowserTest {
     }
   }
 
-  FrameTreeNode* CreateIFrame(FrameTreeNode* root, const GURL& url) {
+  FrameTreeNode* CreateIFrame(FrameTreeNode* root,
+                              const GURL& url,
+                              std::string sandbox_flags = "") {
     size_t initial_child_count = root->child_count();
 
-    EXPECT_TRUE(ExecJs(root,
-                       "var f = document.createElement('iframe');"
-                       "document.body.appendChild(f);"));
+    EXPECT_TRUE(ExecJs(root, JsReplace(R"(
+                          var f = document.createElement('iframe');
+                          if ($1) {
+                            f.sandbox = $1;
+                          }
+                          document.body.appendChild(f);
+                        )",
+                                       sandbox_flags)));
 
     EXPECT_EQ(initial_child_count + 1, root->child_count());
     FrameTreeNode* child_node = root->child_at(initial_child_count);
@@ -1319,7 +1326,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest, AddModule_ScriptNotFound) {
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   std::string expected_error = base::StrCat(
-      {"a JavaScript error: \"OperationError: Failed to load ",
+      {"a JavaScript error: \"Error: Failed to load ",
        https_server()
            ->GetURL("a.test", "/shared_storage/nonexistent_module.js")
            .spec(),
@@ -1349,7 +1356,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest, AddModule_RedirectNotAllowed) {
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   std::string expected_error = base::StrCat(
-      {"a JavaScript error: \"OperationError: Unexpected redirect on ",
+      {"a JavaScript error: \"Error: Unexpected redirect on ",
        https_server()
            ->GetURL("a.test",
                     "/server-redirect?shared_storage/simple_module.js")
@@ -2389,6 +2396,133 @@ IN_PROC_BROWSER_TEST_P(
        {AccessType::kDocumentRun, MainFrameId(), origin_str,
         SharedStorageEventParams::CreateForRun("test-operation",
                                                blink::CloneableMessage())}});
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageBrowserTest,
+    KeepAlive_StartBeforeSelectURLComplete_EndAfterSelectURLComplete) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      shell()->web_contents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  GURL url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      sharedStorage.worklet.addModule('shared_storage/simple_module.js');
+    )"));
+
+  EXPECT_EQ(2u, console_observer.messages().size());
+
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.resolveSelectURLToConfig = $1;",
+                                        ResolveSelectURLToConfig())));
+
+  // Configure the worklet host to defer processing the subsequent `selectURL()`
+  // response.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->set_should_defer_worklet_messages(true);
+
+  // There is 1 more "worklet operation": `selectURL()`.
+  test_worklet_host_manager()
+      .GetAttachedWorkletHost()
+      ->SetExpectedWorkletResponsesCount(1);
+
+  EvalJsResult result = EvalJs(shell(), R"(
+      (async function() {
+        window.select_url_result = await sharedStorage.selectURL(
+          'test-url-selection-operation',
+          [
+            {url: 'fenced_frames/title0.html'},
+            {url: 'fenced_frames/title1.html'}
+          ],
+          {
+            data: {'mockResult': 1},
+            resolveToConfig: resolveSelectURLToConfig
+          }
+        );
+        if (resolveSelectURLToConfig &&
+            !(select_url_result instanceof FencedFrameConfig)) {
+          throw new Error('selectURL() did not return a FencedFrameConfig.');
+        }
+        return window.select_url_result;
+      })()
+    )");
+
+  EXPECT_TRUE(result.error.empty());
+
+  // Navigate to trigger keep-alive
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  EXPECT_EQ(0u, test_worklet_host_manager().GetAttachedWorkletHostsCount());
+  EXPECT_EQ(1u, test_worklet_host_manager().GetKeepAliveWorkletHostsCount());
+
+  test_worklet_host_manager()
+      .GetKeepAliveWorkletHost()
+      ->WaitForWorkletResponses();
+
+  // Four pending messages are expected: four for console.log and one for
+  // `selectURL()` response.
+  EXPECT_EQ(5u, test_worklet_host_manager()
+                    .GetKeepAliveWorkletHost()
+                    ->pending_worklet_messages()
+                    .size());
+
+  // Execute all the deferred messages. This will terminate the keep-alive.
+  test_worklet_host_manager()
+      .GetKeepAliveWorkletHost()
+      ->ExecutePendingWorkletMessages();
+
+  EXPECT_EQ(0u, test_worklet_host_manager().GetAttachedWorkletHostsCount());
+  EXPECT_EQ(0u, test_worklet_host_manager().GetKeepAliveWorkletHostsCount());
+
+  // Expect no more console logging, as messages logged during keep-alive was
+  // dropped.
+  EXPECT_EQ(2u, console_observer.messages().size());
+
+  WaitForHistograms({kDestroyedStatusHistogram, kTimingUsefulResourceHistogram,
+                     kTimingKeepAliveDurationHistogram,
+                     kTimingSelectUrlExecutedInWorkletHistogram,
+                     kErrorTypeHistogram});
+
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+
+  // Since we have navigated away from the page that called `selectURL()`, we
+  // can't do anything with the resulting Fenced Frame config. So we log this
+  // outcome as a web-visible "error".
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::kSelectURLWebVisible, 1);
+
+  histogram_tester_.ExpectUniqueSample(
+      kDestroyedStatusHistogram,
+      blink::SharedStorageWorkletDestroyedStatus::
+          kKeepAliveEndedDueToOperationsFinished,
+      1);
+  histogram_tester_.ExpectTotalCount(kTimingKeepAliveDurationHistogram, 1);
+  histogram_tester_.ExpectTotalCount(kTimingUsefulResourceHistogram, 1);
+  histogram_tester_.ExpectTotalCount(kTimingSelectUrlExecutedInWorkletHistogram,
+                                     1);
+
+  std::string origin_str = url::Origin::Create(url).Serialize();
+  ExpectAccessObserved(
+      {{AccessType::kDocumentAddModule, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForAddModule(https_server()->GetURL(
+            "a.test", "/shared_storage/simple_module.js"))},
+       {AccessType::kDocumentSelectURL, MainFrameId(), origin_str,
+        SharedStorageEventParams::CreateForSelectURL(
+            "test-url-selection-operation", blink::CloneableMessage(),
+            std::vector<SharedStorageUrlSpecWithMetadata>(
+                {{https_server()->GetURL("a.test",
+                                         "/fenced_frames/title0.html"),
+                  {}},
+                 {https_server()->GetURL("a.test",
+                                         "/fenced_frames/title1.html"),
+                  {}}}))}});
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest, KeepAlive_SubframeWorklet) {
@@ -6538,7 +6672,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
 
   // `selectURL()` fails when map is full.
   std::string expected_error = base::StrCat(
-      {"a JavaScript error: \"OperationError: ",
+      {"a JavaScript error: \"Error: ",
        "sharedStorage.selectURL() failed because number of urn::uuid to url ",
        "mappings has reached the limit.\"\n"});
   EXPECT_EQ(expected_error, extra_result.error);
@@ -6698,6 +6832,31 @@ IN_PROC_BROWSER_TEST_F(
   )");
 
   EXPECT_EQ(get_result, "apple");
+}
+
+IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameDocumentGetBrowserTest,
+                       GetNotAllowedInSandboxedIframeInFencedFrameTree) {
+  GURL main_frame_url = https_server()->GetURL("a.test", kSimplePagePath);
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  GURL fenced_frame_url = https_server()->GetURL("a.test", kFencedFramePath);
+  FrameTreeNode* fenced_frame_root_node = CreateFencedFrame(fenced_frame_url);
+
+  FrameTreeNode* nested_iframe_node =
+      CreateIFrame(fenced_frame_root_node, fenced_frame_url,
+                   /*sandbox_flags=*/"allow-scripts");
+
+  EXPECT_TRUE(ExecJs(fenced_frame_root_node, R"(
+      window.fence.disableUntrustedNetwork();
+  )"));
+
+  EvalJsResult get_result = EvalJs(nested_iframe_node, R"(
+      sharedStorage.get('test');
+  )");
+
+  EXPECT_THAT(get_result.error,
+              testing::HasSubstr("the method on sharedStorage is not allowed "
+                                 "in an opaque origin context"));
 }
 
 IN_PROC_BROWSER_TEST_F(

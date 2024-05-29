@@ -50,7 +50,7 @@ import java.util.concurrent.TimeoutException;
     "hide-scrollbars",
     "enable-features=" + BlinkFeatures.BACK_FORWARD_TRANSITIONS
 })
-@DoNotBatch(reason = "Test")
+@DoNotBatch(reason = "Affect nav settings")
 public class ScreenshotCaptureTest {
     @Rule
     public final SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
@@ -128,7 +128,7 @@ public class ScreenshotCaptureTest {
         mScreenshotCaptureTestHelper.setNavScreenshotCallbackForTesting(
                 new ScreenshotCaptureTestHelper.NavScreenshotCallback() {
                     @Override
-                    public void onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
+                    public Bitmap onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
                         Assert.assertEquals(
                                 "Should capture the screenshot of the previous page.",
                                 currentNavIndex,
@@ -136,6 +136,7 @@ public class ScreenshotCaptureTest {
                         Assert.assertTrue(requested);
                         mCapturedBitmap = bitmap;
                         callbackHelper.notifyCalled();
+                        return null;
                     }
                 });
 
@@ -167,7 +168,7 @@ public class ScreenshotCaptureTest {
         mScreenshotCaptureTestHelper.setNavScreenshotCallbackForTesting(
                 new ScreenshotCaptureTestHelper.NavScreenshotCallback() {
                     @Override
-                    public void onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
+                    public Bitmap onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
                         Assert.assertEquals(
                                 "Should capture the screenshot of the previous page.",
                                 currentNavIndex,
@@ -175,6 +176,7 @@ public class ScreenshotCaptureTest {
                         Assert.assertTrue(requested);
                         mCapturedBitmap = bitmap;
                         callbackHelper.notifyCalled();
+                        return null;
                     }
                 });
 
@@ -205,7 +207,7 @@ public class ScreenshotCaptureTest {
         mScreenshotCaptureTestHelper.setNavScreenshotCallbackForTesting(
                 new ScreenshotCaptureTestHelper.NavScreenshotCallback() {
                     @Override
-                    public void onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
+                    public Bitmap onAvailable(int navIndex, Bitmap bitmap, boolean requested) {
                         Assert.assertEquals(
                                 "Should attempt to capture the screenshot of the previous page.",
                                 currentNavIndex,
@@ -213,6 +215,7 @@ public class ScreenshotCaptureTest {
                         Assert.assertFalse("No screenshot should be captured", requested);
                         Assert.assertNull("No screenshot should be captured", bitmap);
                         callbackHelper.notifyCalled();
+                        return null;
                     }
                 });
 

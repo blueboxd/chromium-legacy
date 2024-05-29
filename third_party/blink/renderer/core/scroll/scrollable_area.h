@@ -580,7 +580,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void ClearPendingScrollAnchorAdjustment();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner();
-  void EnqueueSnapChangedEvent() const;
+  void EnqueueScrollSnapChangeEvent() const;
 
   ScrollOffset ScrollOffsetFromScrollStartData(
       const ScrollStartData& block_value,
@@ -589,27 +589,27 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   bool ScrollStartIsDefault() const;
   virtual bool IsApplyingScrollStart() const { return false; }
 
-  virtual void SetSnapchangedTargetIds(
+  virtual void SetScrollsnapchangeTargetIds(
       std::optional<cc::TargetSnapAreaElementIds>) {}
-  virtual void UpdateSnappedTargetsAndEnqueueSnapChanged() {}
+  virtual void UpdateSnappedTargetsAndEnqueueScrollSnapChange() {}
 
   bool ScrollOffsetIsNoop(const ScrollOffset& offset) const;
 
-  void EnqueueSnapChangingEvent() const;
-  virtual std::optional<cc::TargetSnapAreaElementIds> GetSnapchangingTargetIds()
-      const {
+  void EnqueueScrollSnapChangingEvent() const;
+  virtual std::optional<cc::TargetSnapAreaElementIds>
+  GetScrollsnapchangingTargetIds() const {
     return std::nullopt;
   }
-  virtual void SetSnapchangingTargetIds(
+  virtual void SetScrollsnapchangingTargetIds(
       std::optional<cc::TargetSnapAreaElementIds>) {}
-  virtual void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
+  virtual void UpdateScrollSnapChangingTargetsAndEnqueueScrollSnapChanging(
       const cc::TargetSnapAreaElementIds& ids) {}
   virtual const cc::SnapSelectionStrategy* GetImplSnapStrategy() const {
     return nullptr;
   }
   virtual void SetImplSnapStrategy(std::unique_ptr<cc::SnapSelectionStrategy>) {
   }
-  virtual void EnqueueSnapChangingEventFromImplIfNeeded() {}
+  virtual void EnqueueScrollSnapChangingEventFromImplIfNeeded() {}
 
   virtual std::optional<cc::ElementId> GetTargetedSnapAreaId() {
     return std::nullopt;

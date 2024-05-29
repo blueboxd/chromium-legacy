@@ -6,12 +6,15 @@
 
 #import <vector>
 
+#import "base/i18n/message_formatter.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "components/autofill/core/browser/browser_autofill_manager.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
+#import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
@@ -27,7 +30,9 @@
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/resource/resource_bundle.h"
 #import "url/gurl.h"
 
 using autofill::CreditCard;
@@ -42,19 +47,31 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
 
 }  // namespace manual_fill
 
-@interface ManualFillCardMediator ()
+@interface ManualFillCardMediator () <PersonalDataManagerObserver>
 
 // All available credit cards.
 @property(nonatomic, assign) std::vector<CreditCard*> cards;
 
 @end
 
-@implementation ManualFillCardMediator
+@implementation ManualFillCardMediator {
+  // Personal data manager to be observed.
+  raw_ptr<autofill::PersonalDataManager> _personalDataManager;
 
-- (instancetype)initWithCards:(std::vector<CreditCard*>)cards {
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
+}
+
+- (instancetype)initWithPersonalDataManager:
+    (autofill::PersonalDataManager*)personalDataManager {
   self = [super init];
   if (self) {
-    _cards = cards;
+    _personalDataManager = personalDataManager;
+    _personalDataManagerObserver.reset(
+        new autofill::PersonalDataManagerObserverBridge(self));
+    _personalDataManager->AddObserver(_personalDataManagerObserver.get());
+    _cards = _personalDataManager->payments_data_manager().GetCreditCards();
   }
   return self;
 }
@@ -78,8 +95,18 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
   return nil;
 }
 
-- (void)reloadWithCards:(std::vector<CreditCard*>)cards {
-  self.cards = cards;
+- (void)disconnect {
+  if (_personalDataManager && _personalDataManagerObserver.get()) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+    _personalDataManagerObserver.reset();
+  }
+}
+
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  self.cards =
+      _personalDataManager->payments_data_manager().GetCreditCardsToSuggest();
   if (self.consumer) {
     [self postCardsToConsumer];
     [self postActionsToConsumer];
@@ -94,9 +121,17 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
     return;
   }
 
+  int cardCount = self.cards.size();
   NSMutableArray* cardItems =
-      [[NSMutableArray alloc] initWithCapacity:self.cards.size()];
-  for (CreditCard* card : self.cards) {
+      [[NSMutableArray alloc] initWithCapacity:cardCount];
+  for (int i = 0; i < cardCount; i++) {
+    CreditCard* card = self.cards[i];
+    NSString* cellIndexAccessibilityLabel = base::SysUTF16ToNSString(
+        base::i18n::MessageFormatter::FormatWithNamedArgs(
+            l10n_util::GetStringUTF16(
+                IDS_IOS_MANUAL_FALLBACK_PAYMENT_CELL_INDEX),
+            "count", cardCount, "position", i + 1));
+
     // If this card is enrolled to have a virtual card, create the virtual card
     // and order it directly before the original card.
     if (base::FeatureList::IsEnabled(
@@ -104,25 +139,35 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
         card->virtual_card_enrollment_state() ==
             CreditCard::VirtualCardEnrollmentState::kEnrolled) {
       CreditCard virtualCard = CreditCard::CreateVirtualCard(*card);
-      [cardItems addObject:[self createManualFillCardItemForCard:virtualCard]];
+      [cardItems addObject:[self createManualFillCardItemForCard:&virtualCard
+                                     cellIndexAccessibilityLabel:
+                                         cellIndexAccessibilityLabel]];
     }
-    [cardItems addObject:[self createManualFillCardItemForCard:*card]];
+    [cardItems addObject:[self createManualFillCardItemForCard:card
+                                   cellIndexAccessibilityLabel:
+                                       cellIndexAccessibilityLabel]];
   }
 
   [self.consumer presentCards:cardItems];
 }
 
 // Creates a ManualFillCardItem for the given `card`.
-- (ManualFillCardItem*)createManualFillCardItemForCard:(CreditCard)card {
-  ManualFillCreditCard* manualFillCreditCard =
-      [[ManualFillCreditCard alloc] initWithCreditCard:card];
-  NSArray<UIAction*>* menuActions =
-      IsKeyboardAccessoryUpgradeEnabled() ? [self createMenuActions] : @[];
+- (ManualFillCardItem*)createManualFillCardItemForCard:(CreditCard*)card
+                           cellIndexAccessibilityLabel:
+                               (NSString*)cellIndexAccessibilityLabel {
+  ManualFillCreditCard* manualFillCreditCard = [[ManualFillCreditCard alloc]
+      initWithCreditCard:*card
+                    icon:[self iconForCreditCard:card]];
+  NSArray<UIAction*>* menuActions = IsKeyboardAccessoryUpgradeEnabled()
+                                        ? [self createMenuActionsForCard:card]
+                                        : @[];
 
-  return [[ManualFillCardItem alloc] initWithCreditCard:manualFillCreditCard
-                                        contentInjector:self.contentInjector
-                                     navigationDelegate:self.navigationDelegate
-                                            menuActions:menuActions];
+  return [[ManualFillCardItem alloc]
+               initWithCreditCard:manualFillCreditCard
+                  contentInjector:self.contentInjector
+               navigationDelegate:self.navigationDelegate
+                      menuActions:menuActions
+      cellIndexAccessibilityLabel:cellIndexAccessibilityLabel];
 }
 
 - (void)postActionsToConsumer {
@@ -158,19 +203,45 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
 }
 
 // Creates an "Edit" and a "Show Details" UIAction to be used with a UIMenu.
-- (NSArray<UIAction*>*)createMenuActions {
+- (NSArray<UIAction*>*)createMenuActionsForCard:(const CreditCard*)card {
   ActionFactory* actionFactory = [[ActionFactory alloc]
       initWithScenario:
           kMenuScenarioHistogramAutofillManualFallbackPaymentEntry];
+
+  __weak __typeof(self) weakSelf = self;
   UIAction* editAction = [actionFactory actionToEditWithBlock:^{
       // TODO(crbug.com/326413453): Handle tap.
   }];
 
   UIAction* showDetailsAction = [actionFactory actionToShowDetailsWithBlock:^{
-      // TODO(crbug.com/326413453): Handle tap.
+    [weakSelf.navigationDelegate openCardDetails:card];
   }];
 
   return @[ editAction, showDetailsAction ];
+}
+
+// Returns the icon associated with the provided credit card.
+- (UIImage*)iconForCreditCard:(const autofill::CreditCard*)creditCard {
+  // Check if custom card art is available.
+  GURL cardArtURL =
+      _personalDataManager->payments_data_manager().GetCardArtURL(*creditCard);
+  if (IsKeyboardAccessoryUpgradeEnabled() && !cardArtURL.is_empty() &&
+      cardArtURL.is_valid()) {
+    gfx::Image* image = _personalDataManager->payments_data_manager()
+                            .GetCreditCardArtImageForUrl(cardArtURL);
+    if (image) {
+      return image->ToUIImage();
+    }
+  }
+
+  // Otherwise, try to get the default card icon
+  autofill::Suggestion::Icon icon = creditCard->CardIconForAutofillSuggestion();
+  return icon == autofill::Suggestion::Icon::kNoIcon
+             ? nil
+             : ui::ResourceBundle::GetSharedInstance()
+                   .GetNativeImageNamed(
+                       autofill::CreditCard::IconResourceId(icon))
+                   .ToUIImage();
 }
 
 #pragma mark - FullCardRequestResultDelegateObserving
@@ -178,8 +249,9 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
 - (void)onFullCardRequestSucceeded:(const CreditCard&)card
                          fieldType:(manual_fill::PaymentFieldType)fieldType {
   // Credit card are not shown as 'Secure'.
-  ManualFillCreditCard* manualFillCreditCard =
-      [[ManualFillCreditCard alloc] initWithCreditCard:card];
+  ManualFillCreditCard* manualFillCreditCard = [[ManualFillCreditCard alloc]
+      initWithCreditCard:card
+                    icon:[self iconForCreditCard:&card]];
   NSString* fillValue;
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableVirtualCards)) {

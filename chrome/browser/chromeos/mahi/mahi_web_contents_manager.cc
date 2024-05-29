@@ -7,10 +7,12 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -24,17 +26,28 @@
 #include "chrome/browser/chromeos/mahi/mahi_content_extraction_delegate.h"
 #include "chrome/browser/content_extraction/inner_text.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
 #include "chromeos/components/mahi/public/cpp/mahi_util.h"
 #include "chromeos/crosapi/mojom/mahi.mojom-forward.h"
+#include "components/pdf/browser/pdf_frame_util.h"
+#include "components/pdf/common/constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "pdf/pdf_features.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
+#endif
 
 #if DCHECK_IS_ON()
 #include "base/functional/callback_helpers.h"
@@ -51,7 +64,76 @@ using chromeos::mahi::ButtonType;
 // The character count threshold for a distillable page.
 static constexpr int kCharCountThreshold = 300;
 
+// Checks if |web_contents| contains a PDF
+bool IsPDFWebContents(content::WebContents* web_contents) {
+  return web_contents->GetContentsMimeType() == pdf::kPDFMimeType;
+}
+
+// Get the RenderFrameHost that contains the PDF content.
+content::RenderFrameHost* GetPDFRenderFrameHost(
+    content::WebContents* contents) {
+  // Pick the plugin frame host if `contents` is a PDF viewer guest. If using
+  // OOPIF PDF viewer, pick the PDF extension frame host.
+  content::RenderFrameHost* full_page_pdf_embedder_host =
+      base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)
+          ? pdf_frame_util::FindFullPagePdfExtensionHost(contents)
+          : printing::GetFullPagePlugin(contents);
+  content::RenderFrameHost* pdf_rfh = pdf_frame_util::FindPdfChildFrame(
+      full_page_pdf_embedder_host ? full_page_pdf_embedder_host
+                                  : contents->GetPrimaryMainFrame());
+  return pdf_rfh;
+}
+
+// When the size of the AXTreeUpdate meets this threshold, we consider them
+// contain enough content and start extraction without subsequence updates.
+constexpr int kAXTreeUpdateByteSizeThreshold = 3000;
+
 }  // namespace
+
+MahiPDFObserver::MahiPDFObserver(content::WebContents* web_contents,
+                                 ui::AXMode accessibility_mode,
+                                 ui::AXTreeID tree_id,
+                                 PDFContentObservedCallback callback)
+    : tree_id_(tree_id), callback_(std::move(callback)) {
+  Observe(web_contents);
+
+  // Enable accessibility for the top level render frame and all descendants.
+  // This causes AXTreeSerializer to reset and send accessibility events of
+  // the AXTree when it is re-serialized.
+  if (!web_contents) {
+    return;
+  }
+  // Force a reset if web accessibility is already enabled to ensure that new
+  // observers of accessibility events get the full accessibility tree from
+  // scratch.
+  const bool need_reset =
+      web_contents->GetAccessibilityMode().has_mode(ui::AXMode::kWebContents);
+
+  scoped_accessibility_mode_ =
+      content::BrowserAccessibilityState::GetInstance()
+          ->CreateScopedModeForWebContents(web_contents, accessibility_mode);
+
+  if (need_reset) {
+    web_contents->ResetAccessibility();
+  }
+}
+
+MahiPDFObserver::~MahiPDFObserver() = default;
+
+void MahiPDFObserver::AccessibilityEventReceived(
+    const ui::AXUpdatesAndEvents& details) {
+  if (details.ax_tree_id != tree_id_ || !callback_) {
+    return;
+  }
+
+  for (const auto& update : details.updates) {
+    updates_.push_back(update);
+    if (update.ByteSize() >= kAXTreeUpdateByteSizeThreshold) {
+      std::move(callback_).Run(updates_);
+      return;
+    }
+  }
+}
 
 // static
 MahiWebContentsManager* MahiWebContentsManager::Get() {
@@ -76,6 +158,7 @@ void MahiWebContentsManager::Initialize() {
                                  weak_pointer_factory_.GetWeakPtr()));
   content_extraction_delegate_ =
       std::make_unique<MahiContentExtractionDelegate>();
+
   is_initialized_ = true;
 }
 
@@ -86,7 +169,7 @@ void MahiWebContentsManager::OnFocusedPageLoadComplete(
   }
 
   if (ShouldSkip(web_contents)) {
-    ClearFocusedWebContentState();
+    ClearFocusedWebContentState(web_contents->GetTopLevelNativeWindow());
     return;
   }
 
@@ -97,6 +180,18 @@ void MahiWebContentsManager::OnFocusedPageLoadComplete(
       WebContentState(focused_web_contents_->GetLastCommittedURL(),
                       focused_web_contents_->GetTitle());
   focused_web_content_state_.favicon = GetFavicon(focused_web_contents_);
+  focused_web_content_state_.top_level_native_window =
+      web_contents->GetTopLevelNativeWindow();
+
+  // Skip the distillable check for PDF content.
+  if (IsPDFWebContents(web_contents)) {
+    is_pdf_focused_web_contents_ = true;
+    focused_web_content_state_.is_distillable.emplace(true);
+    client_->OnFocusedPageChanged(focused_web_content_state_);
+    return;
+  }
+
+  is_pdf_focused_web_contents_ = false;
   // Notifies `MahiManager` the focused page has changed.
   client_->OnFocusedPageChanged(focused_web_content_state_);
 
@@ -112,9 +207,14 @@ void MahiWebContentsManager::OnFocusedPageLoadComplete(
                      focused_web_content_state_.page_id, start_time));
 }
 
-void MahiWebContentsManager::ClearFocusedWebContentState() {
+void MahiWebContentsManager::ClearFocusedWebContentState(
+    raw_ptr<aura::Window> top_level_window) {
   focused_web_contents_ = nullptr;
+  is_pdf_focused_web_contents_ = false;
   focused_web_content_state_ = WebContentState(/*url=*/GURL(), /*title=*/u"");
+  if (top_level_window != nullptr) {
+    focused_web_content_state_.top_level_native_window = top_level_window;
+  }
   if (!is_initialized_) {
     return;
   }
@@ -126,7 +226,7 @@ void MahiWebContentsManager::ClearFocusedWebContentState() {
 void MahiWebContentsManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
   if (focused_web_contents_ == web_contents) {
-    ClearFocusedWebContentState();
+    ClearFocusedWebContentState(web_contents->GetTopLevelNativeWindow());
   }
 }
 
@@ -151,11 +251,13 @@ bool MahiWebContentsManager::IsFocusedPageDistillable() {
 
 bool MahiWebContentsManager::GetPrefValue() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile || !profile->GetPrefs()) {
+  auto* session_controller = ash::Shell::Get()->session_controller();
+
+  if (!session_controller || !session_controller->GetActivePrefService()) {
     return false;
   }
-  return profile->GetPrefs()->GetBoolean(ash::prefs::kMahiEnabled);
+  return session_controller->GetActivePrefService()->GetBoolean(
+      ash::prefs::kMahiEnabled);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -220,6 +322,16 @@ void MahiWebContentsManager::RequestContent(
     return;
   }
 
+  if (IsPDFWebContents(focused_web_contents_)) {
+    RequestPDFContent(page_id, std::move(callback));
+  } else {
+    RequestWebContent(page_id, std::move(callback));
+  }
+}
+
+void MahiWebContentsManager::RequestWebContent(
+    const base::UnguessableToken& page_id,
+    GetContentCallback callback) {
   base::Time start_time = base::Time::Now();
   focused_web_contents_->RequestAXTreeSnapshot(
       base::BindOnce(&MahiWebContentsManager::OnGetSnapshot,
@@ -228,6 +340,44 @@ void MahiWebContentsManager::RequestContent(
                      start_time, std::move(callback)),
       ui::kAXModeWebContentsOnly,
       /* max_nodes= */ 5000, /* timeout= */ {});
+}
+
+void MahiWebContentsManager::RequestPDFContent(
+    const base::UnguessableToken& page_id,
+    GetContentCallback callback) {
+  content::RenderFrameHost* rfh_pdf =
+      GetPDFRenderFrameHost(focused_web_contents_);
+  if (!rfh_pdf) {
+    LOG(ERROR) << "Couldn't find RenderFrameHost contains PDF.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::vector<content::WebContents*> inner_contents =
+      focused_web_contents_ ? focused_web_contents_->GetInnerWebContents()
+                            : std::vector<content::WebContents*>();
+
+  if (inner_contents.size() != 1u) {
+    LOG(ERROR) << "Couldn't find inner WebContents contains PDF.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  pdf_observer_ = std::make_unique<MahiPDFObserver>(
+      inner_contents[0], ui::kAXModeWebContentsOnly, rfh_pdf->GetAXTreeID(),
+      base::BindOnce(&MahiWebContentsManager::OnGetAXTreeUpdatesForPDF,
+                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void MahiWebContentsManager::OnGetAXTreeUpdatesForPDF(
+    GetContentCallback callback,
+    const std::vector<ui::AXTreeUpdate>& updates) {
+  content_extraction_delegate_->ExtractContent(
+      focused_web_content_state_, std::move(updates), client_->client_id(),
+      std::move(callback));
+
+  // No need to observes more a11y changes from PDF content.
+  pdf_observer_.reset();
 }
 
 gfx::ImageSkia MahiWebContentsManager::GetFavicon(

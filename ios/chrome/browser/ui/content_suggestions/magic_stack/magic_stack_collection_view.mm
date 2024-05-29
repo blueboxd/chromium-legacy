@@ -7,6 +7,7 @@
 #import "base/check.h"
 #import "base/debug/dump_without_crashing.h"
 #import "base/ios/block_types.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
@@ -19,6 +20,15 @@
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/placeholder_config.h"
 #import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
+
+namespace {
+
+// Constants const for users scrolling metrics.
+const char kMagicStackScrollToIndexHistogram[] =
+    "IOS.MagicStack.ScrollActionToIndex";
+const float kMaxModuleHistogramIndex = 50;
+
+}  // namespace
 
 typedef NSDiffableDataSourceSnapshot<NSString*, MagicStackModule*>
     MagicStackSnapshot;
@@ -83,6 +93,11 @@ typedef NSDiffableDataSourceSnapshot<NSString*, MagicStackModule*>
   if ([items count] > 0) {
     LogTopModuleImpressionForType(items[0].type);
   }
+
+  for (NSUInteger index = 0; index < [items count]; index++) {
+    [items[index].delegate magicStackModule:items[index]
+                        wasDisplayedAtIndex:index];
+  }
   [self populateItems:items arePlaceholders:NO];
 }
 
@@ -90,6 +105,8 @@ typedef NSDiffableDataSourceSnapshot<NSString*, MagicStackModule*>
   if (index == 0) {
     LogTopModuleImpressionForType(item.type);
   }
+  [item.delegate magicStackModule:item wasDisplayedAtIndex:index];
+
   MagicStackSnapshot* snapshot = [self.diffableDataSource snapshot];
   NSInteger section =
       [snapshot indexOfSectionIdentifier:kMagicStackSectionIdentifier];
@@ -140,6 +157,8 @@ typedef NSDiffableDataSourceSnapshot<NSString*, MagicStackModule*>
     // updates directly to the cell.
     return;
   }
+  [item.delegate magicStackModule:item
+              wasDisplayedAtIndex:existingItemIndexPath.item];
 
   MagicStackSnapshot* snapshot = [self.diffableDataSource snapshot];
   // Add the new item before the existing item.
@@ -312,8 +331,13 @@ typedef NSDiffableDataSourceSnapshot<NSString*, MagicStackModule*>
 
   if (velocity <= -kMagicStackMinimumPaginationScrollVelocity) {
     closestPage--;
+
+    UMA_HISTOGRAM_EXACT_LINEAR(kMagicStackScrollToIndexHistogram, closestPage,
+                               kMaxModuleHistogramIndex);
   } else if (velocity >= kMagicStackMinimumPaginationScrollVelocity) {
     closestPage++;
+    UMA_HISTOGRAM_EXACT_LINEAR(kMagicStackScrollToIndexHistogram, closestPage,
+                               kMaxModuleHistogramIndex);
   }
   _magicStackPage = closestPage;
   return _magicStackPage * (moduleWidth + kMagicStackSpacing) -

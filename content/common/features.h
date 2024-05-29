@@ -55,6 +55,10 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kFledgeDelayPostAuctionInterestGroupUpdate);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFledgeSellerWorkletThreadPool);
 CONTENT_EXPORT extern const base::FeatureParam<int>
     kFledgeSellerWorkletThreadPoolSize;
+#if BUILDFLAG(IS_ANDROID)
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kFocusRenderWidgetHostViewAndroidOnActionDown);
+#endif
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFontSrcLocalMatching);
 #if !BUILDFLAG(IS_ANDROID)
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kForwardMemoryPressureEventsToGpuProcess);
@@ -81,7 +85,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kInterestGroupUpdateIfOlderThan);
 #if BUILDFLAG(IS_MAC)
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kIOSurfaceCapturer);
 #endif
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kJavaScriptArrayGrouping);
 #if BUILDFLAG(IS_MAC)
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMacWebContentsOcclusion);
 #endif
@@ -111,6 +114,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerAutoPreload);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kServiceWorkerStaticRouterStartServiceWorker);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerStaticRouterRaceRequestFix);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kServiceWorkerBypassFetchHandlerHashStrings);
 CONTENT_EXPORT extern const base::FeatureParam<std::string>

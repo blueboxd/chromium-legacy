@@ -230,7 +230,7 @@ BASE_FEATURE(kDMServerOAuthForChildUser,
 
 BASE_FEATURE(kEnableWatermarkView,
              "EnableWatermarkView",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Whether to allow installed-by-default web apps to be installed or not.
@@ -443,7 +443,7 @@ BASE_FEATURE(kHappinessTrackingSurveysConfiguration,
 
 const base::FeatureParam<std::string> kHappinessTrackingSurveysHostedUrl{
     &kHappinessTrackingSurveysConfiguration, "custom-url",
-    "https://storage.googleapis.com/chrome_hats/index.html"};
+    "https://www.google.com/chrome/hats/index.html"};
 
 // Enables or disables the Happiness Tracking System for COEP issues in Chrome
 // DevTools on Desktop.

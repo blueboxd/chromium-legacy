@@ -191,6 +191,7 @@
           <ph name="LIST_ITEM" />برای کارفرما یا مدرسه‌‌تان
           <ph name="LIST_ITEM" />برای ارائه‌دهنده خدمات اینترنت شما
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">ردیابی این مورد</translation>
 <translation id="1337692097987160377">هم‌رسانی این برگه</translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1340482604681802745">نشانی تحویل گرفتن</translation>
@@ -360,6 +361,7 @@
 <translation id="1641976391427233992">تأخیر خروجی تا</translation>
 <translation id="1643651787397909318">‏دکمه رفتن به بررسی ایمنی Chrome، برای بازدید از صفحه بررسی ایمنی Chrome در تنظیمات، فعال کنید</translation>
 <translation id="1644574205037202324">سابقه</translation>
+<translation id="1645004815457365098">منبع ناشناخته</translation>
 <translation id="1645368109819982629">پروتکل پشتیبانی‌نشده</translation>
 <translation id="1650602712345345441">‏مدیریت تنظیمات Chrome</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -575,7 +577,6 @@
 <translation id="2056658168519009885">‏سایت‌ها می‌توانند برای کمک به شخصی‌سازی آگهی‌هایی که می‌بینید اطلاعاتی از Chrome درخواست کنند.</translation>
 <translation id="2059166748188874810">شهرداری</translation>
 <translation id="2059202684901022309">۳۴ × ۲۲ اینچ</translation>
-<translation id="206275378685759380">برای خرید صبر کنید</translation>
 <translation id="2064568741209980952">اعتبار و وام</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{۱ پیشنهاد}one{# پیشنهاد}other{# پیشنهاد}}</translation>
 <translation id="2066915425250589881">درخواست حذف ارائه کنید</translation>
@@ -1335,6 +1336,7 @@
 <translation id="353816159217417898">صفحه‌نمایش (صفحه‌دار)</translation>
 <translation id="3542628208405253498">تصویر کارت</translation>
 <translation id="3542768452570884558">باز کردن پیوند در پنجره جدید</translation>
+<translation id="3547442767634383572">نمای کلی نمایه کاری</translation>
 <translation id="3547746132308051926">۲۴ × ۲۰ اینچ</translation>
 <translation id="3552155506104542239">‏هشدار: این خط‌مشی با <ph name="POLICY_NAME" /> مغایرت دارد و اثری در برنامه‌های Android نخواهد داشت. به‌جز این مورد، این خط‌مشی همان‌طور که درنظر گرفته شده است کار می‌کند.</translation>
 <translation id="3552297013052089404">قلم سن‌سریف</translation>
@@ -2199,6 +2201,7 @@
 <translation id="5230733896359313003">نشانی ارسال کالا</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">سرپرستتان می‌تواند به نمایه مدیریت‌شده، مرورگر، و برخی‌از اطلاعات دستگاه دسترسی داشته باشد. او می‌تواند اطلاعاتی مانند موارد زیر را ببیند:</translation>
 <translation id="5234764350956374838">رد کردن</translation>
 <translation id="5238301240406177137">ذخیره در حساب</translation>
 <translation id="5239119062986868403">قیمت معمول</translation>
@@ -2212,6 +2215,7 @@
 <translation id="52517543715119994">‏با ویژگی‌های Chrome آشنا شوید</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5254043433801397071">بهینه‌سازی محتوای چاپ</translation>
+<translation id="5255583962255635076">خط‌مشی‌های مرورگر اعمال‌شده در نمایه کاری شما</translation>
 <translation id="5255690596502591079">درهرصورت ضبط شود</translation>
 <translation id="5255833070095767006">۴۶۰ × ۳۵۰ میلی‌متر</translation>
 <translation id="5257739419779698609">{0,plural, =1{خط‌مشی سرپرست توصیه نمی‌کند این فایل را در <ph name="DESTINATION_NAME" /> کپی کنید}one{خط‌مشی سرپرست توصیه نمی‌کند این فایل را در <ph name="DESTINATION_NAME" /> کپی کنید}other{خط‌مشی سرپرست توصیه نمی‌کند این فایل‌ها را در <ph name="DESTINATION_NAME" /> کپی کنید}}</translation>
@@ -2608,6 +2612,7 @@
 <translation id="6035491133925068289">دو و میدانی</translation>
 <translation id="6039846035001940113">اگر مشکل ادامه دارد، با مالک سایت تماس بگیرید.</translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="6040539895181423374">اطلاعات آماری قیمت</translation>
 <translation id="604124094241169006">خودکار</translation>
 <translation id="6041777658117377052">دمای محفظه</translation>
 <translation id="6042308850641462728">بیشتر</translation>
@@ -3213,7 +3218,6 @@
 <translation id="719464814642662924">ویزا</translation>
 <translation id="7195852673246414183">بعداز روشن کردن این تنظیم، به این برگه برگردید و نوشتن را شروع کنید</translation>
 <translation id="7199278868241956094">اداری</translation>
-<translation id="7201591969684833065">سرپرستتان می‌تواند این موارد را ببیند:</translation>
 <translation id="7202217080450895452">‏<ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای باز کردن «برگه ناشناس» جدید و مرور کردن به‌صورت خصوصی، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="7203375778433816396">‏تنظیم Chrome به‌عنوان مرورگر پیش‌فرض سیستم</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
@@ -3332,6 +3336,7 @@
 <translation id="7421067045979951561">کنترل‌کننده‌های پروتکل</translation>
 <translation id="7422347648202898039">برچسب (امنیتی)</translation>
 <translation id="7423283032694727565">‏دکمه مدیریت کوکی‌ها؛ برای مدیریت اولویت‌های کوکی در تنظیمات Chrome، آن را فعال کنید</translation>
+<translation id="742435751935045381">برنامه‌ها و افزونه‌های نصب‌شده در نمایه کاری شما</translation>
 <translation id="7424421098814895617">گزینه حذف نشانی انتخاب شد</translation>
 <translation id="7425037327577270384">کمک به نوشتن</translation>
 <translation id="7425878584435172632">هنرهای تجسمی و طراحی</translation>
@@ -3878,6 +3883,7 @@
 توضیحات بیشتر:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">میکروفون این بار مجاز شد</translation>
+<translation id="8421158157346464398">اطلاعات نمایه کاری (مانند نام کاربری نمایه کاری شما)</translation>
 <translation id="8422228580902424274">مهاجمان در سایتی که می‌خواهید از آن بازدید کنید ممکن است شما را فریب دهند تا نرم‌افزاری را نصب کنید یا مواردی مثل گذرواژه، تلفن، یا شماره کارت اعتباری‌تان را دراختیار آن‌ها قرار دهید.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">تغییر</translation>
@@ -4246,6 +4252,7 @@
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">سایت‌هایی که از آن‌ها بازدید می‌کنید نیز می‌توانند براساس فعالیتتان در آن سایت تشخیص دهند چه چیزهایی را دوست دارید. برای مثال، اگر از سایتی بازدید کنید که کفش‌های مخصوص دو استقامت می‌فروشد، ممکن است آن سایت نتیجه‌گیری کند که به دو ماراتون علاقه دارید.</translation>
 <translation id="9166851138617700776">اطلاعات بیشتر درباره آگهی‌های پیشنهادی سایت و سنجش آگهی</translation>
+<translation id="9167054383925257837">اطلاعات مرورگر و سیستم‌عامل دستگاه (مانند نسخه مرورگر و سیستم‌عامل)</translation>
 <translation id="9167594211215946097">داشتن دسترسی مستقیم به چاپگرها</translation>
 <translation id="9168814207360376865">سایت‌ها بتوانند بررسی کنند روش پرداخت ذخیره‌شده‌ای دارید یا نه</translation>
 <translation id="9169664750068251925">همیشه مسدود در این سایت</translation>

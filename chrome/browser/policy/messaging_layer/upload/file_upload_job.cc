@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
@@ -32,6 +33,7 @@
 #include "components/reporting/proto/synced/upload_tracker.pb.h"
 #include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/storage/storage_module_interface.h"
+#include "components/reporting/util/reporting_errors.h"
 #include "components/reporting/util/status.h"
 
 namespace reporting {
@@ -51,6 +53,10 @@ void CallInitiateOnSequence(
   if (!delegate) {
     std::move(cb).Run(base::unexpected(
         Status(error::UNAVAILABLE, "Delegate is unavailable")));
+    base::UmaHistogramEnumeration(
+        reporting::kUmaUnavailableErrorReason,
+        UnavailableErrorReason::FILE_UPLOAD_JOB_DELEGATE_IS_NULL,
+        UnavailableErrorReason::MAX_VALUE);
     return;
   }
   delegate->DoInitiate(origin_path, upload_parameters, std::move(cb));
@@ -68,6 +74,10 @@ void CallNextStepOnSequence(
   if (!delegate) {
     std::move(cb).Run(base::unexpected(
         Status(error::UNAVAILABLE, "Delegate is unavailable")));
+    base::UmaHistogramEnumeration(
+        reporting::kUmaUnavailableErrorReason,
+        UnavailableErrorReason::FILE_UPLOAD_JOB_DELEGATE_IS_NULL,
+        UnavailableErrorReason::MAX_VALUE);
     return;
   }
   delegate->DoNextStep(total, uploaded, session_token,
@@ -81,6 +91,10 @@ void CallFinalizeOnSequence(
   if (!delegate) {
     std::move(cb).Run(base::unexpected(
         Status(error::UNAVAILABLE, "Delegate is unavailable")));
+    base::UmaHistogramEnumeration(
+        reporting::kUmaUnavailableErrorReason,
+        UnavailableErrorReason::FILE_UPLOAD_JOB_DELEGATE_IS_NULL,
+        UnavailableErrorReason::MAX_VALUE);
     return;
   }
   delegate->DoFinalize(session_token, std::move(cb));
@@ -308,6 +322,9 @@ void FileUploadJob::EventHelper::RepostAndComplete() {
   // If `job_` is not available, do not allow to upload the current event.
   if (!job_) {
     Complete(Status(error::DATA_LOSS, "Upload Job has been removed"));
+    base::UmaHistogramEnumeration(reporting::kUmaDataLossErrorReason,
+                                  DataLossErrorReason::UPLOAD_JOB_REMOVED,
+                                  DataLossErrorReason::MAX_VALUE);
     return;
   }
   // Job is still around.
@@ -523,6 +540,9 @@ void FileUploadJob::DoneNextStep(
   if (session_token.empty()) {
     Status{error::DATA_LOSS, "Job has lost session_token"}.SaveTo(
         tracker_.mutable_status());
+    base::UmaHistogramEnumeration(reporting::kUmaDataLossErrorReason,
+                                  DataLossErrorReason::JOB_LOST_SESSION_TOKEN,
+                                  DataLossErrorReason::MAX_VALUE);
     return;
   }
   if (uploaded < tracker_.uploaded()) {
@@ -531,6 +551,9 @@ void FileUploadJob::DoneNextStep(
                          base::NumberToString(tracker_.uploaded()), " to ",
                          base::NumberToString(uploaded)})}
         .SaveTo(tracker_.mutable_status());
+    base::UmaHistogramEnumeration(reporting::kUmaDataLossErrorReason,
+                                  DataLossErrorReason::JOB_BACKTRACKED,
+                                  DataLossErrorReason::MAX_VALUE);
     return;
   }
   tracker_.set_uploaded(uploaded);
@@ -557,6 +580,9 @@ void FileUploadJob::Finalize(base::OnceClosure done_cb) {
                          base::NumberToString(tracker_.uploaded()), " out of ",
                          base::NumberToString(tracker_.total())})}
         .SaveTo(tracker_.mutable_status());
+    base::UmaHistogramEnumeration(reporting::kUmaDataLossErrorReason,
+                                  DataLossErrorReason::JOB_INCOMPLETE,
+                                  DataLossErrorReason::MAX_VALUE);
     return;
   }
   if (timer_.IsRunning()) {

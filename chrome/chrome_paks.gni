@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//ash/ambient/resources/resources.gni")
+import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
 import("//chrome/browser/buildflags.gni")
@@ -81,6 +82,12 @@ template("chrome_repack_percent") {
         "//chrome/browser/resources/chromeos:app_icon_resources",
         "//ui/chromeos/resources",
       ]
+      if (is_chrome_branded) {
+        sources += [ "$root_gen_dir/chromeos/ash/resources/internal/ash_internal_resources_${percent}_percent.pak" ]
+        deps += [
+          "//chromeos/ash/resources/internal:ash_internal_scaled_resources",
+        ]
+      }
     }
     if (enable_extensions) {
       sources += [ "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak" ]
@@ -245,6 +252,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/ash/webui/ash_firmware_update_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_focus_mode_resources.pak",
         "$root_gen_dir/ash/webui/ash_help_app_resources.pak",
+        "$root_gen_dir/ash/webui/ash_mall_cros_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_media_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_multidevice_debug_resources.pak",
         "$root_gen_dir/ash/webui/ash_os_feedback_resources.pak",
@@ -306,6 +314,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/vc_tray_tester_resources.pak",
         "$root_gen_dir/chromeos/ash/ash_resources.pak",
         "$root_gen_dir/chromeos/ash/components/emoji/emoji.pak",
+        "$root_gen_dir/chromeos/ash/components/kiosk_vision_internals_resources.pak",
         "$root_gen_dir/chromeos/chromeos_help_app_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_help_app_kids_magazine_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_media_app_bundle_resources.pak",
@@ -330,6 +339,7 @@ template("chrome_extra_paks") {
         "//ash/webui/file_manager/untrusted_resources:file_manager_untrusted_resources",
         "//ash/webui/firmware_update_ui/resources:resources",
         "//ash/webui/focus_mode/resources:resources",
+        "//ash/webui/mall/resources",
         "//ash/webui/os_feedback_ui/resources:resources",
         "//ash/webui/os_feedback_ui/untrusted_resources:resources",
         "//ash/webui/personalization_app/resources:resources",
@@ -357,6 +367,7 @@ template("chrome_extra_paks") {
         "//ash/webui/status_area_internals/resources:resources",
         "//ash/webui/vc_background_ui/resources:resources",
         "//chromeos/ash/components/emoji:resources",
+        "//chromeos/ash/components/kiosk/vision/webui:resources",
         "//chromeos/ash/resources",
         "//chromeos/resources",
         "//ui/chromeos/styles:cros_styles_resources",

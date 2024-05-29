@@ -109,8 +109,12 @@ IN_PROC_BROWSER_TEST_F(CrElementsTest, CrRadioGroup) {
   RunTest("cr_elements/cr_radio_group_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(CrElementsTest, CrScrollableMixin) {
-  RunTest("cr_elements/cr_scrollable_mixin_test.js", "mocha.run()");
+IN_PROC_BROWSER_TEST_F(CrElementsTest, CrScrollObserverMixin) {
+  RunTest("cr_elements/cr_scroll_observer_mixin_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(CrElementsTest, CrScrollObserverMixinLit) {
+  RunTest("cr_elements/cr_scroll_observer_mixin_lit_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(CrElementsTest, CrSearchField) {

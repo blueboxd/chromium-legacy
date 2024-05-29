@@ -112,6 +112,8 @@ class HistoryEmbeddingsService : public KeyedService,
   friend class HistoryEmbeddingsBrowserTest;
   friend class HistoryEmbeddingsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(HistoryEmbeddingsServiceTest, OnHistoryDeletions);
+  FRIEND_TEST_ALL_PREFIXES(HistoryEmbeddingsServiceTest,
+                           SearchFiltersLowScoringResults);
 
   // A utility container to wrap anything that should be accessed on
   // the separate storage worker sequence.
@@ -161,7 +163,8 @@ class HistoryEmbeddingsService : public KeyedService,
   // Invoked after the embeddings for `passages` has been computed.
   void OnPassagesEmbeddingsComputed(UrlPassages url_passages,
                                     std::vector<std::string> passages,
-                                    std::vector<Embedding> passages_embeddings);
+                                    std::vector<Embedding> passages_embeddings,
+                                    ComputeEmbeddingsStatus status);
 
   // Invoked after the embedding for the original search query has been
   // computed.
@@ -169,7 +172,8 @@ class HistoryEmbeddingsService : public KeyedService,
                                 size_t count,
                                 SearchResultCallback callback,
                                 std::vector<std::string> query_passages,
-                                std::vector<Embedding> query_embedding);
+                                std::vector<Embedding> query_embedding,
+                                ComputeEmbeddingsStatus status);
 
   // Finishes a search result by combining found data with additional data from
   // history database. Moves each ScoredUrl into a more complete structure with

@@ -17,18 +17,20 @@
 namespace autofill {
 
 struct AutofillErrorDialogContext;
-class AutofillSaveCardBottomSheetBridge;
 enum class AutofillProgressDialogType;
+class AutofillSaveCardBottomSheetBridge;
+struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 struct CardUnmaskPromptOptions;
 class CreditCard;
 class CreditCardCvcAuthenticator;
 class CreditCardOtpAuthenticator;
-class Iban;
 class CreditCardRiskBasedAuthenticator;
+class Iban;
+class IbanAccessManager;
+class IbanManager;
 class MigratableCreditCard;
 class OtpUnmaskDelegate;
-struct CardUnmaskChallengeOption;
 enum class OtpUnmaskResult;
 class VirtualCardEnrollmentManager;
 enum class WebauthnDialogCallbackType;
@@ -134,6 +136,14 @@ class PaymentsAutofillClient : public RiskDataLoader {
   // shown after verification starts only if the WebAuthn is enabled.
   virtual void ShowWebauthnVerifyPendingDialog(
       WebauthnDialogCallback verify_pending_dialog_callback);
+
+  // Will update the WebAuthn dialog content when there is an error fetching the
+  // challenge.
+  virtual void UpdateWebauthnOfferDialogWithError();
+
+  // Will close the current visible WebAuthn dialog. Returns true if dialog was
+  // visible and has been closed.
+  virtual bool CloseWebauthnDialog();
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Shows upload result to users. Called after credit card upload is finished.
@@ -244,6 +254,20 @@ class PaymentsAutofillClient : public RiskDataLoader {
   // Gets the RiskBasedAuthenticator owned by the client. This function will
   // return a nullptr on iOS WebView.
   virtual CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator();
+
+  // Prompt the user to enable mandatory reauthentication for payment method
+  // autofill. When enabled, the user will be asked to authenticate using
+  // biometrics or device unlock before filling in payment method information.
+  virtual void ShowMandatoryReauthOptInPrompt(
+      base::OnceClosure accept_mandatory_reauth_callback,
+      base::OnceClosure cancel_mandatory_reauth_callback,
+      base::RepeatingClosure close_mandatory_reauth_callback);
+
+  // Gets the IbanManager instance associated with the client.
+  virtual IbanManager* GetIbanManager();
+
+  // Gets the IbanAccessManager instance associated with the client.
+  virtual IbanAccessManager* GetIbanAccessManager();
 };
 
 }  // namespace payments

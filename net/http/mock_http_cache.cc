@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "net/http/mock_http_cache.h"
 
 #include <algorithm>
@@ -148,7 +153,7 @@ int MockDiskEntry::WriteData(int index,
 
   DCHECK_LT(offset + buf_len, kMaxMockCacheEntrySize);
   if (offset + buf_len > max_file_size_ && index == 1) {
-    return net::ERR_FAILED;
+    return ERR_FAILED;
   }
 
   data_[index].resize(offset + buf_len);
@@ -313,7 +318,7 @@ void MockDiskEntry::CancelSparseIO() {
   cancel_ = true;
 }
 
-net::Error MockDiskEntry::ReadyForSparseIO(CompletionOnceCallback callback) {
+Error MockDiskEntry::ReadyForSparseIO(CompletionOnceCallback callback) {
   if (fail_sparse_requests_) {
     return ERR_NOT_IMPLEMENTED;
   }
@@ -424,7 +429,7 @@ int32_t MockDiskCache::GetEntryCount() const {
 
 disk_cache::EntryResult MockDiskCache::OpenOrCreateEntry(
     const std::string& key,
-    net::RequestPriority request_priority,
+    RequestPriority request_priority,
     EntryResultCallback callback) {
   DCHECK(!callback.is_null());
 
@@ -459,7 +464,7 @@ disk_cache::EntryResult MockDiskCache::OpenOrCreateEntry(
 
 disk_cache::EntryResult MockDiskCache::OpenEntry(
     const std::string& key,
-    net::RequestPriority request_priority,
+    RequestPriority request_priority,
     EntryResultCallback callback) {
   DCHECK(!callback.is_null());
   if (force_fail_callback_later_) {
@@ -506,7 +511,7 @@ disk_cache::EntryResult MockDiskCache::OpenEntry(
 
 disk_cache::EntryResult MockDiskCache::CreateEntry(
     const std::string& key,
-    net::RequestPriority request_priority,
+    RequestPriority request_priority,
     EntryResultCallback callback) {
   DCHECK(!callback.is_null());
   if (force_fail_callback_later_) {
@@ -568,9 +573,9 @@ disk_cache::EntryResult MockDiskCache::CreateEntry(
   return EntryResult::MakeError(ERR_IO_PENDING);
 }
 
-net::Error MockDiskCache::DoomEntry(const std::string& key,
-                                    net::RequestPriority request_priority,
-                                    CompletionOnceCallback callback) {
+Error MockDiskCache::DoomEntry(const std::string& key,
+                               RequestPriority request_priority,
+                               CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   if (force_fail_callback_later_) {
     CallbackLater(base::BindOnce(std::move(callback), ERR_CACHE_DOOM_FAILURE));
@@ -596,18 +601,18 @@ net::Error MockDiskCache::DoomEntry(const std::string& key,
   return ERR_IO_PENDING;
 }
 
-net::Error MockDiskCache::DoomAllEntries(CompletionOnceCallback callback) {
+Error MockDiskCache::DoomAllEntries(CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
-net::Error MockDiskCache::DoomEntriesBetween(const base::Time initial_time,
-                                             const base::Time end_time,
-                                             CompletionOnceCallback callback) {
+Error MockDiskCache::DoomEntriesBetween(const base::Time initial_time,
+                                        const base::Time end_time,
+                                        CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
-net::Error MockDiskCache::DoomEntriesSince(const base::Time initial_time,
-                                           CompletionOnceCallback callback) {
+Error MockDiskCache::DoomEntriesSince(const base::Time initial_time,
+                                      CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 
@@ -776,7 +781,7 @@ bool MockHttpCache::OpenBackendEntry(const std::string& key,
                                      disk_cache::Entry** entry) {
   TestEntryResultCompletionCallback cb;
   disk_cache::EntryResult result =
-      backend()->OpenEntry(key, net::HIGHEST, cb.callback());
+      backend()->OpenEntry(key, HIGHEST, cb.callback());
   result = cb.GetResult(std::move(result));
   if (result.net_error() == OK) {
     *entry = result.ReleaseEntry();
@@ -791,7 +796,7 @@ bool MockHttpCache::CreateBackendEntry(const std::string& key,
                                        NetLog* net_log) {
   TestEntryResultCompletionCallback cb;
   disk_cache::EntryResult result =
-      backend()->CreateEntry(key, net::HIGHEST, cb.callback());
+      backend()->CreateEntry(key, HIGHEST, cb.callback());
   result = cb.GetResult(std::move(result));
   if (result.net_error() == OK) {
     *entry = result.ReleaseEntry();
@@ -854,7 +859,7 @@ base::WeakPtr<HttpCache> MockHttpCache::GetWeakPtr() {
 
 disk_cache::EntryResult MockDiskCacheNoCB::CreateEntry(
     const std::string& key,
-    net::RequestPriority request_priority,
+    RequestPriority request_priority,
     EntryResultCallback callback) {
   return EntryResult::MakeError(ERR_IO_PENDING);
 }

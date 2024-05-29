@@ -48,11 +48,11 @@ enum class RateLimitResult : int;
 class CONTENT_EXPORT AttributionStorageSql {
  public:
   // Version number of the database.
-  static constexpr int kCurrentVersionNumber = 59;
+  static constexpr int kCurrentVersionNumber = 60;
 
   // Earliest version which can use a `kCurrentVersionNumber` database
   // without failing.
-  static constexpr int kCompatibleVersionNumber = 59;
+  static constexpr int kCompatibleVersionNumber = 60;
 
   // Latest version of the database that cannot be upgraded to
   // `kCurrentVersionNumber` without razing the database.
@@ -70,10 +70,6 @@ class CONTENT_EXPORT AttributionStorageSql {
   AttributionStorageSql(AttributionStorageSql&&) = delete;
   AttributionStorageSql& operator=(AttributionStorageSql&&) = delete;
   ~AttributionStorageSql();
-
-  void set_ignore_errors_for_testing(bool ignore_for_testing) {
-    ignore_errors_for_testing_ = ignore_for_testing;
-  }
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -137,15 +133,15 @@ class CONTENT_EXPORT AttributionStorageSql {
   std::optional<AttributionReport> GetReport(AttributionReport::Id);
   std::vector<StoredSource> GetActiveSources(int limit = -1);
   std::set<AttributionDataModel::DataKey> GetAllDataKeys();
-  void DeleteByDataKey(const AttributionDataModel::DataKey& datakey);
   bool DeleteReport(AttributionReport::Id report_id);
   bool UpdateReportForSendFailure(AttributionReport::Id report_id,
                                   base::Time new_report_time);
   std::optional<base::Time> AdjustOfflineReportTimes();
-  void ClearData(base::Time delete_begin,
-                 base::Time delete_end,
-                 StoragePartition::StorageKeyMatcherFunction filter,
-                 bool delete_rate_limit_data);
+  void ClearAllDataAllTime(bool delete_rate_limit_data);
+  void ClearDataWithFilter(base::Time delete_begin,
+                           base::Time delete_end,
+                           StoragePartition::StorageKeyMatcherFunction filter,
+                           bool delete_rate_limit_data);
   void SetDelegate(AttributionResolverDelegate*);
 
  private:
@@ -158,15 +154,18 @@ class CONTENT_EXPORT AttributionStorageSql {
   struct StoredSourceData;
 
   enum class DbStatus {
+    kOpen,
     // The database has never been created, i.e. there is no database file at
     // all.
     kDeferringCreation,
     // The database exists but is not open yet.
     kDeferringOpen,
     // The database initialization failed, or the db suffered from an
-    // unrecoverable error.
+    // unrecoverable, but potentially transient, error.
     kClosed,
-    kOpen,
+    // The database initialization failed, or the db suffered from a
+    // catastrophic failure.
+    kClosedDueToCatastrophicError,
   };
 
   enum class DbCreationPolicy {
@@ -175,9 +174,6 @@ class CONTENT_EXPORT AttributionStorageSql {
     // Do not create the db if it does not exist.
     kIgnoreIfAbsent,
   };
-
-  void ClearAllDataAllTime(bool delete_rate_limit_data)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Deactivates the given sources. Returns false on error.
   [[nodiscard]] bool DeactivateSources(
@@ -235,7 +231,7 @@ class CONTENT_EXPORT AttributionStorageSql {
   };
   [[nodiscard]] ReplaceReportResult MaybeReplaceLowerPriorityEventLevelReport(
       const AttributionReport& report,
-      int num_conversions,
+      int num_attributions,
       int64_t conversion_priority,
       std::optional<AttributionReport>& replaced_report)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
@@ -304,7 +300,7 @@ class CONTENT_EXPORT AttributionStorageSql {
   AttributionTrigger::EventLevelResult MaybeStoreEventLevelReport(
       AttributionReport& report,
       std::optional<uint64_t> dedup_key,
-      int num_conversions,
+      int num_attributions,
       std::optional<AttributionReport>& replaced_report,
       std::optional<AttributionReport>& dropped_report,
       std::optional<int>& max_event_level_reports_per_destination)
@@ -357,15 +353,14 @@ class CONTENT_EXPORT AttributionStorageSql {
   RateLimitResult AggregatableAttributionAllowedForBudgetLimit(
       const AttributionReport::AggregatableAttributionData&
           aggregatable_attribution,
-      int64_t aggregatable_budget_consumed)
+      int remaining_aggregatable_attribution_budget)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Adjusts the aggregatable budget for the source event by
   // `additional_budget_consumed`.
   [[nodiscard]] bool AdjustBudgetConsumedForSource(
       StoredSource::Id source_id,
-      int64_t additional_budget_consumed)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
+      int additional_budget_consumed) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::AggregatableResult
   MaybeCreateAggregatableAttributionReport(
@@ -384,8 +379,8 @@ class CONTENT_EXPORT AttributionStorageSql {
   AttributionTrigger::AggregatableResult
   MaybeStoreAggregatableAttributionReportData(
       AttributionReport& report,
-      int64_t aggregatable_budget_consumed,
-      int num_aggregatable_reports,
+      int remaining_aggregatable_attribution_budget,
+      int num_aggregatable_attribution_reports,
       std::optional<uint64_t> dedup_key,
       std::optional<int>& max_aggregatable_reports_per_source)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
@@ -412,16 +407,13 @@ class CONTENT_EXPORT AttributionStorageSql {
                                        base::Time trigger_time) const
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // If set, database errors will not crash the client when run in debug mode.
-  bool ignore_errors_for_testing_ = false;
-
   const base::FilePath path_to_database_;
 
   // Current status of the database initialization. Tracks what stage |this| is
   // at for lazy initialization, and used as a signal for if the database is
   // closed. This is initialized in the first call to LazyInit() to avoid doing
   // additional work in the constructor, see https://crbug.com/1121307.
-  std::optional<DbStatus> db_init_status_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::optional<DbStatus> db_status_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
 

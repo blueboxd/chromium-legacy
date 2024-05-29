@@ -1964,6 +1964,8 @@ class InterestGroupAuction::BuyerHelper
 
     if (base::FeatureList::IsEnabled(
             blink::features::kFledgeRealTimeReporting) &&
+        !base::FeatureList::IsEnabled(
+            features::kCookieDeprecationFacilitatedTesting) &&
         !real_time_contributions.empty()) {
       if (!base::ranges::all_of(real_time_contributions,
                                 HasValidRealTimeBucket)) {
@@ -2814,6 +2816,7 @@ InterestGroupAuction::CreateReporter(
     BrowserContext* browser_context,
     PrivateAggregationManager* private_aggregation_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    AdAuctionPageDataCallback ad_auction_page_data_callback,
     std::unique_ptr<blink::AuctionConfig> auction_config,
     const url::Origin& main_frame_origin,
     const url::Origin& frame_origin,
@@ -3004,10 +3007,11 @@ InterestGroupAuction::CreateReporter(
       interest_group_manager_, auction_worklet_manager_, browser_context,
       private_aggregation_manager,
       maybe_log_private_aggregation_web_features_callback_,
-      std::move(auction_config), devtools_auction_id_, main_frame_origin,
-      frame_origin, std::move(client_security_state),
-      std::move(url_loader_factory), kanon_mode_, bid_is_kanon,
-      std::move(winning_bid_info), std::move(top_level_seller_winning_bid_info),
+      std::move(ad_auction_page_data_callback), std::move(auction_config),
+      devtools_auction_id_, main_frame_origin, frame_origin,
+      std::move(client_security_state), std::move(url_loader_factory),
+      kanon_mode_, bid_is_kanon, std::move(winning_bid_info),
+      std::move(top_level_seller_winning_bid_info),
       std::move(component_seller_winning_bid_info),
       std::move(interest_groups_that_bid), std::move(debug_win_report_urls),
       std::move(debug_loss_report_urls), GetKAnonKeysToJoin(),
@@ -4806,7 +4810,9 @@ void InterestGroupAuction::OnScoreAdComplete(
     // TODO(qingxinwu): Validate received real time reporting message, and
     // report bad message if invalid.
     if (base::FeatureList::IsEnabled(
-            blink::features::kFledgeRealTimeReporting)) {
+            blink::features::kFledgeRealTimeReporting) &&
+        !base::FeatureList::IsEnabled(
+            features::kCookieDeprecationFacilitatedTesting)) {
       if (config_->non_shared_params.seller_real_time_reporting_type
               .has_value()) {
         RealTimeReportingContributions& real_time_contributions_for_origin =

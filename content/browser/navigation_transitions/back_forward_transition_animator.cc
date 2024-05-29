@@ -27,6 +27,7 @@ namespace {
 
 using NavigationDirection =
     BackForwardTransitionAnimationManager::NavigationDirection;
+using AnimationStage = BackForwardTransitionAnimationManager::AnimationStage;
 using SwitchSpringReason = PhysicsModel::SwitchSpringReason;
 
 void ResetTransformForLayer(cc::slim::Layer* layer) {
@@ -181,7 +182,8 @@ BackForwardTransitionAnimator::~BackForwardTransitionAnimator() {
   // produced its first frame.
   if (new_render_widget_host_) {
     CHECK(state_ == State::kDisplayingInvokeAnimation ||
-          state_ == State::kWaitingForNewRendererToDraw);
+          state_ == State::kWaitingForNewRendererToDraw)
+        << ToString(state_);
     UnregisterNewFrameActivationObserver();
   }
 }
@@ -301,18 +303,31 @@ void BackForwardTransitionAnimator::OnDidNavigatePrimaryMainFramePreCommit(
         // We are not allowed to cross-fade from a screenshot of A.com to a page
         // of B.com.
         bool land_on_error_page = navigation_request->DidEncounterError();
+        bool different_commit_origin = false;
+
         const auto& original_url = navigation_request->GetOriginalRequestURL();
-        std::optional<url::Origin> committed_origin =
-            navigation_request->GetOriginToCommit();
-        CHECK(committed_origin.has_value());
-        // NOTE: Converting from a URL to an Origin isn't always safe (see
-        // https://chromium.googlesource.com/chromium/src/+/main/docs/security/origin-vs-url.md#risky).
-        // It's okay to convert here because the edge cases either won't
-        // redirect (e.g., about:blank) or won't affect the animation decision
-        // (e.g., a sandboxed frame).
-        bool same_origin = url::Origin::Create(original_url)
-                               .IsSameOriginWith(*committed_origin);
-        if (!land_on_error_page && !same_origin) {
+        const auto& committed_url = navigation_request->GetURL();
+
+        // The origin comparison is tricky because we do not know the precise
+        // origin of the initial `NavigationRequest` (which depends on response
+        // headers like CSP sandbox). It is reasonable to allow the animation to
+        // proceed if the origins derived from the URL remains same-origin at
+        // the end of the navigation, even if there is a sandboxing difference
+        // that leads to an opaque origin. Also, URLs that can inherit origins
+        // (e.g., about:blank) do not generally redirect, so it should be safe
+        // to ignore inherited origins. Thus, we compare origins derived from
+        // the URLs, after first checking whether the URL itself remains
+        // unchanged (to account for URLs with opaque origins that won't appear
+        // equal to each other, like data: URLs). This addresses concerns about
+        // converting between URLs and origins (see
+        // https://chromium.googlesource.com/chromium/src/+/main/docs/security/origin-vs-url.md).
+        if (original_url != committed_url) {
+          different_commit_origin =
+              !url::Origin::Create(original_url)
+                   .IsSameOriginWith(url::Origin::Create(committed_url));
+        }
+
+        if (!land_on_error_page && different_commit_origin) {
           skip_all_animations_and_self_destroy = true;
           break;
         }
@@ -357,6 +372,13 @@ void BackForwardTransitionAnimator::OnDidNavigatePrimaryMainFramePreCommit(
       // Our navigation has already committed while a second navigation commits.
       // This can be a client redirect: A.com -> B.com and B.com's document
       // redirects to C.com, before B.com's renderer even submits a new frame.
+      CHECK_EQ(navigation_state_, NavigationState::kCommitted);
+      CHECK(primary_main_frame_navigation_request_id_of_gesture_nav_);
+      skip_all_animations_and_self_destroy = true;
+      break;
+    case State::kWaitingForContentForNavigationEntryShown:
+      // Our navigation has already committed while waiting for a native
+      // entry to be finished drawing by the embedder.
       CHECK_EQ(navigation_state_, NavigationState::kCommitted);
       CHECK(primary_main_frame_navigation_request_id_of_gesture_nav_);
       skip_all_animations_and_self_destroy = true;
@@ -419,6 +441,26 @@ void BackForwardTransitionAnimator::OnNavigationCancelledBeforeStart(
     // Let the cancel animation finish playing. We will advance to
     // `State::kAnimationFinished`.
     CHECK_EQ(state_, State::kDisplayingCancelAnimation);
+  }
+}
+
+void BackForwardTransitionAnimator::OnContentForNavigationEntryShown() {
+  // Might be called multiple times if user swipes again before NTP fade
+  // has finished.
+  if (state_ != State::kWaitingForContentForNavigationEntryShown) {
+    return;
+  }
+  AdvanceAndProcessState(State::kAnimationFinished);
+}
+
+AnimationStage BackForwardTransitionAnimator::GetCurrentAnimationStage() {
+  switch (state_) {
+    case State::kDisplayingInvokeAnimation:
+      return AnimationStage::kInvokeAnimation;
+    case State::kAnimationFinished:
+      return AnimationStage::kNone;
+    default:
+      return AnimationStage::kOther;
   }
 }
 
@@ -512,6 +554,7 @@ void BackForwardTransitionAnimator::OnAnimate(
     case State::kStarted:
     case State::kWaitingForBeforeUnloadResponse:
     case State::kWaitingForNewRendererToDraw:
+    case State::kWaitingForContentForNavigationEntryShown:
     case State::kAnimationFinished:
       return;
   }
@@ -534,6 +577,7 @@ void BackForwardTransitionAnimator::OnAnimate(
       case State::kStarted:
       case State::kWaitingForBeforeUnloadResponse:
       case State::kWaitingForNewRendererToDraw:
+      case State::kWaitingForContentForNavigationEntryShown:
       case State::kAnimationFinished:
         NOTREACHED_IN_MIGRATION();
         break;
@@ -667,7 +711,9 @@ void BackForwardTransitionAnimator::OnInvokeAnimationDisplayed() {
   // viewport, so the `KeyFrameModel` for the scrim should also be exhausted and
   // removed.
   CHECK(effect_.keyframe_models().empty());
-  if (viz_has_activated_first_frame_) {
+  if (screenshot_->is_copied_from_embedder()) {
+    AdvanceAndProcessState(State::kWaitingForContentForNavigationEntryShown);
+  } else if (viz_has_activated_first_frame_) {
     AdvanceAndProcessState(State::kDisplayingCrossFadeAnimation);
   } else {
     AdvanceAndProcessState(State::kWaitingForNewRendererToDraw);
@@ -693,9 +739,12 @@ bool BackForwardTransitionAnimator::CanAdvanceTo(State from, State to) {
              to == State::kWaitingForNewRendererToDraw ||
              // A second navigation replaces the current one, or the user hits
              // the stop button.
-             to == State::kDisplayingCancelAnimation;
+             to == State::kDisplayingCancelAnimation ||
+             to == State::kWaitingForContentForNavigationEntryShown;
     case State::kWaitingForNewRendererToDraw:
       return to == State::kDisplayingCrossFadeAnimation;
+    case State::kWaitingForContentForNavigationEntryShown:
+      return to == State::kAnimationFinished;
     case State::kDisplayingCrossFadeAnimation:
       return to == State::kAnimationFinished;
     case State::kDisplayingCancelAnimation:
@@ -722,6 +771,8 @@ std::string BackForwardTransitionAnimator::ToString(State state) {
       return "kDisplayingInvokeAnimation";
     case State::kWaitingForNewRendererToDraw:
       return "kWaitingForNewRendererToDraw";
+    case State::kWaitingForContentForNavigationEntryShown:
+      return "kWaitingForContentForNavigationEntryShown";
     case State::kDisplayingCrossFadeAnimation:
       return "kDisplayingCrossFadeAnimation";
     case State::kAnimationFinished:
@@ -778,7 +829,11 @@ void BackForwardTransitionAnimator::AdvanceAndProcessState(State state) {
   CHECK(CanAdvanceTo(state_, state))
       << "Cannot advance from " << ToString(state_) << " to "
       << ToString(state);
+  auto previous_animation_stage = GetCurrentAnimationStage();
   state_ = state;
+  if (previous_animation_stage != GetCurrentAnimationStage()) {
+    animation_manager_->OnAnimationStageChanged();
+  }
   ProcessState();
 }
 
@@ -866,6 +921,9 @@ void BackForwardTransitionAnimator::ProcessState() {
     }
     case State::kWaitingForNewRendererToDraw:
       // No-op. Waiting for `OnRenderFrameMetadataChangedAfterActivation()`.
+      break;
+    case State::kWaitingForContentForNavigationEntryShown:
+      // No-op.
       break;
     case State::kDisplayingCrossFadeAnimation: {
       // Before we start displaying the crossfade animation,
@@ -971,48 +1029,47 @@ bool BackForwardTransitionAnimator::StartNavigationAndTrackRequest() {
     return false;
   }
 
-  // TODO(https://crbug.com/325331788): `GoToIndex()` can return a bool to
-  // signal the creation of the navigation request.
-  nav_controller->GoToIndex(index);
-
-  auto& frame_tree = nav_controller->frame_tree();
-  // TODO(https://crbug.com/325331788): This request might not be the one we
-  // started.
-  if (auto* request = frame_tree.root()->navigation_request()) {
-    // TOOD(https://crbug.com/1518341): We shouldn't animate same-doc history
-    // navigations because we don't capture the screenshots for them.
-    CHECK(!request->IsSameDocument());
-    // If the request isn't associated with a navigation entry, we shouldn't
-    // start the navigation.
+  base::WeakPtr<NavigationRequest> primary_main_frame_request =
+      nav_controller->GoToIndexAndReturnPrimaryMainFrameRequest(index);
+  if (!primary_main_frame_request) {
+    // The gesture did not start a navigation in the primary main frame.
     //
-    // TODO(https://crbug.com/325331788): Turn this early return into a CHECK.
-    if (!request->GetNavigationEntry()) {
-      return false;
-    }
-    int request_entry_id = request->GetNavigationEntry()->GetUniqueID();
-    // If the request's navigation entry ID does not match the entry ID of the
-    // screenshot of the destination, we shouldn't start the navigation.
-    //
-    // TODO(crbug.com/325331788): Turn this early return into a CHECK.
-    if (destination_entry_id_ != request_entry_id) {
-      return false;
-    }
-
-    primary_main_frame_navigation_request_id_of_gesture_nav_ =
-        request->GetNavigationId();
-    if (request->IsNavigationStarted()) {
-      navigation_state_ = NavigationState::kStarted;
-    } else {
-      CHECK(request->IsWaitingForBeforeUnload());
-      navigation_state_ = NavigationState::kBeforeUnloadDispatched;
-    }
-    return true;
+    // TODO(crbug.com/41490714): Collect subframe requests.
+    return false;
   }
-  // TOOD(https://crbug.com/1518341): Collect the requests for the same-doc
-  // navigations.
-  // TODO(crbug.com/41490714): Collect subframe requests from the
-  // subframe FrameTreeNodes.
-  return false;
+
+  if (primary_main_frame_request->IsSameDocument()) {
+    // TODO(https://crbug.com/339208674): Animate the same-doc navigations
+    // end-to-end.
+    return false;
+  }
+
+  // The resulting `NavigationRequest` must be associated with the intended
+  // `NavigationEntry`, to safely start the animation.
+  //
+  // NOTE: A `NavigationRequest` does not always have a `NavigationEntry`, since
+  // the entry can be deleted at any time (e.g., clearing history), even during
+  // a pending navigation. It's fine to CHECK the entry here because we just
+  // created the requests in the same stack. No code yet had a chance to delete
+  // the entry.
+  CHECK(primary_main_frame_request->GetNavigationEntry());
+
+  int request_entry_id =
+      primary_main_frame_request->GetNavigationEntry()->GetUniqueID();
+
+  // `destination_entry_id_` is initialized in the same stack as
+  // `GoToIndexAndReturnPrimaryMainFrameRequest()`. Thus they must equal.
+  CHECK_EQ(destination_entry_id_, request_entry_id);
+
+  primary_main_frame_navigation_request_id_of_gesture_nav_ =
+      primary_main_frame_request->GetNavigationId();
+  if (primary_main_frame_request->IsNavigationStarted()) {
+    navigation_state_ = NavigationState::kStarted;
+  } else {
+    CHECK(primary_main_frame_request->IsWaitingForBeforeUnload());
+    navigation_state_ = NavigationState::kBeforeUnloadDispatched;
+  }
+  return true;
 }
 
 cc::UIResourceId BackForwardTransitionAnimator::CreateUIResource(
@@ -1120,6 +1177,10 @@ void BackForwardTransitionAnimator::
     // for `OnRenderFrameMetadataChangedAfterActivation()` at all.
     CHECK(!viz_has_activated_first_frame_);
     viz_has_activated_first_frame_ = true;
+    return;
+  }
+
+  if (screenshot_->is_copied_from_embedder()) {
     return;
   }
 

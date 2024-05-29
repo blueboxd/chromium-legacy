@@ -60,6 +60,7 @@ const TabGroup* FindTabGroupStartingAtIndex(int index,
 // Returns the `TabStripItemData` for a tab item at `index` in `web_state_list`.
 TabStripItemData* CreateTabItemData(int index, WebStateList* web_state_list) {
   CHECK(web_state_list);
+  CHECK(web_state_list->ContainsIndex(index), base::NotFatalUntil::M128);
   const TabGroup* group = web_state_list->GetGroupOfWebStateAt(index);
   TabStripItemData* data = [[TabStripItemData alloc] init];
   if (group) {
@@ -96,6 +97,7 @@ NSMutableArray<TabStripItemData*>* CreateItemData(
   for (int index : range) {
     const TabGroup* group_of_web_state = nullptr;
     if ([TabStripFeaturesUtils isModernTabStripWithTabGroups]) {
+      CHECK(web_state_list->ContainsIndex(index), base::NotFatalUntil::M128);
       group_of_web_state = web_state_list->GetGroupOfWebStateAt(index);
       if (including_group_items) {
         const TabGroup* group_starting_at_index =
@@ -138,6 +140,7 @@ NSMutableArray<TabStripItemIdentifier*>* CreateItemIdentifiers(
   for (int index : range) {
     const TabGroup* group_of_web_state = nullptr;
     if ([TabStripFeaturesUtils isModernTabStripWithTabGroups]) {
+      CHECK(web_state_list->ContainsIndex(index), base::NotFatalUntil::M128);
       group_of_web_state = web_state_list->GetGroupOfWebStateAt(index);
       if (including_group_items) {
         const TabGroup* group_starting_at_index =
@@ -795,7 +798,8 @@ NSMutableArray<TabStripItemIdentifier*>* CreateItemIdentifiers(
           WebStateSearchCriteria{
               .identifier =
                   _dragItems[destinationItemIndex].tabSwitcherItem.identifier});
-      if (_webStateList->GetGroupOfWebStateAt(webStateIndex)) {
+      if (_webStateList->ContainsIndex(webStateIndex) &&
+          _webStateList->GetGroupOfWebStateAt(webStateIndex)) {
         return UIDropOperationForbidden;
       }
     }
@@ -1124,6 +1128,9 @@ NSMutableArray<TabStripItemIdentifier*>* CreateItemIdentifiers(
       _webStateList, WebStateSearchCriteria{
                          .identifier = previousItem.tabSwitcherItem.identifier,
                      });
+  if (!_webStateList->ContainsIndex(indexOfPreviousWebState)) {
+    return nullptr;
+  }
   const TabGroup* groupOfPreviousWebState =
       _webStateList->GetGroupOfWebStateAt(indexOfPreviousWebState);
   if (groupOfPreviousWebState == groupOfNextWebState) {
@@ -1154,6 +1161,9 @@ NSMutableArray<TabStripItemIdentifier*>* CreateItemIdentifiers(
 // Reconfigures the item associated with `webState`.
 - (void)reconfigureItemForWebState:(web::WebState*)webState {
   const int webStateIndex = _webStateList->GetIndexOfWebState(webState);
+  if (!_webStateList->ContainsIndex(webStateIndex)) {
+    return;
+  }
   const TabGroup* group = _webStateList->GetGroupOfWebStateAt(webStateIndex);
   if (group && group->visual_data().is_collapsed()) {
     // If group is collapsed then tab cells cannot be reconfigured.
@@ -1315,6 +1325,7 @@ NSMutableArray<TabStripItemIdentifier*>* CreateItemIdentifiers(
   CHECK([self webStateIsCollapsedAtIndex:index]);
   // If the tab for WebState at `index` is collapsed, then it must be in a group
   // that is collapsed.
+  CHECK(self.webStateList->ContainsIndex(index), base::NotFatalUntil::M128);
   const TabGroup* groupAtIndex = self.webStateList->GetGroupOfWebStateAt(index);
   CHECK(groupAtIndex);
   CHECK(groupAtIndex->visual_data().is_collapsed());

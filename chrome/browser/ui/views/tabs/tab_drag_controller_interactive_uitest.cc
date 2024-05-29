@@ -93,13 +93,17 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "base/test/simple_test_tick_clock.h"
+#include "ui/events/base_event_utils.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -112,12 +116,13 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"  // nogncheck
-#include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_lacros.h"
+#include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 #define DESKTOP_BROWSER_FRAME_AURA DesktopBrowserFrameLacros
@@ -579,10 +584,11 @@ class DetachToBrowserTabDragControllerTest
   void SetUpOnMainThread() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     root_ = browser()->window()->GetNativeWindow()->GetRootWindow();
+#endif
+#if BUILDFLAG(IS_CHROMEOS)
     // Disable flings which might otherwise inadvertently be generated from
     // tests' touch events.
-    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
-        std::numeric_limits<float>::max());
+    SetMinFlingVelocity(std::numeric_limits<float>::max());
 #endif
 #if BUILDFLAG(IS_MAC)
     // Currently MacViews' browser windows are shown in the background and could
@@ -817,6 +823,30 @@ class DetachToBrowserTabDragControllerTest
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
+
+ protected:
+#if BUILDFLAG(IS_CHROMEOS)
+  void SetMinFlingVelocity(float velocity) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+    auto* lacros_service = chromeos::LacrosService::Get();
+    const int version =
+        lacros_service->GetInterfaceVersion<crosapi::mojom::TestController>();
+    const int required_version = crosapi::mojom::TestController::
+        MethodMinVersions::kSetMinFlingVelocityMinVersion;
+    if (version < required_version) {
+      LOG(WARNING) << "Ash does not support crosapi "
+                      "TestController::SetMinFlingVelocity; skipping call.";
+      return;
+    }
+    auto& test_controller =
+        lacros_service->GetRemote<crosapi::mojom::TestController>();
+    crosapi::mojom::TestControllerAsyncWaiter(test_controller.get())
+        .SetMinFlingVelocity(velocity);
+#endif
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -4860,6 +4890,10 @@ IN_PROC_BROWSER_TEST_P(
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
 }
 
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS)
+
 // Subclass of DetachToBrowserTabDragControllerTest that runs tests only with
 // touch input.
 class DetachToBrowserTabDragControllerTestTouch
@@ -4880,6 +4914,10 @@ class DetachToBrowserTabDragControllerTestTouch
  protected:
   std::unique_ptr<base::SimpleTestTickClock> clock_;
 };
+
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 void PressSecondFingerWhileDetachedStep3(
@@ -4975,12 +5013,16 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   EXPECT_EQ(2u, browser_list()->size());
 }
 
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        FlingDownAtEndOfDrag) {
   // Reduce the minimum fling velocity for this specific test case to cause the
   // fling-down gesture in the middle of tab-dragging. This should end up with
   // minimizing the window. See https://crbug.com/902897 for the details.
-  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
+  SetMinFlingVelocity(1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   test::QuitDraggingObserver observer(tab_strip);
@@ -5012,7 +5054,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        FlingOnStartingDrag) {
-  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
+  SetMinFlingVelocity(1);
   AddTabsAndResetBrowser(browser(), 1);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =
@@ -5039,7 +5081,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   EXPECT_EQ(2u, browser_list()->size());
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
@@ -5120,6 +5162,13 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Bool(),
         /*kTearOffWebAppTabOpensWebAppWindow=*/::testing::Values(false),
         ::testing::Values("mouse")));
+INSTANTIATE_TEST_SUITE_P(
+    TabDragging,
+    DetachToBrowserTabDragControllerTestTouch,
+    ::testing::Combine(
+        ::testing::Bool(),
+        /*kTearOffWebAppTabOpensWebAppWindow=*/::testing::Values(false),
+        ::testing::Values("touch")));
 #endif  // BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(crbug.com/40283516): Enable Multi Display Test on lacros
@@ -5136,13 +5185,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(false),
                        ::testing::Values("mouse")));
-INSTANTIATE_TEST_SUITE_P(
-    TabDragging,
-    DetachToBrowserTabDragControllerTestTouch,
-    ::testing::Combine(
-        ::testing::Bool(),
-        /*kTearOffWebAppTabOpensWebAppWindow=*/::testing::Values(false),
-        ::testing::Values("touch")));
 INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserTabDragControllerTestWithTabbedSystemApp,

@@ -45,6 +45,12 @@ inline constexpr char kAutofillIbanEnabled[] = "autofill.iban_enabled";
 // was run. This routine will be run once per version.
 inline constexpr char kAutofillLastVersionDeduped[] =
     "autofill.last_version_deduped";
+// To simplify the rollout of AutofillSilentlyRemoveQuasiDuplicates,
+// deduplication can be run a second time per milestone for users enrolled in
+// the experiment. This pref tracks whether deduplication was run a second time.
+// TODO(b/325450676): Remove after the rollout finished.
+inline constexpr char kAutofillRanQuasiDuplicateExtraDeduplication[] =
+    "autofill.ran_quasi_duplicate_extra_deduplication";
 // Integer that is set to the last version where disused addresses were
 // deleted. This deletion will be run once per version.
 inline constexpr char kAutofillLastVersionDisusedAddressesDeleted[] =
@@ -113,9 +119,11 @@ inline constexpr char
 // filling.
 inline constexpr char kAutofillUsingVirtualViewStructure[] =
     "autofill.using_virtual_view_structure";
-#endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
+// Boolean set by the `ThirdPartyPasswordManagersAllowed` policy. Defaults to
+// true which allows users to set the `kAutofillUsingVirtualViewStructure` pref.
+// If set to false, user can only use the built-in password manager.
+inline constexpr char kAutofillThirdPartyPasswordManagersAllowed[] =
+    "autofill.third_party_password_managers_allowed";
 inline constexpr char kFacilitatedPaymentsPix[] = "facilitated_payments.pix";
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -149,10 +157,6 @@ void SetAutofillPaymentMethodsEnabled(PrefService* prefs, bool enabled);
 bool HasSeenIban(const PrefService* prefs);
 
 void SetAutofillHasSeenIban(PrefService* prefs);
-
-bool IsAutofillIbanEnabled(const PrefService* prefs);
-
-void SetAutofillIbanEnabled(PrefService* prefs, bool enabled);
 
 bool IsAutofillManaged(const PrefService* prefs);
 

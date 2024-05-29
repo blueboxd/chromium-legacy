@@ -8,7 +8,9 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "pdf/ink/ink_brush.h"
 #include "pdf/pdf_features.h"
+#include "pdf/pdf_ink_brush.h"
 #include "pdf/test/mouse_event_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +20,15 @@
 namespace chrome_pdf {
 
 namespace {
+
+// Optional parameters that the `setAnnotationBrushMessage` may have, depending
+// on the brush type.
+struct AnnotationBrushMessageParams {
+  int color_r;
+  int color_g;
+  int color_b;
+  double size;
+};
 
 class FakeClient : public InkModule::Client {
  public:
@@ -52,6 +63,21 @@ class FakeClient : public InkModule::Client {
 
 class InkModuleTest : public testing::Test {
  protected:
+  base::Value::Dict CreateSetAnnotationBrushMessage(
+      const std::string& type,
+      const AnnotationBrushMessageParams* params) {
+    base::Value::Dict message;
+    message.Set("type", "setAnnotationBrush");
+    message.Set("brushType", type);
+    if (params) {
+      message.Set("colorR", params->color_r);
+      message.Set("colorG", params->color_g);
+      message.Set("colorB", params->color_b);
+      message.Set("size", params->size);
+    }
+    return message;
+  }
+
   base::Value::Dict CreateSetAnnotationModeMessage(bool enable) {
     base::Value::Dict message;
     message.Set("type", "setAnnotationMode");
@@ -73,6 +99,130 @@ TEST_F(InkModuleTest, UnknownMessage) {
   base::Value::Dict message;
   message.Set("type", "nonInkMessage");
   EXPECT_FALSE(ink_module().OnMessage(message));
+}
+
+// Verify that a set eraser message sets the annotation brush to an eraser.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessageEraser) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("eraser", nullptr);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  EXPECT_FALSE(brush);
+}
+
+// Verify that a set pen message sets the annotation brush to a pen, with the
+// given params.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessagePen) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  AnnotationBrushMessageParams message_params{/*color_r=*/10, /*color_g=*/255,
+                                              /*color_b=*/50, /*size=*/1.0};
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("pen", &message_params);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  ASSERT_TRUE(brush);
+
+  const InkBrush& ink_brush = brush->GetInkBrush();
+  EXPECT_EQ(SkColorSetRGB(10, 255, 50), ink_brush.GetColorForTesting());
+  EXPECT_EQ(8.0f, ink_brush.GetSizeForTesting());
+  // TODO(crbug.com/335524382): Update with real value.
+  EXPECT_EQ(1.0f, ink_brush.GetOpacityForTesting());
+}
+
+// Verify that a set highlighter message sets the annotation brush to a
+// highlighter, with the given params.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessageHighlighter) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  AnnotationBrushMessageParams message_params{/*color_r=*/240, /*color_g=*/133,
+                                              /*color_b=*/0, /*size=*/0.5};
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("highlighter", &message_params);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  ASSERT_TRUE(brush);
+
+  const InkBrush& ink_brush = brush->GetInkBrush();
+  EXPECT_EQ(SkColorSetRGB(240, 133, 0), ink_brush.GetColorForTesting());
+  EXPECT_EQ(4.5f, ink_brush.GetSizeForTesting());
+  // TODO(crbug.com/335524382): Update with real value.
+  EXPECT_EQ(1.0f, ink_brush.GetOpacityForTesting());
+}
+
+// Verify that brushes with zero color values can be set as the annotation
+// brush.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessageColorZero) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  AnnotationBrushMessageParams message_params{/*color_r=*/0, /*color_g=*/0,
+                                              /*color_b=*/0, /*size=*/0.5};
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("pen", &message_params);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  ASSERT_TRUE(brush);
+
+  const InkBrush& ink_brush = brush->GetInkBrush();
+  EXPECT_EQ(SkColorSetRGB(0, 0, 0), ink_brush.GetColorForTesting());
+  EXPECT_EQ(4.5f, ink_brush.GetSizeForTesting());
+  // TODO(crbug.com/335524382): Update with real value.
+  EXPECT_EQ(1.0f, ink_brush.GetOpacityForTesting());
+}
+
+// Verify that the size of the brush is translated when the size is 0. This
+// is needed because the PDF extension allows for a brush size of 0, but
+// `InkBrush` cannot have a size of 0.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessageSizeZeroTranslation) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  AnnotationBrushMessageParams message_params{/*color_r=*/255, /*color_g=*/255,
+                                              /*color_b=*/255, /*size=*/0.0};
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("highlighter", &message_params);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  ASSERT_TRUE(brush);
+
+  const InkBrush& ink_brush = brush->GetInkBrush();
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), ink_brush.GetColorForTesting());
+  EXPECT_EQ(1.0f, ink_brush.GetSizeForTesting());
+  // TODO(crbug.com/335524382): Update with real value.
+  EXPECT_EQ(1.0f, ink_brush.GetOpacityForTesting());
+}
+
+// Verify that the size of the brush is properly translated. The PDF extension's
+// max brush size is 1, while the max for `InkBrush` will be 8.
+TEST_F(InkModuleTest, HandleSetAnnotationBrushMessageSizeOneTranslation) {
+  EXPECT_TRUE(ink_module().OnMessage(CreateSetAnnotationModeMessage(true)));
+  EXPECT_EQ(true, ink_module().enabled());
+
+  AnnotationBrushMessageParams message_params{/*color_r=*/255, /*color_g=*/255,
+                                              /*color_b=*/255, /*size=*/1.0};
+  base::Value::Dict message =
+      CreateSetAnnotationBrushMessage("highlighter", &message_params);
+  EXPECT_TRUE(ink_module().OnMessage(message));
+
+  const PdfInkBrush* brush = ink_module().GetPdfInkBrushForTesting();
+  ASSERT_TRUE(brush);
+
+  const InkBrush& ink_brush = brush->GetInkBrush();
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), ink_brush.GetColorForTesting());
+  EXPECT_EQ(8.0f, ink_brush.GetSizeForTesting());
+  // TODO(crbug.com/335524382): Update with real value.
+  EXPECT_EQ(1.0f, ink_brush.GetOpacityForTesting());
 }
 
 TEST_F(InkModuleTest, HandleSetAnnotationModeMessage) {

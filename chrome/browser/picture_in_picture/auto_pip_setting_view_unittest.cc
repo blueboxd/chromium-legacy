@@ -39,9 +39,8 @@ class AutoPipSettingViewTest : public views::ViewsTestBase,
 
     // Create the anchor Widget.
     views::Widget::InitParams anchor_view_widget_params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    anchor_view_widget_params.ownership =
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+        CreateParams(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                     views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     anchor_view_widget_params.bounds = gfx::Rect(200, 200, 50, 10);
     anchor_view_widget_ =
         CreateTestWidget(std::move(anchor_view_widget_params));
@@ -226,19 +225,19 @@ TEST_F(AutoPipSettingViewTest, TestOriginLabelForGURLWithLocalHost) {
                                origin_text_without_ellipsis));
 }
 
-TEST_F(AutoPipSettingViewTest, WidgetIsCenteredWhenArrowIsFloat) {
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
     BUILDFLAG(IS_LINUX)
-  // TODO (crbug/1521332): Evaluate fix and re-enable
-  if (features::IsChromeRefresh2023()) {
-    GTEST_SKIP();
-  }
+// TODO (crbug/1521332): Evaluate fix and re-enable
+#define MAYBE_WidgetIsCenteredWhenArrowIsFloat \
+  DISABLED_WidgetIsCenteredWhenArrowIsFloat
+#else
+#define MAYBE_WidgetIsCenteredWhenArrowIsFloat WidgetIsCenteredWhenArrowIsFloat
 #endif
+TEST_F(AutoPipSettingViewTest, MAYBE_WidgetIsCenteredWhenArrowIsFloat) {
   // Set up the anchor view.
   views::Widget::InitParams anchor_view_widget_params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  anchor_view_widget_params.ownership =
-      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+      CreateParams(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                   views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   anchor_view_widget_params.bounds = gfx::Rect(200, 200, 700, 700);
   auto anchor_view_widget =
       CreateTestWidget(std::move(anchor_view_widget_params));

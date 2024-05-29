@@ -22,6 +22,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/additional_bid_result.h"
 #include "content/browser/interest_group/auction_nonce_manager.h"
@@ -165,6 +166,9 @@ class CONTENT_EXPORT InterestGroupAuction
   using GetDataDecoderCallback =
       base::RepeatingCallback<data_decoder::DataDecoder*(
           const url::Origin& seller)>;
+
+  using AdAuctionPageDataCallback =
+      base::RepeatingCallback<AdAuctionPageData*()>;
 
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
@@ -332,8 +336,9 @@ class CONTENT_EXPORT InterestGroupAuction
     // non-k-anonymous enforced bid when k-anonymity enforcement is active.
     PrivateAggregationRequests non_kanon_private_aggregation_requests;
 
-    PrivateAggregationTimings private_aggregation_timings[static_cast<int>(
-        PrivateAggregationPhase::kNumPhases)];
+    std::array<PrivateAggregationTimings,
+               base::checked_cast<size_t>(PrivateAggregationPhase::kNumPhases)>
+        private_aggregation_timings;
 
     PrivateAggregationTimings& pa_timings(PrivateAggregationPhase phase) {
       return private_aggregation_timings[static_cast<int>(phase)];
@@ -555,6 +560,7 @@ class CONTENT_EXPORT InterestGroupAuction
       BrowserContext* browser_context,
       PrivateAggregationManager* private_aggregation_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      AdAuctionPageDataCallback ad_auction_page_data_callback,
       std::unique_ptr<blink::AuctionConfig> auction_config,
       const url::Origin& main_frame_origin,
       const url::Origin& frame_origin,

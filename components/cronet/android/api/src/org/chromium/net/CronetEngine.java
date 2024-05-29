@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.json.JSONObject;
+
 import org.chromium.net.impl.CronetLogger;
 import org.chromium.net.impl.CronetLoggerFactory;
 
@@ -116,6 +118,20 @@ public abstract class CronetEngine {
             public abstract void loadLibrary(String libName);
         }
 
+        /** JSON representation of the experimental options. */
+        protected JSONObject mParsedExperimentalOptions;
+
+        /**
+         * A list of the translated experimental options from set*Options to be applied to the
+         * parsed experimental options JSON object. Applying these patches in {@link
+         * Builder#build()}, instead of directly in the setters, ensures the setters will always
+         * take precedence over {@link
+         * ExperimentalCronetEngine.Builder#setExperimentalOptions(String)}, even if
+         * setExperimentalOptions() is called after the setters.
+         */
+        private final List<ExperimentalOptionsTranslator.JsonPatch> mExperimentalOptionsPatches =
+                new ArrayList<>();
+
         /** Reference to the actual builder implementation. {@hide exclude from JavaDoc}. */
         protected final ICronetEngineBuilder mBuilderDelegate;
 
@@ -137,16 +153,10 @@ public abstract class CronetEngine {
          * implementation.
          *
          * @param builderDelegate delegate that provides the actual implementation.
-         * <p>{@hide}
+         *     <p>{@hide}
          */
         public Builder(ICronetEngineBuilder builderDelegate) {
-            if (builderDelegate instanceof ExperimentalOptionsTranslatingCronetEngineBuilder) {
-                // Already wrapped at the top level, no need to do it again
-                mBuilderDelegate = builderDelegate;
-            } else {
-                mBuilderDelegate =
-                        new ExperimentalOptionsTranslatingCronetEngineBuilder(builderDelegate);
-            }
+            mBuilderDelegate = builderDelegate;
         }
 
         /**
@@ -248,8 +258,7 @@ public abstract class CronetEngine {
 
         /**
          * Setting to disable HTTP cache. Some data may still be temporarily stored in memory.
-         * Passed to
-         * {@link #enableHttpCache}.
+         * Passed to {@link #enableHttpCache}.
          */
         public static final int HTTP_CACHE_DISABLED = 0;
 
@@ -396,8 +405,8 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Configures the behavior of Cronet when using QUIC. For more details, see documentation
-         * of {@link QuicOptions} and the individual methods of {@link QuicOptions.Builder}.
+         * Configures the behavior of Cronet when using QUIC. For more details, see documentation of
+         * {@link QuicOptions} and the individual methods of {@link QuicOptions.Builder}.
          *
          * <p>Only relevant if {@link #enableQuic(boolean)} is enabled.
          *
@@ -405,7 +414,19 @@ public abstract class CronetEngine {
          */
         @QuicOptions.Experimental
         public Builder setQuicOptions(QuicOptions quicOptions) {
-            mBuilderDelegate.setQuicOptions(quicOptions);
+            // If the delegate builder supports enabling connection migration directly, just use it
+            if (mBuilderDelegate
+                    .getSupportedConfigOptions()
+                    .contains(ICronetEngineBuilder.QUIC_OPTIONS)) {
+                mBuilderDelegate.setQuicOptions(quicOptions);
+                return this;
+            }
+
+            // If not, we'll have to work around it by modifying the experimental options JSON.
+            mExperimentalOptionsPatches.add(
+                    experimentalOptions ->
+                            ExperimentalOptionsTranslator.quicOptionsToJson(
+                                    experimentalOptions, quicOptions));
             return this;
         }
 
@@ -416,8 +437,8 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Configures the behavior of hostname lookup. For more details, see documentation
-         * of {@link DnsOptions} and the individual methods of {@link DnsOptions.Builder}.
+         * Configures the behavior of hostname lookup. For more details, see documentation of {@link
+         * DnsOptions} and the individual methods of {@link DnsOptions.Builder}.
          *
          * <p>Only relevant if {@link #enableQuic(boolean)} is enabled.
          *
@@ -425,7 +446,19 @@ public abstract class CronetEngine {
          */
         @DnsOptions.Experimental
         public Builder setDnsOptions(DnsOptions dnsOptions) {
-            mBuilderDelegate.setDnsOptions(dnsOptions);
+            // If the delegate builder supports enabling connection migration directly, just use it
+            if (mBuilderDelegate
+                    .getSupportedConfigOptions()
+                    .contains(ICronetEngineBuilder.DNS_OPTIONS)) {
+                mBuilderDelegate.setDnsOptions(dnsOptions);
+                return this;
+            }
+
+            // If not, we'll have to work around it by modifying the experimental options JSON.
+            mExperimentalOptionsPatches.add(
+                    experimentalOptions ->
+                            ExperimentalOptionsTranslator.dnsOptionsToJson(
+                                    experimentalOptions, dnsOptions));
             return this;
         }
 
@@ -436,8 +469,8 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Configures the behavior of connection migration. For more details, see documentation
-         * of {@link ConnectionMigrationOptions} and the individual methods of {@link
+         * Configures the behavior of connection migration. For more details, see documentation of
+         * {@link ConnectionMigrationOptions} and the individual methods of {@link
          * ConnectionMigrationOptions.Builder}.
          *
          * <p>Only relevant if {@link #enableQuic(boolean)} is enabled.
@@ -447,7 +480,19 @@ public abstract class CronetEngine {
         @ConnectionMigrationOptions.Experimental
         public Builder setConnectionMigrationOptions(
                 ConnectionMigrationOptions connectionMigrationOptions) {
-            mBuilderDelegate.setConnectionMigrationOptions(connectionMigrationOptions);
+            // If the delegate builder supports enabling connection migration directly, just use it
+            if (mBuilderDelegate
+                    .getSupportedConfigOptions()
+                    .contains(ICronetEngineBuilder.CONNECTION_MIGRATION_OPTIONS)) {
+                mBuilderDelegate.setConnectionMigrationOptions(connectionMigrationOptions);
+                return this;
+            }
+
+            // If not, we'll have to work around it by modifying the experimental options JSON.
+            mExperimentalOptionsPatches.add(
+                    experimentalOptions ->
+                            ExperimentalOptionsTranslator.connectionMigrationOptionsToJson(
+                                    experimentalOptions, connectionMigrationOptions));
             return this;
         }
 
@@ -470,7 +515,18 @@ public abstract class CronetEngine {
                                 + "likely have no effect.");
             }
 
+            maybeSetExperimentalOptions();
             return mBuilderDelegate.build();
+        }
+
+        /** See comment in {@link Builder#mExperimentalOptionsPatches} */
+        private void maybeSetExperimentalOptions() {
+            JSONObject experimentalOptions =
+                    ExperimentalOptionsTranslator.applyJsonPatches(
+                            mParsedExperimentalOptions, mExperimentalOptionsPatches);
+            if (experimentalOptions != null) {
+                mBuilderDelegate.setExperimentalOptions(experimentalOptions.toString());
+            }
         }
 
         /**

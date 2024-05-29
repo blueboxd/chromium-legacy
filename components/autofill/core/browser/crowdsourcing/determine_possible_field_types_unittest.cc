@@ -177,10 +177,24 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"South Africa", {ADDRESS_HOME_COUNTRY}},
     {"12345678901", {PHONE_HOME_WHOLE_NUMBER}},
     {"+1 (234) 567-8901", {PHONE_HOME_WHOLE_NUMBER}},
-    {"(234)567-8901", {PHONE_HOME_CITY_AND_NUMBER}},
-    {"2345678901", {PHONE_HOME_CITY_AND_NUMBER}},
+    {"(234)567-8901",
+     base::FeatureList::IsEnabled(
+         features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
+         ? FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER,
+                        PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}
+         : FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER}},
+    {"2345678901",
+     base::FeatureList::IsEnabled(
+         features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
+         ? FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER,
+                        PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}
+         : FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER}},
     {"1", {PHONE_HOME_COUNTRY_CODE}},
-    {"234", {PHONE_HOME_CITY_CODE}},
+    {"234", base::FeatureList::IsEnabled(
+                features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
+                ? FieldTypeSet{PHONE_HOME_CITY_CODE,
+                               PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX}
+                : FieldTypeSet{PHONE_HOME_CITY_CODE}},
     {"5678901", {PHONE_HOME_NUMBER}},
     {"567", {PHONE_HOME_NUMBER_PREFIX}},
     {"8901", {PHONE_HOME_NUMBER_SUFFIX}},
@@ -233,7 +247,12 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
 
     // Special phone number case. A profile with no country code should
     // only match PHONE_HOME_CITY_AND_NUMBER.
-    {"5142821292", {PHONE_HOME_CITY_AND_NUMBER}},
+    {"5142821292",
+     base::FeatureList::IsEnabled(
+         features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
+         ? FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER,
+                        PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}
+         : FieldTypeSet{PHONE_HOME_CITY_AND_NUMBER}},
 
     // Make sure unsupported variants do not match.
     {"Elvis Aaron", {UNKNOWN_TYPE}},
@@ -290,9 +309,9 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   credit_cards.push_back(credit_card);
 
   FormData form;
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
+  form.set_name(u"MyForm");
+  form.set_url(GURL("https://myform.com/form.html"));
+  form.set_action(GURL("https://myform.com/submit.html"));
   form.fields.push_back(CreateTestFormField("", "1", test_case.input_value,
                                             FormControlType::kInputText));
 

@@ -121,7 +121,6 @@ class SubscriptionsObserver;
 class WebWrapper;
 enum class SubscriptionType;
 struct CommerceSubscription;
-struct ProductGroup;
 
 // Types of shopping pages from backend.
 enum class ShoppingPageType {
@@ -432,16 +431,7 @@ class ShoppingService : public KeyedService,
 
   virtual ProductSpecificationsService* GetProductSpecificationsService();
 
-  // ClusterManager APIs.
-  virtual std::optional<EntryPointInfo> GetEntryPointInfoForNavigation(
-      GURL url);
-  virtual std::optional<EntryPointInfo> GetEntryPointInfoForSelection(
-      GURL old_url,
-      GURL new_url);
-  virtual std::optional<ProductGroup> GetProductGroupForCandidateProduct(
-      const GURL& product_url);
-  void AddClusterManagerObserver(ClusterManager::Observer* observer);
-  void RemoveClusterManagerObserver(ClusterManager::Observer* observer);
+  virtual ClusterManager* GetClusterManager();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
@@ -518,7 +508,8 @@ class ShoppingService : public KeyedService,
   void PDPMetricsCallback(
       bool is_off_the_record,
       optimization_guide::OptimizationGuideDecision decision,
-      const optimization_guide::OptimizationMetadata& metadata);
+      const optimization_guide::OptimizationMetadata& metadata,
+      const GURL& url);
 
   void HandleOptGuideProductInfoResponse(
       const GURL& url,
@@ -729,6 +720,12 @@ class ShoppingService : public KeyedService,
   //     See ConsentLevel::kSync documentation for details.
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observation_{this};
+
+  // An observer of the ProductSpecificationsService that keeps track of the
+  // URLs contained within each ProductSpecificationsSet. This is used to keep
+  // the commerce info cache up to date.
+  std::unique_ptr<ProductSpecificationsSet::Observer>
+      prod_spec_url_ref_observer_;
 
   // Ensure certain functions are being executed on the same thread.
   SEQUENCE_CHECKER(sequence_checker_);

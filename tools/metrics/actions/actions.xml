@@ -13852,6 +13852,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.Omnibox.AcceptDefaultSuggestion">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the user accept the default suggestion in the omnibox by
+    pressing go or enter.
+  </description>
+</action>
+
 <action name="IOS.Omnibox.Promo.PositionDiscarded">
   <owner>christianxu@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -14357,6 +14366,14 @@ should be able to be added at any place in this file.
   <owner>thegreenfrog@google.com</owner>
   <owner>bling-team@google.com</owner>
   <description>Recorded when the Safety Check result has changed.</description>
+</action>
+
+<action name="IOSMagicStackSettingsOpened">
+  <owner>thegreenfrog@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the user opens the Magic Stack Settings page.
+  </description>
 </action>
 
 <action name="IOSMagicStackShortcutsFreshSignal" not_user_triggered="true">
@@ -23024,6 +23041,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileOmniboxRichInlineRemoved">
+  <owner>christianxu@chromium.org</owner>
+  <description>
+    User removed the additional text of rich inline autocomplete. This happens
+    when the user moves the cursor or presses delete when additional text is
+    displayed. iOS only.
+  </description>
+</action>
+
 <action name="MobileOmniboxSearch">
   <obsolete>
     Removed Sep 2016 because the name kept misleading people. Replaced with
@@ -27491,6 +27517,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_AccessibilityScreenMagnifierCenterFocus_Disable">
+  <obsolete>Deprecated 05/2024</obsolete>
   <owner>jennyz@chromium.org</owner>
   <description>
     Settings: Accessibility: Disable centering focus for text input in magnifier
@@ -27499,6 +27526,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_AccessibilityScreenMagnifierCenterFocus_Enable">
+  <obsolete>Deprecated 05/2024</obsolete>
   <owner>jennyz@chromium.org</owner>
   <description>
     Settings: Accessibility: Enable centering focus for text input in magnifier
@@ -31417,6 +31445,15 @@ should be able to be added at any place in this file.
   <description>A download warning is shown.</description>
 </action>
 
+<action name="SafeBrowsing.EsbDownloadRowPromo.Click">
+  <owner>awado@google.com</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    User clicks on the Enhanced Safe Browsing (ESB) download row promotion on
+    chrome://downloads.
+  </description>
+</action>
+
 <action name="SafeBrowsing.Settings.DisableSafeBrowsingClicked">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -33576,6 +33613,24 @@ should be able to be added at any place in this file.
   <description>
     Reported when user navigates to Tracking Protection Settings via the
     Tracking Protection link row in the Privacy Page.
+  </description>
+</action>
+
+<action name="Settings.TrackingProtection.SiteExceptionAdded">
+  <owner>fmacintosh@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    Recorded when a tracking protection site exception is added via the settings
+    page.
+  </description>
+</action>
+
+<action name="Settings.TrackingProtection.SiteExceptionRemoved">
+  <owner>fmacintosh@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    Recorded when a tracking protection site exception is removed via the
+    settings page.
   </description>
 </action>
 
@@ -42818,6 +42873,8 @@ should be able to be added at any place in this file.
   <suffix name="IntentChip"
       label="In product help for opening a webpage in an app using the intent
              chip."/>
+  <suffix name="iOSAddressPromoDesktop"
+      label="For iOSAddressPromoDesktop feature"/>
   <suffix name="iOSChoiceScreen"
       label="(obsolete) For iOSChoiceScreen feature"/>
   <suffix name="iOSDefaultBrowserBadgeEligibility"
@@ -43120,6 +43177,11 @@ should be able to be added at any place in this file.
   <affected-action
       name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH"/>
   <affected-action name="UserEducation.MessageAction.Abort.IPH"/>
+  <affected-action
+      name="UserEducation.MessageAction.AbortedByAnchorHidden.IPH"/>
+  <affected-action
+      name="UserEducation.MessageAction.AbortedByBubbleDestroyed.IPH"/>
+  <affected-action name="UserEducation.MessageAction.AbortedByFeature.IPH"/>
   <affected-action name="UserEducation.MessageAction.Action.IPH"/>
   <affected-action name="UserEducation.MessageAction.Cancel.IPH"/>
   <affected-action name="UserEducation.MessageAction.Dismiss.IPH"/>
@@ -43629,6 +43691,8 @@ should be able to be added at any place in this file.
   <suffix name="PinnedNewIncognitoWindowButton"
       label="Pinned new incognito window button"/>
   <suffix name="PinnedPrintButton" label="Pinned print button"/>
+  <suffix name="PinnedQrCodeGeneratorButton"
+      label="Pinned QR code generator button"/>
   <suffix name="PinnedSendTabToSelfButton"
       label="Pinned send tab to self button"/>
   <suffix name="PinnedShowBookmarkSidePanelButton"

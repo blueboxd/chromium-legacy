@@ -51,12 +51,6 @@ BASE_FEATURE(kAdInterestGroupAPIRestrictedPolicyByDefault,
              "AdInterestGroupAPIRestrictedPolicyByDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Make MediaDevicesDispatcherHost and ended MediaStreamTrack not block BFCache.
-// See https://crbug.com/1502395 for more details.
-BASE_FEATURE(kAllowBFCacheWhenClosedMediaStreamTrack,
-             "AllowBFCacheWhenClosedMediaStreamTrack",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Allow DeprecatedRenderURLReplacements when
 // CookieDeprecationFacilitatedTesting is enabled.
 BASE_FEATURE(kAlwaysAllowFledgeDeprecatedRenderURLReplacements,
@@ -747,8 +741,8 @@ BASE_FEATURE(kDiscardInputEventsToRecentlyMovedFrames,
              "DiscardInputEventsToRecentlyMovedFrames",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
-             "DisableThirdPartyStoragePartitioningDeprecationTrial",
+BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial2,
+             "DisableThirdPartyStoragePartitioningDeprecationTrial2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Kill switch for not WebGL DrawingBuffer using SharedImage without
@@ -1259,10 +1253,6 @@ const base::FeatureParam<LcppResourceLoadPriority>
         LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
 
 const base::FeatureParam<bool>
-    kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements{
-        &kLCPCriticalPathPredictor, "lcpp_enable_perf_improvements", true};
-
-const base::FeatureParam<bool>
     kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement{
         &kLCPCriticalPathPredictor,
         "lcpp_enable_image_load_priority_for_htmlimageelement", false};
@@ -1380,6 +1370,10 @@ const base::FeatureParam<std::string> kLCPPFontURLPredictorExcludedHosts{
 BASE_FEATURE(kLCPPLazyLoadImagePreload,
              "LCPPLazyLoadImagePreload",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If true, do not make a preload request.
+const base::FeatureParam<bool> kLCPPLazyLoadImagePreloadDryRun{
+    &kLCPPLazyLoadImagePreload, "lcpp_lazy_load_image_preload_dry_run", false};
 
 const base::FeatureParam<
     LcppPreloadLazyLoadImageType>::Option lcpp_preload_lazy_load_image[] = {
@@ -1736,6 +1730,13 @@ BASE_FEATURE(kPlzDedicatedWorker,
              "PlzDedicatedWorker",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDedicatedWorkerAblationStudyEnabled,
+             "DedicatedWorkerAblationStudyEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kDedicatedWorkerStartDelayInMs = {
+    &kDedicatedWorkerAblationStudyEnabled, "DedicatedWorkerStartDelayInMs", 0};
+
 BASE_FEATURE(
     kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked,
     "PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked",
@@ -1853,6 +1854,20 @@ BASE_FEATURE(kPrerender2NoVarySearch,
              "Prerender2NoVarySearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPrerender2WarmUpCompositor,
+             "Prerender2WarmUpCompositor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<Prerender2WarmUpCompositorTriggerPoint>::Option
+    prerender2_warm_up_compositor_trigger_point[] = {
+        {Prerender2WarmUpCompositorTriggerPoint::kDidFinishLoad,
+         "did_finish_load"},
+};
+const base::FeatureParam<Prerender2WarmUpCompositorTriggerPoint>
+    kPrerender2WarmUpCompositorTriggerPoint{
+        &kPrerender2WarmUpCompositor, "trigger_point",
+        Prerender2WarmUpCompositorTriggerPoint::kDidFinishLoad,
+        &prerender2_warm_up_compositor_trigger_point};
+
 // Enable limiting previews loading hints to specific resource types.
 BASE_FEATURE(kPreviewsResourceLoadingHintsSpecificResourceTypes,
              "PreviewsResourceLoadingHintsSpecificResourceTypes",
@@ -1911,12 +1926,6 @@ constexpr base::FeatureParam<bool>
 constexpr base::FeatureParam<bool> kPrivateAggregationApiDebugModeEnabledAtAll{
     &kPrivateAggregationApi, "debug_mode_enabled_at_all",
     /*default_value=*/true};
-
-// Allows for different aggregation coordinators to be set. If disabled, any
-// selection will be ignored and replaced with the default.
-BASE_FEATURE(kPrivateAggregationApiMultipleCloudProviders,
-             "PrivateAggregationApiMultipleCloudProviders",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kProcessHtmlDataImmediately,
              "ProcessHtmlDataImmediately",
@@ -2568,11 +2577,6 @@ bool IsAllowURNsInIframeEnabled() {
 bool DisplayWarningDeprecateURNIframesUseFencedFrames() {
   return base::FeatureList::IsEnabled(
       blink::features::kDisplayWarningDeprecateURNIframesUseFencedFrames);
-}
-
-bool IsAllowBFCacheWhenClosedMediaStreamTrackEnabled() {
-  return base::FeatureList::IsEnabled(
-      blink::features::kAllowBFCacheWhenClosedMediaStreamTrack);
 }
 
 bool IsEnableMojoJSProtectedMemoryEnabled() {

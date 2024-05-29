@@ -85,6 +85,10 @@ class MockSearchResultsViewDelegate : public PickerSearchResultsViewDelegate {
               (const PickerSearchResult&),
               (override));
   MOCK_METHOD(void, NotifyPseudoFocusChanged, (views::View*), (override));
+  MOCK_METHOD(PickerActionType,
+              GetActionForResult,
+              (const PickerSearchResult& result),
+              (override));
 };
 
 TEST_F(PickerSearchResultsViewTest, CreatesResultsSections) {
@@ -196,7 +200,8 @@ TEST_F(PickerSearchResultsViewTest, CreatesResultsSectionWithDriveFiles) {
 
   view.AppendSearchResults(PickerSearchResultsSection(
       PickerSectionType::kFiles,
-      {{PickerSearchResult::DriveFile(u"drive", GURL(), /*icon=*/{})}},
+      {{PickerSearchResult::DriveFile(u"drive", GURL(), base::FilePath(),
+                                      /*icon=*/{})}},
       /*has_more_results=*/false));
 
   EXPECT_THAT(view.section_list_view_for_testing()->children(), SizeIs(1));
@@ -496,8 +501,10 @@ INSTANTIATE_TEST_SUITE_P(
          PickerSearchResult::Category(PickerCategory::kExpressions)},
         {"LocalFile",
          PickerSearchResult::LocalFile(u"local", base::FilePath())},
-        {"DriveFile",
-         PickerSearchResult::DriveFile(u"drive", GURL(), /*icon=*/{})},
+        {"DriveFile", PickerSearchResult::DriveFile(u"drive",
+                                                    GURL(),
+                                                    base::FilePath(),
+                                                    /*icon=*/{})},
     }),
     [](const testing::TestParamInfo<
         PickerSearchResultsViewResultSelectionTest::ParamType>& info) {

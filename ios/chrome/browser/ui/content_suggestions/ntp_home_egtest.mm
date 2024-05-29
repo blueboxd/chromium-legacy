@@ -10,6 +10,7 @@
 #import "build/branding_buildflags.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/search_engines/prepopulated_engines.h"
 #import "components/search_engines/search_engines_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
@@ -115,6 +117,13 @@ id<GREYMatcher> notPracticallyVisible() {
 // Returns a matcher which is true if the view is mostly not visible.
 id<GREYMatcher> mostlyNotVisible() {
   return grey_not(grey_minimumVisiblePercent(0.33));
+}
+
+// Returns true if the difference between the two numbers is less than the
+// margin of error
+bool AreNumbersEqual(CGFloat num1, CGFloat num2) {
+  int margin_of_error = 1;
+  return abs(num1 - num2) < margin_of_error;
 }
 }
 
@@ -686,8 +695,8 @@ id<GREYMatcher> mostlyNotVisible() {
 
   // Check that the new position is the same as before focusing the omnibox.
   collectionView = [NewTabPageAppInterface collectionView];
-  GREYAssertEqual(
-      previousPosition, collectionView.contentOffset.y,
+  GREYAssertTrue(
+      AreNumbersEqual(previousPosition, collectionView.contentOffset.y),
       @"NTP is not at the same position as before tapping the omnibox");
 }
 
@@ -727,8 +736,10 @@ id<GREYMatcher> mostlyNotVisible() {
 
   // Check that the new position is the same.
   collectionView = [NewTabPageAppInterface collectionView];
-  GREYAssertEqual(previousPosition, collectionView.contentOffset.y,
-                  @"NTP is not at the same position");
+
+  GREYAssertTrue(
+      AreNumbersEqual(previousPosition, collectionView.contentOffset.y),
+      @"NTP is not at the same position");
 }
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
@@ -788,8 +799,8 @@ id<GREYMatcher> mostlyNotVisible() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  GREYAssertEqual(
-      origin.y, collectionView.contentOffset.y,
+  GREYAssertTrue(
+      AreNumbersEqual(origin.y, collectionView.contentOffset.y),
       @"The collection is not scrolled back to its previous position");
 }
 
@@ -915,8 +926,8 @@ id<GREYMatcher> mostlyNotVisible() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
-  NSString* yahooSearchEngineName =
-      [SettingsAppInterface usYahooSearchEngineName];
+  NSString* yahooSearchEngineName = [SearchEngineChoiceEarlGreyUI
+      searchEngineNameWithPrepopulatedEngine:TemplateURLPrepopulateData::yahoo];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityLabel(yahooSearchEngineName)]
       performAction:grey_tap()];

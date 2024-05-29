@@ -7,6 +7,7 @@
 #include <random>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/callback.h"
@@ -1048,12 +1049,14 @@ void FederatedAuthRequestImpl::RequestToken(
     const GURL& idp_config_url = idp_order_[0];
     auto get_info_it = token_request_get_infos_.find(idp_config_url);
     CHECK(get_info_it != token_request_get_infos_.end());
-    request_dialog_controller_->ShowLoadingDialog(
-        GetTopFrameOriginForDisplay(GetEmbeddingOrigin()),
-        FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
-        get_info_it->second.rp_context, rp_mode_,
-        base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
-                       weak_ptr_factory_.GetWeakPtr()));
+    if (!request_dialog_controller_->ShowLoadingDialog(
+            GetTopFrameOriginForDisplay(GetEmbeddingOrigin()),
+            FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
+            get_info_it->second.rp_context, rp_mode_,
+            base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
+                           weak_ptr_factory_.GetWeakPtr()))) {
+      return;
+    }
   }
 
   CHECK(!unique_idps.empty());
@@ -1227,8 +1230,10 @@ bool FederatedAuthRequestImpl::HasPendingRequest() const {
 void FederatedAuthRequestImpl::FetchEndpointsForIdps(
     const std::set<GURL>& idp_config_urls,
     bool for_idp_signin) {
-  int icon_ideal_size = request_dialog_controller_->GetBrandIconIdealSize();
-  int icon_minimum_size = request_dialog_controller_->GetBrandIconMinimumSize();
+  int icon_ideal_size =
+      request_dialog_controller_->GetBrandIconIdealSize(rp_mode_);
+  int icon_minimum_size =
+      request_dialog_controller_->GetBrandIconMinimumSize(rp_mode_);
 
   {
     std::set<GURL> pending_idps = std::move(fetch_data_.pending_idps);
@@ -1410,7 +1415,7 @@ void FederatedAuthRequestImpl::OnClientMetadataResponseReceived(
           "with the provided background color");
     }
   }
-  OnFetchDataForIdpSucceeded(std::move(idp_info), accounts, client_metadata);
+  FetchAccountPictures(std::move(idp_info), accounts, client_metadata);
 }
 
 bool FederatedAuthRequestImpl::ShouldMediateAuthzFor(
@@ -1753,23 +1758,24 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // immediately (for instance on Android when we cannot create a BottomSheet),
   // so invocations after this method should assume that the members may have
   // been cleaned up.
-  // TODO(crbug.com/329261790): Make ShowAccountsDialog() return a boolean and
-  // use that to know when to bail out early from this method.
-  request_dialog_controller_->ShowAccountsDialog(
-      GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
-      idp_data_for_display_,
-      identity_selection_type_ == kExplicit ? SignInMode::kExplicit
-                                            : SignInMode::kAuto,
-      rp_mode_, new_account_idp,
-      base::BindOnce(&FederatedAuthRequestImpl::OnAccountSelected,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&FederatedAuthRequestImpl::LoginToIdP,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          /*can_append_hints=*/false),
-      base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&FederatedAuthRequestImpl::OnAccountsDisplayed,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (!request_dialog_controller_->ShowAccountsDialog(
+          GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
+          idp_data_for_display_,
+          identity_selection_type_ == kExplicit ? SignInMode::kExplicit
+                                                : SignInMode::kAuto,
+          rp_mode_, new_account_idp,
+          base::BindOnce(&FederatedAuthRequestImpl::OnAccountSelected,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindRepeating(&FederatedAuthRequestImpl::LoginToIdP,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              /*can_append_hints=*/false),
+          base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&FederatedAuthRequestImpl::OnAccountsDisplayed,
+                         weak_ptr_factory_.GetWeakPtr()))) {
+    return;
+  }
+
   devtools_instrumentation::DidShowFedCmDialog(render_frame_host());
 
   if (identity_selection_type_ == kExplicit &&
@@ -1916,20 +1922,19 @@ void FederatedAuthRequestImpl::ShowSingleIdpFailureDialog() {
   bool has_hints = !idp_info->provider->login_hint.empty() ||
                    !idp_info->provider->domain_hint.empty() ||
                    !idp_info->metadata.requested_label.empty();
-  // TODO(crbug.com/329261790): Make ShowFailureDialog() return boolean and use
-  // the value to know when to bail out of this method.
-  request_dialog_controller_->ShowFailureDialog(
-      GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
-      FormatOriginForDisplay(idp_origin), idp_info->rp_context, rp_mode_,
-      idp_info->metadata,
-      base::BindOnce(&FederatedAuthRequestImpl::OnDismissFailureDialog,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&FederatedAuthRequestImpl::LoginToIdP,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          /*can_append_hints=*/true));
 
-  // ShowFailureDialog() may have completed the request synchronously, in which
-  // case we did not really show any failure dialog.
+  if (!request_dialog_controller_->ShowFailureDialog(
+          GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
+          FormatOriginForDisplay(idp_origin), idp_info->rp_context, rp_mode_,
+          idp_info->metadata,
+          base::BindOnce(&FederatedAuthRequestImpl::OnDismissFailureDialog,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindRepeating(&FederatedAuthRequestImpl::LoginToIdP,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              /*can_append_hints=*/true))) {
+    return;
+  }
+
   CHECK(idp_data_for_display_.size() == 1u);
   fedcm_metrics_->RecordSingleIdpMismatchDialogShown(
       idp_data_for_display_[0], has_shown_mismatch, has_hints);
@@ -2086,11 +2091,64 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
                 weak_ptr_factory_.GetWeakPtr(), std::move(idp_info),
                 std::move(accounts)));
       } else {
-        OnFetchDataForIdpSucceeded(std::move(idp_info), accounts,
-                                   IdpNetworkRequestManager::ClientMetadata());
+        FetchAccountPictures(std::move(idp_info), accounts,
+                             IdpNetworkRequestManager::ClientMetadata());
       }
     }
   }
+}
+
+void FederatedAuthRequestImpl::FetchAccountPictures(
+    std::unique_ptr<IdentityProviderInfo> idp_info,
+    const IdpNetworkRequestManager::AccountList& accounts,
+    const IdpNetworkRequestManager::ClientMetadata& client_metadata) {
+  auto callback = BarrierClosure(
+      accounts.size(),
+      base::BindOnce(&FederatedAuthRequestImpl::OnAllAccountPicturesReceived,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(idp_info),
+                     accounts, client_metadata));
+  for (const auto& account : accounts) {
+    if (account.picture.is_valid()) {
+      network_manager_->DownloadUncredentialedUrl(
+          account.picture,
+          base::BindOnce(&FederatedAuthRequestImpl::OnAccountPictureReceived,
+                         weak_ptr_factory_.GetWeakPtr(), callback,
+                         account.picture));
+    } else {
+      // We have to still call the callback to make sure the barrier
+      // callback gets the right number of calls.
+      callback.Run();
+    }
+  }
+}
+
+void FederatedAuthRequestImpl::OnAccountPictureReceived(
+    base::RepeatingClosure cb,
+    GURL url,
+    std::unique_ptr<std::string> response_body,
+    int response_code,
+    const std::string& mime_type) {
+  if (response_body) {
+    downloaded_images_[url] = std::move(response_body);
+  }
+  cb.Run();
+}
+
+void FederatedAuthRequestImpl::OnAllAccountPicturesReceived(
+    std::unique_ptr<IdentityProviderInfo> idp_info,
+    IdpNetworkRequestManager::AccountList accounts,
+    const IdpNetworkRequestManager::ClientMetadata& client_metadata) {
+  for (auto& account : accounts) {
+    auto it = downloaded_images_.find(account.picture);
+    if (it != downloaded_images_.end()) {
+      // We do not use std::move here in case multiple accounts use the
+      // same picture URL.
+      DCHECK(it->second);
+      account.picture_data = *it->second;
+    }
+  }
+  downloaded_images_.clear();
+  OnFetchDataForIdpSucceeded(std::move(idp_info), accounts, client_metadata);
 }
 
 void FederatedAuthRequestImpl::ComputeLoginStateAndReorderAccounts(
@@ -2454,19 +2512,21 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
   token_error_ = token_error;
 
   // TODO(crbug.com/40282657): Refactor IdentityCredentialTokenError
-  request_dialog_controller_->ShowErrorDialog(
-      GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
-      FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
-      idp_infos_[idp_config_url]->rp_context, rp_mode_,
-      idp_infos_[idp_config_url]->metadata, token_error,
-      base::BindOnce(&FederatedAuthRequestImpl::OnDismissErrorDialog,
-                     weak_ptr_factory_.GetWeakPtr(), idp_config_url, status,
-                     token_error),
-      token_error && !token_error->url.is_empty()
-          ? base::BindOnce(&FederatedAuthRequestImpl::ShowModalDialog,
-                           weak_ptr_factory_.GetWeakPtr(), kErrorUrlPopup,
-                           config_url_, token_error->url)
-          : base::NullCallback());
+  if (!request_dialog_controller_->ShowErrorDialog(
+          GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
+          FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
+          idp_infos_[idp_config_url]->rp_context, rp_mode_,
+          idp_infos_[idp_config_url]->metadata, token_error,
+          base::BindOnce(&FederatedAuthRequestImpl::OnDismissErrorDialog,
+                         weak_ptr_factory_.GetWeakPtr(), idp_config_url, status,
+                         token_error),
+          token_error && !token_error->url.is_empty()
+              ? base::BindOnce(&FederatedAuthRequestImpl::ShowModalDialog,
+                               weak_ptr_factory_.GetWeakPtr(), kErrorUrlPopup,
+                               config_url_, token_error->url)
+              : base::NullCallback())) {
+    return;
+  }
   devtools_instrumentation::DidShowFedCmDialog(render_frame_host());
 }
 

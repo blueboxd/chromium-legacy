@@ -5,12 +5,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_ranking_model.h"
 
 #import "base/metrics/histogram_macros.h"
+#import "components/prefs/pref_service.h"
 #import "components/segmentation_platform/public/constants.h"
 #import "components/segmentation_platform/public/features.h"
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/parcel_tracking/features.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
-#import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -166,6 +167,8 @@
 #pragma mark - SetUpListMediatorAudience
 
 - (void)removeSetUpList {
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackModuleDisabledHistogram,
+                            ContentSuggestionsModuleType::kCompactedSetUpList);
   DCHECK(IsIOSMagicStackCollectionViewEnabled());
   [self.delegate magicStackRankingModel:self
                           didRemoveItem:_setUpListMediator.setUpListConfigs[0]];
@@ -180,6 +183,8 @@
 #pragma mark - SafetyCheckMagicStackMediatorDelegate
 
 - (void)removeSafetyCheckModule {
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackModuleDisabledHistogram,
+                            ContentSuggestionsModuleType::kSafetyCheck);
   if (IsIOSMagicStackCollectionViewEnabled()) {
     [self.delegate
         magicStackRankingModel:self
@@ -220,6 +225,8 @@
 }
 
 - (void)removeTabResumptionModule {
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackModuleDisabledHistogram,
+                            ContentSuggestionsModuleType::kTabResumption);
   if (IsIOSMagicStackCollectionViewEnabled()) {
     [self.delegate magicStackRankingModel:self
                             didRemoveItem:_tabResumptionMediator.itemConfig];
@@ -261,6 +268,8 @@
 }
 
 - (void)parcelTrackingDisabled {
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackModuleDisabledHistogram,
+                            ContentSuggestionsModuleType::kParcelTracking);
   if (IsIOSMagicStackCollectionViewEnabled()) {
     [self.delegate magicStackRankingModel:self
                             didRemoveItem:_parcelTrackingMediator
@@ -280,6 +289,11 @@
       [self.consumer updateMagicStackOrder:change];
     }
   }
+}
+
+- (NSUInteger)indexForMagicStackModule:
+    (ContentSuggestionsModuleType)moduleType {
+  return [_latestMagicStackOrder indexOfObject:@(int(moduleType))];
 }
 
 #pragma mark - Private
@@ -589,14 +603,6 @@
     [self.consumer updateMagicStackOrder:change];
   }
   [self.consumer showTabResumptionWithItem:item];
-}
-
-// Returns the index rank of `moduleType`.
-// Callers of this need to handle a NSNotFound return case and do nothing in
-// that case.
-- (NSUInteger)indexForMagicStackModule:
-    (ContentSuggestionsModuleType)moduleType {
-  return [_latestMagicStackOrder indexOfObject:@(int(moduleType))];
 }
 
 // Returns YES if the tab resumption module should added into the Magic Stack.

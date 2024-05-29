@@ -527,6 +527,24 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram
+    name="Signin.BoundSessionCredentials.CookieRotationGenerateAssertionResult.Attempt{Count}"
+    enum="BoundSessionCredentialsCookieRotationGenerateAssertionResult"
+    expires_after="2024-07-14">
+  <owner>alexilin@chromium.org</owner>
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the result of the assertion generation for the cookie rotation
+    request in a bound session. Recorded at the {Count} attempt to sign a given
+    server-challenge in order to rotate bound cookies.
+  </summary>
+  <token key="Count">
+    <variant name="0" summary="first"/>
+    <variant name="1" summary="second"/>
+  </token>
+</histogram>
+
 <histogram name="Signin.BoundSessionCredentials.CookieRotationNetError"
     enum="NetErrorCodes" expires_after="2024-09-22">
   <owner>alexilin@chromium.org</owner>
@@ -1155,7 +1173,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreIdentityCountAfter" units="identities"
-    expires_after="2024-06-16">
+    expires_after="2025-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1177,7 +1195,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelError"
-    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2024-06-02">
+    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2025-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1728,8 +1746,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninDisabledNotificationShown"
-    enum="SigninAccessPoint" expires_after="2024-06-30">
-  <owner>birnie@google.com</owner>
+    enum="SigninAccessPoint" expires_after="2024-10-20">
   <owner>bsazonov@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1749,6 +1766,17 @@ OAuth Multilogin call. -->
   </summary>
 </histogram>
 
+<histogram name="Signin.SigninPending.InconsistentStateInvoked"
+    enum="BooleanHit" expires_after="2024-10-16">
+  <owner>amelies@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that the signin interceptor detected the user entering an
+    inconsistent state by signing into the web with an account B while being in
+    sign in pending state with account A.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SigninPending.Resolution"
     enum="SigninPendingResolution" expires_after="2024-10-16">
   <owner>rsult@google.com</owner>
@@ -1758,6 +1786,23 @@ OAuth Multilogin call. -->
     (reauth) or sign out of Chrome. The value is recorded when the resolution is
     applied.
   </summary>
+</histogram>
+
+<histogram name="Signin.SigninPending.ResolutionSource{Status}"
+    enum="SigninAccessPoint" expires_after="2024-10-16">
+  <owner>rsult@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the access point of the resolution event from Signin Pending to
+    Signed in. The value is recorded when the user {Status}.
+  </summary>
+  <token key="Status">
+    <variant name="Completed"
+        summary="resolves the Signin Pending state by signing back in"/>
+    <variant name="Started"
+        summary="starts resolving the Signin Pending state by attempting to
+                 sign back in"/>
+  </token>
 </histogram>
 
 <histogram name="Signin.SigninPending.ResolutionTime.{ResolutionType}"

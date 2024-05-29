@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.hub.HubToolbarView;
 import org.chromium.chrome.browser.hub.PaneId;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabGridView;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 
 /** The base station for Hub tab switcher stations. */
@@ -63,12 +62,8 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
 
     private final boolean mIsIncognito;
 
-    /**
-     * @param chromeTabbedActivityTestRule The activity rule under test.
-     */
-    public HubTabSwitcherBaseStation(
-            ChromeTabbedActivityTestRule chromeTabbedActivityTestRule, boolean isIncognito) {
-        super(chromeTabbedActivityTestRule);
+    public HubTabSwitcherBaseStation(boolean isIncognito) {
+        super();
         mIsIncognito = isIncognito;
     }
 
@@ -78,6 +73,10 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
 
         elements.declareView(TOOLBAR_NEW_TAB_BUTTON);
         elements.declareView(TAB_LIST_RECYCLER_VIEW);
+    }
+
+    public boolean isIncognito() {
+        return mIsIncognito;
     }
 
     /**
@@ -102,7 +101,6 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
 
         PageStation destination =
                 PageStation.newPageStationBuilder()
-                        .withActivityTestRule(mChromeTabbedActivityTestRule)
                         .withIncognito(mIsIncognito)
                         .withIsOpeningTabs(0)
                         .withIsSelectingTabs(1)
@@ -123,8 +121,7 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
      */
     public <T extends HubTabSwitcherBaseStation> T closeTabAtIndex(
             int index, Class<T> expectedDestination) {
-        TabModelSelector tabModelSelector =
-                mChromeTabbedActivityTestRule.getActivity().getTabModelSelector();
+        TabModelSelector tabModelSelector = mActivityElement.get().getTabModelSelector();
 
         // By default stay in the same tab switcher state, unless closing the last incognito tab.
         boolean landInIncognitoSwitcher = false;
@@ -142,8 +139,7 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
                         HubStationUtils.createHubStation(
                                 landInIncognitoSwitcher
                                         ? PaneId.INCOGNITO_TAB_SWITCHER
-                                        : PaneId.TAB_SWITCHER,
-                                mChromeTabbedActivityTestRule));
+                                        : PaneId.TAB_SWITCHER));
 
         return travelToSync(
                 tabSwitcher,
@@ -162,11 +158,25 @@ public abstract class HubTabSwitcherBaseStation extends HubBaseStation {
 
         PageStation page =
                 PageStation.newPageStationBuilder()
-                        .withActivityTestRule(mChromeTabbedActivityTestRule)
                         .withIncognito(mIsIncognito)
                         .withIsOpeningTabs(1)
                         .withIsSelectingTabs(1)
                         .build();
         return travelToSync(page, () -> TOOLBAR_NEW_TAB_BUTTON.perform(click()));
+    }
+
+    /**
+     * Returns to the previous tab via the back button.
+     *
+     * @return the {@link PageStation} that Hub returned to.
+     */
+    public PageStation leaveHubToPreviousTabViaBack() {
+        PageStation destination =
+                PageStation.newPageStationBuilder()
+                        .withIsOpeningTabs(0)
+                        .withIsSelectingTabs(1)
+                        .withIncognito(mIsIncognito)
+                        .build();
+        return leaveHubToPreviousTabViaBack(destination);
     }
 }

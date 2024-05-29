@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -43,7 +44,7 @@ class ScriptPromiseProperty final
 
   ScriptPromise<IDLResolvedType> Promise(DOMWrapperWorld& world) {
     if (!GetExecutionContext()) {
-      return ScriptPromise<IDLResolvedType>();
+      return EmptyPromise();
     }
 
     ScriptState* script_state = ToScriptState(execution_context_.Get(), world);

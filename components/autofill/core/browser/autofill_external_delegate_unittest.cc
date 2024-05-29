@@ -42,6 +42,7 @@
 #include "components/autofill/core/browser/mock_autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/mock_single_field_form_fill_router.h"
 #include "components/autofill/core/browser/payments/mock_iban_access_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -130,15 +131,7 @@ auto PopupOpenArgsAre(
 // separate file.
 class MockCreditCardAccessManager : public CreditCardAccessManager {
  public:
-  MockCreditCardAccessManager(AutofillDriver* driver,
-                              AutofillClient* client,
-                              PersonalDataManager* personal_data_manager,
-                              autofill_metrics::CreditCardFormEventLogger*
-                                  credit_card_form_event_logger)
-      : CreditCardAccessManager(driver,
-                                client,
-                                personal_data_manager,
-                                credit_card_form_event_logger) {}
+  using CreditCardAccessManager::CreditCardAccessManager;
   MOCK_METHOD(void,
               FetchCreditCard,
               (const CreditCard*,
@@ -243,7 +236,11 @@ class MockAutofillClient : public TestAutofillClient {
 class MockBrowserAutofillManager : public TestBrowserAutofillManager {
  public:
   explicit MockBrowserAutofillManager(AutofillDriver* driver)
-      : TestBrowserAutofillManager(driver) {}
+      : TestBrowserAutofillManager(driver) {
+    test_api(*this).set_credit_card_access_manager(
+        std::make_unique<NiceMock<MockCreditCardAccessManager>>(
+            this, test_api(*this).credit_card_form_event_logger()));
+  }
   MockBrowserAutofillManager(const MockBrowserAutofillManager&) = delete;
   MockBrowserAutofillManager& operator=(const MockBrowserAutofillManager&) =
       delete;
@@ -303,6 +300,13 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                SuggestionType,
                std::optional<FieldType>),
               (override));
+  MOCK_METHOD(void,
+              OnDidFillAddressFormFillingSuggestion,
+              (const AutofillProfile&,
+               const FormData&,
+               const FormFieldData&,
+               AutofillTriggerSource),
+              (override));
 
  private:
   bool should_show_cards_from_account_option_ = false;
@@ -324,33 +328,40 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
     auto mock_browser_autofill_manager =
         std::make_unique<NiceMock<MockBrowserAutofillManager>>(
             autofill_driver_.get());
-    test_api(*mock_browser_autofill_manager)
-        .set_credit_card_access_manager(
-            std::make_unique<NiceMock<MockCreditCardAccessManager>>(
-                autofill_driver_.get(), &client(), &pdm(),
-                test_api(*mock_browser_autofill_manager)
-                    .credit_card_form_event_logger()));
     driver().set_autofill_manager(std::move(mock_browser_autofill_manager));
   }
 
   // Issue an OnQuery call.
   void IssueOnQuery(
+      FormData form_data,
+      const gfx::Rect& caret_bounds = gfx::Rect(),
       AutofillSuggestionTriggerSource trigger_source = kDefaultTriggerSource) {
-    FormGlobalId form_id = test::MakeFormGlobalId();
-    FieldGlobalId field_id = test::MakeFieldGlobalId();
-    queried_form_ = test::GetFormData({
-        .fields = {{.role = NAME_FIRST,
-                    .host_frame = field_id.frame_token,
-                    .renderer_id = field_id.renderer_id,
-                    .autocomplete_attribute = "given-name"}},
-        .host_frame = form_id.frame_token,
-        .renderer_id = form_id.renderer_id,
-    });
+    queried_form_ = std::move(form_data);
     manager().OnFormsSeen({queried_form()}, {});
-    external_delegate().OnQuery(queried_form(), queried_field(),
+    external_delegate().OnQuery(queried_form(), queried_field(), caret_bounds,
                                 trigger_source);
   }
 
+  void IssueOnQuery(
+      const gfx::Rect& caret_bounds,
+      AutofillSuggestionTriggerSource trigger_source = kDefaultTriggerSource) {
+    FormGlobalId form_id = test::MakeFormGlobalId();
+    FieldGlobalId field_id = test::MakeFieldGlobalId();
+    IssueOnQuery(test::GetFormData({
+                     .fields = {{.role = NAME_FIRST,
+                                 .host_frame = field_id.frame_token,
+                                 .renderer_id = field_id.renderer_id,
+                                 .autocomplete_attribute = "given-name"}},
+                     .host_frame = form_id.frame_token,
+                     .renderer_id = form_id.renderer_id,
+                 }),
+                 caret_bounds, trigger_source);
+  }
+
+  void IssueOnQuery(
+      AutofillSuggestionTriggerSource trigger_source = kDefaultTriggerSource) {
+    IssueOnQuery(/*caret_bounds=*/gfx::Rect(), trigger_source);
+  }
   // Returns the triggering `AutofillField`. This is the only field in the form
   // created in `IssueOnQuery()`.
   AutofillField* get_triggering_autofill_field() {
@@ -1145,11 +1156,12 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillsIbanEntry) {
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  iban.value(), SuggestionType::kIbanEntry,
                                  std::optional(IBAN_VALUE)));
-  EXPECT_CALL(*client().GetMockIbanManager(),
+  EXPECT_CALL(*client().GetPaymentsAutofillClient()->GetIbanManager(),
               OnSingleFieldSuggestionSelected(
                   iban.GetIdentifierStringForAutofillDisplay(),
                   SuggestionType::kIbanEntry));
-  ON_CALL(*client().GetMockIbanAccessManager(), FetchValue)
+  ON_CALL(*client().GetPaymentsAutofillClient()->GetIbanAccessManager(),
+          FetchValue)
       .WillByDefault([iban](const Suggestion::BackendId& backend_id,
                             IbanAccessManager::OnIbanFetchedCallback callback) {
         std::move(callback).Run(iban.value());
@@ -1798,6 +1810,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
   manager().OnFormsSeen({form}, {});
   external_delegate().OnQuery(
       form, form.fields[0],
+      /*caret_bounds=*/gfx::Rect(),
       AutofillSuggestionTriggerSource::kManualFallbackPayments);
 
   EXPECT_CALL(cc_access_manager(), FetchCreditCard).Times(0);
@@ -1875,6 +1888,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
   manager().OnFormsSeen({form}, {});
   external_delegate().OnQuery(
       form, form.fields[0],
+      /*caret_bounds=*/gfx::Rect(),
+
       AutofillSuggestionTriggerSource::kManualFallbackPayments);
 
   const CreditCard unlocked_card = test::GetFullServerCard();
@@ -2140,6 +2155,155 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                           SuggestionPosition{.row = 0});
 }
 
+TEST_F(AutofillExternalDelegateUnitTest,
+       ComposeSuggestion_ComposeProactiveNudge_ForwardsCaretBoundsToClient) {
+  const gfx::Rect caret_bounds = gfx::Rect(/*width=*/1, /*height=*/3);
+  FormGlobalId form_id = test::MakeFormGlobalId();
+  FieldGlobalId field_id = test::MakeFieldGlobalId();
+  FormData form_data = test::GetFormData({
+      .fields = {{.role = NAME_FIRST,
+                  .host_frame = field_id.frame_token,
+                  .renderer_id = field_id.renderer_id,
+                  .autocomplete_attribute = "given-name"}},
+      .host_frame = form_id.frame_token,
+      .renderer_id = form_id.renderer_id,
+  });
+  // make sure the field bounds contain the caret.
+  form_data.fields.front().set_bounds(gfx::RectF(
+      /*x=*/0, /*y=*/0, caret_bounds.width() * 2, caret_bounds.height() * 2));
+
+  IssueOnQuery(std::move(form_data), caret_bounds);
+
+  EXPECT_CALL(client(),
+              ShowAutofillSuggestions(
+                  AllOf(Field(&AutofillClient::PopupOpenArgs::element_bounds,
+                              gfx::RectF(caret_bounds)),
+                        Field(&AutofillClient::PopupOpenArgs::anchor_type,
+                              PopupAnchorType::kCaret)),
+                  _));
+  MockAutofillComposeDelegate compose_delegate;
+  ON_CALL(client(), GetComposeDelegate)
+      .WillByDefault(Return(&compose_delegate));
+  ON_CALL(compose_delegate, ShouldAnchorNudgeOnCaret)
+      .WillByDefault(Return(true));
+
+  // This should call ShowAutofillSuggestions.
+  external_delegate().OnSuggestionsReturned(
+      queried_field().global_id(),
+      {Suggestion(SuggestionType::kComposeProactiveNudge)});
+}
+
+// Even though the `SuggestionType` is correct and the bounds are valid. The
+// caret bounds are not used because the
+// `ComposeDelegate::ShouldAnchorNudgeOnCaret()` is returning false.
+TEST_F(
+    AutofillExternalDelegateUnitTest,
+    ComposeSuggestion_ComposeProactiveNudge_ShouldAnchorNudgeOnCaretReturnsFalse_DoNotForwardsCaretBoundsToClient) {
+  const gfx::Rect caret_bounds = gfx::Rect(/*width=*/1, /*height=*/3);
+  FormGlobalId form_id = test::MakeFormGlobalId();
+  FieldGlobalId field_id = test::MakeFieldGlobalId();
+  FormData form_data = test::GetFormData({
+      .fields = {{.role = NAME_FIRST,
+                  .host_frame = field_id.frame_token,
+                  .renderer_id = field_id.renderer_id,
+                  .autocomplete_attribute = "given-name"}},
+      .host_frame = form_id.frame_token,
+      .renderer_id = form_id.renderer_id,
+  });
+  // make sure the field bounds contain the caret.
+  const gfx::RectF field_bounds = gfx::RectF(
+      /*x=*/0, /*y=*/0, caret_bounds.width() * 2, caret_bounds.height() * 2);
+  form_data.fields.front().set_bounds(field_bounds);
+
+  IssueOnQuery(std::move(form_data), caret_bounds);
+
+  EXPECT_CALL(
+      client(),
+      ShowAutofillSuggestions(
+          Field(&AutofillClient::PopupOpenArgs::element_bounds, field_bounds),
+          _));
+  MockAutofillComposeDelegate compose_delegate;
+  ON_CALL(client(), GetComposeDelegate)
+      .WillByDefault(Return(&compose_delegate));
+  ON_CALL(compose_delegate, ShouldAnchorNudgeOnCaret)
+      .WillByDefault(Return(false));
+
+  // This should call ShowAutofillSuggestions.
+  external_delegate().OnSuggestionsReturned(
+      queried_field().global_id(),
+      {Suggestion(SuggestionType::kComposeProactiveNudge)});
+}
+
+TEST_F(
+    AutofillExternalDelegateUnitTest,
+    ComposeSuggestion_ComposeProactiveNudge_CaretOutsideField_DoNotSendCaretBoundsToClient) {
+  const gfx::Rect caret_bounds = gfx::Rect(/*width=*/1, /*height=*/3);
+  FormGlobalId form_id = test::MakeFormGlobalId();
+  FieldGlobalId field_id = test::MakeFieldGlobalId();
+  FormData form_data = test::GetFormData({
+      .fields = {{.role = NAME_FIRST,
+                  .host_frame = field_id.frame_token,
+                  .renderer_id = field_id.renderer_id,
+                  .autocomplete_attribute = "given-name"}},
+      .host_frame = form_id.frame_token,
+      .renderer_id = form_id.renderer_id,
+  });
+  // make sure the field bounds do not contain the caret.
+  const gfx::RectF field_bounds = gfx::RectF(
+      /*x=*/caret_bounds.x() + caret_bounds.width() + 1,
+      /*y=*/caret_bounds.y() + caret_bounds.height() + 1, caret_bounds.width(),
+      caret_bounds.height());
+  form_data.fields.front().set_bounds(field_bounds);
+
+  IssueOnQuery(std::move(form_data), caret_bounds);
+
+  EXPECT_CALL(
+      client(),
+      ShowAutofillSuggestions(
+          Field(&AutofillClient::PopupOpenArgs::element_bounds, field_bounds),
+          _));
+  MockAutofillComposeDelegate compose_delegate;
+  ON_CALL(client(), GetComposeDelegate)
+      .WillByDefault(Return(&compose_delegate));
+  ON_CALL(compose_delegate, ShouldAnchorNudgeOnCaret)
+      .WillByDefault(Return(true));
+
+  // This should call ShowAutofillSuggestions.
+  external_delegate().OnSuggestionsReturned(
+      queried_field().global_id(),
+      {Suggestion(SuggestionType::kComposeProactiveNudge)});
+}
+
+TEST_F(
+    AutofillExternalDelegateUnitTest,
+    NonComposeSuggestion_NonComposeProactiveNudge_DoNotForwardsCaretBoundsToClient) {
+  IssueOnQuery(gfx::Rect(/*width=*/123, /*height=*/123));
+
+  const PopupAnchorType default_anchor_type =
+#if BUILDFLAG(IS_ANDROID)
+      PopupAnchorType::kKeyboardAccessory;
+#else
+      PopupAnchorType::kField;
+#endif
+  EXPECT_CALL(client(),
+              ShowAutofillSuggestions(
+                  AllOf(Field(&AutofillClient::PopupOpenArgs::element_bounds,
+                              gfx::RectF(/*width=*/0, /*height=*/0)),
+                        Field(&AutofillClient::PopupOpenArgs::anchor_type,
+                              default_anchor_type)),
+                  _));
+  MockAutofillComposeDelegate compose_delegate;
+  ON_CALL(client(), GetComposeDelegate)
+      .WillByDefault(Return(&compose_delegate));
+  ON_CALL(compose_delegate, ShouldAnchorNudgeOnCaret)
+      .WillByDefault(Return(true));
+
+  // This should call ShowAutofillSuggestions.
+  external_delegate().OnSuggestionsReturned(
+      queried_field().global_id(),
+      {Suggestion(SuggestionType::kAutocompleteEntry)});
+}
+
 // Tests that accepting a Compose suggestion returns a callback that, when run,
 // fills the trigger field.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateOpensComposeAndFills) {
@@ -2352,7 +2516,8 @@ TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
   field.set_is_focusable(true);
   field.set_should_autocomplete(false);
 
-  external_delegate().OnQuery(form, field, kDefaultTriggerSource);
+  external_delegate().OnQuery(form, field, /*caret_bounds=*/gfx::Rect(),
+                              kDefaultTriggerSource);
 
   std::vector<Suggestion> autofill_items;
   autofill_items.emplace_back();
@@ -2431,11 +2596,12 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                  HasQueriedFormId(), HasQueriedFieldId(),
                                  iban.value(), SuggestionType::kIbanEntry,
                                  std::optional(IBAN_VALUE)));
-  EXPECT_CALL(*client().GetMockIbanManager(),
+  EXPECT_CALL(*client().GetPaymentsAutofillClient()->GetIbanManager(),
               OnSingleFieldSuggestionSelected(
                   iban.GetIdentifierStringForAutofillDisplay(),
                   SuggestionType::kIbanEntry));
-  ON_CALL(*client().GetMockIbanAccessManager(), FetchValue)
+  ON_CALL(*client().GetPaymentsAutofillClient()->GetIbanAccessManager(),
+          FetchValue)
       .WillByDefault([iban](const Suggestion::BackendId& backend_id,
                             IbanAccessManager::OnIbanFetchedCallback callback) {
         std::move(callback).Run(iban.value());
@@ -2465,6 +2631,9 @@ TEST_F(AutofillExternalDelegateUnitTest,
           profile.GetRawInfo(*suggestion.field_by_field_filling_type_used),
           SuggestionType::kAddressFieldByFieldFilling,
           std::optional(NAME_FIRST)));
+  EXPECT_CALL(manager(), OnDidFillAddressFormFillingSuggestion(
+                             Property(&AutofillProfile::guid, profile.guid()),
+                             HasQueriedFormId(), HasQueriedFieldId(), _));
 
   external_delegate().DidAcceptSuggestion(suggestion,
                                           SuggestionPosition{.row = 0});

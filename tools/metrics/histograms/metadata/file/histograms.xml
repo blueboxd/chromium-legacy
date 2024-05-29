@@ -510,7 +510,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Add" units="Shortcuts"
-    expires_after="2024-07-01">
+    expires_after="2025-07-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -520,7 +520,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Count" units="Shortcuts"
-    expires_after="2024-11-03">
+    expires_after="2025-07-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -530,7 +530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Navigate" units="Navigations"
-    expires_after="2024-07-01">
+    expires_after="2025-07-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -540,7 +540,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FolderShortcut.Remove" units="Shortcuts"
-    expires_after="2024-07-01">
+    expires_after="2025-07-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -693,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.GoogleDrive.BulkPinning.QueueSize" units="count"
-    expires_after="2024-07-01">
+    expires_after="2025-05-21">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1118,6 +1118,19 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="FileBrowser.OfficeFiles.ODFS.GraphAPI.ResponseCode.{GraphAPIMethod}"
+    enum="OfficeGraphAPIResult" expires_after="2025-05-01">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: HTTP response code of select Microsoft GraphAPI
+    calls. These histograms are deprecated in favour of the
+    &quot;ResponseCodeSparse&quot; variant.
+  </summary>
+  <token key="GraphAPIMethod" variants="GraphAPIMethod"/>
+</histogram>
+
+<histogram
+    name="FileBrowser.OfficeFiles.ODFS.GraphAPI.ResponseCodeSparse.{GraphAPIMethod}"
     enum="OfficeGraphAPIResult" expires_after="2025-05-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -1612,7 +1625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Trash.DirectorySetupFailed"
-    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2024-06-30">
+    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2025-05-21">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1622,7 +1635,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Trash.FailedTrashing" enum="FailedTrashingType"
-    expires_after="2024-06-30">
+    expires_after="2025-05-21">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1631,7 +1644,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Trash.RestoreFailedNoParent"
-    enum="RestoreFailedNoParentType" expires_after="2024-06-30">
+    enum="RestoreFailedNoParentType" expires_after="2025-05-21">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1804,7 +1817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ZipMountTime.{RootType}" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2025-06-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1820,7 +1833,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ZipTask.Time" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2025-06-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

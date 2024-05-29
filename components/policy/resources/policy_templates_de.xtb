@@ -180,6 +180,7 @@ Wenn sie nicht konfiguriert ist, sind keine Ausnahmen zu „<ph name="DEVICE_AUT
 <translation id="1107538157073168076">Erweiterung „Insights“ deaktivieren</translation>
 <translation id="1110426799149444997"><ph name="GOOGLE_LENS_PRODUCT_NAME" />-Ausschnittsuche deaktivieren.</translation>
 <translation id="1111324374369583989">Bildschirm mit der Einstellung für die Anzeigegröße bei der Anmeldung nicht anzeigen</translation>
+<translation id="1111824532252882775">Aktiviert: Scroller sind standardmäßig fokussierbar.</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
 <translation id="1118093128235245168">Websites dürfen den Nutzer um Zugriff auf ein angeschlossenes USB-Gerät bitten</translation>
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
@@ -395,6 +396,7 @@ Dies ersetzt die eingestellte Richtlinie <ph name="DEFAULT_WINDOW_PLACEMENT_SETT
 <translation id="1305400589435476516">Wenn die Richtlinie aktiviert ist, wird Daten-Roaming für das Gerät zugelassen.
 
       Ist sie deaktiviert oder nicht konfiguriert, ist Daten-Roaming nicht verfügbar.</translation>
+<translation id="1306041796676461437">Unterstützung für erweiterbare Enterprise‑SSO deaktivieren</translation>
 <translation id="1308526987406924874">Wenn diese Richtlinie konfiguriert ist, kannst du eine Liste mit URL-Mustern erstellen, die angeben, welche Websites Nutzer nicht um Zugriff auf einen seriellen Port bitten dürfen.
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> für alle Websites, sofern konfiguriert. Falls nicht, wird die persönliche Einstellung des Nutzers verwendet.
@@ -467,6 +469,7 @@ Wenn „PromptInTab“ festgelegt ist und die Authentifizierung des Nutzers abl�
       Verworfene Seiten werden entfernt und die zugehörigen Ressourcen vollständig freigegeben. Der Tab, mit dem sie verknüpft sind, bleibt im Tabstreifen. Wird er jedoch sichtbar, wird eine vollständige Aktualisierung ausgelöst.
       </translation>
 <translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
+<translation id="1389138080311956934">Maximale Arbeitsspeichereinsparungen.</translation>
 <translation id="1390529781843037070">Wenn die Richtlinie aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialogfeld über <ph name="CLOUD_PRINT_NAME" /> drucken. <ph name="PRODUCT_NAME" /> kann Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME" /> senden. Dies verhindert nicht, dass Nutzer Druckaufträge an Websites senden können.
 
       Ist die Richtlinie deaktiviert, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialogfeld nicht über <ph name="CLOUD_PRINT_NAME" /> drucken.
@@ -2190,15 +2193,6 @@ Das benutzerdefinierte Label wird nicht übersetzt.</translation>
 <translation id="2699836109975228367">„Mono-Audio“ auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="2702023190395322609">Empfehlungen zu Medien aktivieren</translation>
 <translation id="2702682139813393777">Erzwingen, dass Windows-Hosts für natives Messaging über cmd.exe gestartet werden</translation>
-<translation id="2703733412051211941">Löst eine Aktion aus, wenn der Computer inaktiv ist.
-
-      Wenn diese Richtlinie konfiguriert ist, gibt sie die Dauer ohne Nutzereingabe (in Minuten) vor, nach der der Browser Aktionen ausführt, die in der Richtlinie <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" /> konfiguriert sind.
-
-      Ist die Richtlinie nicht konfiguriert, wird keine Aktion ausgeführt.
-
-      Der Mindestgrenzwert beträgt 1 Minute.
-
-      Die Nutzereingabe wird von den Betriebssystem-APIs definiert. Hierzu zählen beispielsweise das Bewegen der Maus oder die Eingabe über die Tastatur.</translation>
 <translation id="270582584528242502">Keine Warnung anzeigen, wenn der Nutzer versucht, den Browser zu schließen</translation>
 <translation id="2706708761587205154">Drucken nur mit PIN zulassen</translation>
 <translation id="2707733461906745082">Profiltrennung</translation>
@@ -3110,6 +3104,7 @@ Weitere Informationen zur Datenverarbeitung bei Funktionen für generative KI f
 
       Die experimentelle Einstellung wird in Zukunft entfernt, sobald die Inline-Anmeldung alle SSO-Anmeldeprozesse vollständig unterstützt.</translation>
 <translation id="3435796032110614169">Zulassen, dass der Druckauftragsverlauf gelöscht wird</translation>
+<translation id="3435896845095436175">Aktivieren</translation>
 <translation id="3436217793443508863">Zeitraum ohne Nutzereingabe im Akkubetrieb, nach dem der Bildschirm gesperrt wird, angegeben in Millisekunden.</translation>
 <translation id="3437924696598384725">Zulassen, dass der Nutzer VPN-Verbindungen verwaltet</translation>
 <translation id="3441664787678256816">Verbindungen zu diesem Computer per Remote-Unterstützung von Unternehmen erlauben</translation>
@@ -3332,6 +3327,15 @@ Denke daran, diese Richtlinie nicht dauerhaft aktiviert zu lassen, insbesondere 
 <translation id="3606571057705314194">Profil-Picker beim Start deaktiviert</translation>
 <translation id="3608206578291537084">Verschlüsselte Pipeline für die Berichterstellung aktivieren</translation>
 <translation id="3608281460204780443">Chrome Web Store-Symbol im <ph name="PRODUCT_OS_NAME" />-Launcher und auf der Seite „Neuer Tab“ anzeigen</translation>
+<translation id="3608411984079625468">Mit dieser Richtlinie wird die automatische Nutzeranmeldung für Konten mit Authentifizierungsanbietern über eine Enterprise‑SSO‑Erweiterung konfiguriert.
+
+Wenn diese Richtlinie auf 1 (<ph name="POLICY_VALUE_ENABLED" />) gesetzt oder nicht konfiguriert ist, verwenden Authentifizierungsanbieter mit einer SSO‑Erweiterung auf dem Gerät diese Erweiterung, um Nutzer zu authentifizieren, die sich anmelden möchten.
+
+Ist die Richtlinie auf 0 (<ph name="POLICY_VALUE_DISABLED" />) gesetzt, wird die automatische Anmeldung, wie oben beschrieben, deaktiviert.
+
+Diese Funktion ist ab macOS Catalina verfügbar.
+
+Hinweis: Diese Richtlinie gilt nicht für den Inkognito- oder Gastmodus.</translation>
 <translation id="3612482251405108708">Automatischer Start der erneuten Onlineauthentifizierung auf dem Sperrbildschirm</translation>
 <translation id="3616490235694929053">Mit dieser Richtlinie wird festgelegt, ob dem Nutzer bei der ersten Anmeldung der Bildschirm mit der Einstellung für die Anzeigegröße angezeigt wird.
       Wenn die Richtlinie auf „false“ gesetzt ist, wird der Bildschirm mit der Einstellung für die Anzeigegröße nicht angezeigt.
@@ -3737,29 +3741,6 @@ Hinweis: Wenn in den Einstellungen keine gegenseitig unterstützten Authentifizi
 <translation id="3982465141749620677">Zur erneuten Authentifizierung in einem Tab auffordern</translation>
 <translation id="398294729592983401">Nutzern erlauben, die <ph name="PRIVACY_SANDBOX_NAME" />-Einstellung „Fingerprinting-Schutz“ auf ihrem Gerät zu aktivieren oder deaktivieren.</translation>
 <translation id="3983162212222338509">Die DNS-Auflösung des Systems kann je nach Systemkonfiguration und Funktions-Flags innerhalb, außerhalb oder teils innerhalb, teils außerhalb des Netzwerkprozesses ausgeführt werden.</translation>
-<translation id="3984773186203819634">Liste der Aktionen, die ausgeführt werden sollen, wenn das Zeitlimit in der Richtlinie „<ph name="IDLE_TIMEOUT_POLICY_NAME" />“ erreicht ist.
-
-      Wenn die Richtlinie „<ph name="IDLE_TIMEOUT_POLICY_NAME" />“ nicht konfiguriert ist, hat diese Richtlinie keine Auswirkungen.
-
-      Wird das Zeitlimit in der Richtlinie „<ph name="IDLE_TIMEOUT_POLICY_NAME" />“ erreicht, führt der Browser die in dieser Richtlinie konfigurierten Aktionen aus.
-
-      Wenn diese Richtlinie leer oder nicht konfiguriert ist, hat die Richtlinie „<ph name="IDLE_TIMEOUT_POLICY_NAME" />“ keine Auswirkungen.
-
-      Unterstützte Aktionen:
-
-      „<ph name="CLOSE_BROWSERS_ACTION" />“: Alle Browserfenster und PWAs für dieses Profil werden geschlossen. Diese Aktion wird auf Android- und iOS-Geräten nicht unterstützt.
-
-      „<ph name="CLOSE_TABS_ACTION" />“: Alle geöffneten Tabs in geöffneten Fenstern werden geschlossen. Diese Aktion wird nur auf iOS-Geräten unterstützt.
-
-      „<ph name="SHOW_PROFILE_PICKER_ACTION" />“: Das Fenster mit der Profilauswahl wird angezeigt. Diese Aktion wird auf Android- und iOS-Geräten nicht unterstützt.
-
-      „<ph name="SIGN_OUT_ACTION" />“: Der aktuell angemeldete Nutzer wird abgemeldet. Diese Aktion wird nur auf iOS-Geräten unterstützt.
-
-      „<ph name="CLEAR_BROWSING_HISTORY_ACTION" />“, „<ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />“, „<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />“, „<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />“, „<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />“, „<ph name="CLEAR_AUTOFILL_ACTION" />“, „<ph name="CLEAR_SITE_SETTINGS_ACTION" />“, „<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />“: Die entsprechenden Browserdaten werden gelöscht. Weitere Informationen findest du in der Richtlinie „<ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" />“. Auf iOS-Geräten werden folgende Typen unterstützt: „<ph name="CLEAR_BROWSING_HISTORY_ACTION" />“, „<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />“, „<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />“, „<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />“ und „<ph name="CLEAR_AUTOFILL_ACTION" />“'
-
-      „<ph name="RELOAD_PAGES_ACTION" />“ Alle Webseiten werden neu geladen. Bei einigen Seiten wird der Nutzer eventuell zuerst um Bestätigung gebeten. Diese Funktion wird auf iOS-Geräten nicht unterstützt.
-
-      Wenn du „<ph name="CLEAR_BROWSING_HISTORY_ACTION" />“, „<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />“, „<ph name="CLEAR_AUTOFILL_ACTION" />“ und „<ph name="CLEAR_SITE_SETTINGS_ACTION" />“ festlegst, wird die Synchronisierung für die entsprechenden Datentypen deaktiviert, wenn weder „<ph name="CHROME_SYNC_NAME" />“ durch Festlegen der Richtlinie „<ph name="SYNC_DISABLED_POLICY_NAME" />“ noch „<ph name="BROWSER_SIGNIN_POLICY_NAME" />“ deaktiviert ist.</translation>
 <translation id="3986700049001404598">Nutzern erlauben, Prozesse mit dem Task-Manager von Chrome zu beenden</translation>
 <translation id="398884292557092447">Wenn die Richtlinie auf „True“ gesetzt oder nicht konfiguriert ist, können Nutzer die Vorschläge zum automatischen Ausfüllen von Kreditkartendaten in der UI steuern.
 
@@ -3859,11 +3840,6 @@ Altes Verhalten: Wenn in „beforeunload“ ein Aufruf von „event.preventDefau
 <translation id="4051723201852944592">Fenster-Okklusion aktivieren</translation>
 <translation id="4052529125939620019">Komponentenerweiterung „CryptoToken“ beim Start laden</translation>
 <translation id="4053157306171963473">Melden der Aktivitätszeit auf Geräten deaktivieren</translation>
-<translation id="4055758693679485627">Konfiguriert eine Liste von Browserdatentypen, die beim Schließen aller Browserfenster gelöscht werden sollen. Die folgenden Datentypen sind verfügbar: Browserverlauf (<ph name="DATA_TYPE_BROWSING_HISTORY" />), Downloadverlauf (<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />), Cookies (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />), Cache (<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />), die Funktion „Autofill“ (<ph name="DATA_TYPE_AUTOFILL" />), Passwörter (<ph name="DATA_TYPE_PASSWORD" />), Website-Einstellungen (<ph name="DATA_TYPE_SITE_SETTINGS" />) und Daten von gehosteten Apps (<ph name="DATA_TYPE_HOSTED_APP_DATA" />). Diese Richtlinie hat keinen Vorrang vor <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME" />.
-
-Bis Chrome 114 musste die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> auf „wahr“ gesetzt werden. Ab Chrome 115 wird mit dieser Richtlinie die Synchronisierung für die jeweiligen Datentypen deaktiviert, wenn weder „<ph name="CHROME_SYNC_NAME" />“ durch Festlegen der Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> noch <ph name="BROWSER_SIGNIN_POLICY_NAME" /> deaktiviert ist.
-
-      Wenn <ph name="PRODUCT_NAME" /> nicht ordnungsgemäß beendet wird, z. B. beim Absturz des Browsers oder Betriebssystems, werden die Browserdaten beim nächsten Laden des Profils gelöscht.</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="4057442294431066708">Mit dieser Richtlinie wird die ausgewählte Tastenkombination für die Neuzuordnung von Ereignissen zu F11/F12 auf der Unterseite für die Tastenneuzuordnung festgelegt. Diese Einstellungen gelten nur für ChromeOS-Tastaturen und sind standardmäßig deaktiviert, wenn die Richtlinie nicht konfiguriert ist.</translation>
 <translation id="4061590579642538878">Informationen über Absturzberichte melden.</translation>
@@ -3879,6 +3855,7 @@ Bei <ph name="PRODUCT_OS_NAME" /> bezieht sich diese Richtlinie auf die Remoteat
 Weitere Informationen zu gültigen <ph name="URL_LABEL" />-Mustern findest du unter https://support.google.com/chrome/a?p=url_blocklist_filter_format.</translation>
 <translation id="4070039109671307724">Sonstiges</translation>
 <translation id="4072225853834793549">Kurzbefehle für Bedienungshilfen auf dem Anmeldebildschirm deaktivieren</translation>
+<translation id="4074922053013383215">Moderate Arbeitsspeichereinsparungen.</translation>
 <translation id="4075675819066819571">Ablage auf der linken Seite des Bildschirms anzeigen</translation>
 <translation id="4079306023113982053">Steuert die Verfügbarkeit von <ph name="BOREALIS_NAME" /> für diesen Nutzer.
 
@@ -4251,6 +4228,7 @@ Ist die Richtlinie deaktiviert, können Nutzer ihre Pakete in <ph name="PRODUCT_
 <translation id="4389073105055031853">Nutzern erlauben, alle Zertifikate zu verwalten</translation>
 <translation id="4389091865841123886">Konfiguriert die Remote-Bestätigung mit TPM-Mechanismus</translation>
 <translation id="4389113579547582722">Werbung für App Store-Bewertungen zulassen</translation>
+<translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4395619678972620537">Wenn die Richtlinie aktiviert ist, können WebRTC-Peer-Verbindungen ein Downgrade auf veraltete Versionen der TLS/DTLS-Protokolle (DTLS 1.0, TLS 1.0 und TLS 1.1) durchführen.
       Wenn sie deaktiviert oder nicht konfiguriert ist, sind diese TLS/DTLS-Versionen deaktiviert.
 
@@ -4258,6 +4236,15 @@ Ist die Richtlinie deaktiviert, können Nutzer ihre Pakete in <ph name="PRODUCT_
 <translation id="439661169333921592">„Objekt mit Tastaturfokus hervorheben“ auf dem Anmeldebildschirm deaktivieren</translation>
 <translation id="4397045637922200204">Kontowiederherstellung deaktivieren</translation>
 <translation id="4397464099112037398">Standardeinstellung für die Berechtigung für die Fensterpositionierung</translation>
+<translation id="4398803806072237638">Die Syntax „<ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" />“ für die Funktion „CSS custom state“ wird in <ph name="PRODUCT_NAME" /> in „<ph name="CUSTOM_STATE_NEW_SYNTAX" />“ geändert, damit sie den in <ph name="FIREFOX_PRODUCT_NAME" /> und <ph name="SAFARI_PRODUCT_NAME" /> vorgenommenen Änderungen entspricht. Mit dieser Richtlinie kann die alte, eingestellte Syntax bis M133 aktiviert werden.
+
+Durch die Einstellung können Websites beeinträchtigt werden, die nur in <ph name="PRODUCT_NAME" /> geöffnet werden und die eingestellte Syntax „<ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" />“ nutzen.
+
+Wenn diese Richtlinie aktiviert ist, wird die alte, eingestellte Syntax aktiviert.
+
+Wenn diese Richtlinie deaktiviert ist, wird die alte, eingestellte Syntax deaktiviert.
+
+Wenn diese Richtlinie nicht konfiguriert ist, wird die alte, eingestellte Syntax deaktiviert.</translation>
 <translation id="4401196752827224189">WebSQL wird in unsicheren Kontexten ab M110 entfernt. Durch diese Richtlinie wird die API wieder aktiviert.
           Wenn diese Richtlinie auf „true“ gesetzt ist, ist WebSQL in unsicheren Kontexten verfügbar.
           Ist sie auf „false“ gesetzt oder nicht konfiguriert, bleibt WebSQL in unsicheren Kontexten bis M109 verfügbar. Ab M110 ist sie dann nicht mehr verfügbar.
@@ -4282,15 +4269,6 @@ Wenn diese Richtlinie konfiguriert ist, kann sie von Nutzern in <ph name="PRODUC
 <translation id="4426986640594727372">Zugriff auf Standortbestimmung des Systems zulassen</translation>
 <translation id="4427173305799125784">Mit dem PDF-Viewer können PDFs nicht mit Anmerkungen versehen werden</translation>
 <translation id="4432762137771104529">Erweiterte Berichterstellung bei der Verwendung von Safe Browsing aktivieren</translation>
-<translation id="4434531680131327140">Konfiguriert die Einstellungen für die Lebensdauer von Browserdaten für <ph name="PRODUCT_NAME" />. Mit dieser Richtlinie können Administratoren (nach Datentyp) festlegen, wann Daten vom Browser gelöscht werden. Das bietet Vorteile für Kunden, die mit sensiblen Kundendaten arbeiten.
-
-      Die folgenden Datentypen sind verfügbar: <ph name="DATA_TYPE_BROWSING_HISTORY" />, <ph name="DATA_TYPE_DOWNLOAD_HISTORY" />, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, <ph name="DATA_TYPE_PASSWORD" />, <ph name="DATA_TYPE_AUTOFILL" />, <ph name="DATA_TYPE_SITE_SETTINGS" /> und <ph name="DATA_TYPE_HOSTED_APP_DATA" />. <ph name="DATA_TYPE_DOWNLOAD_HISTORY" /> und <ph name="DATA_TYPE_HOSTED_APP_DATA" /> werden unter Android nicht unterstützt.
-
-      Der Browser entfernt automatisch Daten der ausgewählten Typen, die älter sind als <ph name="TIME_TO_LIVE_IN_HOURS" />. Als kleinster Wert kann eine Stunde festgelegt werden.
-
-      Abgelaufene Daten werden 15 Sekunden, nachdem der Browser gestartet wurde, und anschließend alle 30 Minuten gelöscht, während der Browser geöffnet ist.
-
-      Bis Chrome 114 musste die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> auf „wahr“ gesetzt werden. Ab Chrome 115 wird mit dieser Richtlinie die Synchronisierung für die jeweiligen Datentypen deaktiviert, wenn weder „<ph name="CHROME_SYNC_NAME" />“ durch Festlegen der Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> noch <ph name="BROWSER_SIGNIN_POLICY_NAME" /> deaktiviert ist.</translation>
 <translation id="443454694385851356">Veraltet (nicht sicher)</translation>
 <translation id="4435032708588431506">QUIC-Protokoll zulassen</translation>
 <translation id="443665821428652897">Websitedaten beim Schließen des Browsers löschen (veraltet)</translation>
@@ -4572,6 +4550,7 @@ Ist diese Richtlinie nicht konfiguriert, können Nutzer die im Launcher angepinn
 
 Die Einstellung <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> ist nur wirksam, wenn <ph name="CHROME_OS_RELEASE_CHANNEL_DELEGATED_POLICY_NAME" /> auf „False“ gesetzt ist.</translation>
 <translation id="4638906910792947645">Produktinterne Umfragen aktivieren</translation>
+<translation id="4641557638919545432">Die alte, eingestellte Syntax wird aktiviert.</translation>
 <translation id="4646626362889216307">Wenn die Richtlinie konfiguriert ist, ermöglicht sie das Zusammenführen der ausgewählten Richtlinien, wenn diese aus unterschiedlichen Quellen stammen, mit gleichem Bereich und gleicher Ebene. Dabei werden die Schlüssel des Wörterbuchs auf der ersten Ebene aus jeder Quelle zusammengeführt. Der Schlüssel aus der Quelle mit der höchsten Priorität hat Vorrang.
 
       Mit dem Platzhalterzeichen * kann das Zusammenführen aller unterstützten Wörterbuchrichtlinien erlaubt werden.
@@ -5228,6 +5207,7 @@ Wenn diese Richtlinie nicht konfiguriert ist oder die Liste keine gültigen Bild
       Ist die Richtlinie für den Gerätehintergrund konfiguriert, lädt das Chrome OS-Gerät das Hintergrundbild herunter und zeigt es auf dem Anmeldebildschirm an, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Sobald sich der Nutzer anmeldet, wird seine Hintergrundrichtlinie wirksam.
 
       Wenn die Richtlinie für den Gerätehintergrund nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers bestimmt, was angezeigt werden soll, sofern diese konfiguriert ist.</translation>
+<translation id="5217106427763720473">Unterstützung für erweiterbare Enterprise‑SSO aktivieren</translation>
 <translation id="5219844027738217407">Bei Android-Apps betrifft diese Richtlinie nur das Mikrofon. Wenn diese Richtlinie auf "true" gesetzt ist, wird das Mikrofon ohne Ausnahme für alle Android-Apps stummgeschaltet.</translation>
 <translation id="5222325605346216869">Erzwingen, dass JavaScript-Timer im Hintergrund gedrosselt werden.</translation>
 <translation id="5223606242837275233">Nicht zulassen, dass auf Websites per URL zu bestimmten Textfragmenten gescrollt wird</translation>
@@ -5278,6 +5258,7 @@ Hinweis: Diese Funktion ist noch nicht allgemein verfügbar. Wenn du sie aktivie
       Mit "Version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.  </translation>
 <translation id="5247584184349816217">Bildschirmschoner auf dem Sperrbildschirm aktivieren.</translation>
 <translation id="5247973380763021389">Verhindert, dass Cloud-Richtlinien auf Nutzerebene Cloud-Richtlinien auf Maschinenebene überschreiben.</translation>
+<translation id="5249006530384016395">Mit der Richtlinie wird festgelegt, ob die eingestellte Syntax „<ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" />“ für die Funktion „CSS custom state“ aktiviert ist</translation>
 <translation id="5249453807420671499">Nutzer können Kerberos-Konten hinzufügen</translation>
 <translation id="5249555581286638799">Modus für hohe Effizienz aktivieren</translation>
 <translation id="5252210248395576403">Mit dieser Richtlinie erhält die Funktion „Schnellinfo“ die Berechtigung, auf ausgewählte Inhalte zuzugreifen und die Informationen an den Server zu senden, um Übersetzungsergebnisse zu erhalten.
@@ -6805,6 +6786,7 @@ Ist die Richtlinie nicht konfiguriert, können Nutzer den Fingerprinting-Schutz 
 <translation id="6452882999388592166">Wenn diese Richtlinie aktiviert ist, wird die integrierte Komponentenerweiterung „CryptoToken“ beim Start geladen. Ist sie deaktiviert oder nicht konfiguriert, wird „CryptoToken“ beim Browserstart nicht geladen. Diese Richtlinie ist als vorübergehende Behelfslösung für Websites gedacht, die nicht funktionieren, weil „chrome.runtime“ als Nebeneffekt der Entfernung von „CryptoToken“ in Version M106 nicht definiert wird. Websites dürfen nicht davon abhängen, ob „chrome.runtime“ uneingeschränkt definiert ist.</translation>
 <translation id="6453641799812499182">Einschränkungen bei <ph name="CORS" />-Prüfungen in der neuen <ph name="CORS" />-Implementierung aktivieren</translation>
 <translation id="645425387487868471">Erzwungene Anmeldung für <ph name="PRODUCT_NAME" /> aktivieren</translation>
+<translation id="6454450724849956537">Mit der Tastatur fokussierbare Scroller aktivieren</translation>
 <translation id="645467061280066516">Wenn die Richtlinie aktiviert ist, wird die „Neuer Tab“-Seite als Startseite des Nutzers verwendet und die Startseiten-URL wird ignoriert. Ist diese Richtlinie deaktiviert, wird die „Neuer Tab“-Seite nie als Startseite verwendet, es sei denn, die Startseiten-URL des Nutzers ist chrome://newtab.
 
 Wenn du diese Richtlinie konfigurierst, können Nutzer den Typ ihrer Startseite in <ph name="PRODUCT_NAME" /> nicht ändern. Wenn die Richtlinie nicht konfiguriert ist, können Nutzer auswählen, ob die „Neuer Tab“-Seite als Startseite verwendet werden soll.
@@ -8561,6 +8543,7 @@ Weitere Informationen zur Richtlinie <ph name="IEEM_SITELIST_POLICY" /> von Inte
       Ist die Richtlinie auf „False“ festgelegt oder nicht konfiguriert, werden <ph name="FLASH_PLUGIN_NAME" />-Inhalte anderer Herkunft oder kleine Inhalte ggf. blockiert.
 
       Hinweis: Wenn du konfigurieren möchtest, welche Websites <ph name="FLASH_PLUGIN_NAME" /> ausführen dürfen, findest du unter den folgenden Richtlinien weitere Informationen: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> und <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
+<translation id="7801163363326128751">Einsparungen im Arbeitsspeicher-Sparmodus ändern</translation>
 <translation id="7804859754080118507">Ereignisse zu Netzwerkverbindung und Signalstärke auf registrierten Geräten melden.
 
       Wenn die Richtlinie auf „false“ gesetzt oder nicht konfiguriert ist, werden keine Informationen ausgegeben.
@@ -8854,6 +8837,13 @@ Wenn man <ph name="LACROS_SELECTION_USER_CHOICE_VALUE" /> oder <ph name="LACROS_
 <translation id="802776363472387903">SHA-256-Hash des <ph name="PLUGIN_VM_NAME" />-Image.</translation>
 <translation id="8028814157747157754">Den Standardsuchanbieter aktivieren und zulassen, dass Nutzer die Liste der Suchanbieter ändern</translation>
 <translation id="8029201909194194377">Maximal zulässige Sitzungsdauer für Verbindungen per Remotezugriff</translation>
+<translation id="8033450879690820321">Diese Richtlinie bietet die Möglichkeit, das neue Verhalten „Mit der Tastatur fokussierbare Scroller“ vorübergehend zu deaktivieren.
+
+Wenn diese Richtlinie aktiviert oder nicht konfiguriert ist, können Scroller ohne untergeordnete fokussierbare Elemente standardmäßig mit der Tastatur fokussiert werden. Darüber hinaus sind Scroller standardmäßig per Klick fokussierbar und programmatisch fokussierbar.
+
+Wenn diese Richtlinie deaktiviert ist, können Scroller standardmäßig nicht fokussiert werden.
+
+Diese Richtlinie ist eine vorübergehende Problemumgehung und wird in M135 entfernt.</translation>
 <translation id="8035570672225663428">Adaptives Lademodell aktivieren, um den Ladevorgang anzuhalten und die Akkulaufzeit zu verlängern</translation>
 <translation id="8036284429246268475">Wenn die Richtlinie aktiviert ist, können Nutzer von <ph name="PRODUCT_NAME" /> prüfen lassen, ob die eingegebenen Nutzernamen und Passwörter Teil eines Datenlecks sind.
 
@@ -9134,6 +9124,7 @@ Weitere Informationen zu Legacy-Technologien findest du unter https://chromestat
 <translation id="8274926413890711289">Steuerelemente für detailliertes Reporting aktivieren</translation>
 <translation id="8275103737670730746">Aufrufen von APIs für Datei- oder Verzeichnisauswahl ohne vorherige Nutzergeste zulassen</translation>
 <translation id="8278133379873210419">JavaScript-Dialogfelder unterdrücken, die von anderen Quell-Subframes ausgelöst wurden</translation>
+<translation id="8284028944941138279">Ausgewogene Arbeitsspeichereinsparungen.</translation>
 <translation id="8284296539558710573">Ursprungsübergreifende HTTP-Authentifizierungsaufforderungen</translation>
 <translation id="8284527236880877730">Wenn <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> deaktiviert ist, wird mit <ph name="PRESENTATION_SCREEN_DIM_DELAY_SCALE_POLICY_NAME" /> der Prozentsatz angegeben, um den die Verzögerung für das Dimmen des Bildschirms skaliert wird, wenn sich das Gerät im Präsentationsmodus befindet. Wenn die Verzögerung für das Dimmen skaliert wird, werden die Verzögerung für die Abschaltung und Sperre des Bildschirms sowie die Inaktivität so angepasst, dass die Abstände der ursprünglichen Konfiguration proportional beibehalten werden.
 
@@ -9310,9 +9301,6 @@ Ist die Richtlinie nicht konfiguriert oder auf 0 gesetzt, wird eine bestimmte au
 
       Die Richtlinie wird nach Chrome 115 entfernt.</translation>
 <translation id="841395160262233331">Das Verhalten von Funktionstasten kann nicht mit der Launcher- bzw. Suchtaste geändert werden und Nutzer können diese Einstellung nicht ändern.</translation>
-<translation id="8415506434606458373">Wenn diese Richtlinie aktiviert ist, dürfen die aufgelisteten Ursprünge Geräteattribute wie die Seriennummer und den Hostnamen über die Device Attributes API abrufen.
-
-Die Ursprünge müssen Webanwendungen sein, deren Installation über die Richtlinien „<ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />“ oder „<ph name="ISOLATED_WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />“ (ab Version 125) erzwungen wird oder die als Kiosk-App eingerichtet sind. Technische Daten und Informationen zur Device Attributes API findest du unter https://wicg.github.io/WebApiDevice/device_attributes.</translation>
 <translation id="8415953438346821074">Wenn du diese Einstellung aktivierst, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, Autofill-Daten und Passwörter, zusätzlich in eine Datei geschrieben, die im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> festgelegten Ort gespeichert wird. Durch die Aktivierung dieser Richtlinie wird die Cloudsynchronisierung deaktiviert.
 
 Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, werden nur die regulären lokalen Profile verwendet.</translation>
@@ -9390,6 +9378,7 @@ Die Richtlinie wird in M75 entfernt.</translation>
           Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.
 
           Beispielmuster findest du unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489169564515126823">Deaktiviert: Scroller sind standardmäßig nicht fokussierbar.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Speichern des Browserverlaufs deaktivieren</translation>
 <translation id="8499172469244085141">Standardeinstellungen (können vom Nutzer überschrieben werden)</translation>
@@ -9561,6 +9550,7 @@ Dazu zählen auch Berichte, die durch „<ph name="CLOUD_REPORTING_ENABLED_POLIC
 
 Ist diese Richtlinie nicht konfiguriert, werden Berichte alle 24 Stunden hochgeladen.
 Wenn die Richtlinie konfiguriert ist, wird durch sie die Anzahl der Stunden zwischen den Uploads von Berichten festgelegt.</translation>
+<translation id="8613622696148230463">Die alte, eingestellte Syntax wird deaktiviert.</translation>
 <translation id="8618037841203431360">Mit dieser Richtlinie wird festgelegt, ob Daten zu Richtlinien und zur Zeit des Richtlinienabrufs gesendet werden.
 
 Wenn die Richtlinie <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> deaktiviert oder nicht konfiguriert ist, wird diese Richtlinie ignoriert.

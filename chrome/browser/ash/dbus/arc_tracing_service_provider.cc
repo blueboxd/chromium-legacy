@@ -8,12 +8,16 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/ash/arc/tracing/overview_tracing_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace {
@@ -61,9 +65,15 @@ void ArcTracingServiceProvider::OnTraceEnd(
     std::unique_ptr<arc::OverviewTracingResult> result) {
   if (result->path.empty()) {
     AddStatusMessage(result->status);
-  } else {
-    AddStatusMessage(
-        base::StrCat({result->status, ": ", result->path.value()}));
+  } else if (auto* information =
+                 result->model.GetDict().FindDict(arc::kKeyInformation);
+             information) {
+    auto pfps = information->FindDouble(arc::kKeyPerceivedFps);
+    auto duration = information->FindDouble(arc::kKeyDuration);
+    AddStatusMessage(base::StringPrintf(
+        "%s: %s - perceived FPS=%.2f, duration=%.2fs", result->status.c_str(),
+        result->path.value().c_str(), pfps.value_or(0),
+        duration.value_or(0) / 1'000'000.0));
   }
   // Do this in a separate task because the handler may still have code to run
   // after we return.
@@ -112,6 +122,24 @@ void ArcTracingServiceProvider::StartTrace(
     std::move(response_sender)
         .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
                                                  "ARC window isn't active"));
+    return;
+  }
+
+  auto extra_windows = handler->NonTraceTargetWindows();
+  if (!extra_windows.empty()) {
+    std::vector<std::string> extra_win_msg = {
+        "Extra windows are open. Close them and try the trace again: "};
+    std::string_view delim = "";
+    for (auto window : extra_windows) {
+      extra_win_msg.emplace_back(delim);
+      extra_win_msg.emplace_back("|");
+      extra_win_msg.emplace_back(base::UTF16ToUTF8(window->GetTitle()));
+      extra_win_msg.emplace_back("|");
+      delim = ", ";
+    }
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 base::StrCat(extra_win_msg)));
     return;
   }
 

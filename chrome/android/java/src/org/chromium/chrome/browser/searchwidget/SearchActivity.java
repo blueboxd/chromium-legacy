@@ -20,11 +20,14 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityOptionsCompat;
 
+import org.jni_zero.CheckDiscard;
+
 import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -42,6 +45,7 @@ import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
@@ -136,6 +140,11 @@ public class SearchActivity extends AsyncInitializationActivity
     @VisibleForTesting
     /* package */ static final String HISTOGRAM_SESSION_TERMINATION_REASON =
             "Android.Omnibox.SearchActivity.SessionTerminationReason";
+
+    /** Controls whether Referrer App ID is passed to Search Results Page via client= param. */
+    public static final BooleanCachedFieldTrialParameter SEARCH_IN_CCT_APPLY_REFERRER_ID =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SEARCH_IN_CCT, "apply_referrer_id", false);
 
     // NOTE: This is used to capture HISTOGRAM_NAVIGATION_TARGET_TYPE.
     // Do not shuffle or reassign values.
@@ -579,7 +588,8 @@ public class SearchActivity extends AsyncInitializationActivity
     public void onResumeWithNative() {
         // Start a new UMA session for the new activity.
         umaSessionResume();
-        if (mIntentOrigin == IntentOrigin.CUSTOM_TAB) {
+        if (mIntentOrigin == IntentOrigin.CUSTOM_TAB
+                && SEARCH_IN_CCT_APPLY_REFERRER_ID.getValue()) {
             var referrer = SearchActivityUtils.getReferrer(getIntent());
             var referrerValid = !TextUtils.isEmpty(referrer);
             RecordHistogram.recordBooleanHistogram(HISTOGRAM_INTENT_REFERRER_VALID, referrerValid);
@@ -648,10 +658,6 @@ public class SearchActivity extends AsyncInitializationActivity
     public void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
             mLocationBarCoordinator.setUrlFocusChangeInProgress(false);
-        } else {
-            // TODO(crbug.com/329702834): Terminate SearchActivity on focus change:
-            // it's possible that we're running in a multi-window mode.
-            finish(TerminationReason.OMNIBOX_FOCUS_LOST);
         }
     }
 
@@ -843,5 +849,25 @@ public class SearchActivity extends AsyncInitializationActivity
 
     /* package */ void setUmaActivityObserverForTesting(UmaActivityObserver observer) {
         mUmaActivityObserver = observer;
+    }
+
+    @Override
+    @SuppressWarnings("MissingSuperCall")
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+        super_onTopResumedActivityChanged(isTopResumedActivity);
+
+        // TODO(crbug.com/329702834): Ensure showing Suggestions when activity resumes.
+        // This may only happen when user enters tab switcher, and immediately returns to the
+        // SearchActivity.
+        if (!isTopResumedActivity) {
+            mSearchBox.clearOmniboxFocus();
+        } else {
+            mSearchBox.requestOmniboxFocus();
+        }
+    }
+
+    @CheckDiscard("Isolated for testing; should be inlined by Proguard")
+    /* package */ void super_onTopResumedActivityChanged(boolean isTopResumedActivity) {
+        super.onTopResumedActivityChanged(isTopResumedActivity);
     }
 }

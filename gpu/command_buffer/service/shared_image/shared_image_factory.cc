@@ -87,6 +87,15 @@ namespace gpu {
 
 namespace {
 
+#if BUILDFLAG(IS_ANDROID)
+// Feature enabling ExternalVkImageBacking use on Android. Serves as reverse
+// killswitch while we roll out disabling of this backing on Android.
+// TODO(crbug.com/342096125): Remove post-safe rollout.
+BASE_FEATURE(kUseExternalVkImageBackingOnAndroid,
+             "UseExternalVkImageBackingOnAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS)
 // Feature enabling ExternalVkImageBacking use on ChromeOS. Serves as reverse
 // killswitch while we roll out disabling of this backing on ChromeOS.
@@ -201,6 +210,13 @@ bool SharedImageFactory::SharedImageRepresentationFactoryRefKeyEqual::
 operator()(const std::unique_ptr<SharedImageRepresentationFactoryRef>& lhs,
            const gpu::Mailbox& rhs) const {
   return lhs->mailbox() == rhs;
+}
+
+bool SharedImageFactory::SharedImageRepresentationFactoryRefKeyEqual::
+operator()(
+    const gpu::Mailbox& lhs,
+    const std::unique_ptr<SharedImageRepresentationFactoryRef>& rhs) const {
+  return lhs == rhs->mailbox();
 }
 
 SharedImageFactory::SharedImageFactory(
@@ -366,7 +382,8 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(ahb_factory));
   }
   if (gr_context_type_ == GrContextType::kVulkan &&
-      !base::FeatureList::IsEnabled(features::kVulkanFromANGLE)) {
+      !base::FeatureList::IsEnabled(features::kVulkanFromANGLE) &&
+      base::FeatureList::IsEnabled(kUseExternalVkImageBackingOnAndroid)) {
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageBackingFactory>(context_state_);
     factories_.push_back(std::move(external_vk_image_factory));

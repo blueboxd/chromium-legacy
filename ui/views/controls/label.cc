@@ -115,7 +115,12 @@ void Label::SetText(const std::u16string& new_text) {
   ClearDisplayText();
 
   if (GetAccessibleName().empty() || GetAccessibleName() == current_text) {
-    SetAccessibleName(new_text);
+    if (new_text.empty()) {
+      SetAccessibleName(new_text,
+                        ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+    } else {
+      SetAccessibleName(new_text);
+    }
   }
 
   OnPropertyChanged(&full_text_ + kLabelText,
@@ -1003,8 +1008,20 @@ void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       ax_name_used_to_compute_offsets_ != GetAccessibleName()) {
     GetViewAccessibility().ClearTextOffsets();
     ax_name_used_to_compute_offsets_.clear();
+
+    // TODO(ViewsAX): When this function is only used to initialize the cache
+    // with these values, refactor this part to not rely on the cache as it will
+    // cause a chicken and egg situation. For now, this is necessary to keep the
+    // text offsets up to date.
     if (RefreshAccessibleTextOffsets()) {
       ax_name_used_to_compute_offsets_ = GetAccessibleName();
+      node_data->AddIntListAttribute(
+          ax::mojom::IntListAttribute::kCharacterOffsets,
+          GetViewAccessibility().GetCharacterOffsets());
+      node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                     GetViewAccessibility().GetWordStarts());
+      node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                     GetViewAccessibility().GetWordEnds());
     }
   }
 #endif  // BUILDFLAG(SUPPORTS_AX_TEXT_OFFSETS)

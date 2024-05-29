@@ -32,12 +32,13 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /** Responsible for the business logic for the BookmarkManagerToolbar. */
 class BookmarkToolbarMediator
         implements BookmarkUiObserver,
                 DragListener,
-                SelectionDelegate.SelectionObserver<BookmarkItem> {
+                SelectionDelegate.SelectionObserver<BookmarkId> {
     @VisibleForTesting
     static final List<Integer> SORT_MENU_IDS =
             Arrays.asList(
@@ -76,6 +77,7 @@ class BookmarkToolbarMediator
     private final BookmarkAddNewFolderCoordinator mBookmarkAddNewFolderCoordinator;
     private final Runnable mEndSearchRunnable;
     private final BookmarkMoveSnackbarManager mBookmarkMoveSnackbarManager;
+    private final BooleanSupplier mIncognitoEnabledSupplier;
 
     // TODO(crbug.com/40255666): Remove reference to BookmarkDelegate if possible.
     private @Nullable BookmarkDelegate mBookmarkDelegate;
@@ -88,13 +90,14 @@ class BookmarkToolbarMediator
             PropertyModel model,
             DragReorderableRecyclerViewAdapter dragReorderableRecyclerViewAdapter,
             OneshotSupplier<BookmarkDelegate> bookmarkDelegateSupplier,
-            SelectionDelegate selectionDelegate,
+            SelectionDelegate<BookmarkId> selectionDelegate,
             BookmarkModel bookmarkModel,
             BookmarkOpener bookmarkOpener,
             BookmarkUiPrefs bookmarkUiPrefs,
             BookmarkAddNewFolderCoordinator bookmarkAddNewFolderCoordinator,
             Runnable endSearchRunnable,
-            BookmarkMoveSnackbarManager bookmarkMoveSnackbarManager) {
+            BookmarkMoveSnackbarManager bookmarkMoveSnackbarManager,
+            BooleanSupplier incognitoEnabledSupplier) {
         mContext = context;
         mModel = model;
 
@@ -110,6 +113,7 @@ class BookmarkToolbarMediator
         mBookmarkAddNewFolderCoordinator = bookmarkAddNewFolderCoordinator;
         mEndSearchRunnable = endSearchRunnable;
         mBookmarkMoveSnackbarManager = bookmarkMoveSnackbarManager;
+        mIncognitoEnabledSupplier = incognitoEnabledSupplier;
 
         mModel.set(BookmarkToolbarProperties.SORT_MENU_IDS, SORT_MENU_IDS);
         mModel.set(
@@ -286,7 +290,6 @@ class BookmarkToolbarMediator
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         mCurrentFolder = folder;
-        mModel.set(BookmarkToolbarProperties.CURRENT_FOLDER, mCurrentFolder);
 
         BookmarkItem folderItem =
                 mCurrentFolder == null ? null : mBookmarkModel.getBookmarkById(mCurrentFolder);
@@ -356,12 +359,79 @@ class BookmarkToolbarMediator
     // SelectionDelegate.SelectionObserver implementation.
 
     @Override
-    public void onSelectionStateChange(List<BookmarkItem> selectedItems) {
+    public void onSelectionStateChange(List<BookmarkId> selectedItems) {
         if (!mSelectionDelegate.isSelectionEnabled()) {
             onUiModeChanged(mCurrentUiMode);
+
+            assert selectedItems.isEmpty();
         }
+        updateSelectedMenuItemVisibility(selectedItems);
 
         mModel.set(BookmarkToolbarProperties.SOFT_KEYBOARD_VISIBLE, false);
+    }
+
+    private void updateSelectedMenuItemVisibility(List<BookmarkId> selectedBookmarks) {
+        boolean showEdit = selectedBookmarks.size() == 1;
+        boolean showOpenInNewTab = selectedBookmarks.size() > 0;
+        boolean showOpenInIncognito =
+                selectedBookmarks.size() > 0 && mIncognitoEnabledSupplier.getAsBoolean();
+        boolean showMove = selectedBookmarks.size() > 0;
+        boolean showMarkRead;
+        boolean showMarkUnread;
+
+        // It does not make sense to open a folder in new tab.
+        for (BookmarkId bookmark : selectedBookmarks) {
+            BookmarkItem item = mBookmarkModel.getBookmarkById(bookmark);
+            if (item != null && item.isFolder()) {
+                showOpenInNewTab = false;
+                showOpenInIncognito = false;
+                break;
+            }
+        }
+
+        boolean hasPartnerBoomarkSelected = false;
+        // Partner bookmarks can't move, so if the selection includes a partner bookmark,
+        // disable the move button.
+        for (BookmarkId bookmark : selectedBookmarks) {
+            if (bookmark.getType() == BookmarkType.PARTNER) {
+                hasPartnerBoomarkSelected = true;
+                showMove = false;
+                break;
+            }
+        }
+        if (hasPartnerBoomarkSelected) {
+            showMove = false;
+            showEdit = false;
+        }
+
+        // Compute whether all selected bookmarks are reading list items and add up the number
+        // of read items.
+        int numReadingListItems = 0;
+        int numRead = 0;
+        for (int i = 0; i < selectedBookmarks.size(); i++) {
+            BookmarkId bookmark = selectedBookmarks.get(i);
+            BookmarkItem bookmarkItem = mBookmarkModel.getBookmarkById(bookmark);
+            if (bookmark.getType() == BookmarkType.READING_LIST) {
+                numReadingListItems++;
+                if (bookmarkItem.isRead()) numRead++;
+            }
+        }
+
+        // Only show the "mark as" options when all selections are reading list items and
+        // have the same read state.
+        boolean onlyReadingListSelected =
+                selectedBookmarks.size() > 0 && numReadingListItems == selectedBookmarks.size();
+        showMarkRead = onlyReadingListSelected && numRead == 0;
+        showMarkUnread = onlyReadingListSelected && numRead == selectedBookmarks.size();
+
+        mModel.set(BookmarkToolbarProperties.SELECTION_MODE_SHOW_EDIT, showEdit);
+        mModel.set(BookmarkToolbarProperties.SELECTION_MODE_SHOW_OPEN_IN_NEW_TAB, showOpenInNewTab);
+        mModel.set(
+                BookmarkToolbarProperties.SELECTION_MODE_SHOW_OPEN_IN_INCOGNITO,
+                showOpenInIncognito);
+        mModel.set(BookmarkToolbarProperties.SELECTION_MODE_SHOW_MOVE, showMove);
+        mModel.set(BookmarkToolbarProperties.SELECTION_MODE_SHOW_MARK_READ, showMarkRead);
+        mModel.set(BookmarkToolbarProperties.SELECTION_MODE_SHOW_MARK_UNREAD, showMarkUnread);
     }
 
     private @IdRes int getMenuIdFromDisplayPref(@BookmarkRowDisplayPref int displayPref) {

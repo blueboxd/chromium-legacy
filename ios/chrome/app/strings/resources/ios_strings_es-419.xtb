@@ -90,6 +90,7 @@
 <translation id="143681031165817424">La dirección se guardó únicamente en este dispositivo</translation>
 <translation id="1449835205994625556">Ocultar contraseña</translation>
 <translation id="1450170672351507823">Se activó la protección estándar. Para obtener más seguridad, usa la protección mejorada.</translation>
+<translation id="1455492980583160269">Enviar mensaje</translation>
 <translation id="1469381646033328562">Tu madre o padre administra tu cuenta.
 <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1491277525950327607">Presiona dos veces para activar o desactivar la configuración</translation>
@@ -99,6 +100,7 @@
 <translation id="1506063256525392513">Te permite tomar fotos, subirlas y escanear códigos QR</translation>
 <translation id="1509486075633541495">Acceder al sitio web</translation>
 <translation id="1509960214886564027">Es posible que las características de muchos sitios no funcionen de forma correcta</translation>
+<translation id="1520027731907768768">Recibe alertas de reducción de precio para los productos que sigues.</translation>
 <translation id="152234381334907219">Contraseñas que nunca se guardan</translation>
 <translation id="1523341279170789507">Permitir todas las cookies</translation>
 <translation id="1524563461097350801">No, gracias</translation>
@@ -860,6 +862,7 @@ Consulta las instrucciones de tu motor de búsqueda para borrar el historial de 
 <translation id="54401264925851789">Información de seguridad de la página</translation>
 <translation id="5443952882982198570">Tarjetas de crédito</translation>
 <translation id="5444892875087332195">Favoritos</translation>
+<translation id="5453738961176844111">Código de país</translation>
 <translation id="5454211924362324495">Para evitar que otras personas usen tu contraseña, <ph name="BEGIN_LINK" />cámbiala en <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Versión sin conexión</translation>
 <translation id="5459548306731933777">Mostrar detalles</translation>
@@ -1188,6 +1191,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6983306615164277634">También puedes mantener presionada la barra de direcciones para cambiar la posición.</translation>
 <translation id="6988572888918530647">Administrar tu Cuenta de Google</translation>
+<translation id="6990519590575500580">Facetime</translation>
 <translation id="6998989275928107238">A</translation>
 <translation id="699954956411469731">Notificaciones móviles</translation>
 <translation id="699985840472413751">Cerrar descarga</translation>
@@ -1224,6 +1228,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="7210568419880432164">Activar las notificaciones…</translation>
+<translation id="7211038039686180558">Los grupos de pestañas se guardan y actualizan automáticamente en todos los dispositivos en los que accediste a tu cuenta</translation>
 <translation id="721597782417389033">El sobrenombre de la tarjeta no es válido</translation>
 <translation id="7221173315674413369">Explora nuevas funciones y sugerencias en Novedades</translation>
 <translation id="7223102419539744003">Cerrar pestaña</translation>
@@ -1354,6 +1359,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7866872729285243843">Para obtener tu Lista de lectura en todos tus dispositivos, activa "Lista de lectura" en la configuración.</translation>
 <translation id="7866993391592926595">Si ocultas esta tarjeta, se desactivará el seguimiento de paquetes y se quitarán todos tus datos</translation>
 <translation id="7870750252270996949">Imagen copiada de Lens</translation>
+<translation id="7877056713163921063">Agregar a contactos</translation>
 <translation id="7879275349003161544">Mostrar descargas</translation>
 <translation id="7883882164760409935">Tienes contraseñas reutilizadas.</translation>
 <translation id="7884694604461143138">Historial de búsqueda (se encontraron <ph name="COUNT" />)</translation>
@@ -1591,7 +1597,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="9000089900434778519">Tu motor de búsqueda es <ph name="DSE_NAME" />. Consulta las instrucciones para borrar el historial de búsqueda (si corresponde).</translation>
 <translation id="9008201768610948239">Ignorar</translation>
 <translation id="9012585441087414258">Te protege contra descargas, extensiones y sitios que se sabe que son peligrosos. Si una página realiza alguna acción sospechosa, las URLs y los bits del contenido de la página se envían a la Navegación segura de Google.</translation>
-<translation id="9025203546212508704">Desliza el dedo para aprender a personalizar tu menú</translation>
 <translation id="9029650858822697271">Saliste de tu cuenta</translation>
 <translation id="9034759925968272072">No saldrás de tu cuenta de Google. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9037965129289936994">Mostrar original</translation>

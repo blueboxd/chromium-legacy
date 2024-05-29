@@ -21,6 +21,17 @@ namespace password_manager::features {
 // auto-approved.
 BASE_DECLARE_FEATURE(kAutoApproveSharedPasswordUpdatesFromSameSender);
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+// Feature flag to control the displaying of an ongoing hats survey that
+// measures users perception of autofilling password forms. Differently from
+// other surveys, the Autofill user perception surveys will not have a specific
+// target number of answers where it will be fully stop, instead, it will run
+// indefinitely. A target number of full answers exists, but per quarter. The
+// goal is to have a go to place to understand how users are perceiving autofill
+// across quarters.
+BASE_DECLARE_FEATURE(kAutofillPasswordUserPerceptionSurvey);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
 #if BUILDFLAG(IS_WIN)
 // OS authentication will use UserConsentVerifier api to trigger Windows Hello
 // authentication.
@@ -87,6 +98,12 @@ BASE_DECLARE_FEATURE(kPasswordManualFallbackAvailable);
 BASE_DECLARE_FEATURE(kRestartToGainAccessToKeychain);
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Enables promo card in settings encouraging users to enable screenlock reauth
+// before filling passwords.
+BASE_DECLARE_FEATURE(kScreenlockReauthPromoCard);
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
 // Enables the notification UI that is displayed to the user when visiting a
 // website for which a stored password has been shared by another user.
 BASE_DECLARE_FEATURE(kSharedPasswordNotificationUI);
@@ -95,7 +112,17 @@ BASE_DECLARE_FEATURE(kSharedPasswordNotificationUI);
 // manager
 BASE_DECLARE_FEATURE(kSkipUndecryptablePasswords);
 
+// Starts passwords resync after undecryptable passwords were removed. This flag
+// is enabled by default and should be treaded as a killswitch.
+BASE_DECLARE_FEATURE(kTriggerPasswordResyncAfterDeletingUndecryptablePasswords);
+
 #if BUILDFLAG(IS_ANDROID)
+
+// Enables showing various warnings for password manager users not yet enrolled
+// into the new experience of storing passwords in GMSCore.
+BASE_DECLARE_FEATURE(
+    kUnifiedPasswordManagerLocalPasswordsAndroidAccessLossWarning);
+
 // Enables use of Google Mobile services for non-synced password storage that
 // contains no passwords, so no migration will be necessary.
 // UnifiedPasswordManagerLocalPasswordsAndroidWithMigration will replace this
@@ -129,6 +156,9 @@ inline constexpr int kDefaultLocalUpmMinGmsVersion = 240212000;
 inline constexpr int kAccountUpmMinGmsVersion = 223012000;
 
 // Same as above, but for automotive.
+//
+// IMPORTANT: as the flags have been enabled by default, this is now the only
+// feature guard remaining on automotive!
 inline constexpr char kLocalUpmMinGmsVersionParamForAuto[] =
     "min_gms_version_for_auto";
 inline constexpr int kDefaultLocalUpmMinGmsVersionForAuto =

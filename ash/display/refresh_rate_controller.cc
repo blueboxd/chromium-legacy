@@ -67,11 +67,19 @@ void RefreshRateController::SetGameMode(aura::Window* window,
                                         bool game_mode_on) {
   // Update the |game_window_observer_|.
   if (game_mode_on) {
-    // The GameModeController will always turn off game mode before the observed
-    // window is destroyed.
-    game_window_observer_.Observe(window);
+    if (game_window_observer_.GetSource() != window) {
+      game_window_observer_.Reset();
+      // The GameModeController will always turn off game mode before the
+      // observed window is destroyed.
+      game_window_observer_.Observe(window);
+    }
   } else {
-    game_window_observer_.Reset();
+    if (game_window_observer_.GetSource() == window) {
+      game_window_observer_.Reset();
+    } else {
+      DCHECK(!game_window_observer_.IsObserving());
+      // Game mode is already off. Nothing to do.
+    }
   }
 
   UpdateStates();
@@ -80,6 +88,12 @@ void RefreshRateController::SetGameMode(aura::Window* window,
 void RefreshRateController::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK_EQ(window, game_window_observer_.GetSource());
   // Refresh state in case the window changed displays.
+  UpdateStates();
+}
+
+void RefreshRateController::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window, game_window_observer_.GetSource());
+  game_window_observer_.Reset();
   UpdateStates();
 }
 

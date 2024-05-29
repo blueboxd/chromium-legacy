@@ -191,6 +191,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
           <ph name="LIST_ITEM" />darbdavys arba mokykla;
           <ph name="LIST_ITEM" />interneto paslaugų teikėjas.
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">Stebėti šį elementą</translation>
 <translation id="1337692097987160377">Bendrinti šį skirtuką</translation>
 <translation id="1339601241726513588">Registracijos domenas:</translation>
 <translation id="1340482604681802745">Paėmimo adresas</translation>
@@ -360,6 +361,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="1641976391427233992">Atidėti išvestį iki</translation>
 <translation id="1643651787397909318">Mygtukas „Eiti į „Chrome“ saugos patikrą“; suaktyvinkite, kad pereitumėte į „Chrome“ saugos patikros puslapį nustatymuose</translation>
 <translation id="1644574205037202324">Istorija</translation>
+<translation id="1645004815457365098">Nežinomas šaltinis</translation>
 <translation id="1645368109819982629">Nepalaikomas protokolas</translation>
 <translation id="1650602712345345441">Tvarkykite „Chrome“ nustatymus</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -575,7 +577,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2056658168519009885">Svetainės gali prašyti „Chrome“ informacijos, kad galėtų suasmeninti jums rodomus skelbimus.</translation>
 <translation id="2059166748188874810">Savivaldybė</translation>
 <translation id="2059202684901022309">22 x 34 col.</translation>
-<translation id="206275378685759380">Palaukite, kol galėsite pirkti</translation>
 <translation id="2064568741209980952">Kreditai ir paskolos</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 pasiūlymas}one{# pasiūlymas}few{# pasiūlymai}many{# pasiūlymo}other{# pasiūlymų}}</translation>
 <translation id="2066915425250589881">pateikti užklausą ją ištrinti</translation>
@@ -1336,6 +1337,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="353816159217417898">Ekranas (suskirstytas puslapiais)</translation>
 <translation id="3542628208405253498">Kortelės vaizdas</translation>
 <translation id="3542768452570884558">Atidaryti nuorodą naujame lange</translation>
+<translation id="3547442767634383572">Darbo profilio apžvalga</translation>
 <translation id="3547746132308051926">20 x 24 col.</translation>
 <translation id="3552155506104542239">Perspėjimas: ši politika nesuderinama su <ph name="POLICY_NAME" /> ir neturės įtakos „Android“ programoms. Kitu atveju ši politika veikia, kaip numatyta.</translation>
 <translation id="3552297013052089404">Šriftas be užraitų</translation>
@@ -2200,6 +2202,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="5230733896359313003">Pristatymo adresas</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">Tvarkomas profilis, naršyklė ir tam tikra įrenginio informacija pasiekiami jūsų administratoriui. Jis gali matyti toliau nurodytą informaciją.</translation>
 <translation id="5234764350956374838">Atsisakyti</translation>
 <translation id="5238301240406177137">Išsaugoti paskyroje</translation>
 <translation id="5239119062986868403">Įprasta kaina</translation>
@@ -2213,6 +2216,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="52517543715119994">Sužinokite apie „Chrome“ funkcijas</translation>
 <translation id="5251803541071282808">Debesis</translation>
 <translation id="5254043433801397071">Optimizuoti spausdinimo turinį</translation>
+<translation id="5255583962255635076">Pritaikyta naršyklės politika darbo profilyje</translation>
 <translation id="5255690596502591079">Vis tiek užfiksuoti</translation>
 <translation id="5255833070095767006">350 x 460 mm</translation>
 <translation id="5257739419779698609">{0,plural, =1{Pagal administratoriaus politikos nuostatas nerekomenduojama kopijuoti šio failo į <ph name="DESTINATION_NAME" />}one{Pagal administratoriaus politikos nuostatas nerekomenduojama kopijuoti šių failų į <ph name="DESTINATION_NAME" />}few{Pagal administratoriaus politikos nuostatas nerekomenduojama kopijuoti šių failų į <ph name="DESTINATION_NAME" />}many{Pagal administratoriaus politikos nuostatas nerekomenduojama kopijuoti šių failų į <ph name="DESTINATION_NAME" />}other{Pagal administratoriaus politikos nuostatas nerekomenduojama kopijuoti šių failų į <ph name="DESTINATION_NAME" />}}</translation>
@@ -2609,6 +2613,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6035491133925068289">Lengvoji atletika</translation>
 <translation id="6039846035001940113">Jei problema išlieka, susisiekite su svetainės savininku.</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
+<translation id="6040539895181423374">Kainų įžvalgos</translation>
 <translation id="604124094241169006">Automatinis</translation>
 <translation id="6041777658117377052">Kameros temperatūra</translation>
 <translation id="6042308850641462728">Daugiau</translation>
@@ -3214,7 +3219,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">Įjungę šį nustatymą, grįžkite į šį skirtuką ir pradėkite rašyti</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">Administratorius gali peržiūrėti:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, paspauskite tabuliavimo klavišą, tada – „Enter“, kad būtų atidarytas naujas privataus naršymo inkognito skirtukas</translation>
 <translation id="7203375778433816396">Nustatyti „Chrome“ kaip numatytąją sistemos naršyklę</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nesilaikoma saugos standartų.</translation>
@@ -3333,6 +3337,7 @@ Papildoma išsami informacija:
 <translation id="7421067045979951561">protokolo doroklės</translation>
 <translation id="7422347648202898039">Etiketės (saugos)</translation>
 <translation id="7423283032694727565">Mygtukas „Tvarkyti slapukus“; suaktyvinkite, kad galėtumėte tvarkyti slapukų nuostatas „Chrome“ nustatymuose</translation>
+<translation id="742435751935045381">Įdiegtos programos ir plėtiniai darbo profilyje</translation>
 <translation id="7424421098814895617">Pasirinkta adreso ištrynimo parinktis</translation>
 <translation id="7425037327577270384">Padėkite man rašyti</translation>
 <translation id="7425878584435172632">Regimasis menas ir dizainas</translation>
@@ -3879,6 +3884,7 @@ Papildoma išsami informacija:
 Papildoma išsami informacija:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">Mikrofonas leidžiamas šį kartą</translation>
+<translation id="8421158157346464398">Darbo profilio informacija (pvz., darbo profilio naudotojo vardas)</translation>
 <translation id="8422228580902424274">Svetainės, kurioje ketinate apsilankyti, atakos vykdytojai gali apgaule priversti jus įdiegti programinę įrangą ar atskleisti informaciją, pvz., slaptažodį, telefono ar kredito kortelės numerį.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Keisti</translation>
@@ -4248,6 +4254,7 @@ Papildoma išsami informacija:
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">Svetainės, kuriose lankotės, taip pat gali nustatyti, kas jums patinka, pagal jūsų veiklą toje svetainėje. Pavyzdžiui, jei lankotės svetainėje, kurioje parduodami ilgo nuotolio bėgimo bateliai, ji gali nuspręsti, kad jus domina bėgimo maratonai.</translation>
 <translation id="9166851138617700776">Daugiau apie svetainių siūlomus skelbimus ir skelbimų vertinimą</translation>
+<translation id="9167054383925257837">Naršyklės ir įrenginio OS informacija (pvz., naršyklės ir OS versijos)</translation>
 <translation id="9167594211215946097">Turėti tiesioginę prieigą prie spausdintuvų</translation>
 <translation id="9168814207360376865">Leisti svetainėms tikrinti, ar esate išsaugoję mokėjimo metodus</translation>
 <translation id="9169664750068251925">Visada blokuoti šioje svetainėje</translation>

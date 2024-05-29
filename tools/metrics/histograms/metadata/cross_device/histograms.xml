@@ -2189,6 +2189,72 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PushNotification.ChromeOS.GCM.Token.RetrievalResult"
+    enum="BooleanSuccess" expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a GCM token retrieval. Emitted in the
+    initialization flow after token has been retrieved.
+  </summary>
+</histogram>
+
+<histogram name="PushNotification.ChromeOS.GCM.Token.RetrievalTime" units="ms"
+    expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes to retrieve a GCM token. Emitted in the
+    initialization flow after token has been received. Only emitted if the token
+    was retrieved successfully.
+  </summary>
+</histogram>
+
+<histogram
+    name="PushNotification.ChromeOS.MultiLoginUpdateApi.ResponseTime.Failure"
+    units="ms" expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes to receive a response for a failed Push
+    Notification MultiLoginUpdate API call. Emitted in the initialization flow
+    and only emitted if the API call was not successful.
+  </summary>
+</histogram>
+
+<histogram
+    name="PushNotification.ChromeOS.MultiLoginUpdateApi.ResponseTime.Success"
+    units="ms" expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the total time it takes to receive a response for a successful Push
+    Notification MultiLoginUpdate API call. Emitted in the initialization flow
+    and only emitted if the API call was successful.
+  </summary>
+</histogram>
+
+<histogram name="PushNotification.ChromeOS.OAuth.Token.RetrievalResult"
+    enum="BooleanSuccess" expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure of a OAuth token retrieval. Emitted in the
+    initialization flow after token has been retrieved.
+  </summary>
+</histogram>
+
+<histogram name="PushNotification.ChromeOS.Registration.Result"
+    enum="BooleanSuccess" expires_after="2025-05-05">
+  <owner>akingsb@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the success or failure registering with the Push Notification
+    Service. Emitted in the initialization flow after a response to the
+    registration request has been received.
+  </summary>
+</histogram>
+
 <histogram name="SmartLock.AuthMethodChoice.Unlock"
     enum="SmartLockAuthMethodChoice" expires_after="2025-05-05">
   <owner>hansberry@chromium.org</owner>

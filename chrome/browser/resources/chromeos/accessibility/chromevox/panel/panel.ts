@@ -394,28 +394,6 @@ export class Panel implements PanelInterface {
     }
   }
 
-  /** Sets the index of the current active menu to be 0. */
-  private scrollToTop_(): void {
-    // TODO(b/314203187): Not nulls asserted, check that this is correct.
-    this.menuManager_.activeMenu!.scrollToTop();
-  }
-
-  /** Sets the index of the current active menu to be the last index. */
-  private scrollToBottom_(): void {
-    // TODO(b/314203187): Not nulls asserted, check that this is correct.
-    this.menuManager_.activeMenu!.scrollToBottom();
-  }
-
-  /**
-   * Advance the index of the current active menu item by |delta|.
-   * @param delta The number to add to the active menu item index.
-   */
-  private advanceItemBy_(delta: number): void {
-    if (this.menuManager_.activeMenu) {
-      this.menuManager_.activeMenu.advanceItemBy(delta);
-    }
-  }
-
   /**
    * Called when a key is pressed. Handle arrow keys to navigate the menus,
    * Esc to close, and Enter/Space to activate an item.
@@ -427,78 +405,8 @@ export class Panel implements PanelInterface {
       return;
     }
 
-    if (!this.menuManager_.activeMenu) {
+    if (!this.menuManager_.onKeyDown(event)) {
       return;
-    }
-
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
-      return;
-    }
-
-    // We need special logic for navigating the search bar.
-    // If left/right arrow are pressed, we should adjust the search bar's
-    // cursor. We only want to advance the active menu if we are at the
-    // beginning/end of the search bar's contents.
-    if (this.menuManager_.searchMenu &&
-        event.target === this.menuManager_.searchMenu.searchBar) {
-      switch (event.key) {
-        case 'ArrowLeft':
-        case 'ArrowRight':
-          if (event.target.hasOwnProperty('value')) {
-            const target = event.target as unknown as {
-              value: string,
-              selectionStart: number,
-            };
-            const cursorIndex = target.selectionStart +
-                (event.key === 'ArrowRight' ? 1 : -1);
-            const queryLength = target.value.length;
-            if (cursorIndex >= 0 && cursorIndex <= queryLength) {
-              return;
-            }
-          }
-          break;
-        case ' ':
-          return;
-      }
-    }
-
-    switch (event.key) {
-      case 'ArrowLeft':
-        this.menuManager_.advanceActiveMenuBy(-1);
-        break;
-      case 'ArrowRight':
-        this.menuManager_.advanceActiveMenuBy(1);
-        break;
-      case 'ArrowUp':
-        this.advanceItemBy_(-1);
-        break;
-      case 'ArrowDown':
-        this.advanceItemBy_(1);
-        break;
-      case 'Escape':
-        this.closeMenusAndRestoreFocus();
-        break;
-      case 'PageUp':
-        this.advanceItemBy_(10);
-        break;
-      case 'PageDown':
-        this.advanceItemBy_(-10);
-        break;
-      case 'Home':
-        this.scrollToTop_();
-        break;
-      case 'End':
-        this.scrollToBottom_();
-        break;
-      case 'Enter':
-      case ' ':
-        this.pendingCallback_ =
-            this.menuManager_.getCallbackForCurrentItem() as AsyncCallback;
-        this.closeMenusAndRestoreFocus();
-        break;
-      default:
-        // Don't mark this event as handled.
-        return;
     }
 
     event.preventDefault();

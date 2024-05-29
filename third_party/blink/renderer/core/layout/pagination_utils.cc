@@ -166,12 +166,14 @@ void ResolvePageBoxGeometry(const BlockNode& page_box,
         }
       };
   LayoutUnit additional_inline_space =
-      space.AvailableSize().inline_size - geometry->border_box_size.inline_size;
+      space.AvailableSize().inline_size -
+      (geometry->border_box_size.inline_size + margins->InlineSum());
   ResolveAutoMargin(style.MarginInlineStartUsing(style),
                     style.MarginInlineEndUsing(style), additional_inline_space,
                     &margins->inline_start, &margins->inline_end);
   LayoutUnit additional_block_space =
-      space.AvailableSize().block_size - geometry->border_box_size.block_size;
+      space.AvailableSize().block_size -
+      (geometry->border_box_size.block_size + margins->BlockSum());
   ResolveAutoMargin(style.MarginBlockStartUsing(style),
                     style.MarginBlockEndUsing(style), additional_block_space,
                     &margins->block_start, &margins->block_end);
@@ -302,7 +304,7 @@ LogicalRect TargetPageBorderBoxLogicalRect(
 }
 
 wtf_size_t PageCount(const LayoutView& view) {
-  DCHECK(view.ShouldUsePrintingLayout());
+  DCHECK(view.ShouldUsePaginatedLayout());
   const auto& fragments = view.GetPhysicalFragment(0)->Children();
   return ClampTo<wtf_size_t>(fragments.size());
 }

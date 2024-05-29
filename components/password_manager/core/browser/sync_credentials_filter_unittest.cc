@@ -156,9 +156,9 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   // |login_state| being NEW or EXISTING, prepares |form_manager_| in a state in
   // which |pending_| looks like a new or existing credential, respectively.
   void SavePending(LoginState login_state) {
-    std::vector<raw_ptr<const PasswordForm, VectorExperimental>> matches;
+    std::vector<PasswordForm> matches;
     if (login_state == LoginState::EXISTING) {
-      matches.push_back(&pending_);
+      matches.push_back(pending_);
     }
     fetcher_.SetNonFederated(matches);
     fetcher_.NotifyFetchCompleted();
@@ -295,7 +295,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SignedInWithSyncFeatureOff) {
 
 TEST_F(CredentialsFilterTest, ShouldSave_SignIn_Form) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
-  form.form_data.is_gaia_with_skip_save_password_form = true;
+  form.form_data.set_is_gaia_with_skip_save_password_form(true);
 
   SetSyncingPasswords(false);
   EXPECT_FALSE(filter_->ShouldSave(form));

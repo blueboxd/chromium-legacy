@@ -178,6 +178,12 @@ public class FeedSurfaceCoordinator
         }
 
         @Override
+        protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+            super.onSizeChanged(width, height, oldWidth, oldHeight);
+            mRecyclerView.post(mRecyclerView::invalidateItemDecorations);
+        }
+
+        @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
             if (super.onInterceptTouchEvent(ev)) return true;
             if (mMediator != null && !mMediator.getTouchEnabled()) return true;
@@ -521,10 +527,7 @@ public class FeedSurfaceCoordinator
         }
 
         // Mediator should be created before any Stream changes.
-        boolean useUiConfig =
-                ntpHeader != null
-                        && ChromeFeatureList.sSurfacePolish.isEnabled()
-                        && mUseStaggeredLayout;
+        boolean useUiConfig = ntpHeader != null && mUseStaggeredLayout;
         mMediator =
                 new FeedSurfaceMediator(
                         this,

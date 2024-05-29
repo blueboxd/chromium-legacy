@@ -180,7 +180,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool is_prerendering,
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
-  bool CreateThreadPool(std::string_view name) override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
@@ -290,12 +289,14 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   network::mojom::IpProtectionProxyBypassPolicy
   GetIpProtectionProxyBypassPolicy() override;
   bool WillProvidePublicFirstPartySets() override;
+  bool IsFullCookieAccessAllowed(content::BrowserContext* browser_context,
+                                 content::RenderFrameHost* rfh,
+                                 const GURL& url,
+                                 const blink::StorageKey& storage_key) override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;
   }
-
-  static void DisableCreatingThreadPool();
 
  private:
   scoped_refptr<safe_browsing::UrlCheckerDelegate>

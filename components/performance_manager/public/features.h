@@ -94,6 +94,11 @@ BASE_DECLARE_FEATURE(kPerformanceIntervention);
 BASE_DECLARE_FEATURE(kPrefetchVirtualMemoryPolicy);
 #endif
 
+// This represents the duration that the performance intervention button
+// should remain in the toolbar after the user dismisses the intervention
+// dialog without taking the suggested action.
+extern const base::FeatureParam<base::TimeDelta> kInterventionButtonTimeout;
+
 // This represents the duration that CPU must be over the threshold before
 // a notification is triggered.
 extern const base::FeatureParam<base::TimeDelta> kCPUTimeOverThreshold;
@@ -126,7 +131,7 @@ extern const base::FeatureParam<int> kMemoryFreeBytesThreshold;
 
 BASE_DECLARE_FEATURE(kPMProcessPriorityPolicy);
 
-extern const base::FeatureParam<bool> kBoostChildFrames;
+extern const base::FeatureParam<bool> kInheritParentPriority;
 
 extern const base::FeatureParam<bool> kDownvoteAdFrames;
 

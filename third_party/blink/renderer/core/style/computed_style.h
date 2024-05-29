@@ -106,7 +106,6 @@ class StyleContentAlignmentData;
 class StyleDifference;
 class StyleImage;
 class StyleInheritedVariables;
-class StyleInitialData;
 class StyleRay;
 class StyleResolver;
 class StyleResolverState;
@@ -2254,6 +2253,12 @@ class ComputedStyle final : public ComputedStyleBase {
     if (pseudo == kPseudoIdBackdrop && Overlay() == EOverlay::kNone) {
       return false;
     }
+    if (pseudo == kPseudoIdScrollMarkerGroupBefore) {
+      return ScrollMarkers() == EScrollMarkers::kBefore && IsScrollContainer();
+    }
+    if (pseudo == kPseudoIdScrollMarkerGroupAfter) {
+      return ScrollMarkers() == EScrollMarkers::kAfter && IsScrollContainer();
+    }
     if (!HasPseudoElementStyle(pseudo)) {
       return false;
     }
@@ -2264,6 +2269,22 @@ class ComputedStyle final : public ComputedStyleBase {
     // ::after, but the rest of the pseudo-elements should only be used for
     // elements with an actual layout object.
     return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
+  }
+
+  bool HasScrollMarkersBefore() const {
+    return ScrollMarkers() == EScrollMarkers::kBefore;
+  }
+
+  bool HasScrollMarkersAfter() const {
+    return ScrollMarkers() == EScrollMarkers::kAfter;
+  }
+
+  bool ScrollMarkersNone() const {
+    return ScrollMarkers() == EScrollMarkers::kNone;
+  }
+
+  bool ScrollMarkersEqual(const ComputedStyle& other) const {
+    return ScrollMarkers() == other.ScrollMarkers();
   }
 
   // Returns true if the element is rendered in the top layer. That is the case
@@ -3221,10 +3242,10 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   // Variables
   const StyleInheritedVariables* InheritedVariables() const {
-    return InheritedVariablesInternal().get();
+    return InheritedVariablesInternal().Get();
   }
   const StyleNonInheritedVariables* NonInheritedVariables() const {
-    return NonInheritedVariablesInternal().get();
+    return NonInheritedVariablesInternal().Get();
   }
   CSSVariableData* GetVariableData(const AtomicString&,
                                    bool is_inherited_property) const;
@@ -3233,12 +3254,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   void CopyInheritedVariablesFrom(const ComputedStyle*);
   void CopyNonInheritedVariablesFrom(const ComputedStyle*);
   CORE_EXPORT void SetVariableData(const AtomicString& name,
-                                   scoped_refptr<CSSVariableData> value,
+                                   CSSVariableData* value,
                                    bool is_inherited_property) {
     if (is_inherited_property) {
-      MutableInheritedVariables().SetData(name, std::move(value));
+      MutableInheritedVariables().SetData(name, value);
     } else {
-      MutableNonInheritedVariables().SetData(name, std::move(value));
+      MutableNonInheritedVariables().SetData(name, value);
     }
   }
   CORE_EXPORT void SetVariableValue(const AtomicString& name,
@@ -3249,9 +3270,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     } else {
       MutableNonInheritedVariables().SetValue(name, value);
     }
-  }
-  CORE_EXPORT void SetInitialData(scoped_refptr<StyleInitialData> data) {
-    MutableInitialDataInternal() = std::move(data);
   }
 
   EWhiteSpace WhiteSpace() const {
@@ -3287,6 +3305,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     SetContainIntrinsicHeight(height);
   }
 
+ private:
+  mutable bool has_own_inherited_variables_ = false;
+  mutable bool has_own_non_inherited_variables_ = false;
 };
 
 }  // namespace blink

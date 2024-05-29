@@ -96,8 +96,7 @@ class SearchEngineChoiceServiceTest : public ::testing::Test {
     TemplateURLService::RegisterProfilePrefs(pref_service_.registry());
     DefaultSearchManager::RegisterProfilePrefs(pref_service_.registry());
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_.registry());
-
-    pref_service_.registry()->RegisterBooleanPref(
+    local_state_.registry()->RegisterBooleanPref(
         metrics::prefs::kMetricsReportingEnabled, true);
 
     // Override the country checks to simulate being in Belgium.
@@ -122,7 +121,7 @@ class SearchEngineChoiceServiceTest : public ::testing::Test {
       CHECK(!search_engine_choice_service_);
     }
     search_engine_choice_service_ = std::make_unique<SearchEngineChoiceService>(
-        pref_service_, variation_country_id);
+        pref_service_, &local_state_, variation_country_id);
   }
 
   policy::MockPolicyService& policy_service() { return policy_service_; }
@@ -173,6 +172,7 @@ class SearchEngineChoiceServiceTest : public ::testing::Test {
 
   base::test::ScopedFeatureList feature_list_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<search_engines::SearchEngineChoiceService>
       search_engine_choice_service_;
   NiceMock<policy::MockPolicyService> policy_service_;
@@ -1405,7 +1405,7 @@ TEST_F(SearchEngineChoiceServiceTest,
       kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
 }
 
-// Test that the user is not reprompted is the reprompt parameter is not a valid
+// Test that the user is not reprompted if the reprompt parameter is not a valid
 // JSON string.
 TEST_F(SearchEngineChoiceServiceTest, NoRepromptForSyntaxError) {
   // Set the reprompt parameters with invalid syntax.
@@ -1437,6 +1437,43 @@ TEST_F(SearchEngineChoiceServiceTest, NoRepromptForSyntaxError) {
   histogram_tester_.ExpectUniqueSample(
       search_engines::kSearchEngineChoiceRepromptHistogram,
       RepromptResult::kInvalidDictionary, 1);
+}
+
+// Test that the user is not reprompted if the no reprompt parameter is set.
+TEST_F(SearchEngineChoiceServiceTest, NoRepromptWhenSpecified) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      switches::kSearchEngineChoiceTrigger,
+      {{switches::kSearchEngineChoiceTriggerRepromptParams.name,
+        kNoRepromptString}});
+  ASSERT_EQ(kNoRepromptString,
+            switches::kSearchEngineChoiceTriggerRepromptParams.Get());
+
+  // Initialize the preference with some previous choice.
+  int64_t kPreviousTimestamp = 1;
+  pref_service()->SetInt64(
+      prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp,
+      kPreviousTimestamp);
+
+  // Trigger the creation of the service, which should check for the reprompt.
+  search_engine_choice_service();
+
+  // The user should not be reprompted.
+  EXPECT_EQ(kPreviousTimestamp,
+            pref_service()->GetInt64(
+                prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp));
+  histogram_tester_.ExpectTotalCount(
+      search_engines::kSearchEngineChoiceWipeReasonHistogram, 0);
+  histogram_tester_.ExpectTotalCount(
+      search_engines::kSearchEngineChoiceRepromptSpecificCountryHistogram, 0);
+  histogram_tester_.ExpectTotalCount(
+      search_engines::kSearchEngineChoiceRepromptWildcardHistogram, 0);
+  histogram_tester_.ExpectUniqueSample(
+      search_engines::kSearchEngineChoiceRepromptHistogram,
+      RepromptResult::kNoReprompt, 1);
+  histogram_tester_.ExpectBucketCount(
+      search_engines::kSearchEngineChoiceRepromptHistogram,
+      RepromptResult::kInvalidDictionary, 0);
 }
 
 // The user is reprompted if the version preference is missing.
@@ -1678,9 +1715,11 @@ class SearchEngineChoiceUtilsResourceIdsTest : public ::testing::Test {
   SearchEngineChoiceUtilsResourceIdsTest() {
     TemplateURLService::RegisterProfilePrefs(pref_service_.registry());
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_.registry());
+    local_state_.registry()->RegisterBooleanPref(
+        metrics::prefs::kMetricsReportingEnabled, true);
 
-    search_engine_choice_service_ =
-        std::make_unique<SearchEngineChoiceService>(pref_service_);
+    search_engine_choice_service_ = std::make_unique<SearchEngineChoiceService>(
+        pref_service_, &local_state_);
   }
 
   ~SearchEngineChoiceUtilsResourceIdsTest() override = default;
@@ -1694,6 +1733,7 @@ class SearchEngineChoiceUtilsResourceIdsTest : public ::testing::Test {
   base::test::ScopedFeatureList feature_list_{
       switches::kSearchEngineChoiceTrigger};
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<search_engines::SearchEngineChoiceService>
       search_engine_choice_service_;
 };
@@ -1731,12 +1771,18 @@ class SearchEngineChoiceServiceWithVariationsTest : public ::testing::Test {
           "false"}});
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_.registry());
     TemplateURLService::RegisterProfilePrefs(pref_service_.registry());
+
+    local_state_.registry()->RegisterBooleanPref(
+        metrics::prefs::kMetricsReportingEnabled, true);
   }
 
   PrefService& pref_service() { return pref_service_; }
 
+  PrefService& local_state() { return local_state_; }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+  TestingPrefServiceSimple local_state_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 };
 
@@ -1746,7 +1792,7 @@ TEST_F(SearchEngineChoiceServiceWithVariationsTest, NoVariationsCountry) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSearchEngineChoiceCountry));
   SearchEngineChoiceService search_engine_choice_service(
-      pref_service(), country_codes::kCountryIDUnknown);
+      pref_service(), &local_state(), country_codes::kCountryIDUnknown);
 
   EXPECT_EQ(search_engine_choice_service.GetCountryId(),
             country_codes::GetCurrentCountryID());
@@ -1763,8 +1809,8 @@ TEST_F(SearchEngineChoiceServiceWithVariationsTest, WithVariationsCountry) {
     variation_country_id = country_codes::CountryStringToCountryID("DE");
   }
 
-  SearchEngineChoiceService search_engine_choice_service(pref_service(),
-                                                         variation_country_id);
+  SearchEngineChoiceService search_engine_choice_service(
+      pref_service(), &local_state(), variation_country_id);
 
   EXPECT_EQ(variation_country_id, search_engine_choice_service.GetCountryId());
 }

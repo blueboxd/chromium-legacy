@@ -112,6 +112,23 @@ export class EmojiPickerApiProxy {
     return this.handler.getInitialQuery();
   }
 
+  updateHistoryInPrefs(category: Category, history: string[]): void {
+    this.handler.updateHistoryInPrefs(category, history);
+  }
+
+  updatePreferredVariantsInPrefs(preferredVariants: Record<string, string>):
+      void {
+    this.handler.updatePreferredVariantsInPrefs(
+        Object.keys(preferredVariants).map(base => ({
+                                             'base': base,
+                                             'variant': preferredVariants[base],
+                                           })));
+  }
+
+  getHistoryFromPrefs(category: Category): Promise<{history: string[]}> {
+    return this.handler.getHistoryFromPrefs(category);
+  }
+
   onUiFullyLoaded(): void {
     this.handler.onUiFullyLoaded();
   }

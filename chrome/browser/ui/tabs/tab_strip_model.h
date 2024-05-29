@@ -48,10 +48,6 @@ namespace content {
 class WebContents;
 }
 
-namespace tabs {
-class TabGroupTabCollection;
-}
-
 class TabGroupModelFactory {
  public:
   TabGroupModelFactory();
@@ -181,8 +177,10 @@ class TabStripModel : public TabGroupController {
   void RemoveObserver(TabStripModelObserver* observer);
 
   // Retrieve the number of WebContentses/emptiness of the TabStripModel.
-  int count() const;
-  bool empty() const;
+  int count() const {
+    return static_cast<int>(GetContentsDataAsVector().size());
+  }
+  bool empty() const { return GetContentsDataAsVector().empty(); }
 
   int GetIndexOfTab(tabs::TabHandle tab) const;
   tabs::TabHandle GetTabHandleAt(int index) const;
@@ -522,7 +520,7 @@ class TabStripModel : public TabGroupController {
   // Removes the set of tabs pointed to by |indices| from the the groups they
   // are in, if any. The tabs are moved out of the group if necessary. |indices|
   // must be sorted in ascending order.
-  void RemoveFromGroup(std::vector<int> indices);
+  void RemoveFromGroup(const std::vector<int>& indices);
 
   TabGroupModel* group_model() const { return group_model_.get(); }
 
@@ -719,9 +717,6 @@ class TabStripModel : public TabGroupController {
 
   int ConstrainMoveIndex(int index, bool pinned_tab) const;
 
-  // Returns the tab at an index from the `contents_data`.
-  tabs::TabModel* GetTabAtIndex(int index) const;
-
   // If |index| is selected all the selected indices are returned, otherwise a
   // vector with |index| is returned. This is used when executing commands to
   // determine which indices the command applies to. Indices are sorted in
@@ -755,6 +750,9 @@ class TabStripModel : public TabGroupController {
                       std::unique_ptr<tabs::TabModel> tab,
                       int add_types,
                       std::optional<tab_groups::TabGroupId> group);
+
+  // Returns the tab at  `index` in the tabstrip.
+  tabs::TabModel* GetTabAtIndex(int index) const;
 
   // Closes the WebContentses at the specified indices. This causes the
   // WebContentses to be destroyed, but it may not happen immediately. If
@@ -813,53 +811,14 @@ class TabStripModel : public TabGroupController {
   // movement slots into and out of groups.
   void MoveTabRelative(TabRelativeDirection direction);
 
-  // Does the work of MoveWebContentsAt. This has no checks to make sure the
-  // position is valid, those are done in MoveWebContentsAt.
-  void MoveWebContentsAtImpl(int index,
-                             int to_position,
-                             bool select_after_move);
-
-  // Implementation of moving a webcontent when the `contents_data` is a tab
-  // collection.
-  void MoveWebContentsAtImplWithCollection(int index,
-                                           int to_position,
-                                           bool select_after_move);
-
-  // Implementation of moving a webcontent when the `contents_data` is a vector.
-  void MoveWebContentsAtImplWithVector(int index,
-                                       int to_position,
-                                       bool select_after_move);
-
-  // Sends a move notification to the tabstrip model observers for a webcontent.
-  void SendMoveNotificationForWebContents(int index,
-                                          int to_position,
-                                          bool select_after_move,
-                                          content::WebContents* web_contents);
-
   // Implementation of MoveSelectedTabsTo. Moves |length| of the selected tabs
   // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
   void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
 
   // Adds tabs to newly-allocated group id |new_group|. This group must be new
   // and have no tabs in it.
-  void AddToNewGroupImpl(std::vector<int> indices,
-                         tab_groups::TabGroupId new_group);
-
-  void AddToNewGroupWithCollectionImpl(std::vector<int> indices,
-                                       const tab_groups::TabGroupId new_group);
-
-  void AddToExistingGroupWithCollectionImpl(std::vector<int> indices,
-                                            tab_groups::TabGroupId group,
-                                            const bool add_to_end);
-
-  void AddTabsToGroupCollection(std::vector<tabs::TabModel*> tabs,
-                                tabs::TabGroupTabCollection* group_collection,
-                                bool start_of_group = false);
-
-  void RemoveTabsFromGroupCollection(
-      std::vector<tabs::TabModel*> tabs,
-      tabs::TabGroupTabCollection* group_collection,
-      bool move_to_left);
+  void AddToNewGroupImpl(const std::vector<int>& indices,
+                         const tab_groups::TabGroupId& new_group);
 
   // Adds tabs to existing group |group|. This group must have been initialized
   // by a previous call to |AddToNewGroupImpl()|.
@@ -874,39 +833,59 @@ class TabStripModel : public TabGroupController {
                                int destination_index,
                                std::optional<tab_groups::TabGroupId> group);
 
-  // Moves the tab at |index| to |new_index| and sets its group to |new_group|.
-  // Notifies any observers that group affiliation has changed for the tab.
-  void MoveAndSetGroup(int index,
-                       int new_index,
-                       std::optional<tab_groups::TabGroupId> new_group);
-
   void AddToReadLaterImpl(const std::vector<int>& indices);
 
-  // Helper function for MoveAndSetGroup. Removes the tab at |index| from the
-  // group that contains it, if any. Also deletes that group, if it now contains
-  // no tabs. Returns that group.
-  std::optional<tab_groups::TabGroupId> UngroupTab(
+  // Updates the `contents_data_` and sends out observer notifications for
+  // inserting a new tab in  the tabstrip.
+  void InsertTabAtIndexImpl(std::unique_ptr<tabs::TabModel> tab_model,
+                            int index,
+                            std::optional<tab_groups::TabGroupId> group,
+                            bool pin,
+                            bool active);
+
+  // Updates the `contents_data_` and sends out observer notifications for
+  // removing an existing tab in  the tabstrip.
+  std::unique_ptr<tabs::TabModel> RemoveTabFromIndexImpl(int index);
+
+  // Updates the `contents_data_` and sends out observer notifications for
+  // updating the index, pinned state or group property.
+  void MoveTabToIndexImpl(int initial_index,
+                          int final_index,
+                          const std::optional<tab_groups::TabGroupId> group,
+                          bool pin,
+                          bool select_after_move);
+
+  // Sends group notifications for a tab at `index` based on its initial_group
+  // and `final_group` and updates the `group_model_`.
+  void TabGroupStateChanged(
       int index,
-      const std::optional<tab_groups::TabGroupId> old_group);
+      content::WebContents* web_contents,
+      const std::optional<tab_groups::TabGroupId> initial_group,
+      const std::optional<tab_groups::TabGroupId> new_group);
 
-  // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|,
-  // updates the group model, and notifies the observers if the group at that
-  // index would change.
-  void GroupTab(int index,
-                const tab_groups::TabGroupId& group,
-                const std::optional<tab_groups::TabGroupId> old_group);
+  // Updates the `group_model` by decrementing the tab count of `group`.
+  void RemoveTabFromGroupModel(const tab_groups::TabGroupId& group);
 
-  // Changes the pinned state of the tab at `index`, moving it in the process if
-  // necessary. Returns the new index of the tab.
-  int SetTabPinnedImpl(int index, bool pinned);
+  // Updates the `group_model` by incrementing the tab count of `group`.
+  void AddTabToGroupModel(const tab_groups::TabGroupId& group);
 
-  // Updates the pinned state of the tab model and moves the tab within
-  // `contents_data`. This is a helper method called by `SetTabPinnedImpl()`.
-  int UpdatePinAndMoveWebContents(int index, bool pinned);
+  // Checks if the `contents_data_` is in a valid order. This checks for
+  // pinned tabs placement, group contiguity and selected tabs validity.
+  void ValidateTabStripModel();
+
+  void SendMoveNotificationForWebContents(
+      int index,
+      int to_position,
+      content::WebContents* web_contents,
+      TabStripSelectionChange& selection_change);
+
+  TabStripSelectionChange MaybeUpdateSelectionModel(int initial_index,
+                                                    int final_index,
+                                                    bool select_after_move);
 
   // Changes the pinned state of all tabs at `indices`, moving them in the
-  // process if necessary. Returns the new locations of all of those tabs.
-  std::vector<int> SetTabsPinned(const std::vector<int>& indices, bool pinned);
+  // process if necessary.
+  void SetTabsPinned(const std::vector<int> indices, bool pinned);
 
   // Sets the sound content setting for each site at the |indices|.
   void SetSitesMuted(const std::vector<int>& indices, bool mute) const;
@@ -915,11 +894,12 @@ class TabStripModel : public TabGroupController {
   // opener or null if there's a cycle.
   void FixOpeners(int index);
 
-  // Makes sure the tab at |index| is not causing a group contiguity error. Will
-  // make the minimum change to ensure that the tab's group is not non-
-  // contiguous as well as ensuring that it is not breaking up a non-contiguous
-  // group, possibly by setting or clearing its group.
-  void EnsureGroupContiguity(int index);
+  // Returns a group when the index of a tab is updated from `index` to
+  // `to_position` that would not break group contiguity. The group returned
+  // keeps the original group if it is valid at the `to_position` and otherwise
+  // returns a valid group.
+  std::optional<tab_groups::TabGroupId> GetGroupToAssign(int index,
+                                                         int to_position);
 
   // Returns a valid index to be selected after the tab at |removing_index| is
   // closed. If |index| is after |removing_index|, |index| is adjusted to

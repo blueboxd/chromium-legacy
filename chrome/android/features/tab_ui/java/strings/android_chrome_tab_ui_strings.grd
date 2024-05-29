@@ -384,11 +384,6 @@
         To group tabs, touch &amp; hold a tab. Then, drag it onto another tab.
       </message>
 
-      <!-- Tab Carousel strings -->
-      <message name="IDS_TAB_SWITCHER_CAROUSEL_TITLE" desc="Title of the Tabs carousel section on the single pane start surface.">
-          Continue browsing
-      </message>
-
       <!-- Single Tab module strings -->
       <message name="IDS_SINGLE_TAB_MODULE_TITLE" desc="Title of the single Tab module on the magic space of the start surface or NTP home surface.">
           Your last tab
@@ -554,9 +549,6 @@
       <!-- Close All Tabs Dialog Strings -->
       <message name="IDS_CLOSE_ALL_TABS_DIALOG_TITLE" desc="When users click the menu item 'Close all tabs' in tab switcher, a dialog will pop up and this text is the title of the dialog.">
         Close all tabs?
-      </message>
-      <message name="IDS_CLOSE_ALL_TABS_DIALOG_MESSAGE" desc="When users click the menu item 'Close all tabs' in tab switcher, a dialog will pop up and this text is the message of the dialog.">
-        You can find your closed tabs in Recent tabs under the Chrome main menu.
       </message>
       <message name="IDS_CLOSE_ALL_TABS_DIALOG_MESSAGE_WITH_INCOGNITO_TABS" desc="When users click the menu item 'Close all tabs' in tab switcher, a dialog will pop up and this text is the message of the dialog. If there are any Incognito tabs opened this message would warn users that those Incognito tabs would be lost.">
       {INCOGNITO_TABS_COUNT, plural,

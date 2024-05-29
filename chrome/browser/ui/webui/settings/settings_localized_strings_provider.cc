@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
@@ -539,6 +540,12 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "unoDesktopEnabled",
       switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+#if !BUILDFLAG(IS_CHROMEOS)
+  html_source->AddBoolean(
+      "isClearPrimaryAccountAllowed",
+      ChromeSigninClientFactory::GetForProfile(profile)
+          ->IsClearPrimaryAccountAllowed(/*has_sync_account=*/false));
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2228,6 +2235,14 @@ void AddSafetyHubStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_HUB_USER_EDU_INCOGNITO_HEADER},
       {"safetyHubUserEduSafeBrowsingHeader",
        IDS_SETTINGS_SAFETY_HUB_USER_EDU_SAFE_BROWSING_HEADER},
+      {"safetyHubPasswordNavigationAriaLabel",
+       IDS_SETTINGS_SAFETY_HUB_PASSWORD_NAVIGATION_ARIA_LABEL},
+      {"safetyHubVersionNavigationAriaLabel",
+       IDS_SETTINGS_SAFETY_HUB_VERSION_NAVIGATION_ARIA_LABEL},
+      {"safetyHubVersionRelaunchAriaLabel",
+       IDS_SETTINGS_SAFETY_HUB_VERSION_RELAUNCH_ARIA_LABEL},
+      {"safetyHubSBNavigationAriaLabel",
+       IDS_SETTINGS_SAFETY_HUB_SB_NAVIGATION_ARIA_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -2471,8 +2486,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_LEARN_MORE_ARIA_LABEL},
       {"trackingProtectionIpProtectionToggleLabel",
        IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LABEL},
-      {"trackingProtectionIpProtectionToggleSubLabel",
-       IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL},
       {"trackingProtectionFingerprintingProtectionToggleLabel",
        IDS_SETTINGS_TRACKING_PROTECTION_FINGERPRINTING_PROTECTION_TOGGLE_LABEL},
       {"trackingProtectionFingerprintingProtectionToggleSubLabel",
@@ -3276,6 +3289,15 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
               IDS_SETTINGS_TRACKING_PROTECTION_ROLLBACK_NOTICE_LEARN_MORE_ARIA_LABEL)));
   html_source->AddString("trackingProtectionThirdPartyCookiesLearnMoreUrl",
                          chrome::kManage3pcHelpCenterURL);
+  html_source->AddString(
+      "trackingProtectionIpProtectionToggleSubLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_SUB_LABEL,
+          l10n_util::GetStringUTF16(
+              IDS_SETTINGS_TRACKING_PROTECTION_IP_PROTECTION_TOGGLE_LEARN_MORE_ARIA_LABEL),
+          l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB)));
+  html_source->AddString("ipProtectionLearnMoreUrl",
+                         chrome::kIpProtectionHelpCenterURL);
 
   // These ones cannot be constexpr because we need to check base::FeatureList.
   static webui::LocalizedString kSensorsLocalizedStrings[] = {

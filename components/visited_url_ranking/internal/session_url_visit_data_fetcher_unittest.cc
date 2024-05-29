@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "base/functional/callback.h"
 #include "base/test/mock_callback.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -151,21 +152,58 @@ class SessionURLVisitDataFetcherTest
     : public testing::Test,
       public ::testing::WithParamInterface<Source> {
  public:
-  SessionURLVisitDataFetcherTest() {
+  SessionURLVisitDataFetcherTest() = default;
+
+  void SetSessionSyncServiceExpectations() {
     EXPECT_CALL(mock_session_sync_service_, GetOpenTabsUIDelegate())
         .WillOnce(
             testing::Invoke([this]() { return &open_tabs_ui_delegate_; }));
   }
 
+  FetchResult FetchAndGetResult(const FetchOptions& options) {
+    FetchResult result = FetchResult(FetchResult::Status::kError, {});
+    base::RunLoop wait_loop;
+    auto session_url_visit_data_fetcher =
+        SessionURLVisitDataFetcher(&mock_session_sync_service_);
+    session_url_visit_data_fetcher.FetchURLVisitData(
+        options, base::BindOnce(
+                     [](base::OnceClosure stop_waiting, FetchResult* result,
+                        FetchResult result_arg) {
+                       result->status = result_arg.status;
+                       result->data = std::move(result_arg.data);
+                       std::move(stop_waiting).Run();
+                     },
+                     wait_loop.QuitClosure(), &result));
+    wait_loop.Run();
+    return result;
+  }
+
  protected:
   sync_sessions::MockOpenTabsUIDelegate open_tabs_ui_delegate_;
   sync_sessions::MockSessionSyncService mock_session_sync_service_;
+
+ private:
+  base::test::TaskEnvironment task_env_;
 };
+
+TEST_F(SessionURLVisitDataFetcherTest, FetchURLVisitDataNoOpenTabsUIDelegate) {
+  EXPECT_CALL(mock_session_sync_service_, GetOpenTabsUIDelegate())
+      .WillOnce(testing::Invoke([]() { return nullptr; }));
+
+  std::vector<std::unique_ptr<sync_sessions::SyncedSession>> sample_sessions;
+  sample_sessions.push_back(GetSampleSession());
+
+  base::Time yesterday = base::Time::Now() - base::Days(1);
+  auto result = FetchAndGetResult(FetchOptions(
+      {{Fetcher::kSession, FetchOptions::kOriginSources}}, yesterday));
+  EXPECT_EQ(result.status, FetchResult::Status::kError);
+}
 
 TEST_F(SessionURLVisitDataFetcherTest, FetchURLVisitDataDefaultSources) {
   std::vector<std::unique_ptr<sync_sessions::SyncedSession>> sample_sessions;
   sample_sessions.push_back(GetSampleSession());
 
+  SetSessionSyncServiceExpectations();
   EXPECT_CALL(open_tabs_ui_delegate_, GetLocalSession(testing::_))
       .WillOnce(testing::Invoke(
           [&sample_sessions](const sync_sessions::SyncedSession** local) {
@@ -183,19 +221,9 @@ TEST_F(SessionURLVisitDataFetcherTest, FetchURLVisitDataDefaultSources) {
             return true;
           }));
 
-  auto result = FetchResult(FetchResult::Status::kError, {});
-  base::MockCallback<URLVisitDataFetcher::FetchResultCallback> callback;
-  EXPECT_CALL(callback, Run(testing::_))
-      .Times(1)
-      .WillOnce(testing::Invoke(
-          [&result](FetchResult arg) { result = std::move(arg); }));
-  auto session_url_visit_fetcher =
-      SessionURLVisitDataFetcher(&mock_session_sync_service_);
   base::Time yesterday = base::Time::Now() - base::Days(1);
-  session_url_visit_fetcher.FetchURLVisitData(
-      FetchOptions({{Fetcher::kSession, FetchOptions::kOriginSources}},
-                   yesterday),
-      callback.Get());
+  auto result = FetchAndGetResult(FetchOptions(
+      {{Fetcher::kSession, FetchOptions::kOriginSources}}, yesterday));
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 2u);
   for (const auto& url_key : {kSampleSearchUrl, kSampleSearchUrl2}) {
@@ -213,6 +241,7 @@ TEST_P(SessionURLVisitDataFetcherTest, FetchURLVisitData) {
   std::vector<std::unique_ptr<sync_sessions::SyncedSession>> sample_sessions;
   sample_sessions.push_back(GetSampleSession());
 
+  SetSessionSyncServiceExpectations();
   const auto source = GetParam();
   if (source == Source::kLocal) {
     EXPECT_CALL(open_tabs_ui_delegate_, GetLocalSession(testing::_))
@@ -234,18 +263,9 @@ TEST_P(SessionURLVisitDataFetcherTest, FetchURLVisitData) {
             }));
   }
 
-  auto result = FetchResult(FetchResult::Status::kError, {});
-  base::MockCallback<URLVisitDataFetcher::FetchResultCallback> callback;
-  EXPECT_CALL(callback, Run(testing::_))
-      .Times(1)
-      .WillOnce(testing::Invoke(
-          [&result](FetchResult arg) { result = std::move(arg); }));
-
-  auto session_url_visit_fetcher =
-      SessionURLVisitDataFetcher(&mock_session_sync_service_);
   auto options = FetchOptions({{Fetcher::kSession, {source}}},
                               base::Time::Now() - base::Days(1));
-  session_url_visit_fetcher.FetchURLVisitData(options, callback.Get());
+  auto result = FetchAndGetResult(options);
   EXPECT_EQ(result.status, FetchResult::Status::kSuccess);
   EXPECT_EQ(result.data.size(), 2u);
   for (const auto& url_key : {kSampleSearchUrl, kSampleSearchUrl2}) {

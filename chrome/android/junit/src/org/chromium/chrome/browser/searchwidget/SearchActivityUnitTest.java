@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
@@ -885,6 +886,7 @@ public class SearchActivityUnitTest {
 
     @Test
     public void onResumeWithNative_fromCustomTabs_withoutPackage() {
+        SearchActivity.SEARCH_IN_CCT_APPLY_REFERRER_ID.setForTesting(true);
         doReturn(IntentOrigin.CUSTOM_TAB).when(mUtils).getIntentOrigin(any());
         doReturn(null).when(mUtils).getReferrer(any());
         mActivity.onNewIntent(new Intent());
@@ -902,6 +904,7 @@ public class SearchActivityUnitTest {
 
     @Test
     public void onResumeWithNative_fromCustomTabs_withPackage() {
+        SearchActivity.SEARCH_IN_CCT_APPLY_REFERRER_ID.setForTesting(true);
         doReturn(IntentOrigin.CUSTOM_TAB).when(mUtils).getIntentOrigin(any());
         doReturn("com.package.name").when(mUtils).getReferrer(any());
         mActivity.onNewIntent(new Intent());
@@ -918,6 +921,25 @@ public class SearchActivityUnitTest {
     }
 
     @Test
+    public void onResumeWithNative_fromCustomTabs_propagationDisabled() {
+        SearchActivity.SEARCH_IN_CCT_APPLY_REFERRER_ID.setForTesting(false);
+        doReturn(IntentOrigin.CUSTOM_TAB).when(mUtils).getIntentOrigin(any());
+        doReturn("com.package.name").when(mUtils).getReferrer(any());
+        mActivity.onNewIntent(new Intent());
+
+        try (var watcher =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords(SearchActivity.HISTOGRAM_INTENT_REFERRER_VALID)
+                        .build()) {
+            mActivity.onResumeWithNative();
+        }
+
+        verify(mUmaObserver).startUmaSession(eq(ActivityType.CUSTOM_TAB), eq(null), any());
+        verify(mSetCustomTabSearchClient, never()).onResult(any());
+        verifyNoMoreInteractions(mUmaObserver, mSetCustomTabSearchClient);
+    }
+
+    @Test
     public void onPauseWithNative() {
         mActivity.onPauseWithNative();
 
@@ -929,15 +951,6 @@ public class SearchActivityUnitTest {
     @Test
     public void shouldStartGpuProcess_alwaysTrue() {
         assertTrue(mActivity.shouldStartGpuProcess());
-    }
-
-    @Test
-    public void onUrlFocusChange_terminateOnFocusLost() {
-        mActivity.handleNewIntent(new Intent(), false);
-
-        assertFalse(mActivity.isFinishing());
-        mActivity.onUrlFocusChange(false);
-        assertTrue(mActivity.isFinishing());
     }
 
     @Test
@@ -1008,5 +1021,21 @@ public class SearchActivityUnitTest {
                 mActivity.recordNavigationTargetType(entry.getKey());
             }
         }
+    }
+
+    @Test
+    public void onTopResumedActivityChanged_clearOmniboxFocusIfNotActive() {
+        doNothing().when(mActivity).super_onTopResumedActivityChanged(anyBoolean());
+        mActivity.onTopResumedActivityChanged(false);
+        verify(mLocationBar).clearOmniboxFocus();
+        verify(mActivity).super_onTopResumedActivityChanged(false);
+    }
+
+    @Test
+    public void onTopResumedActivityChanged_requestOmniboxFocusIfActive() {
+        doNothing().when(mActivity).super_onTopResumedActivityChanged(anyBoolean());
+        mActivity.onTopResumedActivityChanged(true);
+        verify(mLocationBar).requestOmniboxFocus();
+        verify(mActivity).super_onTopResumedActivityChanged(true);
     }
 }

@@ -35,6 +35,12 @@
 // and accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithAccessibilityLabelID:(int)messageID;
 
+// Matcher for element with accessibility label corresponding to `messageID`,
+// `number` for the plural rule and accessibility trait
+// UIAccessibilityTraitButton.
++ (id<GREYMatcher>)buttonWithAccessibilityLabelID:(int)messageID
+                                  numberForPlural:(int)number;
+
 // Matcher for element with foreground color corresponding to `colorName`
 // and accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithForegroundColor:(NSString*)colorName;
@@ -562,6 +568,10 @@
 // Returns the GREYMatcher for the button to close the cell at `index` in the
 // tab grid.
 + (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index;
+
+// Returns the GREYMatcher for the button to close the tab group cell at `index`
+// in the tab grid.
++ (id<GREYMatcher>)tabGridCloseButtonForGroupCellAtIndex:(unsigned int)index;
 
 // Returns a matcher for the password settings collection view.
 + (id<GREYMatcher>)settingsPasswordMatcher;

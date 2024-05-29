@@ -759,9 +759,6 @@ const char kSkiaResourceCacheLimitMb[] = "skia-resource-cache-limit-mb";
 // Type of the current test harness ("browser" or "ui" or "gpu").
 const char kTestType[]                      = "test-type";
 
-// The time zone to use for testing. Passed to renderers and plugins on startup.
-const char kTimeZoneForTesting[] = "time-zone-for-testing";
-
 // Enable support for touch event feature detection.
 const char kTouchEventFeatureDetection[] = "touch-events";
 
@@ -798,6 +795,12 @@ const char kUseFakeUIForFedCM[] = "use-fake-ui-for-fedcm";
 // Prefer --auto-accept-camera-and-microphone-capture which does not interact
 // with screen/tab capture.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
+
+#if BUILDFLAG(IS_WIN)
+// This will replace the existing font manager with SkiaFontManager in the
+// renderer.
+const char kUseSkiaFontManager[] = "use-skia-font-manager";
+#endif
 
 // Texture target for CHROMIUM_image backed video frame textures.
 const char kVideoImageTextureTarget[] = "video-image-texture-target";

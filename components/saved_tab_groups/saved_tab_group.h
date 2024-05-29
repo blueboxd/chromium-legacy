@@ -13,7 +13,6 @@
 #include "base/uuid.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
 #include "components/saved_tab_groups/types.h"
-#include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "ui/gfx/image/image.h"
@@ -123,36 +122,19 @@ class SavedTabGroup {
   SavedTabGroup& MoveTabFromSync(const base::Uuid& saved_tab_guid,
                                  size_t new_index);
 
-  // Merges this groups data with a specific from sync and returns the newly
-  // merged specific. Side effect: Updates the values of this group.
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeGroup(
-      const sync_pb::SavedTabGroupSpecifics& sync_specific);
+  // Merges this groups data with the `remote_group`. Side effect: updates the
+  // values of this group. `remote_group` should never contain tabs, only
+  // metadata is being merged.
+  void MergeRemoteGroupMetadata(const std::u16string& title,
+                                TabGroupColorId color,
+                                std::optional<size_t> position,
+                                base::Time update_time);
 
-  // We should merge a group if one of the following is true:
-  // 1. The data from `sync_specific` has the most recent (larger) update time.
-  // 2. The `sync_specific` has the oldest (smallest) creation time.
-  bool ShouldMergeGroup(
-      const sync_pb::SavedTabGroupSpecifics& sync_specific) const;
-
-  // Converts a `SavedTabGroupSpecifics` retrieved from sync into a
-  // `SavedTabGroupTab`.
-  static SavedTabGroup FromSpecifics(
-      const sync_pb::SavedTabGroupSpecifics& specific);
-
-  // Converts a `SavedTabGroupTab` into a `SavedTabGroupSpecifics` for sync.
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> ToSpecifics() const;
+  // Returns whether the remote group has more recent updates.
+  bool RemoteGroupHasMoreRecentUpdates(base::Time remote_update_time) const;
 
   // Returns true iff syncable data fields in `this` and `other` are equivalent.
   bool IsSyncEquivalent(const SavedTabGroup& other) const;
-
-  // Converts tab group color ids into the sync data type for saved tab group
-  // colors.
-  static ::sync_pb::SavedTabGroup_SavedTabGroupColor TabGroupColorToSyncColor(
-      const tab_groups::TabGroupColorId color);
-
-  // Converts sync group colors into tab group colors ids.
-  static tab_groups::TabGroupColorId SyncColorToTabGroupColor(
-      const sync_pb::SavedTabGroup::SavedTabGroupColor color);
 
  private:
   // Moves the tab denoted by `saved_tab_guid` to the position `new_index`.

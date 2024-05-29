@@ -21,10 +21,8 @@ class ASH_EXPORT FocusModeMetricsRecorder
   FocusModeMetricsRecorder& operator=(const FocusModeMetricsRecorder&) = delete;
   ~FocusModeMetricsRecorder() override;
 
-  int tasks_selected_count() const { return tasks_selected_count_; }
-  void set_tasks_selected_count(int tasks_selected_count) {
-    tasks_selected_count_ = tasks_selected_count;
-  }
+  void IncrementTasksSelectedCount();
+  void IncrementTasksCompletedCount();
 
   // message_center::MessageCenterObserver:
   void OnQuietModeChanged(bool in_quiet_mode) override;
@@ -35,9 +33,15 @@ class ASH_EXPORT FocusModeMetricsRecorder
   // session completing.
   void RecordHistogramsOnEnd();
 
+  void RecordHistogramOnEndingMoment(
+      focus_mode_histogram_names::EndingMomentBubbleClosedReason reason);
+
  private:
   // Counts the number of tasks selected during a session.
   int tasks_selected_count_ = 0;
+
+  // Counts the number of tasks marked as completed during a session.
+  int tasks_completed_count_ = 0;
 
   // True if the user turns DND on or off in an active session.
   bool has_user_interactions_on_dnd_in_focus_session_ = false;
@@ -46,4 +50,4 @@ class ASH_EXPORT FocusModeMetricsRecorder
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_FOCUS_MODE_FOCUS_MODE_METRICS_RECODER_H_
+#endif  // ASH_SYSTEM_FOCUS_MODE_FOCUS_MODE_METRICS_RECORDER_H_

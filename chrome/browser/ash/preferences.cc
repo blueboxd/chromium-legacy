@@ -64,6 +64,7 @@
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/components/disks/disks_prefs.h"
+#include "chromeos/components/magic_boost/public/cpp/magic_boost_state.h"
 #include "chromeos/constants/pref_names.h"
 #include "components/feedback/content/content_tracing_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -292,13 +293,17 @@ void Preferences::RegisterProfilePrefs(
       base::to_underlying(input_method::ConsentStatus::kUnset));
   registry->RegisterIntegerPref(prefs::kOrcaConsentWindowDismissCount, 0);
   registry->RegisterBooleanPref(prefs::kEmojiPickerGifSupportEnabled, true);
+  registry->RegisterDictionaryPref(prefs::kEmojiPickerHistory);
+  registry->RegisterDictionaryPref(prefs::kEmojiPickerPreferences);
   registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
   registry->RegisterBooleanPref(prefs::kLastUsedImeShortcutReminderDismissed,
                                 false);
   registry->RegisterBooleanPref(prefs::kNextImeShortcutReminderDismissed,
                                 false);
-
+  registry->RegisterIntegerPref(prefs::kGenAIWallpaperSettings, /*enabled=*/1);
+  registry->RegisterIntegerPref(prefs::kGenAIVcBackgroundSettings,
+                                /*enabled=*/1);
   registry->RegisterIntegerPref(
       ::prefs::kLanguageRemapSearchKeyTo,
       static_cast<int>(ui::mojom::ModifierKey::kMeta),
@@ -570,6 +575,12 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterBooleanPref(prefs::kMahiEnabled, true);
+
+  registry->RegisterIntegerPref(
+      prefs::kHMRConsentStatus,
+      base::to_underlying(chromeos::HMRConsentStatus::kUnset));
+
+  registry->RegisterIntegerPref(prefs::kHMRConsentWindowDismissCount, 0);
 
   registry->RegisterBooleanPref(
       prefs::kLauncherResultEverLaunched, false,

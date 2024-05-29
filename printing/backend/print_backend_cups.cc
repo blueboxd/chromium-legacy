@@ -26,12 +26,12 @@
 #include "printing/mojom/print.mojom.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 #include "base/feature_list.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/print_backend_cups_ipp.h"
 #include "printing/printing_features.h"
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 namespace printing {
 
@@ -132,11 +132,9 @@ mojom::ResultCode PrintBackendCUPS::PrinterBasicInfoFromCUPS(
 // static
 std::string PrintBackendCUPS::PrinterDriverInfoFromCUPS(
     const cups_dest_t& printer) {
-  // std::string_view will correctly handle nullptrs from cupsGetOption(),
-  // whereas std::string will not. Thus do not directly assign to `result`.
-  std::string_view info(
-      cupsGetOption(kDriverNameTagName, printer.num_options, printer.options));
-  return std::string(info);
+  const char* info =
+      cupsGetOption(kDriverNameTagName, printer.num_options, printer.options);
+  return info ? info : std::string();
 }
 
 mojom::ResultCode PrintBackendCUPS::EnumeratePrinters(
@@ -296,13 +294,14 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
 #if !BUILDFLAG(IS_CHROMEOS)
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const std::string& locale) {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   if (__builtin_available(macOS 10.10, *)) {
     if (base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
-      return base::MakeRefCounted<PrintBackendCupsIpp>(CupsConnection::Create());
+      return base::MakeRefCounted<PrintBackendCupsIpp>(
+          CupsConnection::Create());
     }
   }
-#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   return base::MakeRefCounted<PrintBackendCUPS>(
       GURL(), HTTP_ENCRYPT_NEVER, /*cups_blocking=*/false, locale);
 }

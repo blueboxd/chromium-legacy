@@ -23,9 +23,6 @@ __KNOWN_CONFIG_OPTIONS = [
     # TODO: b/316267242 - Enable remote links after confirming performance.
     "remote-library-link",
     "remote-exec-link",
-
-    # Clang ToT builds don't run compile actions remotely.
-    "clang-tot",
 ]
 
 def __check(ctx):
@@ -35,6 +32,7 @@ def __check(ctx):
                 print("unknown config: %s" % cfg)
 
 def __get(ctx, key):
+    onCog = ctx.fs.exists("../.citc")
     disableRemoteOnCog = False
     if "config" in ctx.flags:
         for cfg in ctx.flags["config"].split(","):
@@ -42,7 +40,9 @@ def __get(ctx, key):
                 return True
             if cfg == "disable-remote-on-cog":
                 disableRemoteOnCog = True
-    if ctx.fs.exists("../.citc"):
+            if cfg == "cog":
+                onCog = True
+    if onCog:
         if disableRemoteOnCog:
             return False
 

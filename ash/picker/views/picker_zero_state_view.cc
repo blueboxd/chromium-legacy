@@ -15,6 +15,7 @@
 #include "ash/picker/picker_clipboard_provider.h"
 #include "ash/picker/views/picker_category_type.h"
 #include "ash/picker/views/picker_icons.h"
+#include "ash/picker/views/picker_item_view.h"
 #include "ash/picker/views/picker_list_item_view.h"
 #include "ash/picker/views/picker_pseudo_focus.h"
 #include "ash/picker/views/picker_section_list_view.h"
@@ -55,7 +56,10 @@ PickerZeroStateView::PickerZeroStateView(
     base::span<const PickerCategory> recent_results_categories,
     int picker_view_width,
     PickerAssetFetcher* asset_fetcher)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      preview_controller_(
+          base::BindRepeating(&PickerAssetFetcher::FetchFileThumbnail,
+                              base::Unretained(asset_fetcher))) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
 
@@ -91,8 +95,13 @@ PickerZeroStateView::PickerZeroStateView(
     item_view->SetLeadingIcon(GetIconForPickerCategory(category));
     GetOrCreateSectionView(category)->AddListItem(std::move(item_view));
   }
-
   SetPseudoFocusedView(section_list_view_->GetTopItem());
+
+  // TODO: b/343092747 - Move this to the top once the `primary_section_view_`
+  // always has at least one child.
+  if (primary_section_view_ == nullptr) {
+    primary_section_view_ = section_list_view_->AddSectionAt(0);
+  }
 }
 
 PickerZeroStateView::~PickerZeroStateView() = default;
@@ -113,8 +122,8 @@ bool PickerZeroStateView::MovePseudoFocusUp() {
   if (views::IsViewClass<PickerItemView>(pseudo_focused_view_)) {
     // Try to move directly to an item above the currently pseudo focused item,
     // i.e. skip non-item views.
-    if (PickerItemView* item = section_list_view_->GetItemAbove(
-            views::AsViewClass<PickerItemView>(pseudo_focused_view_))) {
+    if (views::View* item =
+            section_list_view_->GetItemAbove(pseudo_focused_view_)) {
       SetPseudoFocusedView(item);
       return true;
     }
@@ -133,8 +142,8 @@ bool PickerZeroStateView::MovePseudoFocusDown() {
   if (views::IsViewClass<PickerItemView>(pseudo_focused_view_)) {
     // Try to move directly to an item below the currently pseudo focused item,
     // i.e. skip non-item views.
-    if (PickerItemView* item = section_list_view_->GetItemBelow(
-            views::AsViewClass<PickerItemView>(pseudo_focused_view_))) {
+    if (views::View* item =
+            section_list_view_->GetItemBelow(pseudo_focused_view_)) {
       SetPseudoFocusedView(item);
       return true;
     }
@@ -155,8 +164,8 @@ bool PickerZeroStateView::MovePseudoFocusLeft() {
   // left of the current pseudo focused item. In other situations, we prefer not
   // to handle the movement here so that it can instead be used for other
   // purposes, e.g. moving the caret in the search field.
-  if (PickerItemView* item = section_list_view_->GetItemLeftOf(
-          views::AsViewClass<PickerItemView>(pseudo_focused_view_))) {
+  if (views::View* item =
+          section_list_view_->GetItemLeftOf(pseudo_focused_view_)) {
     SetPseudoFocusedView(item);
     return true;
   }
@@ -173,8 +182,8 @@ bool PickerZeroStateView::MovePseudoFocusRight() {
   // right of the current pseudo focused item. In other situations, we prefer
   // not to handle the movement here so that it can instead be used for other
   // purposes, e.g. moving the caret in the search field.
-  if (PickerItemView* item = section_list_view_->GetItemRightOf(
-          views::AsViewClass<PickerItemView>(pseudo_focused_view_))) {
+  if (views::View* item =
+          section_list_view_->GetItemRightOf(pseudo_focused_view_)) {
     SetPseudoFocusedView(item);
     return true;
   }
@@ -211,15 +220,15 @@ void PickerZeroStateView::AdvancePseudoFocus(PseudoFocusDirection direction) {
 PickerSectionView* PickerZeroStateView::GetOrCreateSectionView(
     PickerCategory category) {
   const PickerCategoryType category_type = GetPickerCategoryType(category);
-  auto section_view_iterator = section_views_.find(category_type);
-  if (section_view_iterator != section_views_.end()) {
+  auto section_view_iterator = category_section_views_.find(category_type);
+  if (section_view_iterator != category_section_views_.end()) {
     return section_view_iterator->second;
   }
 
   auto* section_view = section_list_view_->AddSection();
   section_view->AddTitleLabel(
       GetSectionTitleForPickerCategoryType(category_type));
-  section_views_.insert({category_type, section_view});
+  category_section_views_.insert({category_type, section_view});
   return section_view;
 }
 
@@ -253,19 +262,18 @@ void PickerZeroStateView::ScrollPseudoFocusedViewToVisible() {
     return;
   }
 
-  auto* pseudo_focused_item =
-      views::AsViewClass<PickerItemView>(pseudo_focused_view_);
-  if (section_list_view_->GetItemAbove(pseudo_focused_item) == nullptr) {
+  if (section_list_view_->GetItemAbove(pseudo_focused_view_) == nullptr) {
     // For items at the top, scroll all the way up to let users see that they
     // have reached the top of the zero state view.
     ScrollRectToVisible(gfx::Rect(GetLocalBounds().origin(), gfx::Size()));
-  } else if (section_list_view_->GetItemBelow(pseudo_focused_item) == nullptr) {
+  } else if (section_list_view_->GetItemBelow(pseudo_focused_view_) ==
+             nullptr) {
     // For items at the bottom, scroll all the way down to let users see that
     // they have reached the bottom of the zero state view.
     ScrollRectToVisible(gfx::Rect(GetLocalBounds().bottom_left(), gfx::Size()));
   } else {
     // Otherwise, just ensure the item is visible.
-    pseudo_focused_item->ScrollViewToVisible();
+    pseudo_focused_view_->ScrollViewToVisible();
   }
 }
 
@@ -274,15 +282,20 @@ void PickerZeroStateView::OnFetchRecentResults(
   if (results.empty()) {
     return;
   }
-  if (!recent_section_view_) {
-    recent_section_view_ = section_list_view_->AddSectionAt(0);
-    recent_section_view_->AddTitleLabel(
-        GetSectionTitleForPickerSectionType(PickerSectionType::kNone));
+  // TODO: b/343092747 - Remove this to the top once the `primary_section_view_`
+  // always has at least one child.
+  if (primary_section_view_ == nullptr) {
+    primary_section_view_ = section_list_view_->AddSectionAt(0);
   }
   for (const auto& result : results) {
-    recent_section_view_->AddResult(
-        result, base::BindRepeating(&PickerZeroStateView::OnResultSelected,
-                                    weak_ptr_factory_.GetWeakPtr(), result));
+    PickerItemView* view = primary_section_view_->AddResult(
+        result, &preview_controller_,
+        base::BindRepeating(&PickerZeroStateView::OnResultSelected,
+                            weak_ptr_factory_.GetWeakPtr(), result));
+
+    if (auto* list_item_view = views::AsViewClass<PickerListItemView>(view)) {
+      list_item_view->SetBadgeAction(delegate_->GetActionForResult(result));
+    }
   }
   SetPseudoFocusedView(section_list_view_->GetTopItem());
 }

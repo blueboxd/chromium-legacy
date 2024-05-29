@@ -943,7 +943,7 @@ gfx::SizeF LocalFrameView::ViewportSizeForMediaQueries() const {
   if (!frame_->GetDocument()) {
     return gfx::SizeF(layout_size_);
   }
-  if (frame_->ShouldUsePrintingLayout()) {
+  if (frame_->ShouldUsePaginatedLayout()) {
     if (const LayoutView* layout_view = GetLayoutView()) {
       return layout_view->DefaultPageAreaSize();
     }
@@ -2459,14 +2459,14 @@ bool LocalFrameView::ShouldDeferLayoutSnap() const {
   return false;
 }
 
-void LocalFrameView::EnqueueSnapChangingFromImplIfNecessary() {
+void LocalFrameView::EnqueueScrollSnapChangingFromImplIfNecessary() {
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     const auto* scrollable_areas = frame_view.UserScrollableAreas();
     if (!scrollable_areas) {
       return;
     }
     for (const auto& area : *scrollable_areas) {
-      area->EnqueueSnapChangingEventFromImplIfNeeded();
+      area->EnqueueScrollSnapChangingEventFromImplIfNeeded();
     }
   });
 }
@@ -2500,8 +2500,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
 
   ExecutePendingSnapUpdates();
 
-  // Fire snapchanging events based on the new layout if necessary.
-  EnqueueSnapChangingFromImplIfNecessary();
+  // Fire scrollsnapchanging events based on the new layout if necessary.
+  EnqueueScrollSnapChangingFromImplIfNecessary();
 
   EnqueueScrollEvents();
 
@@ -3233,7 +3233,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
   // [2] https://www.w3.org/TR/css-page-3/#using-named-pages
   PhysicalSize initial_containing_block_size =
       CalculateInitialContainingBlockSizeForPagination(document);
-  layout_view->SetInitialContainingBlockSizeForPagination(
+  layout_view->SetInitialContainingBlockSizeForPrinting(
       initial_containing_block_size);
 
   LayoutForPrinting();
@@ -3245,7 +3245,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     // laying out first), and the size of the first page is different from what
     // we got above, the initial containing block used was wrong (which affects
     // e.g. elements with viewport units). Set a new size and lay out again.
-    layout_view->SetInitialContainingBlockSizeForPagination(
+    layout_view->SetInitialContainingBlockSizeForPrinting(
         new_initial_containing_block_size);
 
     LayoutForPrinting();
@@ -3267,7 +3267,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
                                           overall_scale_factor);
     PhysicalSize new_size =
         CalculateInitialContainingBlockSizeForPagination(document);
-    layout_view->SetInitialContainingBlockSizeForPagination(new_size);
+    layout_view->SetInitialContainingBlockSizeForPrinting(new_size);
     LayoutForPrinting();
   }
 

@@ -147,7 +147,8 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_P016LE == video_frame->format() ||
          PIXEL_FORMAT_P216LE == video_frame->format() ||
          PIXEL_FORMAT_P416LE == video_frame->format() ||
-         PIXEL_FORMAT_RGBAF16 == video_frame->format())
+         PIXEL_FORMAT_RGBAF16 == video_frame->format() ||
+         PIXEL_FORMAT_BGRA == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
@@ -383,7 +384,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
 
   struct {
     int stride;
-    const uint8_t* data;
+    raw_ptr<const uint8_t> data;
   } plane_meta[VideoFrame::kMaxPlanes];
 
   for (size_t plane = 0; plane < VideoFrame::kMaxPlanes; ++plane) {
@@ -503,13 +504,13 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
 
   auto convert_yuv16 = [&](const libyuv::YuvConstants* matrix, auto&& func) {
     func(YUV_ORDER(reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kY].data),
+                       plane_meta[VideoFrame::Plane::kY].data.get()),
                    plane_meta[VideoFrame::Plane::kY].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kU].data),
+                       plane_meta[VideoFrame::Plane::kU].data.get()),
                    plane_meta[VideoFrame::Plane::kU].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kV].data),
+                       plane_meta[VideoFrame::Plane::kV].data.get()),
                    plane_meta[VideoFrame::Plane::kV].stride / 2),
          pixels, row_bytes, matrix, width, rows);
   };
@@ -517,29 +518,29 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   auto convert_yuv16_with_filter = [&](const libyuv::YuvConstants* matrix,
                                        auto&& func) {
     func(YUV_ORDER(reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kY].data),
+                       plane_meta[VideoFrame::Plane::kY].data.get()),
                    plane_meta[VideoFrame::Plane::kY].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kU].data),
+                       plane_meta[VideoFrame::Plane::kU].data.get()),
                    plane_meta[VideoFrame::Plane::kU].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kV].data),
+                       plane_meta[VideoFrame::Plane::kV].data.get()),
                    plane_meta[VideoFrame::Plane::kV].stride / 2),
          pixels, row_bytes, matrix, width, rows, filter);
   };
 
   auto convert_yuva16 = [&](const libyuv::YuvConstants* matrix, auto&& func) {
     func(YUV_ORDER(reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kY].data),
+                       plane_meta[VideoFrame::Plane::kY].data.get()),
                    plane_meta[VideoFrame::Plane::kY].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kU].data),
+                       plane_meta[VideoFrame::Plane::kU].data.get()),
                    plane_meta[VideoFrame::Plane::kU].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kV].data),
+                       plane_meta[VideoFrame::Plane::kV].data.get()),
                    plane_meta[VideoFrame::Plane::kV].stride / 2),
          reinterpret_cast<const uint16_t*>(
-             plane_meta[VideoFrame::Plane::kA].data),
+             plane_meta[VideoFrame::Plane::kA].data.get()),
          plane_meta[VideoFrame::Plane::kA].stride / 2, pixels, row_bytes,
          matrix, width, rows, premultiply_alpha);
   };
@@ -547,16 +548,16 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   auto convert_yuva16_with_filter = [&](const libyuv::YuvConstants* matrix,
                                         auto&& func) {
     func(YUV_ORDER(reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kY].data),
+                       plane_meta[VideoFrame::Plane::kY].data.get()),
                    plane_meta[VideoFrame::Plane::kY].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kU].data),
+                       plane_meta[VideoFrame::Plane::kU].data.get()),
                    plane_meta[VideoFrame::Plane::kU].stride / 2,
                    reinterpret_cast<const uint16_t*>(
-                       plane_meta[VideoFrame::Plane::kV].data),
+                       plane_meta[VideoFrame::Plane::kV].data.get()),
                    plane_meta[VideoFrame::Plane::kV].stride / 2),
          reinterpret_cast<const uint16_t*>(
-             plane_meta[VideoFrame::Plane::kA].data),
+             plane_meta[VideoFrame::Plane::kA].data.get()),
          plane_meta[VideoFrame::Plane::kA].stride / 2, pixels, row_bytes,
          matrix, width, rows, premultiply_alpha, filter);
   };
@@ -626,13 +627,14 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
                                  pixels, row_bytes, matrix, width, rows);
       break;
     case PIXEL_FORMAT_P016LE:
-      libyuv::P016ToARGBMatrix(reinterpret_cast<const uint16_t*>(
-                                   plane_meta[VideoFrame::Plane::kY].data),
-                               plane_meta[VideoFrame::Plane::kY].stride,
-                               reinterpret_cast<const uint16_t*>(
-                                   plane_meta[VideoFrame::Plane::kUV].data),
-                               plane_meta[VideoFrame::Plane::kUV].stride,
-                               pixels, row_bytes, matrix, width, rows);
+      libyuv::P016ToARGBMatrix(
+          reinterpret_cast<const uint16_t*>(
+              plane_meta[VideoFrame::Plane::kY].data.get()),
+          plane_meta[VideoFrame::Plane::kY].stride,
+          reinterpret_cast<const uint16_t*>(
+              plane_meta[VideoFrame::Plane::kUV].data.get()),
+          plane_meta[VideoFrame::Plane::kUV].stride, pixels, row_bytes, matrix,
+          width, rows);
       if (!OUTPUT_ARGB)
         libyuv::ARGBToABGR(pixels, row_bytes, pixels, row_bytes, width, rows);
       break;

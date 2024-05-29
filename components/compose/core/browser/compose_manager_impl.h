@@ -42,11 +42,13 @@ class ComposeManagerImpl : public ComposeManager {
       std::optional<PopupScreenLocation> popup_screen_location,
       ComposeCallback callback) override;
   std::optional<autofill::Suggestion> GetSuggestion(
+      const autofill::FormData& form,
       const autofill::FormFieldData& field,
       autofill::AutofillSuggestionTriggerSource trigger_source) override;
   void NeverShowComposeForOrigin(const url::Origin& origin) override;
   void DisableCompose() override;
   void GoToSettings() override;
+  bool ShouldAnchorNudgeOnCaret() override;
 
  private:
   bool IsEnabled() const;

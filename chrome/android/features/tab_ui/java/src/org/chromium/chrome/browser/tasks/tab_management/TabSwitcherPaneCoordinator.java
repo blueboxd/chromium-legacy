@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tab_ui.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -64,6 +63,7 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
     private final OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
     private final Callback<Boolean> mOnVisibilityChanged = this::onVisibilityChanged;
     private final ObservableSupplier<Boolean> mIsVisibleSupplier;
+    private final ObservableSupplier<Boolean> mIsAnimatingSupplier;
     private final TabSwitcherPaneMediator mMediator;
     private final Supplier<Boolean> mTabGridDialogVisibilitySupplier = this::isTabGridDialogVisible;
     private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
@@ -86,7 +86,6 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
      * @param activity The {@link Activity} that hosts the pane.
      * @param profileProviderSupplier The supplier for profiles.
      * @param tabModelFilterSupplier The supplier of the tab model filter fo rthis pane.
-     * @param regularTabModelSupplier The supplier of the regular tab model.
      * @param tabContentManager For management of thumbnails.
      * @param tabCreatorManager For creating new tabs.
      * @param browserControlsStateProvider For determining thumbnail size.
@@ -107,7 +106,6 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
             @NonNull Activity activity,
             @NonNull OneshotSupplier<ProfileProvider> profileProviderSupplier,
             @NonNull ObservableSupplier<TabModelFilter> tabModelFilterSupplier,
-            @NonNull Supplier<TabModel> regularTabModelSupplier,
             @NonNull TabContentManager tabContentManager,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull BrowserControlsStateProvider browserControlsStateProvider,
@@ -126,6 +124,7 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
         try (TraceEvent e = TraceEvent.scoped("TabSwitcherPaneCoordinator.constructor")) {
             mProfileProviderSupplier = profileProviderSupplier;
             mIsVisibleSupplier = isVisibleSupplier;
+            mIsAnimatingSupplier = isAnimatingSupplier;
             mActivity = activity;
             mModalDialogManager = modalDialogManager;
             mParentView = parentView;
@@ -154,7 +153,6 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
                                                 browserControlsStateProvider,
                                                 bottomSheetController,
                                                 tabModelFilterSupplier,
-                                                regularTabModelSupplier,
                                                 tabContentManager,
                                                 tabCreatorManager,
                                                 coordinatorView,
@@ -202,7 +200,6 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
                             browserControlsStateProvider,
                             mModalDialogManager,
                             tabModelFilterSupplier,
-                            regularTabModelSupplier,
                             mMultiThumbnailCardProvider,
                             /* actionOnRelatedTabs= */ true,
                             getGridCardOnClickListenerProvider(),
@@ -242,7 +239,6 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
                             /* rootView= */ parentView,
                             browserControlsStateProvider,
                             tabModelFilterSupplier,
-                            regularTabModelSupplier,
                             tabContentManager,
                             tabListCoordinator,
                             mode);
@@ -424,6 +420,10 @@ public class TabSwitcherPaneCoordinator implements BackPressHandler {
     }
 
     private View getTabGridDialogAnimationSourceView(int tabId) {
+        // If we are animating to show or hide the HubLayout, the TabGridDialog should hide or show
+        // via fade instead of animating from a tab. Return null so that this happens.
+        if (mIsAnimatingSupplier.get()) return null;
+
         TabListCoordinator coordinator = mTabListCoordinator;
         int index = coordinator.getTabIndexFromTabId(tabId);
         ViewHolder sourceViewHolder =

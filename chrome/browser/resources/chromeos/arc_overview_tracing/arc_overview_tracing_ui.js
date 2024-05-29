@@ -59,6 +59,9 @@ function initializeOverviewUi() {
 /**
  * Helper that calculates overall frequency of events.
  *
+ * TODO(matvore): Use |information.(app|perceived)_fps| and delete this function
+ * once https://crrev.com/c/5554144 has been around for a while.
+ *
  * @param {Events} events events to analyze.
  * @param {number} duration duration of analyzed period.
  */
@@ -328,8 +331,6 @@ function addCPUFrequencyView(parent, resolution, duration) {
       60 /* height */, 5 /* gridLinesCount */);
   const attributesTemplate =
       Object.assign({}, valueAttributes[9 /* kCpuFrequency */]);
-  attributesTemplate.minValue = 0;
-  attributesTemplate.maxValue = 3000000;  // Khz
   for (i = 0; i < models.length; i++) {
     const attributes = Object.assign({}, attributesTemplate);
     attributes.color = modelColors.get(models[i]);

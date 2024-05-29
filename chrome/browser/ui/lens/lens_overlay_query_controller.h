@@ -10,6 +10,7 @@
 #include "chrome/browser/lens/core/mojom/text.mojom.h"
 #include "chrome/browser/ui/lens/lens_overlay_invocation_source.h"
 #include "chrome/browser/ui/lens/lens_overlay_request_id_generator.h"
+#include "chrome/browser/ui/lens/lens_overlay_url_builder.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "components/lens/proto/server/lens_overlay_response.pb.h"
 #include "third_party/lens_server_proto/lens_overlay_client_context.pb.h"
@@ -76,15 +77,10 @@ class LensOverlayQueryController {
       lens::mojom::CenterRotatedBoxPtr region,
       std::map<std::string, std::string> additional_search_query_params);
 
-  // Sends an object selection interaction. Expected to be called multiple
-  // times.
-  void SendObjectSelection(
-      const std::string& object_id,
-      std::map<std::string, std::string> additional_search_query_params);
-
   // Sends a text-only interaction. Expected to be called multiple times.
   void SendTextOnlyQuery(
       const std::string& query_text,
+      TextOnlyQueryType text_only_query_type,
       std::map<std::string, std::string> additional_search_query_params);
 
   // Sends a multimodal interaction. Expected to be called multiple times.

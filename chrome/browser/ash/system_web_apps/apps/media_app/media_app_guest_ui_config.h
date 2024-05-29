@@ -29,6 +29,7 @@ class ChromeMediaAppGuestUIDelegate : public ash::MediaAppGuestUIDelegate {
   std::unique_ptr<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
   CreateAndBindOcrHandler(
       content::BrowserContext& context,
+      gfx::NativeWindow native_window,
       mojo::PendingReceiver<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
           receiver,
       mojo::PendingRemote<ash::media_app_ui::mojom::OcrUntrustedPage> page)
@@ -38,7 +39,8 @@ class ChromeMediaAppGuestUIDelegate : public ash::MediaAppGuestUIDelegate {
       mojo::PendingReceiver<ash::media_app_ui::mojom::MahiUntrustedPageHandler>
           receiver,
       mojo::PendingRemote<ash::media_app_ui::mojom::MahiUntrustedPage> page,
-      const std::string& file_name) override;
+      const std::string& file_name,
+      aura::Window* window) override;
 };
 
 // A webui config for the chrome-untrusted:// part of media-app.

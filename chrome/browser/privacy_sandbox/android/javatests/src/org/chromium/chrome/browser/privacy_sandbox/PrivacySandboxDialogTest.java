@@ -40,7 +40,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -312,7 +311,6 @@ public final class PrivacySandboxDialogTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "b/329590023")
     public void testAfterEEAConsentSpinnerAndNoticeAreShown() throws IOException {
         PrivacySandboxDialogController.disableAnimationsForTesting(false);
 
@@ -381,15 +379,19 @@ public final class PrivacySandboxDialogTest {
         launchDialog();
         // Click on the expanding section and verify it worked correctly.
         onViewWaiting(withId(R.id.privacy_sandbox_notice_title), true);
-        onView(withId(R.id.dropdown_element)).perform(scrollTo(), click());
+        onView(withId(R.id.dropdown_element)).inRoot(isDialog()).perform(scrollTo(), click());
         assertEquals(
                 "Last dialog action",
                 PromptAction.NOTICE_MORE_INFO_OPENED,
                 (int) mFakePrivacySandboxBridge.getLastPromptAction());
 
-        onView(withId(R.id.privacy_sandbox_notice_eea_dropdown)).perform(scrollTo());
-        onView(withId(R.id.privacy_sandbox_notice_eea_dropdown)).check(matches(isDisplayed()));
-        onView(withId(R.id.dropdown_element)).perform(scrollTo(), click());
+        onView(withId(R.id.privacy_sandbox_notice_eea_dropdown))
+                .inRoot(isDialog())
+                .perform(scrollTo());
+        onView(withId(R.id.privacy_sandbox_notice_eea_dropdown))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.dropdown_element)).inRoot(isDialog()).perform(scrollTo(), click());
         assertEquals(
                 "Last dialog action",
                 PromptAction.NOTICE_MORE_INFO_CLOSED,

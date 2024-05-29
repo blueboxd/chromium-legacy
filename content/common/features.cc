@@ -232,6 +232,16 @@ BASE_FEATURE(kFledgeSellerWorkletThreadPool,
 const base::FeatureParam<int> kFledgeSellerWorkletThreadPoolSize{
     &kFledgeSellerWorkletThreadPool, "seller_worklet_thread_pool_size", 1};
 
+// This is a kill switch for focusing the RenderWidgetHostViewAndroid on
+// ActionDown on every touch sequence if not focused already, please see
+// b/340824076. We are adding this to confirm the hypothesis that root view,
+// RWHVA, is always focused.
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kFocusRenderWidgetHostViewAndroidOnActionDown,
+             "FocusRenderWidgetHostViewAndroidOnActionDown",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
@@ -308,11 +318,6 @@ BASE_FEATURE(kIOSurfaceCapturer,
              "IOSurfaceCapturer",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
-
-// Enables the TC39 Array grouping proposal.
-BASE_FEATURE(kJavaScriptArrayGrouping,
-             "JavaScriptArrayGrouping",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature that controls whether WebContentsOcclusionChecker should handle
 // occlusion notifications.
@@ -471,6 +476,13 @@ BASE_FEATURE(kServiceWorkerAutoPreload,
 // fallback.
 BASE_FEATURE(kServiceWorkerStaticRouterStartServiceWorker,
              "ServiceWorkerStaticRouterStartServiceWorker",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// (crbug.com/340949948): Killswitch for the fix to address the ServiceWorker
+// main and subreosurce loader lifetime issue, which introduces fetch() failure
+// in the sw fetch handler.
+BASE_FEATURE(kServiceWorkerStaticRouterRaceRequestFix,
+             "kServiceWorkerStaticRouterRaceRequestFix",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The set of ServiceWorker to bypass while making navigation request.

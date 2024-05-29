@@ -318,8 +318,9 @@ class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver,
 // button and save for later button.
 std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
     aura::Window* root_window) {
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+      views::Widget::InitParams::TYPE_POPUP);
   // If Chromevox is on, let the widget be activatable.
   const bool spoken_feedback_enabled =
       Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
@@ -327,7 +328,6 @@ std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
       (spoken_feedback_enabled || features::IsOverviewNewFocusEnabled())
           ? views::Widget::InitParams::Activatable::kYes
           : views::Widget::InitParams::Activatable::kNo;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.name = "SaveDeskButtonContainerWidget";
   params.accept_events = true;
@@ -1948,7 +1948,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
     int height) {
   gfx::SizeF target_size = item->GetWindowsUnionScreenBounds().size();
   float scale = item->GetItemScale(height);
-  OverviewGridWindowFillMode grid_fill_mode = item->GetWindowDimensionsType();
+  OverviewItemFillMode item_fill_mode = item->GetOverviewItemFillMode();
 
   // The drop target, unlike the other windows has its bounds set directly, so
   // `GetWindowsUnionScreenBounds()` won't return the value we want. Instead,
@@ -1969,8 +1969,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
         // this grid, the drop target size should reflect the maximized window
         // size on this grid's display (i.e. this display's work area size)
         // which can be different than the source display's work area size.
-        grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
-            work_area_size);
+        item_fill_mode = GetOverviewItemFillMode(work_area_size);
         target_size = gfx::SizeF(work_area_size);
       } else {
         // If the drag started from a different root window, `dragged_windows`
@@ -1981,8 +1980,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
         gfx::Size dragged_item_size =
             GetTotalDraggedWindowsSize(dragged_windows);
         dragged_item_size.SetToMin(work_area_size);
-        grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
-            dragged_item_size);
+        item_fill_mode = GetOverviewItemFillMode(dragged_item_size);
         target_size = GetTotalUnionSizeIncludingTransients(dragged_windows);
         target_size.SetToMin(gfx::SizeF(work_area_size));
       }
@@ -1994,11 +1992,11 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
   }
 
   int width = std::max(1, base::ClampFloor(target_size.width() * scale));
-  switch (grid_fill_mode) {
-    case OverviewGridWindowFillMode::kLetterBoxed:
+  switch (item_fill_mode) {
+    case OverviewItemFillMode::kLetterBoxed:
       width = kExtremeWindowRatioThreshold * height;
       break;
-    case OverviewGridWindowFillMode::kPillarBoxed:
+    case OverviewItemFillMode::kPillarBoxed:
       width = height / kExtremeWindowRatioThreshold;
       break;
     default:
@@ -2380,7 +2378,7 @@ void OverviewGrid::UpdateSaveDeskButtons() {
     save_desk_button_container_widget_->GetLayer()
         ->GetAnimator()
         ->StopAnimating();
-    save_desk_button_container_widget_->Show();
+    save_desk_button_container_widget_->ShowInactive();
     PerformFadeInLayer(save_desk_button_container_widget_->GetLayer(),
                        /*animate=*/!in_desk_animation);
   }
@@ -3345,11 +3343,12 @@ void OverviewGrid::UpdateFasterSplitViewWidget() {
   }
 
   if (!faster_splitview_widget_) {
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        views::Widget::InitParams::TYPE_POPUP);
     params.activatable = features::IsOverviewNewFocusEnabled()
                              ? views::Widget::InitParams::Activatable::kYes
                              : views::Widget::InitParams::Activatable::kNo;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = desks_util::GetActiveDeskContainerForRoot(root_window_);
     params.name = "FasterSplitViewWidget";
     params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
@@ -3422,16 +3421,16 @@ void OverviewGrid::UpdateFeedbackButton() {
         u"Send Feedback", PillButton::Type::kDefaultElevatedWithIconLeading,
         &kFeedbackIcon);
 
-    views::Widget::InitParams params;
+    views::Widget::InitParams params(
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+        views::Widget::InitParams::TYPE_POPUP);
     params.activatable = features::IsOverviewNewFocusEnabled()
                              ? views::Widget::InitParams::Activatable::kYes
                              : views::Widget::InitParams::Activatable::kNo;
     params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
     params.init_properties_container.SetProperty(kOverviewUiKey, true);
     params.name = "PineFeedbackButton";
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = desks_util::GetActiveDeskContainerForRoot(root_window_);
-    params.type = views::Widget::InitParams::TYPE_POPUP;
 
     feedback_widget_ = std::make_unique<views::Widget>(std::move(params));
     feedback_widget_->SetContentsView(std::move(contents_view));

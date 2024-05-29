@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.library_loader.LibraryLoader;
@@ -22,10 +21,8 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 
-import java.util.List;
-
 /** Test class for {@link CommandLineFlags}. */
-@RunWith(CommandLineFlagsTest.ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
 @CommandLineFlags.Add({
     CommandLineFlagsTest.FLAG_1,
@@ -33,39 +30,6 @@ import java.util.List;
     "enable-features=feature1,feature2"
 })
 public class CommandLineFlagsTest {
-    public static class ClassRunner extends BaseJUnit4ClassRunner {
-        public ClassRunner(final Class<?> klass) throws InitializationError {
-            super(klass);
-        }
-
-        // Verify class-level modifications are reset after class finishes.
-        @Override
-        protected List<ClassHook> getPostClassHooks() {
-            return addToList(
-                    ClassRunner.super.getPostClassHooks(),
-                    (targetContext, testClass) -> {
-                        verifyCommandLine(false, false, false, false, false, false, false);
-                        Assert.assertFalse(CommandLine.getInstance().hasSwitch("flagwithvalue"));
-                        String enabledFeatures =
-                                CommandLine.getInstance().getSwitchValue("enable-features");
-                        if (enabledFeatures != null) {
-                            Assert.assertFalse(enabledFeatures.contains("feature1"));
-                            Assert.assertFalse(enabledFeatures.contains("feature2"));
-                        }
-                    });
-        }
-
-        // Verify that after each test, flags are reset to class-level state.
-        @Override
-        protected List<TestHook> getPostTestHooks() {
-            return addToList(
-                    ClassRunner.super.getPostTestHooks(),
-                    (targetContext, testMethod) -> {
-                        verifyClassLevelStateOnly();
-                    });
-        }
-    }
-
     static final String FLAG_1 = "flag1";
     private static final String FLAG_2 = "flag2";
     private static final String FLAG_3 = "flag3";

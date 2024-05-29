@@ -21,7 +21,6 @@
 #include "net/base/load_timing_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/single_request_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -54,8 +53,9 @@ class ServiceWorkerMainResourceLoaderInterceptor;
 // starting a new loader and becoming the client of that.
 //
 // Lives on the UI thread.
-class WorkerScriptLoader : public network::mojom::URLLoader,
-                           public network::mojom::URLLoaderClient {
+class CONTENT_EXPORT WorkerScriptLoader
+    : public network::mojom::URLLoader,
+      public network::mojom::URLLoaderClient {
  public:
   // Returns the browser context, or nullptr during shutdown. Must be called on
   // the UI thread.
@@ -76,8 +76,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      ukm::SourceId ukm_source_id);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
 
   WorkerScriptLoader(const WorkerScriptLoader&) = delete;
   WorkerScriptLoader& operator=(const WorkerScriptLoader&) = delete;
@@ -114,6 +113,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
     return std::move(subresource_loader_params_);
   }
 
+  void OnFetcherCallbackCalled();
+
   base::WeakPtr<WorkerScriptLoader> GetWeakPtr();
 
  private:
@@ -123,7 +124,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       ServiceWorkerMainResourceLoaderInterceptor* interceptor,
       std::optional<NavigationLoaderInterceptor::Result> interceptor_result);
   void LoadFromNetwork();
-  void CommitCompleted(const network::URLLoaderCompletionStatus& status);
+  void CommitCompleted();
 
   std::unique_ptr<ServiceWorkerMainResourceLoaderInterceptor> interceptor_;
 
@@ -137,7 +138,6 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
-  const ukm::SourceId ukm_source_id_;
 
   std::optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
@@ -150,7 +150,23 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  bool completed_ = false;
+  // Valid transitions:
+  // - kInitial -> kFetcherCallbackCalled or kOnCompleteCalled -> kCompleted
+  // - kInitial -> kCompleted (failure cases only)
+  // See the comment at the `CommitCompleted()` definition for more context.
+  enum class State {
+    kInitial,
+
+    // `WorkerScriptFetcher::callback_` was invoked.
+    kFetcherCallbackCalled,
+
+    // `WorkerScriptLoader::OnComplete()` was called.
+    kOnCompleteCalled,
+
+    // `WorkerScriptLoader::CommitCompleted()` was called.
+    kCompleted,
+  } state_{State::kInitial};
+  std::optional<network::URLLoaderCompletionStatus> complete_status_;
 
   base::WeakPtrFactory<WorkerScriptLoader> weak_factory_{this};
 };

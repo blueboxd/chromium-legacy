@@ -50,7 +50,7 @@ class PlusAddressAffiliationMatchHelper {
   // Returns the complete list of plus profiles that are affiliated with `facet`
   // based on their facet value. Only valid web facets must be passed-in.
   void GetAffiliatedPlusProfiles(
-      const affiliations::FacetURI& facet,
+      const PlusProfile::facet_t& facet,
       AffiliatedPlusProfilesCallback result_callback);
 
   // Requests and caches the list of PSL extensions.
@@ -81,7 +81,9 @@ class PlusAddressAffiliationMatchHelper {
   std::vector<PSLExtensionCallback> psl_extensions_callbacks_;
 
   const raw_ref<PlusAddressService> plus_address_service_;
-  const raw_ref<affiliations::AffiliationService> affiliation_service_;
+  // TODO(b/340494671): Use raw_ref once the iOS factory starts passing a valid
+  // instance.
+  const raw_ptr<affiliations::AffiliationService> affiliation_service_;
 
   base::WeakPtrFactory<PlusAddressAffiliationMatchHelper> weak_factory_{this};
 };

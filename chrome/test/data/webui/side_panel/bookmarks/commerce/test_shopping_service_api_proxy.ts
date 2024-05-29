@@ -54,6 +54,7 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
       'getUrlInfosForRecentlyViewedTabs',
       'showInsightsSidePanelUi',
       'openUrlInNewTab',
+      'switchToOrOpenTab',
       'showFeedback',
       'isShoppingListEligible',
       'getShoppingCollectionBookmarkFolderId',
@@ -68,6 +69,7 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
       'addProductSpecificationsSet',
       'deleteProductSpecificationsSet',
       'setNameForProductSpecificationsSet',
+      'setUrlsForProductSpecificationsSet',
     ]);
 
     this.callbackRouter = new PageCallbackRouter();
@@ -140,6 +142,10 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
     this.methodCalled('openUrlInNewTab');
   }
 
+  switchToOrOpenTab() {
+    this.methodCalled('switchToOrOpenTab');
+  }
+
   showFeedback() {
     this.methodCalled('showFeedback');
   }
@@ -193,6 +199,11 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
 
   setNameForProductSpecificationsSet(uuid: Uuid, name: string) {
     this.methodCalled('setNameForProductSpecificationsSet', uuid, name);
+    return Promise.resolve({updatedSet: null});
+  }
+
+  setUrlsForProductSpecificationsSet(uuid: Uuid, urls: Url[]) {
+    this.methodCalled('setUrlsForProductSpecificationsSet', uuid, urls);
     return Promise.resolve({updatedSet: null});
   }
 

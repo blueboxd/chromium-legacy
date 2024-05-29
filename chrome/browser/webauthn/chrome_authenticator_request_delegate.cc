@@ -610,6 +610,12 @@ void ChromeWebAuthenticationDelegate::BrowserProvidedPasskeysAvailable(
 // ChromeAuthenticatorRequestDelegate
 // ---------------------------------------------------------------------
 
+std::vector<std::unique_ptr<device::cablev2::Pairing>>
+ChromeAuthenticatorRequestDelegate::TestObserver::
+    GetCablePairingsFromSyncedDevices() {
+  return {};
+}
+
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -688,6 +694,15 @@ GPMEnclaveController*
 ChromeAuthenticatorRequestDelegate::enclave_controller_for_testing() const {
   return enclave_controller_.get();
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+chromeos::PasskeyDialogController&
+ChromeAuthenticatorRequestDelegate::chromeos_passkey_controller_for_testing()
+    const {
+  CHECK(chromeos_passkey_controller_);
+  return *chromeos_passkey_controller_;
+}
+#endif
 
 void ChromeAuthenticatorRequestDelegate::SetRelyingPartyId(
     const std::string& rp_id) {
@@ -850,7 +865,7 @@ ChromeAuthenticatorRequestDelegate::CreatePlatformDiscoveries() {
         std::make_unique<chromeos::PasskeyDiscovery>(GetRenderFrameHost()));
   }
 #endif
-  return {};
+  return discoveries;
 }
 
 void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
@@ -883,14 +898,14 @@ void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
         profile->GetPrefs()->GetBoolean(
             password_manager::prefs::kCredentialsEnableService)) {
 #if BUILDFLAG(IS_CHROMEOS)
-    chromeos::PasskeyService* passkey_service =
-        chromeos::PasskeyServiceFactory::GetForProfile(profile);
-    CHECK(passkey_service && passkey_service->GpmPasskeysAvailable());
-    chromeos_passkey_controller_ =
-        std::make_unique<chromeos::PasskeyDialogController>(
-            dialog_model_.get(), passkey_service,
-            PasskeyModelFactory::GetInstance()->GetForProfile(profile), rp_id,
-            request_type, user_verification_requirement);
+      chromeos::PasskeyService* passkey_service =
+          chromeos::PasskeyServiceFactory::GetForProfile(profile);
+      CHECK(passkey_service && passkey_service->GpmPasskeysAvailable());
+      chromeos_passkey_controller_ =
+          std::make_unique<chromeos::PasskeyDialogController>(
+              dialog_model_.get(), passkey_service,
+              PasskeyModelFactory::GetInstance()->GetForProfile(profile), rp_id,
+              request_type, user_verification_requirement);
 #else
       auto* const identity_manager =
           IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
@@ -912,6 +927,9 @@ void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
         }
       }
 #endif
+    } else {
+      FIDO_LOG(EVENT)
+          << "Enclave unavailable for creating passkeys due to policy.";
     }
   }
 
@@ -1090,6 +1108,9 @@ void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
 
 void ChromeAuthenticatorRequestDelegate::SetHints(
     const AuthenticatorRequestClientDelegate::Hints& hints) {
+  if (g_observer) {
+    g_observer->HintsSet(hints);
+  }
   dialog_controller_->SetHints(hints);
 }
 
@@ -1417,6 +1438,10 @@ void ChromeAuthenticatorRequestDelegate::GetPhoneContactableGpmPasskeysForRpId(
           ->GetInteger(
               webauthn::pref_names::kEnclaveDeclinedGPMBootstrappingCount) >=
       device::enclave::kMaxGPMBootstrapPrompts;
+  FIDO_LOG(EVENT) << "b/342399396: considering whether GPM credentials are "
+                     "enclave; have controller: "
+                  << static_cast<bool>(enclave_controller_)
+                  << " bootstrap limit: " << enclave_bootstrap_limit_reached;
   if (enclave_controller_ && !enclave_bootstrap_limit_reached) {
     credentials = enclave_controller_->creds();
     type = device::AuthenticatorType::kEnclave;

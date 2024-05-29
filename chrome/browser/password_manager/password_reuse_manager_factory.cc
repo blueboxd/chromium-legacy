@@ -17,8 +17,8 @@
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_reuse_detector_impl.h"
 #include "components/password_manager/core/browser/password_reuse_manager_impl.h"
+#include "components/password_manager/core/browser/password_reuse_manager_signin_notifier_impl.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
-#include "components/password_manager/core/browser/password_store_signin_notifier_impl.h"
 #include "components/password_manager/core/browser/shared_preferences_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -104,8 +104,9 @@ PasswordReuseManagerFactory::BuildServiceInstanceForBrowserContext(
           .get();
   // Incognito, guest, or system profiles doesn't have PasswordStore so
   // PasswordReuseManager shouldn't be created as well.
-  if (!store)
+  if (!store) {
     return nullptr;
+  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -138,10 +139,11 @@ PasswordReuseManagerFactory::BuildServiceInstanceForBrowserContext(
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
-  std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
-      std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
+  std::unique_ptr<password_manager::PasswordReuseManagerSigninNotifier>
+      notifier = std::make_unique<
+          password_manager::PasswordReuseManagerSigninNotifierImpl>(
           IdentityManagerFactory::GetForProfile(profile));
-  reuse_manager->SetPasswordStoreSigninNotifier(std::move(notifier));
+  reuse_manager->SetPasswordReuseManagerSigninNotifier(std::move(notifier));
 #endif
 
   return reuse_manager;

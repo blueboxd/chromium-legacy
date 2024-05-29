@@ -235,6 +235,11 @@ extern const char kMeasurementsDescription[];
 extern const char kEnableViewportIntentsName[];
 extern const char kEnableViewportIntentsDescription[];
 
+// Title and description for the flag to enable improve parcel tracking
+// detection.
+extern const char kEnableNewParcelTrackingNumberDetectionName[];
+extern const char kEnableNewParcelTrackingNumberDetectionDescription[];
+
 // Title and description for the flag to enable text classifier date detection
 // in experience kit.
 extern const char kEnableExpKitTextClassifierDateName[];
@@ -582,6 +587,11 @@ extern const char kIPHiOSTabGridSwipeRightForIncognitoDescription[];
 extern const char kLensCircleToSearchEnabledName[];
 extern const char kLensCircleToSearchEnabledDescription[];
 
+// Title and description for the flag to enable the Lens web page early
+// transition.
+extern const char kLensWebPageEarlyTransitionEnabledName[];
+extern const char kLensWebPageEarlyTransitionEnabledDescription[];
+
 // Title and description for the flag to add Linked Services Setting to the Sync
 // Settings page.
 extern const char kLinkedServicesSettingIosName[];
@@ -715,6 +725,10 @@ extern const char kOmniboxPopupRowContentConfigurationDescription[];
 // Title and description for omnibox rich inline autocompletion.
 extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
+
+// Title and description for omnibox suggestion answer migration.
+extern const char kOmniboxSuggestionAnswerMigrationName[];
+extern const char kOmniboxSuggestionAnswerMigrationDescription[];
 
 // Title and description for improved RTL layout of suggestions.
 extern const char kOmniboxSuggestionsRTLImprovementsName[];
@@ -948,10 +962,6 @@ extern const char kEnableSessionSerializationOptimizationsDescription[];
 extern const char kTabGridAlwaysBounceName[];
 extern const char kTabGridAlwaysBounceDescription[];
 
-// Title and description for the tab grid new compositional layout.
-extern const char kTabGridCompositionalLayoutName[];
-extern const char kTabGridCompositionalLayoutDescription[];
-
 // Title and description for the tab grid refactoring flag.
 extern const char kTabGridRefactoringName[];
 extern const char kTabGridRefactoringDescription[];
@@ -986,6 +996,10 @@ extern const char kTabPickupThresholdDescription[];
 // Title and description for the flag to enable tab resumption.
 extern const char kTabResumptionName[];
 extern const char kTabResumptionDescription[];
+
+// Title and description for the flag to enable tab resumption enhancements.
+extern const char kTabResumption1_5Name[];
+extern const char kTabResumption1_5Description[];
 
 // Title and description for the flag to undo the migration of syncing users to
 // the signed-in non-syncing state.

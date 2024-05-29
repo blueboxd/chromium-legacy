@@ -191,6 +191,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
           <ph name="LIST_ITEM" />Pihak sekolah atau atasan Anda
           <ph name="LIST_ITEM" />Internet Service Provider Anda
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">Lacak item ini</translation>
 <translation id="1337692097987160377">Bagikan tab ini</translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1340482604681802745">Alamat pengambilan</translation>
@@ -360,6 +361,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1641976391427233992">Tunda keluaran hingga</translation>
 <translation id="1643651787397909318">Tombol Buka pemeriksaan keamanan Chrome, aktifkan untuk membuka halaman pemeriksaan keamanan Chrome di setelan</translation>
 <translation id="1644574205037202324">Histori</translation>
+<translation id="1645004815457365098">Sumber tidak dikenal</translation>
 <translation id="1645368109819982629">Protokol yang tidak didukung</translation>
 <translation id="1650602712345345441">Kelola setelan Chrome Anda</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -576,7 +578,6 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="2056658168519009885">Situs dapat meminta informasi kepada Chrome untuk membantu mempersonalisasi iklan yang Anda lihat.</translation>
 <translation id="2059166748188874810">Kotamadya</translation>
 <translation id="2059202684901022309">22 x 34 inci (55 x 86 cm)</translation>
-<translation id="206275378685759380">Tunggu untuk Membeli</translation>
 <translation id="2064568741209980952">Kredit &amp; Pinjaman</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 saran}other{# saran}}</translation>
 <translation id="2066915425250589881">minta untuk dihapus</translation>
@@ -1335,6 +1336,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="353816159217417898">Sablon (Paged)</translation>
 <translation id="3542628208405253498">Gambar kartu</translation>
 <translation id="3542768452570884558">Buka Link di Jendela Baru</translation>
+<translation id="3547442767634383572">Ringkasan profil kerja</translation>
 <translation id="3547746132308051926">20 x 24 inci (50 x 60 cm)</translation>
 <translation id="3552155506104542239">Peringatan: Kebijakan ini bertentangan dengan <ph name="POLICY_NAME" /> dan tidak akan berpengaruh pada aplikasi Android. Jika tidak bertentangan, kebijakan ini akan berfungsi sebagaimana mestinya.</translation>
 <translation id="3552297013052089404">Font Sans Serif</translation>
@@ -2199,6 +2201,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">Profil terkelola, browser, dan beberapa informasi perangkat dapat diakses oleh administrator Anda. Mereka dapat melihat informasi seperti berikut:</translation>
 <translation id="5234764350956374838">Tutup</translation>
 <translation id="5238301240406177137">Simpan di Akun</translation>
 <translation id="5239119062986868403">Harga Standar</translation>
@@ -2212,6 +2215,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="52517543715119994">Pelajari fitur-fitur Chrome</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5254043433801397071">Optimalkan konten cetak</translation>
+<translation id="5255583962255635076">Kebijakan browser yang diterapkan di profil kerja Anda</translation>
 <translation id="5255690596502591079">Tetap ambil screenshot</translation>
 <translation id="5255833070095767006">350 x 460 mm</translation>
 <translation id="5257739419779698609">{0,plural, =1{Kebijakan administrator tidak merekomendasikan untuk menyalin file ini ke <ph name="DESTINATION_NAME" />}other{Kebijakan administrator tidak merekomendasikan untuk menyalin file ini ke <ph name="DESTINATION_NAME" />}}</translation>
@@ -2608,6 +2612,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="6035491133925068289">Atletik</translation>
 <translation id="6039846035001940113">Jika masalah berlanjut, hubungi pemilik situs.</translation>
 <translation id="6040143037577758943">Tutup</translation>
+<translation id="6040539895181423374">Analisis Harga</translation>
 <translation id="604124094241169006">Otomatis</translation>
 <translation id="6041777658117377052">Suhu ruang</translation>
 <translation id="6042308850641462728">Lainnya</translation>
@@ -3213,7 +3218,6 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">Setelah mengaktifkan setelan tersebut, kembali ke tab ini untuk mulai menulis</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">Administrator dapat melihat:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk membuka tab Samaran baru dan menjelajah secara pribadi</translation>
 <translation id="7203375778433816396">Setel Chrome sebagai browser default sistem</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi standar keamanan.</translation>
@@ -3330,6 +3334,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="7421067045979951561">pengendali protokol</translation>
 <translation id="7422347648202898039">Label (Keamanan)</translation>
 <translation id="7423283032694727565">Tombol Kelola cookie, aktifkan untuk mengelola preferensi cookie Anda di setelan Chrome</translation>
+<translation id="742435751935045381">Aplikasi &amp; ekstensi terinstal di profil kerja Anda</translation>
 <translation id="7424421098814895617">Opsi hapus alamat dipilih</translation>
 <translation id="7425037327577270384">Bantu tulis</translation>
 <translation id="7425878584435172632">Seni &amp; Desain Visual</translation>
@@ -3874,6 +3879,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="8412392972487953978">Anda harus memasukkan frasa sandi yang sama dua kali.</translation>
 <translation id="8416694386774425977">Konfigurasi jaringan tidak valid dan tidak dapat diimpor. Detail tambahan: <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">Mikrofon diizinkan kali ini</translation>
+<translation id="8421158157346464398">Informasi profil kerja (seperti nama pengguna profil kerja Anda)</translation>
 <translation id="8422228580902424274">Penyerang di situs yang Anda coba kunjungi dapat mengelabui Anda agar menginstal software atau mengungkapkan hal-hal seperti sandi, nomor telepon, atau nomor kartu kredit Anda.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Ubah</translation>
@@ -4242,6 +4248,7 @@ disusupi oleh penyerang. Hanya buka <ph name="BEGIN_LINK" />situs yang tidak ama
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">Situs yang Anda buka juga dapat menentukan hal-hal yang Anda sukai berdasarkan aktivitas Anda di situs tersebut. Misalnya, jika Anda membuka situs yang menjual sepatu lari jarak jauh, situs tersebut mungkin menyimpulkan bahwa Anda tertarik berlari maraton.</translation>
 <translation id="9166851138617700776">Selengkapnya tentang iklan yang disarankan situs dan pengukuran iklan</translation>
+<translation id="9167054383925257837">Informasi OS perangkat dan browser (seperti browser &amp; versi OS)</translation>
 <translation id="9167594211215946097">Memiliki akses langsung ke printer Anda</translation>
 <translation id="9168814207360376865">Izinkan situs memeriksa apakah Anda telah menyimpan metode pembayaran atau belum</translation>
 <translation id="9169664750068251925">Selalu cekal di situs ini</translation>

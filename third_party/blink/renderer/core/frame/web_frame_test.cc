@@ -201,7 +201,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread_scheduler.h"
@@ -13150,7 +13149,8 @@ TEST_F(WebFrameSimTest, DisplayNoneIFramePrints) {
 
   gfx::SizeF page_size(400, 400);
   float maximum_shrink_ratio = 1.0;
-  iframe_doc->GetFrame()->StartPrinting(page_size, maximum_shrink_ratio);
+  iframe_doc->GetFrame()->StartPrinting(WebPrintParams(page_size),
+                                        maximum_shrink_ratio);
   EXPECT_TRUE(iframe_doc->documentElement()->GetLayoutObject());
 
   iframe_doc->GetFrame()->EndPrinting();

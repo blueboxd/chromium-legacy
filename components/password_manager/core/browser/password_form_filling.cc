@@ -58,15 +58,13 @@ bool IsFillOnAccountSelectFeatureEnabled() {
 }
 #endif
 
-void Autofill(
-    PasswordManagerClient* client,
-    PasswordManagerDriver* driver,
-    const PasswordForm& form_for_autofill,
-    const base::span<const PasswordForm>& best_matches,
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-        federated_matches,
-    std::optional<PasswordForm> preferred_match,
-    bool wait_for_username) {
+void Autofill(PasswordManagerClient* client,
+              PasswordManagerDriver* driver,
+              const PasswordForm& form_for_autofill,
+              base::span<const PasswordForm> best_matches,
+              base::span<const PasswordForm> federated_matches,
+              std::optional<PasswordForm> preferred_match,
+              bool wait_for_username) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client)) {
     logger = std::make_unique<BrowserSavePasswordProgressLogger>(
@@ -77,8 +75,9 @@ void Autofill(
   PasswordFormFillData fill_data = CreatePasswordFormFillData(
       form_for_autofill, best_matches, std::move(preferred_match),
       client->GetLastCommittedOrigin(), wait_for_username);
-  if (logger)
+  if (logger) {
     logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
+  }
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.FillSuggestionsIncludeAndroidAppCredentials",
       ContainsAndroidCredentials(fill_data));
@@ -94,7 +93,7 @@ void Autofill(
   if (!best_matches.empty() || !federated_matches.empty()) {
     client->PasswordWasAutofilled(best_matches,
                                   Origin::Create(form_for_autofill.url),
-                                  &federated_matches, !wait_for_username);
+                                  federated_matches, !wait_for_username);
   }
 }
 
@@ -114,8 +113,7 @@ LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerDriver* driver,
     const PasswordForm& observed_form,
     base::span<const PasswordForm> best_matches,
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-        federated_matches,
+    base::span<const PasswordForm> federated_matches,
     const PasswordForm* preferred_match,
     PasswordFormMetricsRecorder* metrics_recorder,
     bool webauthn_suggestions_available) {
@@ -259,7 +257,7 @@ PasswordFormFillData CreatePasswordFormFillData(
     bool wait_for_username) {
   PasswordFormFillData result;
 
-  result.form_renderer_id = form_on_page.form_data.renderer_id;
+  result.form_renderer_id = form_on_page.form_data.renderer_id();
   result.url = form_on_page.url;
   result.wait_for_username = wait_for_username;
 

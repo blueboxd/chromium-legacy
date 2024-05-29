@@ -225,8 +225,12 @@ class CORE_EXPORT LineBreaker {
   // Returns false if we can't handle the current InlineItem as a ruby.
   // NOINLINE prevents a compiler for Android 64bit from inlining
   // HandleRuby() twice.
+  //
+  // `retry_size` - If this is not kIndefiniteSize, the function tries to break
+  //   the ruby column so that its inline-size is less than `retry_size`.
   NOINLINE bool HandleRuby(const RubyBreakTokenData* ruby_token,
-                           LineInfo* line_info);
+                           LineInfo* line_info,
+                           LayoutUnit retry_size = kIndefiniteSize);
   bool IsMonolithicRuby(
       const LineInfo& base_line,
       const HeapVector<LineInfo, 1>& annotation_line_list) const;
@@ -271,7 +275,8 @@ class CORE_EXPORT LineBreaker {
   void HandleCloseTag(const InlineItem&, LineInfo*);
 
   bool HandleOverflowIfNeeded(LineInfo*);
-  void HandleOverflow(LineInfo*);
+  // NOINLINE prevents a compiler for Android 64bit from code size bloat.
+  NOINLINE void HandleOverflow(LineInfo*);
   void RetryAfterOverflow(LineInfo*, InlineItemResults*);
   void RewindOverflow(unsigned new_end, LineInfo*);
   void Rewind(unsigned new_end, LineInfo*);

@@ -536,7 +536,8 @@ chromium-metrics-reviews@google.com.
   <int value="101" label="WebViewCompat.isAudioMuted"/>
   <int value="102" label="WebSettingsCompat.setWebauthnSupport"/>
   <int value="103" label="WebSettingsCompat.getWebauthnSupport"/>
-  <int value="104" label="WebSettingsCompat.setSpeculativeLoadingEnabled"/>
+  <int value="104" label="WebSettingsCompat.setSpeculativeLoadingStatus"/>
+  <int value="105" label="WebSettingsCompat.getSpeculativeLoadingStatus"/>
 </enum>
 
 <enum name="ArmCpuPart">
@@ -2079,6 +2080,12 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="Content"/>
   <int value="12" label="Intent"/>
   <int value="13" label="android_asset or android_res"/>
+</enum>
+
+<enum name="WebViewUsedInPopupWindow">
+  <int value="0" label="Not in PopupWindow"/>
+  <int value="1" label="In PopupWindow"/>
+  <int value="2" label="Unknown (likely not attached to window)"/>
 </enum>
 
 <enum name="WebViewVisibility">

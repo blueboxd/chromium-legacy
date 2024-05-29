@@ -16,21 +16,19 @@ import {CrDialogElement} from 'chrome://resources/ash/common/cr_elements/cr_dial
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Router, routes} from '../../router.js';
-
 import {getTemplate} from './app_setup_pin_dialog.html.js';
 import {AppSetupPinKeyboardElement} from './app_setup_pin_keyboard.js';
 
 const AppSetupPinDialogElementBase = I18nMixin(PolymerElement);
 
-interface AppSetupPinDialogElement {
+export interface AppSetupPinDialogElement {
   $: {
     dialog: CrDialogElement,
     setupPinKeyboard: AppSetupPinKeyboardElement,
   };
 }
 
-class AppSetupPinDialogElement extends AppSetupPinDialogElementBase {
+export class AppSetupPinDialogElement extends AppSetupPinDialogElementBase {
   static get is() {
     return 'app-setup-pin-dialog' as const;
   }
@@ -48,9 +46,15 @@ class AppSetupPinDialogElement extends AppSetupPinDialogElementBase {
         type: Boolean,
         value: false,
       },
+
+      /**
+       * Whether the submit button should be clickable.
+       */
+      enableSubmit_: Boolean,
     };
   }
 
+  private enableSubmit_: boolean;
   private isConfirmStep_: boolean;
 
   override ready(): void {
@@ -91,7 +95,7 @@ class AppSetupPinDialogElement extends AppSetupPinDialogElementBase {
    */
   private onSetPinDone_(): void {
     this.close();
-    Router.getInstance().navigateTo(routes.APP_PARENTAL_CONTROLS);
+    this.dispatchEvent(new Event('success', {composed: true}));
   }
 
   private getTitle_(isConfirmStep: boolean): string {

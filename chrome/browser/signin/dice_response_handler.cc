@@ -402,8 +402,9 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
         "Missing authorization code due to OAuth outage in Dice.");
     if (!timer_) {
       timer_ = std::make_unique<base::OneShotTimer>();
-      if (task_runner_)
+      if (task_runner_) {
         timer_->SetTaskRunner(task_runner_);
+      }
     }
     // If there is already another lock, the timer will be reset and
     // we'll wait another full timeout.

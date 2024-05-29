@@ -10,6 +10,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/aliases.h"
 
 namespace url {
@@ -32,6 +33,9 @@ struct Suggestion;
 // `AutofillClient`.
 class AutofillPlusAddressDelegate {
  public:
+  // Callback to return the list of plus address suggestions.
+  using GetSuggestionsCallback =
+      base::OnceCallback<void(std::vector<Suggestion>)>;
   // Describes interactions with Autofill suggestions for plus addresses.
   // The values are persisted to metrics, do not change them.
   enum class SuggestionEvent {
@@ -53,16 +57,46 @@ class AutofillPlusAddressDelegate {
   // fallback (e.g. the suggestions were triggered from the context menu on
   // Desktop), then `focused_field_value` is ignored. Otherwise, only
   // suggestions whose prefix matches `focused_field_value` are shown.
-  virtual std::vector<Suggestion> GetSuggestions(
+  virtual void GetSuggestions(
       const url::Origin& last_committed_primary_main_frame_origin,
       bool is_off_the_record,
       AutofillClient::PasswordFormType focused_form_type,
       std::u16string_view focused_field_value,
-      AutofillSuggestionTriggerSource trigger_source) = 0;
+      AutofillSuggestionTriggerSource trigger_source,
+      GetSuggestionsCallback callback) = 0;
 
   // Logs Autofill suggestion events related to plus addresses.
   virtual void RecordAutofillSuggestionEvent(
       SuggestionEvent suggestion_event) = 0;
+
+  // An enum describing the context in which a plus address suggestion was
+  // shown. These values are persisted to logs - do not modify or remove them.
+  enum SuggestionContext {
+    // The plus address suggestion was shown alongside Autofill profile
+    // suggestions because the user focused on a field classified as an email
+    // field.
+    kAutofillProfileOnEmailField = 0,
+    // The plus address suggestion was not shown explicitly, but the user
+    // performed Autofill profile filling on a domain for which they already had
+    // a plus address.
+    kAutofillProfileOnOtherField = 1,
+    // The plus address suggestion was shown alongside Autocomplete suggestions.
+    kAutocomplete = 2,
+    // The plus address suggestion was shown because the user entered via manual
+    // fallback.
+    kManualFallback = 3,
+    kMaxValue = kManualFallback
+  };
+  // Starts a session for logging a form submission UKM specific to plus
+  // addresses. `suggestion_type` is the type of the first shown plus address
+  // suggestion.
+  virtual void OnPlusAddressSuggestionShown(
+      AutofillManager& manager,
+      FormGlobalId form,
+      FieldGlobalId field,
+      SuggestionContext suggestion_context,
+      AutofillClient::PasswordFormType form_type,
+      SuggestionType suggestion_type) = 0;
 };
 
 }  // namespace autofill

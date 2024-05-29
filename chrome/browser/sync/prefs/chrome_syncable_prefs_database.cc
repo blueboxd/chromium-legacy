@@ -94,7 +94,7 @@ enum {
   // kAccessibilityGreyscaleAmount = 100038,  // deprecated
   // kAccessibilityHueRotationAmount = 100039,  // deprecated
   // kAccessibilitySaturationAmount = 100040,  // deprecated
-  kAccessibilityScreenMagnifierCenterFocus = 100041,
+  // kAccessibilityScreenMagnifierCenterFocus = 100041,  // deprecated
   kAccessibilityScreenMagnifierFocusFollowingEnabled = 100042,
   kAccessibilityScreenMagnifierMouseFollowingMode = 100043,
   kAccessibilitySelectToSpeakBackgroundShading = 100044,
@@ -338,6 +338,8 @@ enum {
   kKeyboardDefaultSplitModifierSettings = 100279,
   kDisplayAmbientLightSensorLastEnabled = 100280,
   kAccessibilityMainNodeAnnotationsEnabled = 100281,
+  kSyncableVersionedWallpaperInfo = 100282,
+  kFocusModeSelectedTask = 100283,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -583,10 +585,6 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
      {syncable_prefs_ids::kAccessibilityFloatingMenuPosition,
       syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
-    {ash::prefs::kAccessibilityScreenMagnifierCenterFocus,
-     {syncable_prefs_ids::kAccessibilityScreenMagnifierCenterFocus,
-      syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
-      sync_preferences::MergeBehavior::kNone}},
     {ash::prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled,
      {syncable_prefs_ids::kAccessibilityScreenMagnifierFocusFollowingEnabled,
       syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
@@ -713,6 +711,10 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       sync_preferences::MergeBehavior::kNone}},
     {ash::prefs::kFocusModeSessionDuration,
      {syncable_prefs_ids::kFocusModeSessionDuration, syncer::OS_PREFERENCES,
+      sync_preferences::PrefSensitivity::kNone,
+      sync_preferences::MergeBehavior::kNone}},
+    {ash::prefs::kFocusModeSelectedTask,
+     {syncable_prefs_ids::kFocusModeSelectedTask, syncer::OS_PREFERENCES,
       sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
     {ash::prefs::kKeyboardDefaultChromeOSSettings,
@@ -1135,6 +1137,10 @@ constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       sync_preferences::MergeBehavior::kNone}},
     {ash::prefs::kDisplayAmbientLightSensorLastEnabled,
      {syncable_prefs_ids::kDisplayAmbientLightSensorLastEnabled,
+      syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
+      sync_preferences::MergeBehavior::kNone}},
+    {ash::prefs::kSyncableVersionedWallpaperInfo,
+     {syncable_prefs_ids::kSyncableVersionedWallpaperInfo,
       syncer::OS_PREFERENCES, sync_preferences::PrefSensitivity::kNone,
       sync_preferences::MergeBehavior::kNone}},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

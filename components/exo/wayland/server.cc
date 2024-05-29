@@ -81,6 +81,7 @@
 #include "components/exo/wayland/zcr_remote_shell_v2.h"
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
+#include "components/exo/wayland/zcr_test_controller.h"
 #include "components/exo/wayland/zcr_touchpad_haptics.h"
 #include "components/exo/wayland/zcr_ui_controls.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
@@ -140,25 +141,13 @@ void wayland_log(const char* fmt, va_list argp) {
 }
 
 int GetTextInputExtensionV1Version() {
-  if (base::FeatureList::IsEnabled(ash::features::kExoSurroundingTextOffset)) {
-    // set_surrounding_text_offset_utf16 + new surrounding_text_support
-    // strategy enabled once at version 10 was reverted (crbug.com/1451324).
-    //
-    // Now, the new API to fix the issue is introduced in version 12.
-    // We cannot enable confirm-composition only, because it will be hitting
-    // the same issue at version 10. Thus, we'll set version 12 (including
-    // all fixes + confirm-composition), or 9 (before everything).
-
-    // If GIF support is also enabled, we need version 13.
-    if (base::FeatureList::IsEnabled(
-            ash::features::kImeSystemEmojiPickerGIFSupport)) {
-      return 13;
-    }
-
-    return 12;
+  // If GIF support is also enabled, we need version 13.
+  if (base::FeatureList::IsEnabled(
+          ash::features::kImeSystemEmojiPickerGIFSupport)) {
+    return 13;
   }
 
-  return 9;
+  return 12;
 }
 
 }  // namespace
@@ -367,6 +356,7 @@ void Server::Initialize() {
                    /*version=*/1, display_, bind_zwp_idle_inhibit_manager);
 
   ui_controls_holder_ = std::make_unique<UiControls>(this);
+  test_controller_ = std::make_unique<TestController>(this);
 
   zcr_keyboard_extension_data_ =
       std::make_unique<WaylandKeyboardExtension>(serial_tracker_.get());

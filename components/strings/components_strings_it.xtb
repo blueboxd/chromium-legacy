@@ -191,6 +191,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
           <ph name="LIST_ITEM" />Al tuo datore di lavoro o alla tua scuola
           <ph name="LIST_ITEM" />Al tuo provider di servizi Internet
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">Monitora questo articolo</translation>
 <translation id="1337692097987160377">Condividi questa scheda</translation>
 <translation id="1339601241726513588">Dominio registrazione:</translation>
 <translation id="1340482604681802745">Indirizzo di ritiro</translation>
@@ -321,7 +322,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="1569487616857761740">Inserisci data di scadenza</translation>
 <translation id="1569694109004336106">Google Chrome sta tentando di attivare Windows Hello per inserire le password.</translation>
 <translation id="1572765991610098222"><ph name="WIDTH" /> x <ph name="HEIGHT" /> in</translation>
-<translation id="1574714699824202614">Verifica del metodo di pagamento in corso…</translation>
+<translation id="1574714699824202614">Verifica del metodo di pagamento</translation>
 <translation id="1576277203042721907">Shopping Insights</translation>
 <translation id="1579189948231786790">Questo sito è stato bloccato dalla tua organizzazione</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -360,6 +361,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="1641976391427233992">Ritarda uscita fino a</translation>
 <translation id="1643651787397909318">Pulsante Vai al controllo di sicurezza di Chrome, attiva per visitare la pagina del controllo di sicurezza di Chrome nelle impostazioni</translation>
 <translation id="1644574205037202324">Cronologia</translation>
+<translation id="1645004815457365098">Origine sconosciuta</translation>
 <translation id="1645368109819982629">Protocollo non supportato</translation>
 <translation id="1650602712345345441">Gestisci le tue impostazioni di Chrome</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -575,7 +577,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2056658168519009885">I siti possono chiedere a Chrome informazioni utili a personalizzare gli annunci che vedi.</translation>
 <translation id="2059166748188874810">Comune</translation>
 <translation id="2059202684901022309">55,8 × 86,3 cm</translation>
-<translation id="206275378685759380">Rimanda l'acquisto</translation>
 <translation id="2064568741209980952">Credito e prestiti</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggerimento}other{# suggerimenti}}</translation>
 <translation id="2066915425250589881">richiedere di eliminare</translation>
@@ -928,7 +929,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2725927759457695883">Inserisci il nome completo</translation>
 <translation id="2726001110728089263">Vassoio laterale</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
-<translation id="272937284275742856">Verifica dei dati di pagamento in sicurezza in corso…</translation>
+<translation id="272937284275742856">Verifica sicura dei dati di pagamento…</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
 <translation id="2731220418440848219">Scopri di più sul tuo motore di ricerca in Chromium</translation>
 <translation id="2731382536835015353">111,7 × 172,7 cm</translation>
@@ -1332,6 +1333,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="353816159217417898">Serigrafia (paged)</translation>
 <translation id="3542628208405253498">Immagine della carta</translation>
 <translation id="3542768452570884558">Apri link in un'altra finestra</translation>
+<translation id="3547442767634383572">Panoramica del profilo di lavoro</translation>
 <translation id="3547746132308051926">20 x 24 in</translation>
 <translation id="3552155506104542239">Avviso: questo criterio è in conflitto con <ph name="POLICY_NAME" /> e non avrà alcun effetto sulle app per Android. In caso contrario, questo criterio funziona come previsto.</translation>
 <translation id="3552297013052089404">Carattere Sans Serif</translation>
@@ -2196,6 +2198,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5230733896359313003">Indirizzo di spedizione</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">Il profilo gestito, il browser e alcune informazioni del dispositivo sono accessibili all'amministratore. Può vedere informazioni come:</translation>
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="5238301240406177137">Salva nell'account</translation>
 <translation id="5239119062986868403">Prezzo tipico</translation>
@@ -2209,6 +2212,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="52517543715119994">Scopri di più sulle funzionalità di Chrome</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5254043433801397071">Ottimizza contenuti di stampa</translation>
+<translation id="5255583962255635076">Criteri del browser applicati nel profilo di lavoro</translation>
 <translation id="5255690596502591079">Acquisisci comunque</translation>
 <translation id="5255833070095767006">350 x 460 mm</translation>
 <translation id="5257739419779698609">{0,plural, =1{Il criterio dell'amministratore sconsiglia di copiare questo file su <ph name="DESTINATION_NAME" />}other{Il criterio dell'amministratore sconsiglia di copiare questi file su <ph name="DESTINATION_NAME" />}}</translation>
@@ -2543,7 +2547,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5921639886840618607">Vuoi salvare la carta nell'Account Google?</translation>
 <translation id="5921952831792678223">Furgoni pick-up</translation>
 <translation id="5922853866070715753">Hai quasi finito.</translation>
-<translation id="5923492272538889093">Vuoi usare lo sblocco con il dispositivo anziché CVC?</translation>
+<translation id="5923492272538889093">Usare lo sblocco del dispositivo anziché il CVC?</translation>
 <translation id="5924510104057992926">La revisione è obbligatoria prima dell'apertura</translation>
 <translation id="5924782825030413055">Origine dell'ultimo aggiornamento del consenso:</translation>
 <translation id="5925040402342933574">Disco ottico (semilucido)</translation>
@@ -2605,6 +2609,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6035491133925068289">Atletica leggera</translation>
 <translation id="6039846035001940113">Se il problema persiste, contatta il proprietario del sito.</translation>
 <translation id="6040143037577758943">Chiudi</translation>
+<translation id="6040539895181423374">Approfondimenti sul prezzo</translation>
 <translation id="604124094241169006">Automatico</translation>
 <translation id="6041777658117377052">Temperatura della camera</translation>
 <translation id="6042308850641462728">Altro</translation>
@@ -3209,7 +3214,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">Dopo aver attivato questa impostazione, torna in questa scheda per iniziare a scrivere</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">L'amministratore è in grado di vedere:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per aprire una nuova scheda di navigazione in incognito per navigare in privato</translation>
 <translation id="7203375778433816396">Imposta Chrome come browser predefinito del sistema</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non è conforme agli standard di sicurezza.</translation>
@@ -3328,6 +3332,7 @@ Ulteriori dettagli:
 <translation id="7421067045979951561">gestori di protocollo</translation>
 <translation id="7422347648202898039">Etichette (sicurezza)</translation>
 <translation id="7423283032694727565">Pulsante Gestisci i cookie, attiva per gestire le preferenze relative ai cookie nelle impostazioni di Chrome</translation>
+<translation id="742435751935045381">App ed estensioni installate nel tuo profilo di lavoro</translation>
 <translation id="7424421098814895617">È stata selezionata l'opzione per eliminare l'indirizzo</translation>
 <translation id="7425037327577270384">Aiutami a scrivere</translation>
 <translation id="7425878584435172632">Design e arti visive</translation>
@@ -3874,6 +3879,7 @@ Ulteriori dettagli:
 Ulteriori dettagli:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">Microfono consentito questa volta</translation>
+<translation id="8421158157346464398">Informazioni del profilo di lavoro (ad esempio, nome utente del profilo di lavoro)</translation>
 <translation id="8422228580902424274">Gli utenti malintenzionati sul sito che stai cercando di visitare potrebbero indurti con l'inganno a installare software o a rivelare informazioni come la password, il numero di telefono o della carta di credito.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Cambia</translation>
@@ -4242,6 +4248,7 @@ Ulteriori dettagli:
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">I siti che visiti possono anche stabilire i tuoi interessi in base alla tua attività sul sito. Ad esempio, se visiti un sito che vende scarpe da corsa per lunghe distanze, il sito potrebbe decidere che ti interessa partecipare a maratone.</translation>
 <translation id="9166851138617700776">Scopri di più sugli annunci suggeriti dai siti e sulla misurazione degli annunci</translation>
+<translation id="9167054383925257837">Informazioni sul browser e sul sistema operativo del dispositivo (ad esempio, versioni del browser e del sistema operativo)</translation>
 <translation id="9167594211215946097">Avere accesso diretto alle stampanti</translation>
 <translation id="9168814207360376865">Consenti ai siti di controllare se hai metodi di pagamento salvati</translation>
 <translation id="9169664750068251925">Blocca sempre su questo sito</translation>

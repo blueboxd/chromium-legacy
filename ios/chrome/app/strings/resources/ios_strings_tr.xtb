@@ -90,6 +90,7 @@
 <translation id="143681031165817424">Adres yalnızca bu cihaza kaydedildi</translation>
 <translation id="1449835205994625556">Şifreyi Gizle</translation>
 <translation id="1450170672351507823">Standart koruma açık. Daha fazla güvenlik için gelişmiş korumayı kullanın.</translation>
+<translation id="1455492980583160269">Mesaj Gönderin</translation>
 <translation id="1469381646033328562">Hesabınız ebeveyniniz tarafından yönetiliyor.
 <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="1491277525950327607">Ayarı açıp kapatmak için iki kez dokunun</translation>
@@ -99,6 +100,7 @@
 <translation id="1506063256525392513">Bu şekilde, fotoğraf çekip yükleyebilir, QR kodlarını tarayabilirsiniz</translation>
 <translation id="1509486075633541495">Web sitesinde oturum açın</translation>
 <translation id="1509960214886564027">Birçok sitedeki özellikler çalışmayabilir</translation>
+<translation id="1520027731907768768">Takip ettiğiniz ürünlerle ilgili fiyat düşüşü uyarıları alın.</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyecekler</translation>
 <translation id="1523341279170789507">Tüm Çerezlere İzin Ver</translation>
 <translation id="1524563461097350801">Hayır, Teşekkürler</translation>
@@ -860,6 +862,7 @@ Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatların�
 <translation id="54401264925851789">Sayfa Güvenlik Bilgileri</translation>
 <translation id="5443952882982198570">Kredi Kartları</translation>
 <translation id="5444892875087332195">Yer İşaretleri</translation>
+<translation id="5453738961176844111">Ülke Kodu</translation>
 <translation id="5454211924362324495">Başkalarının şifrenizi kullanmasını engellemek için <ph name="BEGIN_LINK" /><ph name="WEBSITE" /> sayfasında şifrenizi değiştirin<ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">Çevrimdışı Sürümü aç</translation>
 <translation id="5459548306731933777">Ayrıntıları Göster</translation>
@@ -1188,6 +1191,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6983306615164277634">Konumu değiştirmek için adres çubuğuna dokunup basılı da tutabilirsiniz.</translation>
 <translation id="6988572888918530647">Google Hesabınızı Yönetin</translation>
+<translation id="6990519590575500580">Facetime</translation>
 <translation id="6998989275928107238">Nereye</translation>
 <translation id="699954956411469731">Mobil Bildirimler</translation>
 <translation id="699985840472413751">İndirme Çubuğunu Kapat</translation>
@@ -1224,6 +1228,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7192050974311852563">Günlüğe Kaydetmeyi Başlat</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="7210568419880432164">Bildirimleri etkinleştir…</translation>
+<translation id="7211038039686180558">Sekme gruplarınız, oturum açılmış tüm cihazlarınızda otomatik olarak kaydedilip güncellenir</translation>
 <translation id="721597782417389033">Kart İçin Geçersiz Takma Ad</translation>
 <translation id="7221173315674413369">Yenilikler bölümünde yeni özellikleri ve ipuçlarını keşfedin</translation>
 <translation id="7223102419539744003">Sekmeyi Kapat</translation>
@@ -1354,6 +1359,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7866872729285243843">Okuma Listenizi tüm cihazlarınızda almak için ayarlarda "Okuma Listesi"ni açın.</translation>
 <translation id="7866993391592926595">Bu Kartı Gizlerseniz Kargo Takibi Devre Dışı Bırakılır ve Tüm Verileriniz Silinir</translation>
 <translation id="7870750252270996949">Kopyalanan Lens Resmi</translation>
+<translation id="7877056713163921063">Kişilere Ekle</translation>
 <translation id="7879275349003161544">İndirilenleri Göster</translation>
 <translation id="7883882164760409935">Yeniden kullanılan şifreleriniz var.</translation>
 <translation id="7884694604461143138">Geçmişte arayın (<ph name="COUNT" /> sonuç)</translation>
@@ -1591,7 +1597,6 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="9000089900434778519">Arama motorunuz <ph name="DSE_NAME" />. Arama geçmişinizi silmek için arama motorunuzun talimatlarını (varsa) inceleyin.</translation>
 <translation id="9008201768610948239">Yoksay</translation>
 <translation id="9012585441087414258">Tehlikeli olduğu bilinen web siteleri, indirmeler ve uzantılara karşı koruma sağlar. Bir sayfa şüpheli işlem gerçekleştirirse URL'ler ve sayfa içeriğinin bir kısmı Google Güvenli Tarama'ya gönderilir.</translation>
-<translation id="9025203546212508704">Menünüzü nasıl özelleştireceğinizi öğrenmek için kaydırın</translation>
 <translation id="9029650858822697271">Oturumunuz kapatıldı</translation>
 <translation id="9034759925968272072">Google Hesabınızdaki oturumunuz kapatılmayacaktır. Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
 <translation id="9037965129289936994">Orijinali Göster</translation>

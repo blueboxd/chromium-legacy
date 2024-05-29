@@ -10,16 +10,21 @@ import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
+import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** Fragment containing Safety hub. */
-public class SafetyHubFragment extends ChromeBaseSettingsFragment {
+public class SafetyHubFragment extends ChromeBaseSettingsFragment
+        implements FragmentSettingsLauncher {
     private static final String PREF_PASSWORDS = "passwords_account";
     private static final String PREF_UPDATE = "update_check";
+    private static final String PREF_UNUSED_PERMISSIONS = "permissions";
     private SafetyHubModuleDelegate mDelegate;
+    private SettingsLauncher mSettingsLauncher;
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
@@ -34,7 +39,6 @@ public class SafetyHubFragment extends ChromeBaseSettingsFragment {
         PropertyModel passwordCheckPropertyModel =
                 new PropertyModel.Builder(
                                 SafetyHubModuleProperties.PASSWORD_CHECK_SAFETY_HUB_MODULE_KEYS)
-                        .with(SafetyHubModuleProperties.ICON, R.drawable.ic_vpn_key_grey)
                         .with(
                                 SafetyHubModuleProperties.IS_VISIBLE,
                                 mDelegate.shouldShowPasswordCheckModule())
@@ -57,7 +61,6 @@ public class SafetyHubFragment extends ChromeBaseSettingsFragment {
         PropertyModel updateCheckPropertyModel =
                 new PropertyModel.Builder(
                                 SafetyHubModuleProperties.UPDATE_CHECK_SAFETY_HUB_MODULE_KEYS)
-                        .with(SafetyHubModuleProperties.ICON, R.drawable.ic_update_grey)
                         .with(SafetyHubModuleProperties.IS_VISIBLE, true)
                         .with(SafetyHubModuleProperties.UPDATE_STATUS, mDelegate.getUpdateStatus())
                         .build();
@@ -66,9 +69,37 @@ public class SafetyHubFragment extends ChromeBaseSettingsFragment {
                 updateCheckPropertyModel,
                 updateCheckPreference,
                 SafetyHubModuleViewBinder::bindUpdateCheckProperties);
+
+        // Set up permissions preference.
+        Preference permissionsPreference = findPreference(PREF_UNUSED_PERMISSIONS);
+        int sitesWithUnusedPermissionsCount =
+                UnusedSitePermissionsBridge.getRevokedPermissions(getProfile()).length;
+
+        PropertyModel permissionsPropertyModel =
+                new PropertyModel.Builder(SafetyHubModuleProperties.PERMISSIONS_MODULE_KEYS)
+                        .with(SafetyHubModuleProperties.IS_VISIBLE, true)
+                        .with(
+                                SafetyHubModuleProperties.SITES_WITH_UNUSED_PERMISSIONS_COUNT,
+                                sitesWithUnusedPermissionsCount)
+                        .with(
+                                SafetyHubModuleProperties.ON_CLICK_LISTENER,
+                                () ->
+                                        mSettingsLauncher.launchSettingsActivity(
+                                                getContext(), SafetyHubPermissionsFragment.class))
+                        .build();
+
+        PropertyModelChangeProcessor.create(
+                permissionsPropertyModel,
+                permissionsPreference,
+                SafetyHubModuleViewBinder::bindPermissionsProperties);
     }
 
     public void setDelegate(SafetyHubModuleDelegate safetyHubModuleDelegate) {
         mDelegate = safetyHubModuleDelegate;
+    }
+
+    @Override
+    public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
+        mSettingsLauncher = settingsLauncher;
     }
 }

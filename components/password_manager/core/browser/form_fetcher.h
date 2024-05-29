@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list_types.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -69,22 +70,13 @@ class FormFetcher {
       const = 0;
 
   // Returns all PasswordForm entries that have insecure features.
-  // Do not store the result of this call. The pointers become invalid if `this`
-  // receives new results from a password store.
-  virtual std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetInsecureCredentials() const = 0;
+  virtual base::span<const PasswordForm> GetInsecureCredentials() const = 0;
 
   // Non-federated matches obtained from the backend.
-  // Do not store the result of this call. The pointers become invalid if `this`
-  // receives new results from a password store.
-  virtual std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetNonFederatedMatches() const = 0;
+  virtual base::span<const PasswordForm> GetNonFederatedMatches() const = 0;
 
   // Federated matches obtained from the backend.
-  // Do not store the result of this call. The pointers become invalid if `this`
-  // receives new results from a password store.
-  virtual std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetFederatedMatches() const = 0;
+  virtual base::span<const PasswordForm> GetFederatedMatches() const = 0;
 
   // Whether there are blocklisted matches in the backend. Valid only if
   // GetState() returns NOT_WAITING.

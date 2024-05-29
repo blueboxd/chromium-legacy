@@ -26,7 +26,8 @@ enum class BirchItemType {
   kWeather = 5,       // Weather conditions.
   kReleaseNotes = 6,  // Release notes from recent OS update.
   kSelfShare = 7,     // Tabs shared to self from ChromeSync API.
-  kMaxValue = kSelfShare,
+  kMostVisited = 8,   // Most frequently visited URLs.
+  kMaxValue = kMostVisited,
 };
 
 // The base item which is stored by the birch model.
@@ -265,6 +266,34 @@ class ASH_EXPORT BirchTabItem : public BirchItem {
   DeviceFormFactor form_factor_;
 };
 
+// A birch item for a most-frequently-visited URL.
+class ASH_EXPORT BirchMostVisitedItem : public BirchItem {
+ public:
+  BirchMostVisitedItem(const std::u16string& title,
+                       const GURL& url,
+                       ui::ImageModel icon);
+  BirchMostVisitedItem(BirchMostVisitedItem&&);
+  BirchMostVisitedItem(const BirchMostVisitedItem&);
+  BirchMostVisitedItem& operator=(const BirchMostVisitedItem&);
+  bool operator==(const BirchMostVisitedItem& rhs) const;
+  ~BirchMostVisitedItem() override;
+
+  // BirchItem:
+  BirchItemType GetType() const override;
+  std::string ToString() const override;
+  void PerformAction() override;
+  void PerformSecondaryAction() override;
+  void LoadIcon(LoadIconCallback callback) const override;
+
+  const GURL& url() const { return url_; }
+
+ private:
+  static std::u16string GetSubtitle();
+
+  GURL url_;
+  ui::ImageModel icon_;
+};
+
 // A birch item which contains tabs shared to self information.
 class ASH_EXPORT BirchSelfShareItem : public BirchItem {
  public:
@@ -273,7 +302,8 @@ class ASH_EXPORT BirchSelfShareItem : public BirchItem {
                      const GURL& url,
                      const base::Time& shared_time,
                      const std::u16string& device_name,
-                     GURL& favicon_url);
+                     GURL& favicon_url,
+                     base::RepeatingClosure activation_callback);
   BirchSelfShareItem(BirchSelfShareItem&&);
   BirchSelfShareItem(const BirchSelfShareItem&);
   BirchSelfShareItem& operator=(const BirchSelfShareItem&);
@@ -300,6 +330,10 @@ class ASH_EXPORT BirchSelfShareItem : public BirchItem {
   GURL url_;
   base::Time shared_time_;
   GURL favicon_url_;
+  // `activation_callback_` is triggered when the item is clicked by the user,
+  // calling `OnItemPressed()` in `BirchSelfShareProvider` to mark the
+  // corresponding `SendTabToSelfEntry` as opened.
+  base::RepeatingClosure activation_callback_;
 };
 
 class ASH_EXPORT BirchWeatherItem : public BirchItem {

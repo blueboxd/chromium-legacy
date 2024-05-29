@@ -594,6 +594,12 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
       <message name="IDS_IOS_NOTIFICATIONS_TIPS_DEFAULT_BROWSER_BODY" desc="Text for the body of a Tips notification that encourages the user to set the app as their default browser">
         Use Chromium anytime you tap links in messages or other apps.
       </message>
+      <message name="IDS_IOS_NOTIFICATIONS_TIPS_SETUPLIST_CONTINUATION_BODY" desc="Text for the body of a Tips notification that encourages the user to complete the Set Up List">
+        Get the most out of Chromium by continuing setting up your browser.
+      </message>
+      <message name="IDS_IOS_NOTIFICATIONS_TIPS_SETUPLIST_CONTINUATION_TITLE" desc="Text for the title of a Tips notification that encourages the user to complete the Set Up List">
+        Finish Setting Up Chromium
+      </message>
       <message name="IDS_IOS_NOTIFICATIONS_TIPS_SIGNIN_TITLE" desc="Text for the title of a Tips notification that encourages the user to sign in to their account">
         Chromium Tip: Sign in to Chromium
       </message>
@@ -985,9 +991,6 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_USER_POLICY_NOTIFICATION_NO_SIGNOUT_SUBTITLE" desc="The subtitle of the User Policy notification dialog. [iOS only] [300em]">
         Your organization, <ph name="DOMAIN">$1<ex>doe.com</ex></ph>, manages the account you're signed in to and how Chromium is used.
-      </message>
-      <message name="IDS_IOS_USER_POLICY_NOTIFICATION_TITLE" desc="The title of the User Policy notification dialog. [iOS only] [300em]">
-        Chromium now supports user policies for your managed account
       </message>
       <message name="IDS_IOS_WHATS_CHROME_TIP_CHROME_DEFAULT_TITLE" desc="Use Chrome By Default title displayed in What's New. [iOS only]">
         Use Chromium By Default

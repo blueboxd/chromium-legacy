@@ -40,10 +40,12 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/layout/table_layout_view.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -57,13 +59,24 @@ namespace plus_addresses {
 
 namespace {
 const float kDescriptionWidthPercent = 0.8;
-const int kPlusAddressLabelVerticalMargin = 10;
+const int kPlusAddressIconWidth = 24;
+const int kGoogleGLogoWidth = 50;
 const int kPlusAddressLogoWidth = 100;
+const int kPlusAddressIconColumnWidth = 64;
+const int kPlusAddressRefreshColumnWidth = 48;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const gfx::VectorIcon& kLogoIcon = plus_addresses::kPlusAddressesLogoIcon;
+const gfx::VectorIcon& kGoogleGLogoIcon = vector_icons::kGoogleGLogoIcon;
+const gfx::VectorIcon& kPlusAddressLogoIcon =
+    plus_addresses::kPlusAddressesLogoIcon;
 #else
-const gfx::VectorIcon& kLogoIcon = vector_icons::kProductIcon;
+const gfx::VectorIcon& kGoogleGLogoIcon = vector_icons::kProductIcon;
+const gfx::VectorIcon& kPlusAddressLogoIcon = vector_icons::kProductIcon;
 #endif
+
+int GetPlusAddressLabelVerticalMargin() {
+  return base::FeatureList::IsEnabled(features::kPlusAddressUIRedesign) ? 24
+                                                                        : 10;
+}
 }  // namespace
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PlusAddressCreationView,
@@ -98,6 +111,8 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
   SetModalType(ui::MODAL_TYPE_CHILD);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+  SetShowCloseButton(
+      !base::FeatureList::IsEnabled(features::kPlusAddressUIRedesign));
 
   std::unique_ptr<views::View> primary_view =
       views::Builder<views::BoxLayoutView>()
@@ -105,11 +120,23 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
           .Build();
 
   // Create hero image.
-  primary_view->AddChildView(
-      views::Builder<views::ImageView>()
-          .SetImage(ui::ImageModel::FromVectorIcon(kLogoIcon, ui::kColorIcon,
-                                                   kPlusAddressLogoWidth))
-          .Build());
+  std::unique_ptr<views::ImageView> logo_image;
+  if (base::FeatureList::IsEnabled(features::kPlusAddressUIRedesign)) {
+    logo_image = views::Builder<views::ImageView>()
+                     .SetImage(ui::ImageModel::FromVectorIcon(
+                         kGoogleGLogoIcon, ui::kColorIcon, kGoogleGLogoWidth))
+                     .Build();
+    logo_image->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::VH(GetPlusAddressLabelVerticalMargin(), 0));
+  } else {
+    logo_image =
+        views::Builder<views::ImageView>()
+            .SetImage(ui::ImageModel::FromVectorIcon(
+                kPlusAddressLogoIcon, ui::kColorIcon, kPlusAddressLogoWidth))
+            .Build();
+  }
+  primary_view->AddChildView(std::move(logo_image));
 
   // Add title view.
   primary_view->AddChildView(
@@ -189,12 +216,51 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
       views::CreateThemedRoundedRectBackground(
           // TODO(crbug.com/40276862) - Replace with color from the mocks.
           ui::kColorSubtleEmphasisBackground, kRectangleRadius);
-  views::BoxLayoutView* label_container =
-      primary_view->AddChildView(views::Builder<views::BoxLayoutView>()
+
+  views::TableLayoutView* label_container =
+      primary_view->AddChildView(views::Builder<views::TableLayoutView>()
                                      .SetBackground(std::move(background))
                                      .Build());
+
+  const bool add_plus_address_icon =
+      base::FeatureList::IsEnabled(features::kPlusAddressUIRedesign);
   label_container->SetProperty(
-      views::kMarginsKey, gfx::Insets::VH(kPlusAddressLabelVerticalMargin, 0));
+      views::kMarginsKey,
+      gfx::Insets::VH(GetPlusAddressLabelVerticalMargin(), 0));
+  if (add_plus_address_icon) {
+    label_container->AddColumn(
+        views::LayoutAlignment::kCenter, views::LayoutAlignment::kCenter,
+        views::TableLayout::kFixedSize, views::TableLayout::ColumnSize::kFixed,
+        kPlusAddressIconColumnWidth, 0);
+  } else if (offer_refresh) {
+    label_container->AddPaddingColumn(views::TableLayout::kFixedSize,
+                                      kPlusAddressRefreshColumnWidth);
+  }
+  label_container->AddColumn(
+      add_plus_address_icon ? views::LayoutAlignment::kStart
+                            : views::LayoutAlignment::kCenter,
+      views::LayoutAlignment::kCenter, 1.0f,
+      views::TableLayout::ColumnSize::kUsePreferred, 0, 0);
+  if (offer_refresh) {
+    label_container->AddColumn(
+        views::LayoutAlignment::kStart, views::LayoutAlignment::kStretch,
+        views::TableLayout::kFixedSize, views::TableLayout::ColumnSize::kFixed,
+        kPlusAddressRefreshColumnWidth, 0);
+  } else if (add_plus_address_icon) {
+    label_container->AddPaddingColumn(views::TableLayout::kFixedSize,
+                                      kPlusAddressIconColumnWidth);
+  }
+  label_container->AddRows(1, views::TableLayout::kFixedSize);
+
+  if (add_plus_address_icon) {
+    label_container->AddChildView(
+        views::Builder<views::ImageView>()
+            .SetImage(ui::ImageModel::FromVectorIcon(
+                // TODO(b/342330801): Use plus address icon when it's designed.
+                kPlusAddressLogoIcon, ui::kColorIcon, kPlusAddressIconWidth))
+            .Build());
+  }
+
   plus_address_label_ = label_container->AddChildView(
       views::Builder<views::Label>()
           .SetText(l10n_util::GetStringUTF16(
@@ -227,15 +293,8 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
                                  kPlusAddressRefreshButtonElementId);
     refresh_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_PLUS_ADDRESS_MODEL_REFRESH_BUTTON_ACCESSIBLE_NAME));
-    refresh_button_->SetProperty(views::kMarginsKey,
-                                 gfx::Insets::TLBR(0, 0, 0, 16));
     refresh_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, 8)));
-    plus_address_label_->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets::TLBR(0, 16 + refresh_button_->GetMinimumSize().width(), 0,
-                          0));
   }
-  label_container->SetFlexForView(plus_address_label_, 1);
 
   // Create and hide label for bug report instruction.
   std::vector<size_t> error_link_offsets;
@@ -253,8 +312,7 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
           .Build());
   error_report_label_->SetProperty(
       views::kMarginsKey,
-      gfx::Insets::TLBR(kPlusAddressLabelVerticalMargin, 0,
-                        kPlusAddressLabelVerticalMargin, 0));
+      gfx::Insets::VH(GetPlusAddressLabelVerticalMargin(), 0));
   error_report_label_->SetProperty(views::kElementIdentifierKey,
                                    kPlusAddressErrorTextElementId);
   // Update style for error link.
@@ -319,10 +377,6 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
 
 PlusAddressCreationDialogDelegate::~PlusAddressCreationDialogDelegate() {
   plus_address_label_ = nullptr;
-}
-
-bool PlusAddressCreationDialogDelegate::ShouldShowCloseButton() const {
-  return true;
 }
 
 void PlusAddressCreationDialogDelegate::OnWidgetInitialized() {

@@ -241,6 +241,8 @@ component("gpu") {
       "windows/d3d12_helpers.h",
       "windows/d3d12_video_decoder_wrapper.cc",
       "windows/d3d12_video_decoder_wrapper.h",
+      "windows/d3d12_video_processor_wrapper.cc",
+      "windows/d3d12_video_processor_wrapper.h",
       "windows/d3d_accelerator.cc",
       "windows/d3d_accelerator.h",
       "windows/d3d_video_decoder_wrapper.cc",
@@ -381,6 +383,8 @@ source_set("common") {
 
   if (is_win || use_vaapi) {
     sources += [
+      "av1_builder.cc",
+      "av1_builder.h",
       "h264_builder.cc",
       "h264_builder.h",
       "vp9_svc_layers.cc",
@@ -670,6 +674,7 @@ source_set("unit_tests") {
 
   if (is_win || use_vaapi) {
     sources += [
+      "av1_builder_unittest.cc",
       "h264_builder_unittest.cc",
       "vp9_svc_layers_unittest.cc",
     ]

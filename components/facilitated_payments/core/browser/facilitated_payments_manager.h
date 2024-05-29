@@ -149,13 +149,15 @@ class FacilitatedPaymentsManager {
       FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       InvalidPixCodeDetectionResultDoesNotTriggerApiClient);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           AbsenceOfPixAccountsDoesNotTriggerApiClient);
+                           PixPrefTurnedOff_NoApiClientTriggered);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           UnavailabilityOfPdmDoesNotTriggerApiClient);
+                           NoPixAccounts_NoApiClientTriggered);
+  FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+                           NoPaymentsDataManager_NoApiClientTriggered);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            ValidPixDetectionResultToPixPaymentPromptShown);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-                           PixCodeValidated_ApiClientTriggered);
+                           ApiClientTriggeredAfterPixCodeValidation);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
                            PaymentNotOfferedReason_CodeValidatorReturnsFalse);
   FRIEND_TEST_ALL_PREFIXES(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
@@ -258,10 +260,10 @@ class FacilitatedPaymentsManager {
   void ResetForTesting();
 
   // Owner.
-  raw_ref<FacilitatedPaymentsDriver> driver_;
+  const raw_ref<FacilitatedPaymentsDriver> driver_;
 
   // Indirect owner.
-  raw_ref<FacilitatedPaymentsClient> client_;
+  const raw_ref<FacilitatedPaymentsClient> client_;
 
   // The client for the facilitated payment API.
   std::unique_ptr<FacilitatedPaymentsApiClient> api_client_;

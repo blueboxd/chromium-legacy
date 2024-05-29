@@ -10,6 +10,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 
 namespace views {
+class Button;
 class ImageView;
 class Label;
 class LabelButton;
@@ -25,6 +26,7 @@ class CastDeviceFooterView : public global_media_controls::MediaItemUIFooter {
 
  public:
   explicit CastDeviceFooterView(
+      std::optional<std::string> device_name,
       base::RepeatingClosure stop_casting_callback,
       media_message_center::MediaColorTheme media_color_theme);
   ~CastDeviceFooterView() override;
@@ -32,7 +34,9 @@ class CastDeviceFooterView : public global_media_controls::MediaItemUIFooter {
   // global_media_controls::MediaItemUIFooter:
   void OnColorsChanged(SkColor foreground, SkColor background) override {}
 
-  views::LabelButton* GetStopCastingButtonForTesting();
+  // Helper functions for testing:
+  views::Label* GetDeviceNameForTesting();
+  views::Button* GetStopCastingButtonForTesting();
 
  private:
   void StopCasting();

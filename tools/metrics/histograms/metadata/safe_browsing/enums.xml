@@ -88,11 +88,6 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="NOT_SENT_UNCONSENTED"/>
 </enum>
 
-<enum name="BackoffReportErrorReason">
-  <int value="0" label="InvalidKey"/>
-  <int value="1" label="ResponseError"/>
-</enum>
-
 <enum name="BooleanBackoff">
   <int value="0" label="No backoff"/>
   <int value="1" label="Backoff mode enabled"/>
@@ -288,6 +283,11 @@ chromium-metrics-reviews@google.com.
   <int value="9" label="Too many requests"/>
 </enum>
 
+<enum name="SafeBrowsingCheckUrlAction">
+  <int value="0" label="URL was checked."/>
+  <int value="1" label="URL was classified as unsafe."/>
+</enum>
+
 <enum name="SafeBrowsingDelayedWarningEvent">
   <int value="0" label="User loaded a page with a delayed warning"/>
   <int value="1" label="User left the page and the warning was never shown"/>
@@ -324,6 +324,15 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="WithoutToken"/>
 </enum>
 
+<!-- LINT.IfChange(SafeBrowsingEsbDownloadRowPromoOutcome) -->
+
+<enum name="SafeBrowsingEsbDownloadRowPromoOutcome">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Clicked"/>
+</enum>
+
+<!-- LINT.ThenChange(//chrome/browser/ui/webui/downloads/downloads_dom_handler.h:SafeBrowsingEsbDownloadRowPromoOutcome) -->
+
 <enum name="SafeBrowsingHPRTOperationOutcome">
   <int value="0" label="Success"/>
   <int value="1" label="Parse response error"/>
@@ -336,7 +345,7 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="Result found in local cache"/>
   <int value="9" label="Service is in backoff mode"/>
   <int value="10" label="OHTTP key fetch failed"/>
-  <int value="11" label="No OHTTP key service"/>
+  <int value="11" label="(Deprecated) No OHTTP key service"/>
 </enum>
 
 <enum name="SafeBrowsingOhttpFetchKeyTriggerReason">

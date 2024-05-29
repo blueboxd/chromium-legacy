@@ -693,7 +693,7 @@ bool ConsumeTranslate3d(CSSParserTokenRange& args,
 // Add CSSVariableData to variableData vector.
 bool AddCSSPaintArgument(
     const Vector<CSSParserToken>& tokens,
-    Vector<scoped_refptr<CSSVariableData>>* const variable_data,
+    HeapVector<Member<CSSVariableData>>* const variable_data,
     const CSSParserContext& context) {
   CSSParserTokenRange token_range(tokens);
   if (CSSVariableParser::ContainsValidVariableReferences(
@@ -707,10 +707,9 @@ bool AddCSSPaintArgument(
     // if we get normalized whitespace etc., so we work around it by creating
     // a fake “original text” by serializing the tokens back.
     String text = token_range.Serialize();
-    scoped_refptr<CSSVariableData> unparsed_css_variable_data =
-        CSSVariableData::Create({token_range, text}, false, false);
-    if (unparsed_css_variable_data.get()) {
-      variable_data->push_back(std::move(unparsed_css_variable_data));
+    if (CSSVariableData* unparsed_css_variable_data =
+            CSSVariableData::Create({token_range, text}, false, false)) {
+      variable_data->push_back(unparsed_css_variable_data);
       return true;
     }
   }
@@ -1886,6 +1885,11 @@ CSSCustomIdentValue* ConsumeDashedIdent(T& stream,
   return ConsumeCustomIdent(stream, context);
 }
 
+template CSSCustomIdentValue* ConsumeDashedIdent(CSSParserTokenStream&,
+                                                 const CSSParserContext&);
+template CSSCustomIdentValue* ConsumeDashedIdent(CSSParserTokenRange&,
+                                                 const CSSParserContext&);
+
 CSSStringValue* ConsumeString(CSSParserTokenRange& range) {
   if (range.Peek().GetType() != kStringToken) {
     return nullptr;
@@ -2150,8 +2154,9 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
     }
   }
   // Reject negative values and values > 100%, but not calc() values.
-  if (p1 && p1->IsNumericLiteralValue() &&
-      (p1->GetDoubleValue() < 0.0 || p1->GetDoubleValue() > 100.0)) {
+  if (auto* p1_numeric = DynamicTo<CSSNumericLiteralValue>(p1);
+      p1_numeric && (p1_numeric->ComputePercentage() < 0.0 ||
+                     p1_numeric->ComputePercentage() > 100.0)) {
     return nullptr;
   }
 
@@ -2172,14 +2177,17 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
     }
   }
   // Reject negative values and values > 100%, but not calc() values.
-  if (p2 && p2->IsNumericLiteralValue() &&
-      (p2->GetDoubleValue() < 0.0 || p2->GetDoubleValue() > 100.0)) {
+  if (auto* p2_numeric = DynamicTo<CSSNumericLiteralValue>(p2);
+      p2_numeric && (p2_numeric->ComputePercentage() < 0.0 ||
+                     p2_numeric->ComputePercentage() > 100.0)) {
     return nullptr;
   }
 
   // If both values are literally zero (and not calc()) reject at parse time
-  if (p1 && p2 && p1->IsNumericLiteralValue() && p1->GetDoubleValue() == 0.0f &&
-      p2->IsNumericLiteralValue() && p2->GetDoubleValue() == 0.0) {
+  if (p1 && p2 && p1->IsNumericLiteralValue() &&
+      To<CSSNumericLiteralValue>(p1)->ComputePercentage() == 0.0f &&
+      p2->IsNumericLiteralValue() &&
+      To<CSSNumericLiteralValue>(p2)->ComputePercentage() == 0.0) {
     return nullptr;
   }
 
@@ -2234,8 +2242,9 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenStream& stream,
     }
   }
   // Reject negative values and values > 100%, but not calc() values.
-  if (p1 && p1->IsNumericLiteralValue() &&
-      (p1->GetDoubleValue() < 0.0 || p1->GetDoubleValue() > 100.0)) {
+  if (auto* p1_numeric = DynamicTo<CSSNumericLiteralValue>(p1);
+      p1_numeric && (p1_numeric->ComputePercentage() < 0.0 ||
+                     p1_numeric->ComputePercentage() > 100.0)) {
     stream.Restore(savepoint);
     return nullptr;
   }
@@ -2259,15 +2268,18 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenStream& stream,
     }
   }
   // Reject negative values and values > 100%, but not calc() values.
-  if (p2 && p2->IsNumericLiteralValue() &&
-      (p2->GetDoubleValue() < 0.0 || p2->GetDoubleValue() > 100.0)) {
+  if (auto* p2_numeric = DynamicTo<CSSNumericLiteralValue>(p2);
+      p2_numeric && (p2_numeric->ComputePercentage() < 0.0 ||
+                     p2_numeric->ComputePercentage() > 100.0)) {
     stream.Restore(savepoint);
     return nullptr;
   }
 
   // If both values are literally zero (and not calc()) reject at parse time
-  if (p1 && p2 && p1->IsNumericLiteralValue() && p1->GetDoubleValue() == 0.0f &&
-      p2->IsNumericLiteralValue() && p2->GetDoubleValue() == 0.0) {
+  if (p1 && p2 && p1->IsNumericLiteralValue() &&
+      To<CSSNumericLiteralValue>(p1)->ComputePercentage() == 0.0f &&
+      p2->IsNumericLiteralValue() &&
+      To<CSSNumericLiteralValue>(p2)->ComputePercentage() == 0.0) {
     stream.Restore(savepoint);
     return nullptr;
   }
@@ -2405,10 +2417,12 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
     return nullptr;
   }
 
-  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-  const ui::ColorProvider* color_provider =
-      context.GetDocument()->GetColorProviderForPainting(
-          mojom::blink::ColorScheme::kLight);
+  const ui::ColorProvider* color_provider = nullptr;
+  if (const auto* document = context.GetDocument()) {
+    // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+    color_provider = document->GetColorProviderForPainting(
+        mojom::blink::ColorScheme::kLight);
+  }
   // TODO(crbug.com/1111385): Represent |background_color| and
   // |colors_to_compare_against| in ComputedStyle and evaluate with currentColor
   // and other variables at used-value time instead of doing it at parse time
@@ -2515,10 +2529,12 @@ CSSValue* ConsumeColorContrast(CSSParserTokenStream& stream,
     return nullptr;
   }
 
-  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-  const ui::ColorProvider* color_provider =
-      context.GetDocument()->GetColorProviderForPainting(
-          mojom::blink::ColorScheme::kLight);
+  const ui::ColorProvider* color_provider = nullptr;
+  if (const auto* document = context.GetDocument()) {
+    // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+    color_provider = document->GetColorProviderForPainting(
+        mojom::blink::ColorScheme::kLight);
+  }
   // TODO(crbug.com/1111385): Represent |background_color| and
   // |colors_to_compare_against| in ComputedStyle and evaluate with currentColor
   // and other variables at used-value time instead of doing it at parse time
@@ -3807,7 +3823,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
   // TODO(renjieliu): We may want to optimize the implementation by resolve
   // variables early if paint function is registered.
   Vector<CSSParserToken> argument_tokens;
-  Vector<scoped_refptr<CSSVariableData>> variable_data;
+  HeapVector<Member<CSSVariableData>> variable_data;
   while (!args.AtEnd()) {
     if (args.Peek().GetType() != kCommaToken) {
       argument_tokens.AppendVector(ConsumeFunctionArgsOrNot(args));
@@ -3825,7 +3841,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
     return nullptr;
   }
 
-  return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
+  return MakeGarbageCollected<CSSPaintValue>(name, std::move(variable_data));
 }
 
 template <typename T>
@@ -4038,6 +4054,19 @@ CSSValue* ConsumeImage(
   return nullptr;
 }
 
+template CSSValue* ConsumeImage(
+    CSSParserTokenStream& stream,
+    const CSSParserContext& context,
+    const ConsumeGeneratedImagePolicy generated_image_policy,
+    const ConsumeStringUrlImagePolicy string_url_image_policy,
+    const ConsumeImageSetImagePolicy image_set_image_policy);
+template CSSValue* ConsumeImage(
+    CSSParserTokenRange& stream,
+    const CSSParserContext& context,
+    const ConsumeGeneratedImagePolicy generated_image_policy,
+    const ConsumeStringUrlImagePolicy string_url_image_policy,
+    const ConsumeImageSetImagePolicy image_set_image_policy);
+
 // https://drafts.csswg.org/css-shapes-1/#typedef-shape-box
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenStream& stream) {
   return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,
@@ -4150,15 +4179,20 @@ CSSValue* ConsumeFilterFunctionList(CSSParserTokenStream& stream,
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
+    CSSParserSavePoint savepoint(stream);
     CSSValue* filter_value = ConsumeUrl(stream, context);
     if (!filter_value) {
       filter_value = ConsumeFilterFunction(stream, context);
       if (!filter_value) {
-        return nullptr;
+        break;
       }
     }
+    savepoint.Release();
     list->Append(*filter_value);
   } while (!stream.AtEnd());
+  if (list->length() == 0) {
+    return nullptr;
+  }
   return list;
 }
 
@@ -5928,7 +5962,7 @@ CSSValue* ConsumeCounter(CSSParserTokenStream& stream,
   do {
     CSSCustomIdentValue* counter_name = ConsumeCustomIdent(stream, context);
     if (!counter_name) {
-      return nullptr;
+      break;
     }
     int value = default_value;
     if (CSSPrimitiveValue* counter_value = ConsumeInteger(stream, context)) {
@@ -5940,6 +5974,9 @@ CSSValue* ConsumeCounter(CSSParserTokenStream& stream,
                                        CSSPrimitiveValue::UnitType::kInteger),
         CSSValuePair::kDropIdenticalValues));
   } while (!stream.AtEnd());
+  if (list->length() == 0) {
+    return nullptr;
+  }
   return list;
 }
 
@@ -6041,8 +6078,8 @@ CSSValue* ConsumePaletteMixFunction(T& range, const CSSParserContext& context) {
     }
     // Reject negative values and values > 100%, but not calc() values.
     if (percentage && percentage->IsNumericLiteralValue() &&
-        (percentage->GetDoubleValue() < 0.0 ||
-         percentage->GetDoubleValue() > 100.0)) {
+        (To<CSSNumericLiteralValue>(percentage)->ComputePercentage() < 0.0 ||
+         To<CSSNumericLiteralValue>(percentage)->ComputePercentage() > 100.0)) {
       return std::make_pair(nullptr, nullptr);
     }
     return std::make_pair(palette, percentage);
@@ -6062,9 +6099,9 @@ CSSValue* ConsumePaletteMixFunction(T& range, const CSSParserContext& context) {
   }
   // If both values are literally zero (and not calc()) reject at parse time.
   if (percentage1 && percentage2 && percentage1->IsNumericLiteralValue() &&
-      percentage1->GetDoubleValue() == 0.0f &&
+      To<CSSNumericLiteralValue>(percentage1)->ComputePercentage() == 0.0f &&
       percentage2->IsNumericLiteralValue() &&
-      percentage2->GetDoubleValue() == 0.0) {
+      To<CSSNumericLiteralValue>(percentage2)->ComputePercentage() == 0.0) {
     return nullptr;
   }
 
@@ -6434,7 +6471,7 @@ CSSFontFeatureValue* ConsumeFontFeatureTag(T& stream,
   // Feature tag name consists of 4-letter characters.
   const unsigned kTagNameLength = 4;
 
-  const CSSParserToken& token = stream.ConsumeIncludingWhitespace();
+  const CSSParserToken& token = stream.Peek();
   // Feature tag name comes first
   if (token.GetType() != kStringToken) {
     return nullptr;
@@ -6443,6 +6480,7 @@ CSSFontFeatureValue* ConsumeFontFeatureTag(T& stream,
     return nullptr;
   }
   AtomicString tag = token.Value().ToAtomicString();
+  stream.ConsumeIncludingWhitespace();
   for (unsigned i = 0; i < kTagNameLength; ++i) {
     // Limits the stream of characters to 0x20-0x7E, following the tag name
     // rules defined in the OpenType specification.
@@ -6915,6 +6953,8 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(
   // consecutive <line-names> values
   CSSBracketedValueList* line_names = nullptr;
 
+  // See comment in Grid::ParseShorthand() about the use of AtEnd.
+
   do {
     // Handle leading <custom-ident>*.
     bool has_previous_line_names = line_names;
@@ -6947,9 +6987,10 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(
       template_rows_value_list->Append(*line_names);
     }
   } while (!stream.AtEnd() && !(stream.Peek().GetType() == kDelimiterToken &&
-                                stream.Peek().Delimiter() == '/'));
+                                (stream.Peek().Delimiter() == '/' ||
+                                 stream.Peek().Delimiter() == '!')));
 
-  if (!stream.AtEnd()) {
+  if (!stream.AtEnd() && stream.Peek().Delimiter() != '!') {
     if (!ConsumeSlashIncludingWhitespace(stream)) {
       return false;
     }
@@ -8113,6 +8154,13 @@ CSSValue* ConsumeTransformList(T& range,
 
   return list;
 }
+
+template CSSValue* ConsumeTransformList(CSSParserTokenStream&,
+                                        const CSSParserContext&,
+                                        const CSSParserLocalContext&);
+template CSSValue* ConsumeTransformList(CSSParserTokenRange&,
+                                        const CSSParserContext&,
+                                        const CSSParserLocalContext&);
 
 CSSValue* ConsumeTransitionProperty(CSSParserTokenStream& stream,
                                     const CSSParserContext& context) {

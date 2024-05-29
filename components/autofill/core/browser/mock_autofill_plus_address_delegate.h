@@ -17,17 +17,27 @@ class MockAutofillPlusAddressDelegate : public AutofillPlusAddressDelegate {
   ~MockAutofillPlusAddressDelegate() override;
 
   MOCK_METHOD(bool, IsPlusAddress, (const std::string&), (const override));
-  MOCK_METHOD(std::vector<Suggestion>,
+  MOCK_METHOD(void,
               GetSuggestions,
               (const url::Origin&,
                bool,
                AutofillClient::PasswordFormType,
                std::u16string_view,
-               AutofillSuggestionTriggerSource),
+               AutofillSuggestionTriggerSource,
+               GetSuggestionsCallback),
               (override));
   MOCK_METHOD(void,
               RecordAutofillSuggestionEvent,
               (SuggestionEvent),
+              (override));
+  MOCK_METHOD(void,
+              OnPlusAddressSuggestionShown,
+              (AutofillManager&,
+               FormGlobalId,
+               FieldGlobalId,
+               SuggestionContext,
+               AutofillClient::PasswordFormType,
+               SuggestionType),
               (override));
 };
 

@@ -364,6 +364,12 @@
       base_feature: "none",
     },
     {
+      // AudioContext.playoutStats interface.
+      // https://chromestatus.com/feature/5172818344148992
+      name: "AudioContextPlayoutStats",
+      status: "experimental",
+    },
+    {
       name: "AudioContextSetSinkId",
       status: "stable",
     },
@@ -559,6 +565,10 @@
       status: "experimental",
     },
     {
+      name: "Canvas2dWebGPUTransfer",
+      status: "experimental",
+    },
+    {
       name: "CanvasFloatingPoint",
       status: "experimental",
     },
@@ -574,10 +584,6 @@
       // Kill switch for https://crbug.com/330506337.
       name: "CanvasUsesArcPaintOp",
       status: "stable",
-    },
-    {
-      name: "CanvasWebGPUAccess",
-      status: "experimental",
     },
     {
       name: "CapabilityDelegationDisplayCaptureRequest",
@@ -672,7 +678,7 @@
     {
       name: "CompressionDictionaryTransport",
       base_feature: "none",
-      origin_trial_feature_name: "CompressionDictionaryTransportV2",
+      origin_trial_feature_name: "CompressionDictionaryTransportV3",
       origin_trial_allows_third_party: true,
       public: true,
     },
@@ -686,13 +692,15 @@
       status: "experimental",
     },
     {
-      // Shipping in M125. Should be removed after M127.
       name: "ComputePressure",
-      status: "stable",
+      status: {
+        "Android": "",
+        "default": "stable",
+      }
     },
     {
       name: "ConcurrentViewTransitionsSPA",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ContactsManager",
@@ -854,10 +862,6 @@
       status: "stable",
     },
     {
-      name: "CSSFirstLetterTextRewrite",
-      status: "stable",
-    },
-    {
       name: "CSSFontSizeAdjust",
       status: "experimental",
     },
@@ -897,12 +901,6 @@
     {
       name: "CSSMarkerNestedPseudoElement",
       status: "experimental",
-    },
-    {
-      // Tracked as an experiment to help Search quantify
-      // performance improvements.
-      name: "CSSMPCImprovements",
-      status: "stable",
     },
     {
       // Support for typed om numeric factory methods for various units that
@@ -984,10 +982,20 @@
       status: "stable",
     },
     {
+      // https://drafts.csswg.org/css-scroll-snap-2/#scrollsnapchange
+      name: "CSSScrollSnapChangeEvent",
+      status: "experimental",
+    },
+    {
+      // https://drafts.csswg.org/css-scroll-snap-2/#scrollsnapchanging
+      name: "CSSScrollSnapChangingEvent",
+      status: "experimental",
+    },
+    {
       // https://drafts.csswg.org/css-scroll-snap-2/#snap-events
       name: "CSSScrollSnapEvents",
       status: "experimental",
-      implied_by: ["CSSSnapChangedEvent", "CSSSnapChangingEvent"],
+      implied_by: ["CSSScrollSnapChangeEvent", "CSSScrollSnapChangingEvent"],
     },
     {
       // https://drafts.csswg.org/css-scroll-snap-2#scroll-start
@@ -1003,7 +1011,7 @@
       // Flag for supporting scroll-state() and container-type: scroll-state
       // Implied by supporting at least one of the scroll-state query features.
       name: "CSSScrollStateContainerQueries",
-      implied_by: ["CSSStickyContainerQueries", "CSSStickyContainerQueries"],
+      implied_by: ["CSSStickyContainerQueries", "CSSSnapContainerQueries"],
     },
     {
       name: "CSSSelectorFragmentAnchor",
@@ -1018,16 +1026,6 @@
       // A separate feature for testing compatibility, related to the work on
       // https://chromestatus.com/feature/5196713071738880
       name: "CSSSizingKeywordAnimation",
-    },
-    {
-      // https://drafts.csswg.org/css-scroll-snap-2/#snapchanged
-      name: "CSSSnapChangedEvent",
-      status: "experimental",
-    },
-    {
-      // https://drafts.csswg.org/css-scroll-snap-2/#snapchanging
-      name: "CSSSnapChangingEvent",
-      status: "experimental",
     },
     {
       name: "CSSSnapContainerQueries",
@@ -1122,13 +1120,6 @@
       origin_trial_feature_name: "WebSQL",
       origin_trial_allows_third_party: true,
       origin_trial_type: "deprecation",
-    },
-    {
-      // This is a killswitch for the `serializable` attribute on declarative
-      // shadow roots. It should be removed in M125 (March 18, 2024) assuming
-      // no issues are encountered.
-      name: "DeclarativeShadowDOMSerializable",
-      status: "stable",
     },
     // This allows pages to opt out of the unload deprecation. Enabling this
     // allows unload event handers to be used in the frame regardless of any
@@ -1247,12 +1238,13 @@
       name: "DisableSelectAllForEmptyText",
       status: "stable",
     },
-    // This feature will represent the deprecation trial that allows first
-    // parties to temporarily use unpartitioned storage in embeds loaded
-    // on their site.
+    // This feature will represent the extension of a deprecation trial that
+    // allows first parties to temporarily use unpartitioned storage in embeds
+    // loaded on their site. It replaces an old DT named
+    // DisableThirdPartyStoragePartitioning which expired in M126.
     {
-      name: "DisableThirdPartyStoragePartitioning",
-      origin_trial_feature_name: "DisableThirdPartyStoragePartitioning",
+      name: "DisableThirdPartyStoragePartitioning2",
+      origin_trial_feature_name: "DisableThirdPartyStoragePartitioning2",
       origin_trial_type: "deprecation",
       origin_trial_allows_insecure: true,
       origin_trial_allows_third_party: true,
@@ -1323,6 +1315,15 @@
     },
     {
       name: "DocumentPictureInPictureAPI",
+      status: {
+        "Android": "",
+        "default": "stable",
+      },
+    },
+    // Enables propagating user activation from a document picture-in-picture
+    // window up to its opener window and vice versa.
+    {
+      name: "DocumentPictureInPictureUserActivation",
       status: {
         "Android": "",
         "default": "stable",
@@ -1399,18 +1400,9 @@
       status: {"Android": "", "default": "experimental"},
     },
     {
-      // This is the "new" version of getHTML() used for declarative shadow
-      // DOM, and this version will replace the deprecated getInnerHTML(), which
-      // is enabled by the ElementGetInnerHTML feature.
-      // Shipped in M125, flag can be removed in M127.
-      name: "ElementGetHTML",
-      status: "stable",
-    },
-    {
       // This is the "old" version of getInnerHTML() used for declarative shadow
-      // DOM, and this version is deprecated. The replacement is enabled by the
-      // ElementGetHTML feature. Once the new feature is stabilized and shipped,
-      // this feature (and its corresponding functionality) will be removed.
+      // DOM, and this version is deprecated. The replacement is called
+      // `getHTML()` and it shipped in M125.
       name: "ElementGetInnerHTML",
       status: "stable",
     },
@@ -1456,9 +1448,6 @@
     {
       name: "ExtendedTextMetrics",
       status: "experimental",
-    },
-    {
-      name: "ExtraWebGLVideoTextureMetadata",
     },
     {
       name: "EyeDropperAPI",
@@ -1786,6 +1775,8 @@
       // Enables real time reporting API in Protected Audience.
       // https://github.com/WICG/turtledove/blob/main/PA_real_time_monitoring.md
       name: "FledgeRealTimeReporting",
+      public: true,
+      status: "test",
     },
     {
       // Enables using a 'reportingTimeout' field within the Protected Audience
@@ -1983,7 +1974,7 @@
     },
     {
       name: "HitTestOpaqueness",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "HrefTranslate",
@@ -2054,6 +2045,13 @@
       // https://chromestatus.com/feature/6560361081995264
       // Enabled by default in M123, should be safe to remove in M127
       name: "HTMLUnsafeMethods",
+      status: "stable",
+    },
+    {
+      // According to spec, text transforms should not affect the content
+      // of plain text copy and paste -
+      // https://www.w3.org/TR/css-text-3/#text-transform
+      name: "IgnoresCSSTextTransformsForPlainTextCopy",
       status: "stable",
     },
     {
@@ -2252,10 +2250,6 @@
       base_feature: "LayoutNGShapeCache",
     },
     {
-      name: "LayoutSegmentationCache",
-      status: "stable",
-    },
-    {
       name: "LayoutSegmentationFastPathForObjectReplacement",
       status: "stable",
     },
@@ -2342,12 +2336,6 @@
     {
       name: "ManagedConfiguration",
       status: "stable",
-    },
-    {
-      // crbug.com/40417720
-      name: "MaskingGraphemeClusters",
-      status: "stable",
-      depends_on: ["OffsetMappingUnitVariable"],
     },
     {
       name:"MeasureMemory",
@@ -2528,7 +2516,7 @@
     },
     {
       name: "MultiSelectDeselectWhenOnlyOption",
-      status: "stable",
+      status: "test",
     },
     // crbug.com/1446498: This feature is being used for the deprecation of
     // Mutation Events.
@@ -2571,12 +2559,6 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      // This should be removed in M127, after it has been shipped for several
-      // milestones.
-      name: "NestedTopLayerSupport",
-      status: "stable",
-    },
-    {
       name: "NetInfoConstantType",
     },
     {
@@ -2604,6 +2586,15 @@
       // things are stable.
       name: "NewGetFocusableAreaBehavior",
       status: "stable",
+    },
+    {
+      // New implementation of text-size-adjust that applies during style rather
+      // than via the text autosizer. This also includes changes such as
+      // directly using percentage values without heuristics, and fully
+      // disabling automatic size adjustments when non-auto values are used.
+      // See: https://crbug.com/340389272.
+      name: "NewTextSizeAdjust",
+      status: "experimental",
     },
     {
       name: "NextSiblingPositionUseNextCandidate",
@@ -2655,10 +2646,6 @@
       // values.
       // https://drafts.csswg.org/css-ui-4/#appearance-switching
       name: "NonStandardAppearanceValueSliderVertical",
-      status: "stable",
-    },
-    {
-      name: "NoOffsetMappingForInconsistentText",
       status: "stable",
     },
     {
@@ -2716,11 +2703,6 @@
     {
       name: "OffscreenCanvasCommit",
       status: "experimental",
-    },
-    {
-      // crbug.com/40532763
-      name: "OffsetMappingUnitVariable",
-      status: "stable",
     },
     {
       name: "OmitBlurEventOnElementRemoval",
@@ -2908,6 +2890,8 @@
     },
     {
       name: "PaintHoldingForLocalIframes",
+      status: "stable",
+      implied_by: ["ViewTransitionOnNavigationForIframes"],
     },
     {
       name: "PaintUnderInvalidationChecking",
@@ -2936,6 +2920,11 @@
     {
       name: "PaymentInstruments",
       depends_on: ["PaymentApp"],
+    },
+    {
+      // https://chromestatus.com/feature/5198846820352000
+      name: "PaymentLinkDetection",
+      status: "experimental",
     },
     {
       name: "PaymentMethodChangeEvent",
@@ -3380,11 +3369,6 @@
       status: "stable",
     },
     {
-      // crbug.com/40942025
-      name: "RtNoFirstLetterFirstLine",
-      status: "stable",
-    },
-    {
       // crbug.com/336592423
       name: "RubyAnnotationSpaceFix",
       status: "stable",
@@ -3399,6 +3383,11 @@
       name: "RubyLineEdgeAlignment",
       status: "experimental",
       depends_on: ["RubyLineBreakable"],
+    },
+    {
+      // crbug.com/324111880
+      name: "RubyShortHeuristics",
+      status: "test",
     },
     {
       // Runs a microtask checkpoint before creating custom elements in
@@ -3567,12 +3556,6 @@
     {
       name: "SetSequentialFocusStartingPoint",
       status: "experimental",
-    },
-    {
-      // See crbug.com/1510466: this is the shadow root clonable implementation.
-      // This shipped in M124, and should be safe to remove in M126 or so.
-      name: "ShadowRootClonable",
-      status: "stable",
     },
     {
       // crbug.com/329677645
@@ -3851,13 +3834,6 @@
       name: "SystemWakeLock",
       status: "experimental",
     },
-    {
-      // Killswitch for the reflection of <template shadowrootdelegatesfocus>
-      // attribute. This can be removed in M126 assuming no issues are
-      // encountered.
-      name: "TemplateDelegatesFocusReflection",
-      status: "stable",
-    },
     // For unit tests.
     {
       // This is for testing copied_from_base_feature_if.
@@ -3937,6 +3913,7 @@
     {
       // crbug.com/325517313
       name: "TextDiffSplitFix",
+      status: "stable",
     },
     {
       name: "TextFragmentAPI",
@@ -4151,6 +4128,10 @@
       public: true,
     },
     {
+      name: "UseUndoStepElementDispatchBeforeInput",
+      status: "stable",
+    },
+    {
       name: "V8IdleTasks",
       base_feature: "none",
       public: true,
@@ -4199,7 +4180,7 @@
     },
     {
       name: "ViewTransitionOnNavigationForIframes",
-      status: "test",
+      status: "stable",
     },
     {
       // https://chromestatus.com/feature/5089552511533056
@@ -4237,17 +4218,11 @@
       status: "experimental",
     },
     {
-      name: "WebAppLaunchHandler",
-      origin_trial_feature_name: "Launch Handler",
-      status: {"Android": "experimental", "default": "stable"},
-      base_feature: "WebAppEnableLaunchHandler",
-    },
-    {
       name: "WebAppLaunchQueue",
       // This is not going into origin trial, "origin_trial_feature_name" is
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "WebAppLaunchQueue",
-      implied_by: ["WebAppLaunchHandler", "FileHandling"],
+      implied_by: ["FileHandling"],
       base_feature: "none",
     },
     {
@@ -4385,10 +4360,6 @@
       public: true,
       status: "experimental",
       base_feature: "none",
-    },
-    {
-      name: "WebCodecsContentHint",
-      status: "stable",
     },
     {
       name: "WebCodecsCopyToRGB",

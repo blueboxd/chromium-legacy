@@ -20,8 +20,6 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/debug/crash_logging.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -290,7 +288,8 @@ leveldb_env::Options GetLevelDBOptions() {
 
   // Thread-safe: static local construction, and `ChromiumEnv` implements
   // internal synchronization.
-  static base::NoDestructor<leveldb_env::ChromiumEnv> g_leveldb_env;
+  static base::NoDestructor<leveldb_env::ChromiumEnv> g_leveldb_env{
+      /*log_lock_errors=*/true};
   options.env = g_leveldb_env.get();
 
   return options;
@@ -610,8 +609,7 @@ void IndexedDBBucketContext::ForceClose(bool doom) {
     // interrupted, so it can cause shutdown hangs.
     close_timer_.AbandonAndStop();
     if (pre_close_task_queue_) {
-      pre_close_task_queue_->Stop(
-          IndexedDBPreCloseTaskQueue::StopReason::FORCE_CLOSE);
+      pre_close_task_queue_->Stop();
       pre_close_task_queue_.reset();
     }
     skip_closing_sequence_ = true;
@@ -1062,6 +1060,7 @@ storage::mojom::IdbBucketMetadataPtr IndexedDBBucketContext::FillInMetadata(
         }
 
         transaction_info->tid = transaction->id();
+        transaction_info->client_id = connection->client_id();
         transaction_info->age =
             (base::Time::Now() - transaction->diagnostics().creation_time)
                 .InMillisecondsF();
@@ -1155,8 +1154,7 @@ void IndexedDBBucketContext::OnHandleCreated() {
     closing_stage_ = ClosingState::kNotClosing;
     close_timer_.AbandonAndStop();
     if (pre_close_task_queue_) {
-      pre_close_task_queue_->Stop(
-          IndexedDBPreCloseTaskQueue::StopReason::NEW_CONNECTION);
+      pre_close_task_queue_->Stop();
       pre_close_task_queue_.reset();
     }
   }
@@ -1613,10 +1611,6 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
     return {};
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      indexed_db::kBackingStoreActionUmaName,
-      indexed_db::IndexedDBAction::kBackingStoreOpenAttempt);
-
   const bool in_memory = data_path_.empty();
   base::FilePath blob_path;
   base::FilePath database_path;
@@ -1643,23 +1637,10 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
   constexpr static const int kNumOpenTries = 2;
   for (int i = 0; i < kNumOpenTries; ++i) {
     const bool is_first_attempt = i == 0;
-    {
-      SCOPED_CRASH_KEY_STRING256("crbug/340398745", "data_path",
-                                 data_path_.AsUTF8Unsafe());
-      SCOPED_CRASH_KEY_BOOL("crbug/340398745", "first_attempt",
-                            is_first_attempt);
-      SCOPED_CRASH_KEY_BOOL(
-          "crbug/340398745", "sharding",
-          base::FeatureList::IsEnabled(features::kIndexedDBShardBackingStores));
-      SCOPED_CRASH_KEY_NUMBER("crbug/340398745", "store_open_count",
-                              backing_store_open_count_);
-
-      std::tie(backing_store, status, data_loss_info, disk_full) =
-          OpenAndVerifyIndexedDBBackingStore(
-              data_path_, database_path, blob_path, lock_manager.get(),
-              is_first_attempt, create_if_missing);
-    }
-
+    std::tie(backing_store, status, data_loss_info, disk_full) =
+        OpenAndVerifyIndexedDBBackingStore(data_path_, database_path, blob_path,
+                                           lock_manager.get(), is_first_attempt,
+                                           create_if_missing);
     if (is_first_attempt) [[likely]] {
       first_try_status = status;
     }
@@ -1685,6 +1666,12 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
                                                   sanitized_message);
     }
   }
+
+  // Record this here because the !create_if_missing && not_found case shouldn't
+  // count as either a success or failure.
+  base::UmaHistogramEnumeration(
+      indexed_db::kBackingStoreActionUmaName,
+      indexed_db::IndexedDBAction::kBackingStoreOpenAttempt);
 
   UMA_HISTOGRAM_ENUMERATION(
       "WebCore.IndexedDB.BackingStore.OpenFirstTryResult",
@@ -1726,7 +1713,6 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
 
   lock_manager_ = std::move(lock_manager);
   backing_store_ = std::move(backing_store);
-  backing_store_open_count_++;
   backing_store_->set_bucket_context(this);
   delegate().on_files_written.Run(/*flushed=*/true);
   return {leveldb::Status::OK(), IndexedDBDatabaseError(), data_loss_info};
@@ -1741,10 +1727,13 @@ void IndexedDBBucketContext::ResetBackingStore() {
       backing_store_->ForceRunBlobCleanup();
     }
 
+    const auto start = base::TimeTicks::Now();
     base::WaitableEvent leveldb_destruct_event;
     backing_store_->TearDown(&leveldb_destruct_event);
     backing_store_.reset();
     leveldb_destruct_event.Wait();
+    base::UmaHistogramTimes("IndexedDB.BackingStoreCloseDuration",
+                            base::TimeTicks::Now() - start);
   }
 
   task_run_queued_ = false;

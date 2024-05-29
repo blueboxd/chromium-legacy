@@ -658,7 +658,7 @@ BUILDERS = {
             'pool': 'chrome.tests.perf',
             'os': 'Android',
             'device_type': 'oriole',
-            'device_os': 'TP1A.220624.021',
+            # 'device_os': 'TP1A.220624.021',
             'device_os_flavor': 'google',
         },
     },
@@ -673,7 +673,22 @@ BUILDERS = {
             'pool': 'chrome.tests.perf-pgo',
             'os': 'Android',
             'device_type': 'oriole',
-            'device_os': 'TP1A.220624.021',
+            # 'device_os': 'TP1A.220624.021',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel-fold-perf': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_chrome_google_64_32_bundle',
+        }],
+        'platform':
+        'android-trichrome-chrome-google-64-32-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'felix',
+            # 'device_os': 'UQ1A.240205.002', # relax before all pixel folds are reimaged
             'device_os_flavor': 'google',
         },
     },
@@ -688,7 +703,7 @@ BUILDERS = {
             'pool': 'chrome.tests.perf',
             'os': 'Android',
             'device_type': 'raven',
-            'device_os': 'TP1A.220624.021',
+            # 'device_os': 'TP1A.220624.021',
             'device_os_flavor': 'google',
         },
     },
@@ -703,7 +718,7 @@ BUILDERS = {
             'pool': 'chrome.tests.perf',
             'os': 'Android',
             'device_type': 'raven',
-            'device_os': 'TP1A.220624.021',
+            # 'device_os': 'TP1A.220624.021',
             'device_os_flavor': 'google',
         },
     },

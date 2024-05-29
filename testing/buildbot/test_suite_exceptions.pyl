@@ -1291,6 +1291,7 @@
           'shards': 4,
         },
       },
+      # crbug.com/1241502
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.cc_unittests.filter',
@@ -1523,6 +1524,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_unit_test_apk.filter',
         ],
       },
+      'android-14-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_14.chrome_public_unit_test_apk.filter',
+        ],
+      },
       'android-15-x64-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_15.chrome_public_unit_test_apk.filter',
@@ -1713,6 +1719,7 @@
   },
   'compositor_unittests': {
     'modifications': {
+      # crbug.com/1241502
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.compositor_unittests.filter',
@@ -1725,10 +1732,8 @@
       # TODO(crbug.com/40263601): Temporarily remove it from android-12L builder due to infra flakiness.
       'android-12l-x64-dbg-tests',
       'CrWinAsan(dll)', # https://crbug.com/935598
-      # TODO(crbug.com/40241445): Enable on Fuchsia dbg/asan/clang builders.
-      'fuchsia-fyi-arm64-dbg',
+      # TODO(crbug.com/40241445): Enable on Fuchsia asan/clang builders.
       'fuchsia-fyi-x64-asan',
-      'fuchsia-fyi-x64-dbg',
       'ToTFuchsia x64',
       'ToTFuchsiaOfficial arm64',
       'linux-chromeos-chrome-preuprev', # http://b/331706144
@@ -1964,13 +1969,6 @@
           },
         },
       },
-      'fuchsia-arm64-cast-receiver-rel': {
-        # Temporarily only run this on CI due to resource and naming
-        # constraints.
-        # TODO(crbug.com/40241445): Remove this when resource requirements are
-        # lower.
-        'ci_only': True,
-      },
       'fuchsia-code-coverage': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.coverage.content_browsertests.filter',
@@ -1980,28 +1978,10 @@
           'shards': 41,
         },
       },
-      'fuchsia-x64-cast-receiver-dbg': {
-        'swarming': {
-          'shards': 41,
-        },
-        'args': [
-          # TODO(crbug.com/42050564): Remove this when the kernal panic in
-          # fuchsia has been resolved.
-          '--test-arg=--test-launcher-jobs=1',
-        ],
-      },
       'fuchsia-x64-cast-receiver-rel': {
         # Temporarily only run this on CI due to resource requirements.
         # TODO(crbug.com/40872145): Remove this once resources are available.
         'ci_only': True,
-        'swarming': {
-          'shards': 41,
-        },
-        'args': [
-          # TODO(crbug.com/42050564): Remove this when the kernal panic in
-          # fuchsia has been resolved.
-          '--test-arg=--test-launcher-jobs=1',
-        ],
       },
       'linux-chromeos-code-coverage': {
         'swarming': {
@@ -2288,6 +2268,9 @@
     # exception once there is enough capacity to run these tests.
     'remove_from': [
       'Android FYI Release (Pixel 2)',
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
     ],
   },
   'crashpad_tests': {
@@ -2339,6 +2322,11 @@
       'android-13-x64-rel': {
         # TODO(crbug.com/337935399): Remove experiment after the bug is fixed.
         'experiment_percentage': 100,
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
+        ],
+      },
+      'android-14-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
         ],
@@ -2629,6 +2617,9 @@
     # exception once there is enough capacity to run these tests.
     'remove_from': [
       'Android FYI Release (Pixel 2)',
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
     ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -2803,6 +2794,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux.uhd_770.gl_tests_passthrough.filter',
         ],
       },
+      'Dawn Win10 x64 Release (Intel UHD 770)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.uhd_770.gl_tests_passthrough.filter',
+        ],
+      },
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
       'Linux ASan LSan Tests (1)': {
@@ -2911,6 +2907,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
         ],
       },
+      'android-14-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
+        ],
+      },
       'android-15-x64-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
@@ -3005,6 +3006,9 @@
       'Android FYI Release (Pixel 2)',
       # crbug.com/1458020 for Mac Retina ASAN removal
       'Mac FYI Retina ASAN (AMD)',
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
     ],
   },
   'gpu_pytype': {
@@ -3035,6 +3039,11 @@
   },
   'gwp_asan_unittests': {
     'modifications': {
+      'android-14-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_15.gwp_asan_unittests.filter',
+        ],
+      },
       'android-15-x64-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_15.gwp_asan_unittests.filter',
@@ -3054,6 +3063,9 @@
       'Android FYI Release (Pixel 2)',
       # crbug.com/1458020 for Mac Retina ASAN removal
       'Mac FYI Retina ASAN (AMD)',
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
     ],
   },
   'headless_browsertests': {
@@ -3539,6 +3551,7 @@
           'shards': 3,
         },
       },
+      # crbug.com/1241502
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.media_unittests.filter',
@@ -3810,6 +3823,12 @@
           '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
         ],
       },
+      'android-14-x64-rel': {
+        'args': [
+          # TODO(crbug.com/40201873): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
       'android-15-x64-fyi-rel': {
         'args': [
           # TODO(crbug.com/40201873): Fix the failed test
@@ -4005,6 +4024,11 @@
     },
   },
   'pixel_skia_gold_validating_test': {
+    'remove_from': [
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
+    ],
     'modifications': {
       'Android FYI Release (Pixel 4)': {
         'args': [
@@ -4105,6 +4129,11 @@
     },
   },
   'screenshot_sync_validating_tests': {
+    'remove_from': [
+      # crbug.com/42050042 these tests do not work on swiftshader on arm64
+      'fuchsia-arm64-cast-receiver-rel',
+      'fuchsia-fyi-arm64-dbg',
+    ],
     'modifications': {
       'Android FYI Release (Pixel 4)': {
         'args': [
@@ -4201,6 +4230,7 @@
   },
   'snapshot_unittests': {
     'modifications': {
+      # crbug.com/40194695
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.snapshot_unittests.filter',
@@ -4701,6 +4731,7 @@
   },
   'views_unittests': {
     'modifications': {
+      # crbug.com/1241502
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.views_unittests.filter',

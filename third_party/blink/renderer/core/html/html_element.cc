@@ -441,6 +441,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        nullptr},
       {html_names::kOncloseAttr, kNoWebFeature, event_type_names::kClose,
        nullptr},
+      {html_names::kOncontentvisibilityautostatechangeAttr, kNoWebFeature,
+       event_type_names::kContentvisibilityautostatechange, nullptr},
       {html_names::kOncontextlostAttr, kNoWebFeature,
        event_type_names::kContextlost, nullptr},
       {html_names::kOncontextmenuAttr, kNoWebFeature,
@@ -578,10 +580,10 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        event_type_names::kSelectstart, nullptr},
       {html_names::kOnslotchangeAttr, kNoWebFeature,
        event_type_names::kSlotchange, nullptr},
-      {html_names::kOnsnapchangedAttr, kNoWebFeature,
-       event_type_names::kSnapchanged, nullptr},
-      {html_names::kOnsnapchangingAttr, kNoWebFeature,
-       event_type_names::kSnapchanging, nullptr},
+      {html_names::kOnscrollsnapchangeAttr, kNoWebFeature,
+       event_type_names::kScrollsnapchange, nullptr},
+      {html_names::kOnscrollsnapchangingAttr, kNoWebFeature,
+       event_type_names::kScrollsnapchanging, nullptr},
       {html_names::kOnstalledAttr, kNoWebFeature, event_type_names::kStalled,
        nullptr},
       {html_names::kOnsubmitAttr, kNoWebFeature, event_type_names::kSubmit,
@@ -2036,7 +2038,6 @@ const HTMLElement* HTMLElement::FindTopmostPopoverAncestor(
     CHECK_NE(new_popover->PopoverType(), PopoverValueType::kManual);
     CHECK(!new_popover->popoverOpen());
   } else {
-    CHECK(RuntimeEnabledFeatures::NestedTopLayerSupportEnabled());
     CHECK(!new_popover);
     CHECK(!new_popovers_invoker);
   }
@@ -2093,9 +2094,6 @@ const HTMLElement* HTMLElement::TopLayerElementPopoverAncestor(
     Element& top_layer_element,
     TopLayerElementType top_layer_element_type) {
   CHECK(top_layer_element_type != TopLayerElementType::kPopover);
-  if (!RuntimeEnabledFeatures::NestedTopLayerSupportEnabled()) {
-    return nullptr;
-  }
   Document& document = top_layer_element.GetDocument();
   // Check the hint stack first.
   if (auto* ancestor = FindTopmostPopoverAncestor(

@@ -30,6 +30,7 @@ import static java.util.Map.entry;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Instrumentation.ActivityResult;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,6 +38,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.FragmentTransaction;
@@ -76,6 +78,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
+import org.chromium.chrome.browser.password_manager.account_storage_toggle.AccountStorageToggleFragmentArgs;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -106,6 +109,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -249,22 +253,37 @@ public class ManageSyncSettingsTest {
     @SmallTest
     @Feature({"Sync"})
     @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
-    // Disabling explicitly since it's included in fieldtrial_testing_config.json
-    @DisableFeatures({SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE})
     public void testSyncAccountDataTypes() {
+        // The types that should be default-enabled in transport mode depend on various flags.
+        Set<String> expectedEnabledTypes =
+                new HashSet<>(
+                        Arrays.asList(
+                                ManageSyncSettings.PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE,
+                                ManageSyncSettings.PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE));
+        if (SyncFeatureMap.isEnabled(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)) {
+            expectedEnabledTypes.add(ManageSyncSettings.PREF_ACCOUNT_SECTION_BOOKMARKS_TOGGLE);
+        }
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.READING_LIST_ENABLE_SYNC_TRANSPORT_MODE_UPON_SIGNIN)) {
+            expectedEnabledTypes.add(ManageSyncSettings.PREF_ACCOUNT_SECTION_READING_LIST_TOGGLE);
+        }
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ENABLE_PASSWORDS_ACCOUNT_STORAGE_FOR_NON_SYNCING_USERS)) {
+            expectedEnabledTypes.add(ManageSyncSettings.PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE);
+        }
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE)) {
+            expectedEnabledTypes.add(ManageSyncSettings.PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE);
+        }
+
         mSyncTestRule.setUpAccountAndSignInForTesting();
         ManageSyncSettings fragment = startManageSyncPreferences();
         Collection<ChromeSwitchPreference> dataTypes = getAccountDataTypes(fragment).values();
-
         for (ChromeSwitchPreference dataType : dataTypes) {
-            // Only settings and payments are available upon sign in without toggling more flags.
-            if (dataType.getKey().equals(ManageSyncSettings.PREF_ACCOUNT_SECTION_SETTINGS_TOGGLE)
-                    || dataType.getKey()
-                            .equals(ManageSyncSettings.PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE)) {
-                Assert.assertTrue(dataType.isChecked());
-            } else {
-                Assert.assertFalse(dataType.isChecked());
-            }
+            Assert.assertEquals(
+                    "Wrong checked state for toggle " + dataType.getKey(),
+                    expectedEnabledTypes.contains(dataType.getKey()),
+                    dataType.isChecked());
             Assert.assertTrue(dataType.isEnabled());
         }
     }
@@ -411,6 +430,29 @@ public class ManageSyncSettingsTest {
         onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToLastPosition());
         onView(withText(R.string.sign_out)).perform(click());
         Assert.assertNull(mSyncTestRule.getSigninTestRule().getPrimaryAccount(ConsentLevel.SIGNIN));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testSyncAddressesWithCustomPasspharaseShowsWarningDialog() {
+        mSyncTestRule.getFakeServerHelper().setCustomPassphraseNigori("passphrase");
+
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        SyncTestUtil.waitForSyncTransportActive();
+        SyncService syncService = mSyncTestRule.getSyncService();
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        ChromeSwitchPreference addresses_toggle =
+                (ChromeSwitchPreference)
+                        fragment.findPreference(
+                                ManageSyncSettings.PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE);
+        mSyncTestRule.togglePreference(addresses_toggle);
+        onView(withText(R.string.sync_addresses_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
     }
 
     @Test
@@ -1050,6 +1092,7 @@ public class ManageSyncSettingsTest {
     @Test
     @LargeTest
     @Feature({"PersonalizedGoogleServices"})
+    @DisableFeatures({ChromeFeatureList.LINKED_SERVICES_SETTING})
     public void testClickGoogleActivityControls() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         final ManageSyncSettings fragment = startManageSyncPreferences();
@@ -1067,6 +1110,7 @@ public class ManageSyncSettingsTest {
     @LargeTest
     @Feature({"PersonalizedGoogleServices"})
     @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    @DisableFeatures({ChromeFeatureList.LINKED_SERVICES_SETTING})
     public void testClickGoogleActivityControlsWhenSyncPromosShouldBeReplacedWithSigninPromos() {
         mSyncTestRule.setUpAccountAndSignInForTesting();
         final ManageSyncSettings fragment = startManageSyncPreferences();
@@ -1362,6 +1406,44 @@ public class ManageSyncSettingsTest {
 
         // The error card is now hidden.
         Assert.assertFalse(preference.isShown());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testPasswordsToggleWithHighlighting() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+
+        Bundle args = new Bundle();
+        args.putBoolean(AccountStorageToggleFragmentArgs.HIGHLIGHT, true);
+        mSettingsActivityTestRule.startSettingsActivity(args);
+
+        ChromeSwitchPreference toggle =
+                (ChromeSwitchPreference)
+                        mSettingsActivityTestRule
+                                .getFragment()
+                                .findPreference(
+                                        ManageSyncSettings.PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE);
+        @Nullable Integer backgroundColor = toggle.getBackgroundColor();
+        Assert.assertNotNull(backgroundColor);
+        Assert.assertTrue(backgroundColor.equals(R.color.iph_highlight_blue));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testPasswordsToggleWithoutHighlighting() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+
+        ManageSyncSettings settings = startManageSyncPreferences();
+
+        ChromeSwitchPreference toggle =
+                (ChromeSwitchPreference)
+                        settings.findPreference(
+                                ManageSyncSettings.PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE);
+        Assert.assertNull(toggle.getBackgroundColor());
     }
 
     private ManageSyncSettings startManageSyncPreferences() {

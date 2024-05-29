@@ -1,0 +1,27 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("settings") {
+  sources = [
+    "plus_address_setting_service.cc",
+    "plus_address_setting_service.h",
+    "plus_address_setting_sync_bridge.cc",
+    "plus_address_setting_sync_bridge.h",
+  ]
+  public_deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/sync",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "plus_address_setting_sync_bridge_unittest.cc" ]
+  deps = [
+    ":settings",
+    "//base/test:test_support",
+    "//components/sync:test_support",
+  ]
+}

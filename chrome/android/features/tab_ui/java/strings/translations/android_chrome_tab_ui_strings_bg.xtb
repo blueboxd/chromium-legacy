@@ -8,6 +8,7 @@
 <translation id="1173894706177603556">Преименуване</translation>
 <translation id="1197088940767939838">оранжево</translation>
 <translation id="125153950246128346">Докоснете, за да видите друг раздел</translation>
+<translation id="1273910660700874265">Опции за групата раздели „<ph name="TITLE_OF_GROUP" />“</translation>
 <translation id="1322824555808364080">Поканване на хора</translation>
 <translation id="1419023007528516122">Това действие ще изтрие групата за постоянно от устройството ви</translation>
 <translation id="149054111719651807">{NUM_MINS,plural, =1{Създадено преди <ph name="NUM_MINS_ONE" /> минута}other{Създадено преди <ph name="NUM_MINS_MANY" /> минути}}</translation>
@@ -39,6 +40,7 @@
 <translation id="2928243913527329289">Google | Всичко за този магазин</translation>
 <translation id="2977480621796371840">Премахване от групата</translation>
 <translation id="3008554597174452548">Спиране на следенето на продукта</translation>
+<translation id="3026391124054406831">Създайте групи, за да организирате разделите си.</translation>
 <translation id="3052964831964880138">Понижение на цената на <ph name="PRODUCT_NAME" /> в размер на <ph name="PRICE_DROP" /></translation>
 <translation id="3078350928901129212">Цвят на иконата на групата раздели: <ph name="COLOR_NAME" /></translation>
 <translation id="3194464645767632461">оценка</translation>
@@ -52,13 +54,13 @@
 <translation id="3882834874697329510">За да получавате сигнал, когато цената в отворен раздел е по-ниска, включете известията от настройките.</translation>
 <translation id="3940195383040445971">Проследяване на цените в разделите</translation>
 <translation id="3954615705217314756">{TABS_COUNT,plural, =1{Добавяне на раздела в група}other{Групиране на разделите}}</translation>
+<translation id="3969565576924904454">Отваряне на „<ph name="TITLE_OF_GROUP" />“</translation>
 <translation id="3996880007329611795">Получаване на известия</translation>
 <translation id="4009732926939031387">{NUM_DAYS,plural, =1{Създадено преди <ph name="NUM_DAYS_ONE" /> ден}other{Създадено преди <ph name="NUM_DAYS_MANY" /> дни}}</translation>
 <translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> раздела изглеждат сродни. Искате ли да ги групирате?</translation>
 <translation id="4139634748112164403">Разделите ще останат отворени на това устройство, но групата ще бъде изтрита за постоянно</translation>
 <translation id="4156086991340739772">{NUMBER_OF_TABS,plural, =1{Затваряне на групата „<ph name="TITLE_OF_GROUP" />“ с(ъс) <ph name="COLOR_NAME" /> цвят, в която има <ph name="TABS_COUNT_ONE" /> раздел.}other{Затваряне на групата „<ph name="TITLE_OF_GROUP" />“ с(ъс) <ph name="COLOR_NAME" /> цвят, в която има <ph name="TABS_COUNT_MANY" /> раздела.}}</translation>
 <translation id="4159784952369912983">лилаво</translation>
-<translation id="4212246570487010370">Продължаване на сърфирането</translation>
 <translation id="4220650239473304853">{NUMBER_OF_TABS,plural, =1{Разгъване на групата раздели „<ph name="TITLE_OF_GROUP" />“ с <ph name="TABS_COUNT_ONE" /> раздел.}other{Разгъване на групата раздели „<ph name="TITLE_OF_GROUP" />“ с(ъс) <ph name="TABS_COUNT_MANY" /> раздела.}}</translation>
 <translation id="427987768447457592">Нова група раздели</translation>
 <translation id="4460014764210899310">Разгрупиране</translation>
@@ -104,7 +106,6 @@
 <translation id="6557858706263317126">+ <ph name="HIDDEN_TABS_COUNT" /></translation>
 <translation id="6562820390860419811">Преместване на раздела наляво</translation>
 <translation id="6615455863669487791">Покажете ми</translation>
-<translation id="661742612106409204">Можете да намерите затворените си раздели в секцията „Скорошни раздели“ в главното меню на Chrome.</translation>
 <translation id="6744956528665271406">Редактиране на цвета на групата</translation>
 <translation id="6840760312327750441">За да групирате раздели, докоснете и задръжте някой от тях. След това го преместете с плъзгане върху друг.</translation>
 <translation id="6856809498882026482">Изход от режима за избор на няколко раздела</translation>

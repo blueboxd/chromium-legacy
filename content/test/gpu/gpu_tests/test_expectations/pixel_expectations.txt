@@ -422,8 +422,6 @@ crbug.com/1495176 [ chromeos lacros-chrome chromeos-board-octopus ] Pixel_WebGLS
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLCopyImage [ Skip ]
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLSadCanvas [ Skip ]
 
-crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUDisplayP3 [ Failure ]
-crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL [ Failure ]
 
 crbug.com/1469875 [ mac graphite-enabled intel release asan ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
 
@@ -480,8 +478,6 @@ crbug.com/40935289 [ fuchsia web-engine-shell ] Pixel_Video_MP4_FourColors_Rot_9
 crbug.com/40935289 [ fuchsia web-engine-shell ] Pixel_Video_MP4_Rounded_Corner [ Failure ]
 crbug.com/40935289 [ fuchsia no-clang-coverage web-engine-shell ] Pixel_Video_VP9 [ Failure ]
 
-# Failures on Windows with SkiaGraphite
-crbug.com/329235191 [ graphite-enabled nvidia-0x2184 win10 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 
 # Tab change tests failing to find foreground tabs
 crbug.com/338574386 [ mac angle-metal apple-angle-metal-renderer:-apple-m1 passthrough ] Pixel_Canvas2DTabSwitch [ Failure ]

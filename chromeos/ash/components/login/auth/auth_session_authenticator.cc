@@ -17,7 +17,6 @@
 #include "base/time/default_clock.h"
 #include "chromeos/ash/components/cryptohome/auth_factor.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
-#include "chromeos/ash/components/cryptohome/cryptohome_util.h"
 #include "chromeos/ash/components/cryptohome/error_types.h"
 #include "chromeos/ash/components/cryptohome/error_util.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
@@ -669,8 +668,8 @@ void AuthSessionAuthenticator::LoginAsKioskAccount(
 void AuthSessionAuthenticator::LoginAsArcKioskAccount(
     const AccountId& app_account_id,
     bool ephemeral) {
-  LoginAsKioskImpl(app_account_id, user_manager::UserType::kArcKioskApp,
-                   /*force_dircrypto=*/true, /*ephemeral=*/ephemeral);
+  // TODO(b/336756417): Remove this method
+  NOTREACHED_NORETURN();
 }
 
 void AuthSessionAuthenticator::LoginAsWebKioskAccount(

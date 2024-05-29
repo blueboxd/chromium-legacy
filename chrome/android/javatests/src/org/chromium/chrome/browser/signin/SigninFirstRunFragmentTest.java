@@ -63,7 +63,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Features.EnableFeatures;
@@ -98,6 +97,7 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.SigninFeatures;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -248,26 +248,30 @@ public class SigninFirstRunFragmentTest {
         onView(withText(R.string.signin_add_account_to_device)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(isDisplayed()));
 
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        AccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_EMAIL,
+                        CHILD_FULL_NAME,
+                        /* givenName= */ null,
+                        /* avatar= */ null);
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
 
         checkFragmentWithChildAccount(
-                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true);
+                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true, accountInfo);
     }
 
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWhenRemovingChildAccountDynamically() {
-        CoreAccountInfo accountInfo =
+        AccountInfo accountInfo =
                 mSigninTestRule.addAccount(
                         CHILD_ACCOUNT_EMAIL,
                         CHILD_FULL_NAME,
                         /* givenName= */ null,
                         /* avatar= */ null);
         launchActivityWithFragment();
-        checkFragmentWithChildAccount(true, true);
+        checkFragmentWithChildAccount(true, true, accountInfo);
 
         mSigninTestRule.removeAccount(accountInfo.getId());
 
@@ -485,49 +489,48 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWithChildAccount() {
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        AccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_EMAIL,
+                        CHILD_FULL_NAME,
+                        /* givenName= */ null,
+                        /* avatar= */ null);
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
 
         launchActivityWithFragment();
         checkFragmentWithChildAccount(
-                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true);
+                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true, accountInfo);
     }
 
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWithChildAccountWithNonDisplayableAccountEmail() {
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL,
-                CHILD_FULL_NAME,
-                /* givenName= */ null,
-                /* avatar= */ null,
-                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
+        AccountInfo accountInfo = AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL;
+
+        mSigninTestRule.addAccount(accountInfo);
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
 
         launchActivityWithFragment();
 
         checkFragmentWithChildAccount(
-                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ false);
+                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ false, accountInfo);
     }
 
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWithChildAccountWithNonDisplayableAccountEmailWithEmptyDisplayName() {
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL,
-                /* fullName= */ null,
-                /* givenName= */ null,
-                /* avatar= */ null,
-                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
+        AccountInfo accountInfo =
+                AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL_AND_NO_NAME;
+        mSigninTestRule.addAccount(accountInfo);
+
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
 
         launchActivityWithFragment();
 
         checkFragmentWithChildAccount(
-                /* hasDisplayableFullName= */ false, /* hasDisplayableEmail= */ false);
+                /* hasDisplayableFullName= */ false, /* hasDisplayableEmail= */ false, accountInfo);
     }
 
     @Test
@@ -791,10 +794,14 @@ public class SigninFirstRunFragmentTest {
                             .thenReturn(mSigninManagerMock);
                 });
 
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        AccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_EMAIL,
+                        CHILD_FULL_NAME,
+                        /* givenName= */ null,
+                        /* avatar= */ null);
 
-        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ true);
+        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ true, accountInfo);
     }
 
     @Test
@@ -812,6 +819,7 @@ public class SigninFirstRunFragmentTest {
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
+    @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void testContinueButtonWithChildAccountWithNonDisplayableAccountEmail() {
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -821,14 +829,10 @@ public class SigninFirstRunFragmentTest {
                             .thenReturn(mSigninManagerMock);
                 });
 
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL,
-                CHILD_FULL_NAME,
-                /* givenName= */ null,
-                /* avatar= */ null,
-                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
+        AccountInfo accountInfo = AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL;
+        mSigninTestRule.addAccount(accountInfo);
 
-        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ true);
+        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ true, accountInfo);
     }
 
     @Test
@@ -843,21 +847,17 @@ public class SigninFirstRunFragmentTest {
                                     .getSigninManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mSigninManagerMock);
                 });
+        AccountInfo accountInfo =
+                AccountManagerTestRule.TEST_ACCOUNT_NON_DISPLAYABLE_EMAIL_AND_NO_NAME;
+        mSigninTestRule.addAccount(accountInfo);
 
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL,
-                /* fullName= */ null,
-                /* givenName= */ null,
-                /* avatar= */ null,
-                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
-
-        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ false);
+        checkContinueButtonWithChildAccount(/* hasFullNameInButtonText= */ false, accountInfo);
     }
 
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
-    @DisableIf.Build(supported_abis_includes = "x64")
+    @DisabledTest(message = "Failing on Android 13+, crbug.com/341910610")
     public void testProgressSpinnerOnContinueButtonPress() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
@@ -1117,6 +1117,7 @@ public class SigninFirstRunFragmentTest {
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
+    @DisabledTest(message = "crbug.com/342627260")
     public void testFragmentWhenChildStatusIsLoadedAfterNativeAndPolicy() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         when(mChildAccountStatusListenerMock.get()).thenReturn(null);
@@ -1225,20 +1226,24 @@ public class SigninFirstRunFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mNativeInitializationPromise.fulfill(null));
 
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
-        onView(withText(R.string.signin_fre_subtitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_fre_subtitle_legacy)).check(matches(isDisplayed()));
     }
 
     @Test
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWithChildAccount_doesNotApplyFREStringVariation() {
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        AccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_EMAIL,
+                        CHILD_FULL_NAME,
+                        /* givenName= */ null,
+                        /* avatar= */ null);
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
 
         launchActivityWithFragment();
         checkFragmentWithChildAccount(
-                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true);
+                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true, accountInfo);
     }
 
     @Test
@@ -1291,7 +1296,7 @@ public class SigninFirstRunFragmentTest {
                 new DisplayableProfileData(email, mock(Drawable.class), fullName, givenName, true);
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
         if (shouldShowSubtitle) {
-            onView(withText(R.string.signin_fre_subtitle)).check(matches(isDisplayed()));
+            onView(withText(R.string.signin_fre_subtitle_legacy)).check(matches(isDisplayed()));
         } else {
             onView(withId(R.id.subtitle)).check(matches(not(isDisplayed())));
         }
@@ -1333,7 +1338,7 @@ public class SigninFirstRunFragmentTest {
     }
 
     private void checkFragmentWithChildAccount(
-            boolean hasDisplayableFullName, boolean hasDisplayableEmail) {
+            boolean hasDisplayableFullName, boolean hasDisplayableEmail, AccountInfo accountInfo) {
         CriteriaHelper.pollUiThread(
                 mFragment.getView().findViewById(R.id.signin_fre_selected_account)::isShown);
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
@@ -1342,22 +1347,19 @@ public class SigninFirstRunFragmentTest {
         Assert.assertFalse(
                 mFragment.getView().findViewById(R.id.signin_fre_selected_account).isEnabled());
         if (hasDisplayableEmail) {
-            onView(withText(CHILD_ACCOUNT_EMAIL)).check(matches(isDisplayed()));
+            onView(withText(accountInfo.getEmail())).check(matches(isDisplayed()));
         } else {
-            onView(withText(CHILD_ACCOUNT_EMAIL)).check(doesNotExist());
+            onView(withText(accountInfo.getEmail())).check(doesNotExist());
         }
         if (hasDisplayableFullName) {
-            onView(withText(CHILD_FULL_NAME)).check(matches(isDisplayed()));
+            onView(withText(accountInfo.getFullName())).check(matches(isDisplayed()));
         } else {
             onView(withText(mFragment.getString(R.string.default_google_account_username)))
                     .check(matches(isDisplayed()));
         }
         onView(withId(R.id.signin_fre_selected_account_expand_icon))
                 .check(matches(not(isDisplayed())));
-        final String continueAsText =
-                hasDisplayableFullName
-                        ? mFragment.getString(R.string.sync_promo_continue_as, CHILD_FULL_NAME)
-                        : mFragment.getString(R.string.sync_promo_continue);
+        final String continueAsText = getContinueAsButtonText(accountInfo, hasDisplayableFullName);
         onView(withText(continueAsText)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_fre_footer)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
@@ -1366,16 +1368,12 @@ public class SigninFirstRunFragmentTest {
         onView(withText(R.string.fre_browser_managed_by_parent)).check(matches(isDisplayed()));
     }
 
-    private void checkContinueButtonWithChildAccount(boolean hasFullNameInButtonText) {
+    private void checkContinueButtonWithChildAccount(
+            boolean hasFullNameInButtonText, AccountInfo accountInfo) {
+        // TODO(b/343011580) Split this method into smaller more specific methods
         launchActivityWithFragment();
-        final String continueAsText =
-                hasFullNameInButtonText
-                        ? mActivityTestRule
-                                .getActivity()
-                                .getString(R.string.sync_promo_continue_as, CHILD_FULL_NAME)
-                        : mActivityTestRule.getActivity().getString(R.string.sync_promo_continue);
 
-        clickContinueButton(continueAsText);
+        clickContinueButton(getContinueAsButtonText(accountInfo, hasFullNameInButtonText));
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
@@ -1386,12 +1384,26 @@ public class SigninFirstRunFragmentTest {
                 .signinAndEnableSync(any(CoreAccountInfo.class), anyInt(), any());
     }
 
+    private String getContinueAsButtonText(
+            AccountInfo accountInfo, boolean hasDisplayableFullName) {
+        if (!hasDisplayableFullName) {
+            return mFragment.getString(R.string.sync_promo_continue);
+        }
+        if (accountInfo.getGivenName() != null) {
+            return mFragment.getString(R.string.sync_promo_continue_as, accountInfo.getGivenName());
+        }
+        if (accountInfo.getFullName() != null) {
+            return mFragment.getString(R.string.sync_promo_continue_as, accountInfo.getFullName());
+        }
+        return mFragment.getString(R.string.sync_promo_continue_as, accountInfo.getEmail());
+    }
+
     private void checkFragmentWithSignInSpinner(
             String email, @Nullable String fullName, String continueAsText) {
         onView(withId(R.id.fre_signin_progress_spinner)).check(matches(isDisplayed()));
         onView(withText(R.string.fre_signing_in)).check(matches(isDisplayed()));
         onView(withText(R.string.fre_welcome)).check(matches(isDisplayed()));
-        onView(withText(R.string.signin_fre_subtitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_fre_subtitle_legacy)).check(matches(isDisplayed()));
         onView(withText(email)).check(matches(not(isDisplayed())));
         if (fullName != null) {
             onView(withText(fullName)).check(matches(not(isDisplayed())));

@@ -10,31 +10,29 @@ import {getFakeCapabilities} from 'chrome://os-print/js/fakes/fake_data.js';
 import {FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
 import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
-import {setDestinationProviderForTesting} from 'chrome://os-print/js/utils/mojo_data_providers.js';
+import {getDestinationProvider} from 'chrome://os-print/js/utils/mojo_data_providers.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {createTestDestination} from './test_utils.js';
+import {createTestDestination, resetDataManagersAndProviders} from './test_utils.js';
 
 suite('CapabilitiesManager', () => {
   let destinationProvider: FakeDestinationProvider;
   let mockController: MockController;
 
   setup(() => {
-    CapabilitiesManager.resetInstanceForTesting();
-    DestinationManager.resetInstanceForTesting();
-
     // Setup fakes for testing.
     mockController = new MockController();
-    destinationProvider = new FakeDestinationProvider();
-    setDestinationProviderForTesting(destinationProvider);
+    resetDataManagersAndProviders();
+    destinationProvider = getDestinationProvider() as FakeDestinationProvider;
+    assert(destinationProvider);
   });
 
   teardown(() => {
     mockController.reset();
-    CapabilitiesManager.resetInstanceForTesting();
-    DestinationManager.resetInstanceForTesting();
+    resetDataManagersAndProviders();
   });
 
   // Initialize the DestinationManager and wait for it to send all events.
@@ -91,10 +89,10 @@ suite('CapabilitiesManager', () => {
       'fetch capabilities on active destination changed and cache response',
       async () => {
         // Set the active destination.
-        const activeCapailities = getFakeCapabilities();
+        const activeCapabilities = getFakeCapabilities();
         const activeDestination =
-            createTestDestination(activeCapailities.destinationId);
-        destinationProvider.setCapabiltiies(activeCapailities);
+            createTestDestination(activeCapabilities.destinationId);
+        destinationProvider.setCapabilities(activeCapabilities);
 
         await waitForDestinationManagerLoad();
 
@@ -126,7 +124,7 @@ suite('CapabilitiesManager', () => {
             providerCallCount,
             destinationProvider.getCallCount('fetchCapabilities'));
         assertDeepEquals(
-            activeCapailities, instance.getActiveDestinationCapabilities());
+            activeCapabilities, instance.getActiveDestinationCapabilities());
 
         // Simulate the active destination changing again except this time the
         // cached capabilities result is returned.
@@ -143,6 +141,6 @@ suite('CapabilitiesManager', () => {
             providerCallCount,
             destinationProvider.getCallCount('fetchCapabilities'));
         assertDeepEquals(
-            activeCapailities, instance.getActiveDestinationCapabilities());
+            activeCapabilities, instance.getActiveDestinationCapabilities());
       });
 });

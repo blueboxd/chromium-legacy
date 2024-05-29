@@ -70,11 +70,11 @@
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/ai/ai_manager.mojom.h"
 #include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_cloud_identifier.mojom-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
-#include "third_party/blink/public/mojom/model_execution/model_manager.mojom.h"
 #include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_credential.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -1109,8 +1109,11 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns whether cookies should be allowed for requests to `url`, fetched
   // from contexts whose storage is keyed on `storage_key`.
+  // A valid `rfh` pointer must be passed in unless the request is coming from a
+  // service worker.
   virtual bool IsFullCookieAccessAllowed(
       content::BrowserContext* browser_context,
+      content::RenderFrameHost* rfh,
       const GURL& url,
       const blink::StorageKey& storage_key);
 
@@ -1675,6 +1678,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if the audio process should run with high priority. false
   // otherwise.
   virtual bool ShouldEnableAudioProcessHighPriority();
+
+  // Returns true if a site_url should launch a renderer that resolves
+  // fonts via the SkiaFontManager.
+  virtual bool ShouldUseSkiaFontManager(const GURL& site_url);
 #endif
 
   // Binds a new media remoter service to |receiver|, if supported by the
@@ -2195,14 +2202,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int /* render_process_id */,
                               int /* render_frame_id */)> callback);
 
-  // Called when starting BrowserMainLoop to create a base::ThreadPoolInstance.
-  // The embedder may choose to not create a thread pool; in that case
-  // ThreadPoolInstance::Get() will be null. Returns true if the
-  // ThreadPoolInstance was created.
-  // Note: the embedder should *not* start the ThreadPoolInstance for
-  // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
-  virtual bool CreateThreadPool(std::string_view name);
-
   // Returns true if the tab security level is acceptable to allow WebAuthn
   // requests, false otherwise. This is not attached to
   // WebAuthenticationDelegate so it can be available on Android as well.
@@ -2650,9 +2649,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // `is_only_requesting_age` indicates whether the real-world-identity request
   // is only requesting an assertion about whether the user is over a specific
   // age.
+  // Returns a callback to call if the digital identity request is aborted. The
+  // callback updates the interstial UI to inform the user that the credential
+  // request has been canceled. Returns an empty callback if no interstitial was
+  // shown.
+  using DigitalIdentityInterstitialAbortCallback = base::OnceClosure;
   using DigitalIdentityInterstitialCallback = base::OnceCallback<void(
       DigitalIdentityProvider::RequestStatusForMetrics status_for_metrics)>;
-  virtual void ShowDigitalIdentityInterstitialIfNeeded(
+  virtual DigitalIdentityInterstitialAbortCallback
+  ShowDigitalIdentityInterstitialIfNeeded(
       WebContents& web_contents,
       const url::Origin& origin,
       bool is_only_requesting_age,
@@ -2922,9 +2927,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // today to suppress the event when the user navigates to the new tab page.
   virtual bool ShouldSuppressAXLoadComplete(RenderFrameHost* rfh);
 
-  virtual void BindModelManager(
+  virtual void BindAIManager(
       RenderFrameHost* rfh,
-      mojo::PendingReceiver<blink::mojom::ModelManager> receiver);
+      mojo::PendingReceiver<blink::mojom::AIManager> receiver);
 
 #if !BUILDFLAG(IS_ANDROID)
   // Given the last committed URL of the RenderFrameHost, |frame_url|, and the

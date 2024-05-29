@@ -26,6 +26,7 @@ NSString* FieldValueOfTypeOnProfile(const autofill::AutofillProfile& profile,
 @implementation ManualFillAddress (AutofillProfile)
 
 - (instancetype)initWithProfile:(const autofill::AutofillProfile&)profile {
+  NSString* GUID = base::SysUTF16ToNSString(base::ASCIIToUTF16(profile.guid()));
   NSString* firstName =
       FieldValueOfTypeOnProfile(profile, autofill::NAME_FIRST);
   NSString* middleNameOrInitial =
@@ -54,25 +55,26 @@ NSString* FieldValueOfTypeOnProfile(const autofill::AutofillProfile& profile,
   NSString* emailAddress =
       FieldValueOfTypeOnProfile(profile, autofill::EMAIL_ADDRESS);
 
-  return [self initWithFirstName:firstName
-             middleNameOrInitial:middleNameOrInitial
-                        lastName:lastName
-                         company:company
-                           line1:line1
-                           line2:line2
-                             zip:zip
-                            city:city
-                           state:state
-                         country:country
-                     phoneNumber:phoneNumber
-                    emailAddress:emailAddress];
+  return [self initWithGUID:GUID
+                  firstName:firstName
+        middleNameOrInitial:middleNameOrInitial
+                   lastName:lastName
+                    company:company
+                      line1:line1
+                      line2:line2
+                        zip:zip
+                       city:city
+                      state:state
+                    country:country
+                phoneNumber:phoneNumber
+               emailAddress:emailAddress];
 }
 
 + (NSArray<ManualFillAddress*>*)manualFillAddressesFromProfiles:
-    (std::vector<autofill::AutofillProfile*>)profiles {
+    (std::vector<const autofill::AutofillProfile*>)profiles {
   NSMutableArray<ManualFillAddress*>* manualFillAddresses =
       [[NSMutableArray alloc] initWithCapacity:profiles.size()];
-  for (autofill::AutofillProfile* profile : profiles) {
+  for (const autofill::AutofillProfile* profile : profiles) {
     [manualFillAddresses
         addObject:[[ManualFillAddress alloc] initWithProfile:*profile]];
   }

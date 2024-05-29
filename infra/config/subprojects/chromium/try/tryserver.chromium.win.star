@@ -97,7 +97,7 @@ try_.builder(
             "libfuzzer",
             "asan",
             "release_try_builder",
-            "reclient",
+            "remoteexec",
             "chrome_with_codecs",
             "pdf_xfa",
             "mojo_fuzzer",
@@ -350,6 +350,7 @@ try_.orchestrator_builder(
     # are addressed
     #use_orchestrator_pool = True,
     tryjob = try_.job(
+        experiment_percentage = 100,
         location_filters = [
             "sandbox/win/.+",
             "sandbox/policy/win/.+",
@@ -466,7 +467,7 @@ try_.gpu.optional_tests_builder(
         configs = [
             "gpu_fyi_tests",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
         ],

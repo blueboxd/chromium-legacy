@@ -146,7 +146,7 @@ TEST_F(AccessibilityControllerTest, ChangingCursorSizePrefChangesCursorSize) {
       Shell::Get()->window_tree_host_manager()->cursor_window_controller();
 
   // Test all possible sizes
-  for (int size = 25; size <= 64; ++size) {
+  for (int size = 25; size <= 128; ++size) {
     prefs->SetInteger(prefs::kAccessibilityLargeCursorDipSize, size);
     auto bounds = cursor_window_controller->GetBoundsForTest();
     EXPECT_EQ(bounds.height(), size);
@@ -1562,8 +1562,8 @@ TEST_F(AccessibilityControllerTest,
   message_center::NotificationList::Notifications notifications =
       MessageCenter::Get()->GetVisibleNotifications();
   ASSERT_EQ(1u, notifications.size());
-  EXPECT_EQ(std::u16string(), (*notifications.begin())->title());
-  EXPECT_EQ(kBrailleConnected, (*notifications.begin())->message());
+  EXPECT_EQ(kBrailleConnected, (*notifications.begin())->title());
+  EXPECT_EQ(std::u16string(), (*notifications.begin())->message());
 
   // Neither disconnecting a braille display, nor disabling spoken feedback
   // should show any notification.

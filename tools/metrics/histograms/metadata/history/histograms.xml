@@ -1762,6 +1762,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="History.Embeddings.Embedder.EmbeddingsGenerationThreadDuration"
+    units="ms" expires_after="2024-12-31">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>zekunjiang@google.com</owner>
+  <summary>
+    The number of milliseconds spent to generate one embeddings vector, measured
+    in thread time. Logged each time an embeddings generation succeeds if
+    ThreadTicks measurement is supported.
+  </summary>
+</histogram>
+
 <histogram name="History.Embeddings.Embedder.EmbeddingsModelLoadDuration"
     units="ms" expires_after="2024-12-31">
   <owner>sophiechang@chromium.org</owner>
@@ -1861,6 +1873,17 @@ chromium-metrics-reviews@google.com.
     Number of URLs that matched the query and are allowed to be shown based on
     the content visibility policy. Logged each time a query leveraging history
     embeddings is performed.
+  </summary>
+</histogram>
+
+<histogram name="History.Embeddings.NumUrlsDiscardedForLowScore" units="counts"
+    expires_after="2024-12-31">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>orinj@chromium.org</owner>
+  <summary>
+    Number of URLs that were found but discarded for insufficient score (i.e.
+    not reaching the configured search score threshold). Logged each time a
+    query leveraging history embeddings is performed.
   </summary>
 </histogram>
 
@@ -2107,17 +2130,6 @@ chromium-metrics-reviews@google.com.
     Number of history items in the in-memory url index. Recorded on profile open
     when restoring from a cache file and again shortly after profile open when
     rebuilding the in-memory url index from history.
-  </summary>
-</histogram>
-
-<histogram name="History.KillHistoryDatabaseResult" enum="BooleanSuccess"
-    expires_after="2024-05-19">
-  <owner>sophiechang@chromium.org</owner>
-  <owner>asully@chromium.org</owner>
-  <component>1456716</component>
-  <summary>
-    Whether killing the database because it was corrupted beyond repair
-    succeeded.
   </summary>
 </histogram>
 

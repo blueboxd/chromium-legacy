@@ -53,7 +53,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/aggregation_service/aggregation_coordinator_utils.h"
-#include "components/aggregation_service/features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/web_package/web_bundle_builder.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
@@ -5115,23 +5114,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
 }
 
-class InterestGroupAggregationCoordinatorBrowserTest
-    : public InterestGroupBrowserTest {
- public:
-  InterestGroupAggregationCoordinatorBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {blink::features::kPrivateAggregationApiMultipleCloudProviders,
-         aggregation_service::kAggregationServiceMultipleCloudProviders},
-        /*disabled_features=*/{});
-  }
-
-  ~InterestGroupAggregationCoordinatorBrowserTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        JoinInterestGroupInvalidAggregationCoordinatorOrigin) {
   const char kScriptTemplate[] = R"(
 (async function() {
@@ -5162,7 +5145,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
       EvalJs(shell(), JsReplace(kScriptTemplate, origin_string.c_str())));
 }
 
-IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        JoinInterestGroupValidAggregationCoordinatorOrigin) {
   const char kScriptTemplate[] = R"(
 (async function() {
@@ -5194,7 +5177,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
                  aggregation_service::kDefaultAggregationCoordinatorAwsCloud)));
 }
 
-IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        JoinInterestGroupNonHTTPSAggregationCoordinatorOrigin) {
   const char kScriptTemplate[] = R"(
 (async function() {
@@ -5226,7 +5209,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupAggregationCoordinatorBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    InterestGroupAggregationCoordinatorBrowserTest,
+    InterestGroupBrowserTest,
     JoinInterestGroupUnsupportedAggregationCoordinatorOrigin) {
   const char kScriptTemplate[] = R"(
 (async function() {
@@ -24631,6 +24614,232 @@ IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
             isolation_info.request_type());
   EXPECT_TRUE(isolation_info.network_isolation_key().IsTransient());
   EXPECT_TRUE(isolation_info.site_for_cookies().IsNull());
+}
+
+IN_PROC_BROWSER_TEST_F(AuctionConfigRealTimeReportingEnabledTest,
+                       RealTimeReportingRateLimitIsPerPagePerReportOrigin) {
+  const GURL kRealTimeReportUrlA = embedded_https_test_server().GetURL(
+      "a.test", "/.well-known/interest-group/real-time-report");
+
+  URLLoaderMonitor url_loader_monitor;
+  // Setting a small reporting interval to run the test faster.
+  manager_->set_reporting_interval_for_testing(base::Milliseconds(1));
+  manager_->set_max_report_queue_length_for_testing(50);
+  manager_->set_max_active_report_requests_for_testing(50);
+  // Two real time reports allowed to be sent per reporting origin per page per
+  // day.
+  manager_->set_real_time_reporting_window_for_testing(base::Days(1));
+  manager_->set_max_real_time_reports_for_testing(1);
+
+  GURL test_url_a =
+      embedded_https_test_server().GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url_a));
+  const url::Origin origin_a = url::Origin::Create(test_url_a);
+
+  GURL ad1_url =
+      embedded_https_test_server().GetURL("c.test", "/echo?render_winner");
+
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(
+          blink::TestInterestGroupBuilder(
+              /*owner=*/origin_a,
+              /*name=*/"winner")
+              .SetBiddingUrl(embedded_https_test_server().GetURL(
+                  "a.test",
+                  "/interest_group/bidding_logic_with_real_time_reporting.js"))
+              .SetAds({{{ad1_url, R"({"ad":"metadata","here":[1,2]})"}}})
+              .Build()));
+
+  // Only opt-in origin_a as buyer.
+  std::string auction_config = JsReplace(
+      R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    interestGroupBuyers: [$1],
+    perBuyerRealTimeReportingConfig: {
+      $1: {type: 'default-local-reporting'}
+    }
+  })",
+      origin_a,
+      embedded_https_test_server().GetURL(
+          "a.test",
+          "/interest_group/decision_logic_with_real_time_reporting.js"));
+  // Run an ad auction.
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
+
+  // origin_a sent one as buyer. Since it does not opt-in as seller, so the
+  // report was from its `generateBid()`.
+  WaitForUrl(kRealTimeReportUrlA);
+  ClearReceivedRequests();
+
+  // Run auction again on the same page. origin_a opted in as seller.
+  auction_config = JsReplace(
+      R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    interestGroupBuyers: [$1],
+    sellerRealTimeReportingConfig: {type: 'default-local-reporting'},
+    perBuyerRealTimeReportingConfig: {
+      $1: {type: 'default-local-reporting'}
+    }
+  })",
+      origin_a,
+      embedded_https_test_server().GetURL(
+          "a.test",
+          "/interest_group/decision_logic_with_real_time_reporting.js"));
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
+
+  // No real time report is sent after this auction, since origin_a is rate
+  // limited now.
+  EXPECT_TRUE(!HasServerSeenUrl(kRealTimeReportUrlA));
+  ClearReceivedRequests();
+
+  // Navigate to the same URL to open a new page of it, to test that the rate
+  // limit is per page, not per URL or something.
+  ASSERT_TRUE(NavigateToURL(shell(), test_url_a));
+
+  auction_config = JsReplace(
+      R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    interestGroupBuyers: [$1],
+    perBuyerRealTimeReportingConfig: {
+      $1: {type: 'default-local-reporting'}
+    }
+  })",
+      origin_a,
+      embedded_https_test_server().GetURL(
+          "a.test",
+          "/interest_group/decision_logic_with_real_time_reporting.js"));
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
+
+  // origin_a sent real time reports after the auction, because rate limit was
+  // per reporting origin per page, and it's a new page after navigation,
+  // although it's the same URL.
+  WaitForUrl(kRealTimeReportUrlA);
+  ClearReceivedRequests();
+
+  // Run the third auction on another page c.test.
+  GURL test_url_c =
+      embedded_https_test_server().GetURL("c.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url_c));
+
+  auction_config = JsReplace(
+      R"({
+    seller: $1,
+    decisionLogicURL: $2,
+    interestGroupBuyers: [$1],
+    perBuyerRealTimeReportingConfig: {
+      $1: {type: 'default-local-reporting'}
+    }
+  })",
+      origin_a,
+      embedded_https_test_server().GetURL(
+          "a.test",
+          "/interest_group/decision_logic_with_real_time_reporting.js"));
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
+
+  // origin_a sent real time reports after the auction, because rate limit was
+  // per reporting origin per page, and there was rate limit for page a.test,
+  // not for page c.test.
+  WaitForUrl(kRealTimeReportUrlA);
+}
+
+class AuctionConfigRealTimeReportingAndCookieDeprecationEnabledTest
+    : public InterestGroupBrowserTest {
+ public:
+  AuctionConfigRealTimeReportingAndCookieDeprecationEnabledTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kFledgeRealTimeReporting,
+                              features::kCookieDeprecationFacilitatedTesting},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    AuctionConfigRealTimeReportingAndCookieDeprecationEnabledTest,
+    RealTimeReporting) {
+  const char kHostA[] = "a.test";
+  const char kHostB[] = "b.test";
+  GURL test_url =
+      embedded_https_test_server().GetURL(kHostA, "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url =
+      embedded_https_test_server().GetURL(kHostA, "/echo?render_cars");
+  GURL ad2_url =
+      embedded_https_test_server().GetURL("c.test", "/echo?render_bikes");
+  url::Origin test_origin_b =
+      url::Origin::Create(embedded_https_test_server().GetURL(kHostB, "/echo"));
+
+  // IG "winner" should bid 2 and should have won the auction if it bids
+  // successfully, but it should fail to bid due to it calls undefined real time
+  // reporting API.
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(
+          /*owner=*/test_origin,
+          /*name=*/"winner",
+          /*priority=*/0.0,
+          /*execution_mode=*/
+          blink::InterestGroup::ExecutionMode::kCompatibilityMode,
+          /*bidding_url=*/
+          embedded_https_test_server().GetURL(
+              kHostA,
+              "/interest_group/bidding_logic_with_real_time_reporting.js"),
+          /*ads=*/{{{ad_url, /*metadata=*/std::nullopt}}}));
+  EXPECT_EQ(kSuccess,
+            JoinInterestGroupAndVerify(
+                /*owner=*/test_origin,
+                /*name=*/"bikes",
+                /*priority=*/0.0,
+                /*execution_mode=*/
+                blink::InterestGroup::ExecutionMode::kCompatibilityMode,
+                /*bidding_url=*/
+                embedded_https_test_server().GetURL(
+                    kHostA, "/interest_group/bidding_logic.js"),
+                /*ads=*/{{{ad2_url, /*metadata=*/std::nullopt}}}));
+
+  // IG "bikes" won the auction, since "winner" failed to bid.
+  std::string auction_config = JsReplace(
+      R"({
+        seller: $1,
+        decisionLogicURL: $2,
+        interestGroupBuyers: [$3],
+        sellerRealTimeReportingConfig: {type: 'default-local-reporting'},
+        perBuyerRealTimeReportingConfig: {
+          $3: {type: 'default-local-reporting'}
+        }
+      })",
+      test_origin_b,
+      embedded_https_test_server().GetURL(kHostB,
+                                          "/interest_group/decision_logic.js"),
+      test_origin);
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad2_url);
+
+  WaitForUrl(embedded_https_test_server().GetURL("/echoall?report_seller"));
+  WaitForUrl(embedded_https_test_server().GetURL("/echoall?report_bidder"));
+
+  EXPECT_FALSE(HasServerSeenUrl(embedded_https_test_server().GetURL(
+      "a.test", "/.well-known/interest-group/real-time-report")));
+  // Seller didn't call real time reporting API, so it succeeded, but it
+  // does not send the default real time report although it opted in.
+  EXPECT_FALSE(HasServerSeenUrl(embedded_https_test_server().GetURL(
+      "b.test", "/.well-known/interest-group/real-time-report")));
+
+  const GURL kRealTimeReportUrls[] = {
+      embedded_https_test_server().GetURL(
+          "a.test", "/.well-known/interest-group/real-time-report"),
+      embedded_https_test_server().GetURL(
+          "b.test", "/.well-known/interest-group/real-time-report")};
+
+  for (const auto& report_url : kRealTimeReportUrls) {
+    EXPECT_FALSE(HasServerSeenUrl(report_url));
+  }
 }
 
 }  // namespace

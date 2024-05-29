@@ -4,18 +4,18 @@
 
 import 'chrome://os-print/js/destination_dropdown_controller.js';
 
-import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
-import {DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
+import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DESTINATION_MANAGER_DESTINATIONS_CHANGED, DestinationManager} from 'chrome://os-print/js/data/destination_manager.js';
+import {DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, DESTINATION_DROPDOWN_UPDATE_SELECTED_DESTINATION, DestinationDropdownController} from 'chrome://os-print/js/destination_dropdown_controller.js';
 import {FakeDestinationProvider} from 'chrome://os-print/js/fakes/fake_destination_provider.js';
 import {createCustomEvent} from 'chrome://os-print/js/utils/event_utils.js';
-import {setDestinationProviderForTesting} from 'chrome://os-print/js/utils/mojo_data_providers.js';
+import {getDestinationProvider} from 'chrome://os-print/js/utils/mojo_data_providers.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from 'chrome://webui-test/chromeos/mock_controller.m.js';
 import {MockTimer} from 'chrome://webui-test/mock_timer.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {createTestDestination} from './test_utils.js';
+import {createTestDestination, resetDataManagersAndProviders} from './test_utils.js';
 
 suite('DestinationDropdownController', () => {
   let controller: DestinationDropdownController;
@@ -33,17 +33,17 @@ suite('DestinationDropdownController', () => {
     mockTimer = new MockTimer();
     mockTimer.install();
 
-    fakeDestinationProvider = new FakeDestinationProvider();
+    resetDataManagersAndProviders();
+    fakeDestinationProvider =
+        getDestinationProvider() as FakeDestinationProvider;
     fakeDestinationProvider.setTestDelay(testDelay);
-    setDestinationProviderForTesting(fakeDestinationProvider);
-    DestinationManager.resetInstanceForTesting();
     destinationManager = DestinationManager.getInstance();
 
     controller = new DestinationDropdownController(eventTracker);
   });
 
   teardown(() => {
-    DestinationManager.resetInstanceForTesting();
+    resetDataManagersAndProviders();
     eventTracker.removeAll();
     mockTimer.uninstall();
     mockController.reset();
@@ -113,4 +113,52 @@ suite('DestinationDropdownController', () => {
 
     assertDeepEquals(expectedDestinations, controller.getDestinations());
   });
+
+  // Verify controller is listening to
+  // DESTINATION_MANAGER_DESTINATIONS_CHANGED event.
+  test(
+      'onDestinationManagerDestinationsChanged called on ' +
+          DESTINATION_MANAGER_DESTINATIONS_CHANGED,
+      async () => {
+        const onDestinationsChangedFn = mockController.createFunctionMock(
+            controller, 'onDestinationManagerDestinationsChanged');
+        const destinationsChanged = eventToPromise(
+            DESTINATION_MANAGER_DESTINATIONS_CHANGED, destinationManager);
+        onDestinationsChangedFn.addExpectation();
+
+        // Simulate event being fired.
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_DESTINATIONS_CHANGED));
+        await destinationsChanged;
+
+        mockController.verifyMocks();
+      });
+
+  // Verify DESTINATION_MANAGER_DESTINATIONS_CHANGED notifies the UI to
+  // update.
+  test(
+      `${DESTINATION_MANAGER_DESTINATIONS_CHANGED} triggers UI updated event`,
+      async () => {
+        let callCount = 0;
+        let expectedCallCount = 0;
+        controller.addEventListener(
+            DESTINATION_DROPDOWN_UPDATE_DESTINATIONS, () => {
+              ++callCount;
+            });
+        assertEquals(
+            expectedCallCount, callCount,
+            `${DESTINATION_DROPDOWN_UPDATE_DESTINATIONS} not emitted`);
+
+        // Simulate event being fired.
+        const destinationsChanged = eventToPromise(
+            DESTINATION_MANAGER_DESTINATIONS_CHANGED, destinationManager);
+        destinationManager.dispatchEvent(
+            createCustomEvent(DESTINATION_MANAGER_DESTINATIONS_CHANGED));
+        ++expectedCallCount;
+        await destinationsChanged;
+
+        assertEquals(
+            expectedCallCount, callCount,
+            `${DESTINATION_DROPDOWN_UPDATE_DESTINATIONS} emitted`);
+      });
 });

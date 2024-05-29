@@ -293,11 +293,6 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
   host_remote_.Bind(std::move(received_info->host_remote));
 }
 
-void ServiceWorkerRemoteContainerEndpoint::BindForServiceWorker(
-    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  host_remote_.Bind(std::move(info->host_remote));
-}
-
 ServiceWorkerClientAndInfo::ServiceWorkerClientAndInfo(
     base::WeakPtr<ServiceWorkerClient> service_worker_client,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr info)
@@ -335,18 +330,11 @@ std::unique_ptr<ServiceWorkerClientAndInfo>
 CreateServiceWorkerClientAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure) {
-  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-      client_remote;
-  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-      host_receiver;
-  auto info = blink::mojom::ServiceWorkerContainerInfoForClient::New();
-  info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
-  host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
+  auto [service_worker_client, info] =
+      context->CreateServiceWorkerClientForWindow(are_ancestors_secure,
+                                                  /*frame_tree_node_id=*/1);
   return std::make_unique<ServiceWorkerClientAndInfo>(
-      context->CreateServiceWorkerClientForWindow(
-          std::move(host_receiver), are_ancestors_secure,
-          std::move(client_remote), /*frame_tree_node_id=*/1),
-      std::move(info));
+      std::move(service_worker_client), std::move(info));
 }
 
 base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
@@ -414,8 +402,7 @@ std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
     int process_id,
     bool is_parent_frame_secure,
     ServiceWorkerVersion& hosted_version,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
+    base::WeakPtr<ServiceWorkerContextCore> context) {
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   auto host = std::make_unique<ServiceWorkerHost>(
@@ -429,8 +416,12 @@ std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
       process_id,
       provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       pending_interface_provider.InitWithNewPipeAndPassRemote());
-  output_endpoint->BindForServiceWorker(std::move(provider_info));
+
   return host;
+
+  // `provider_info->host_remote`, `provider_info->browser_interface_broker` and
+  // `pending_interface_provider` are currently not used in tests and destroyed
+  // here.
 }
 
 scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(

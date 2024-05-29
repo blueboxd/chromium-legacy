@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
@@ -395,9 +396,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         }]
         )HTML";
 
-    ASSERT_OK_AND_ASSIGN(
+    UNSAFE_BUFFERS(ASSERT_OK_AND_ASSIGN(
         auto parsed_json,
-        base::JSONReader::ReadAndReturnValueWithError(pointer_actions_json));
+        base::JSONReader::ReadAndReturnValueWithError(pointer_actions_json)));
     ActionsParser actions_parser(std::move(parsed_json));
 
     ASSERT_TRUE(actions_parser.Parse());

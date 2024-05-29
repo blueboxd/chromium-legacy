@@ -269,6 +269,12 @@ BASE_FEATURE(kBatterySaverAlwaysOn,
 // Display weather information in birch UI.
 BASE_FEATURE(kBirchWeather, "BirchWeather", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Display weather information in birch UI, with weather getting fetched from
+// chromeos-system-ui endpoint.
+BASE_FEATURE(kBirchWeatherV2,
+             "BirchWeatherV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
 BASE_FEATURE(kBluetoothFixA2dpPacketSize,
@@ -489,7 +495,7 @@ BASE_FEATURE(kCrosPrivacyHub,
 // Enables app permissions view inside Privacy Hub.
 BASE_FEATURE(kCrosPrivacyHubAppPermissions,
              "CrosPrivacyHubAppPermissions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Adds controls to the OS Apps subpages for managing sensor system access and
 // more.
@@ -952,12 +958,6 @@ BASE_FEATURE(kExoOrdinalMotion,
              "ExoOrdinalMotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables to check KeyEvent flag to see if the event is consumed by IME
-// or not (=decides using heuristics based on key code etc.).
-BASE_FEATURE(kExoSurroundingTextOffset,
-             "ExoSurroundingTextOffset",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Allows RGB Keyboard to test new animations/patterns.
 BASE_FEATURE(kExperimentalRgbKeyboardPatterns,
              "ExperimentalRgbKeyboardPatterns",
@@ -1124,12 +1124,12 @@ BASE_FEATURE(kFederatedStringsServiceScheduleTasks,
 // Enables the scheduling of timezone code federated analytics tasks.
 BASE_FEATURE(kFederatedTimezoneCodePhh,
              "FederatedTimezoneCodePhh",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables scheduling of launcher query federated analytics tasks.
 BASE_FEATURE(kFederatedLauncherQueryAnalyticsTask,
              "FederatedLauncherQueryAnalyticsTask",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables scheduling of launcher query federated analytics version 2 tasks.
 BASE_FEATURE(kFederatedLauncherQueryAnalyticsVersion2Task,
@@ -1174,7 +1174,7 @@ BASE_FEATURE(kFilesTrashDrive,
 // Enables the v2 version of the Firmware Updates app.
 BASE_FEATURE(kFirmwareUpdateUIV2,
              "FirmwareUpdateUIV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables first party Vietnamese input method.
 BASE_FEATURE(kFirstPartyVietnameseInput,
@@ -1310,13 +1310,6 @@ BASE_FEATURE(kGaiaRecordAccountCreation,
              "GaiaRecordAccountCreation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the Gaia reauth endpoint for all online reauth flows on login screen.
-// Note that the reauth endpoint is used when the user is a child user or in
-// potential recovery flows, regardless of the flag value.
-BASE_FEATURE(kGaiaReauthEndpoint,
-             "GaiaReauthEndpoint",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the Game Dashboard.
 BASE_FEATURE(kGameDashboard, "GameDashboard", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -1390,13 +1383,20 @@ BASE_FEATURE(kGrowthCampaignsShowNudgeInDefaultParent,
 // Controls whether growth campaigns triggering when loading campaigns complete.
 BASE_FEATURE(kGrowthCampaignsTriggerAtLoadComplete,
              "GrowthCampaignsTriggerAtLoadComplete",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether growth campaigns triggering by app open event is enabled.
 // This flag is used as a kill switch to disable the feature in the case that
 // the feature introduces any unexpected behaviours.
 BASE_FEATURE(kGrowthCampaignsTriggerByAppOpen,
              "GrowthCampaignsTriggerByAppOpen",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether growth campaigns triggering by any event is enabled.
+// This flag is used as a kill switch to disable the feature in the case that
+// the feature introduces any unexpected behaviours.
+BASE_FEATURE(kGrowthCampaignsTriggerByEvent,
+             "GrowthCampaignsTriggerByEvent",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether growth campaigns triggering by url navigation is enabled.
@@ -1437,7 +1437,7 @@ BASE_FEATURE(kHelpAppLauncherSearch,
 // a notification to open the help app.
 BASE_FEATURE(kHelpAppOpensInsteadOfReleaseNotesNotification,
              "HelpAppOpensInsteadOfReleaseNotesNotification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable showing the welcome tips page in the help app. This feature
 // is dependent on the 'ScalableIph' feature being enabled as well.
@@ -1554,10 +1554,6 @@ BASE_FEATURE(kHomeButtonQuickAppAccess,
 BASE_FEATURE(kHomeButtonWithText,
              "HomeButtonWithText",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Control whether the hotspot tethering is enabled. When enabled, it will allow
-// the Chromebook to share its cellular internet connection to other devices.
-BASE_FEATURE(kHotspot, "Hotspot", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allows the user to cycle between windows of an app using Alt + `.
 BASE_FEATURE(kSameAppWindowCycle,
@@ -1874,7 +1870,7 @@ BASE_FEATURE(kMacAddressRandomization,
 // Media App.
 BASE_FEATURE(kMediaAppPdfA11yOcr,
              "MediaAppPdfA11yOcr",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Mahi on PDF contents in the Media App.
 BASE_FEATURE(kMediaAppPdfMahi,
@@ -1988,7 +1984,7 @@ BASE_FEATURE(kNotificationLimit,
 // overlap when showing on a display.
 BASE_FEATURE(kNotifierCollision,
              "NotifierCollision",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether new Lockscreen reauth layout is shown or not.
 BASE_FEATURE(kNewLockScreenReauthLayout,
@@ -2138,7 +2134,7 @@ BASE_FEATURE(kFeatureManagementOobeSimon,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables OOBE tuna feature.
-BASE_FEATURE(kOobeTuna, "OobeTuna", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kOobeTuna, "OobeTuna", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeatureManagementOobeTuna,
              "FeatureManagementOobeTuna",
@@ -2163,6 +2159,9 @@ BASE_FEATURE(kOobeQuickStartOnLoginScreen,
 BASE_FEATURE(kSearchCustomizableShortcutsInLauncher,
              "SearchCustomizableShortcutsInLauncher",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables or disables Orca for ARC apps.
+BASE_FEATURE(kOrcaArc, "OrcaArc", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables elaborate for Orca.
 BASE_FEATURE(kOrcaElaborate, "OrcaElaborate", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2242,7 +2241,7 @@ BASE_FEATURE(kOsSyncConsentRevamp,
 // screeen.
 BASE_FEATURE(kOsFeedbackDialog,
              "OsFeedbackDialog",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether the DNS dialog in should be deprecated in Security and Privacy
 // Settings page when the user toggles off the DNS button.
@@ -2386,13 +2385,13 @@ BASE_FEATURE(kPhoneHubShortQuickActionPodsTitles,
 // Enables the new picker feature.
 BASE_FEATURE(kPicker, "Picker", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Uses cloud search instead of local search.
+BASE_FEATURE(kPickerCloud, "PickerCloud", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Dogfood for picker.
 BASE_FEATURE(kPickerDogfood,
              "PickerDogfood",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the new picker flip feature.
-BASE_FEATURE(kPickerFlip, "PickerFlip", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPipDoubleTapToResize,
              "PipDoubleTapToResize",
@@ -2603,6 +2602,11 @@ BASE_FEATURE(kSeaPenDemoMode,
 
 // Enables sea pen feature with new UI enhancement.
 BASE_FEATURE(kSeaPenUINext, "SeaPenUINext", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables sea pen feature with next templates.
+BASE_FEATURE(kSeaPenUseExptTemplate,
+             "SeaPenUseExptTemplate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables sea pen features for enterprise users controlled by the policy.
 BASE_FEATURE(kSeaPenEnterprise,
@@ -2846,6 +2850,11 @@ BASE_FEATURE(kTouchVirtualKeyboardPolicyListenPrefsAtLogin,
 // and shows Data Usage in the Celluar Settings UI.
 BASE_FEATURE(kTrafficCountersEnabled,
              "TrafficCountersEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables traffic counters for WiFi networks.
+BASE_FEATURE(kTrafficCountersForWiFiTesting,
+             "TrafficCountersForWiFiTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables trilinear filtering.
@@ -3184,6 +3193,8 @@ bool ArePromiseIconsForWebAppsEnabled() {
 
 bool AreSideAlignedToastsEnabled() {
   // Side aligned toasts are launching together with Notifier Collision.
+  // TODO(b/342455518): Remove `kSideAlignedToasts` and its usage and just use
+  // kNotifierCollision to avoid confusions.
   return IsNotifierCollisionEnabled() ||
          base::FeatureList::IsEnabled(kSideAlignedToasts);
 }
@@ -3304,6 +3315,9 @@ bool IsBirchWeatherEnabled() {
   return base::FeatureList::IsEnabled(kBirchWeather);
 }
 
+bool IsBirchWeatherV2Enabled() {
+  return base::FeatureList::IsEnabled(kBirchWeatherV2);
+}
 bool IsBluetoothDisconnectWarningEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothDisconnectWarning);
 }
@@ -3618,10 +3632,6 @@ bool IsGaiaRecordAccountCreationEnabled() {
   return base::FeatureList::IsEnabled(kGaiaRecordAccountCreation);
 }
 
-bool IsGaiaReauthEndpointEnabled() {
-  return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
-}
-
 bool IsGalleryAppPdfEditNotificationEnabled() {
   return base::FeatureList::IsEnabled(kGalleryAppPdfEditNotification);
 }
@@ -3676,6 +3686,10 @@ bool IsGrowthCampaignsTriggerAtLoadComplete() {
 
 bool IsGrowthCampaignsTriggerByAppOpenEnabled() {
   return base::FeatureList::IsEnabled(kGrowthCampaignsTriggerByAppOpen);
+}
+
+bool IsGrowthCampaignsTriggerByEventEnabled() {
+  return base::FeatureList::IsEnabled(kGrowthCampaignsTriggerByEvent);
 }
 
 bool IsGrowthCampaignsTriggerByBrowserEnabled() {
@@ -3804,10 +3818,6 @@ bool IsHomeButtonWithTextEnabled() {
 
 bool IsHostnameSettingEnabled() {
   return base::FeatureList::IsEnabled(kEnableHostnameSetting);
-}
-
-bool IsHotspotEnabled() {
-  return base::FeatureList::IsEnabled(kHotspot);
 }
 
 bool IsInstantHotspotRebrandEnabled() {
@@ -4148,6 +4158,10 @@ bool IsOobeLazyLoadingEnabled() {
 }
 
 bool IsOobeQuickStartEnabled() {
+  if (switches::IsRevenBranding()) {
+    return false;
+  }
+
   return base::FeatureList::IsEnabled(kOobeQuickStart);
 }
 
@@ -4262,10 +4276,6 @@ bool IsPhoneHubShortQuickActionPodsTitlesEnabled() {
 
 bool IsPickerUpdateEnabled() {
   return base::FeatureList::IsEnabled(kPicker);
-}
-
-bool IsPickerFlipEnabled() {
-  return base::FeatureList::IsEnabled(kPickerFlip) && IsPickerUpdateEnabled();
 }
 
 bool IsPinAutosubmitBackfillFeatureEnabled() {
@@ -4413,6 +4423,11 @@ bool IsSeaPenUINextEnabled() {
   return IsSeaPenEnabled() && base::FeatureList::IsEnabled(kSeaPenUINext);
 }
 
+bool IsSeaPenUseExptTemplateEnabled() {
+  return IsSeaPenEnabled() &&
+         base::FeatureList::IsEnabled(kSeaPenUseExptTemplate);
+}
+
 bool IsSeaPenEnterpriseEnabled() {
   return IsSeaPenEnabled() && base::FeatureList::IsEnabled(kSeaPenEnterprise);
 }
@@ -4528,6 +4543,10 @@ bool IsTouchscreenInDiagnosticsAppEnabled() {
 
 bool IsTrafficCountersEnabled() {
   return base::FeatureList::IsEnabled(kTrafficCountersEnabled);
+}
+
+bool IsTrafficCountersForWiFiTestingEnabled() {
+  return base::FeatureList::IsEnabled(kTrafficCountersForWiFiTesting);
 }
 
 bool IsTrilinearFilteringEnabled() {

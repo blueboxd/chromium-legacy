@@ -35,7 +35,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -1201,7 +1200,7 @@ void TabStrip::AddTabToGroup(std::optional<tab_groups::TabGroupId> group,
   if (static_cast<size_t>(model_index) == selected_tabs_.active() &&
       group.has_value() && IsGroupCollapsed(group.value())) {
     ToggleTabGroupCollapsedState(
-        group.value(), ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
+        group.value(), ToggleTabGroupCollapsedStateOrigin::kMenuAction);
   }
 
   if (group.has_value()) {
@@ -1315,7 +1314,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       // automatically expand the group.
       if (IsGroupCollapsed(new_group)) {
         ToggleTabGroupCollapsedState(
-            new_group, ToggleTabGroupCollapsedStateOrigin::kImplicitAction);
+            new_group, ToggleTabGroupCollapsedStateOrigin::kTabsSelected);
       }
     }
   }

@@ -113,10 +113,12 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
     return rare_data_ ? rare_data_->lines_until_clamp : 0;
   }
 
-  bool IsTextBoxTrimApplied() const {
-    return rare_data_ && rare_data_->text_box_trim_is_applied();
+  // Returns true if the block-start/-end is trimmed by the `text-box-trim`
+  // property. Set not only for inline nodes, but also for block nodes when
+  // propagating.
+  bool IsBlockStartTrimmed() const {
+    return rare_data_ && rare_data_->is_block_start_trimmed();
   }
-
   bool IsBlockEndTrimmed() const {
     return rare_data_ && rare_data_->is_block_end_trimmed();
   }
@@ -308,12 +310,14 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
 
   // Return the amount of clearance that we have to add after the fragment. This
   // is used for BR clear elements.
-  LayoutUnit ClearanceAfterLine() const {
-    if (!rare_data_) {
-      return LayoutUnit();
-    }
-    const RareData::LineData* data = rare_data_->GetLineData();
-    return data ? data->clearance_after_line : LayoutUnit();
+  std::optional<LayoutUnit> ClearanceAfterLine() const {
+    return UNLIKELY(rare_data_) ? rare_data_->ClearanceAfterLine()
+                                : std::nullopt;
+  }
+
+  // Return the amount to trim the block size by the `text-box-trim` property.
+  std::optional<LayoutUnit> TrimBlockEndBy() const {
+    return UNLIKELY(rare_data_) ? rare_data_->TrimBlockEndBy() : std::nullopt;
   }
 
   std::optional<LayoutUnit> MinimalSpaceShortage() const {
@@ -617,6 +621,7 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       kBlockData,
       kFlexData,
       kGridData,
+      kLineSmallData,
       kLineData,
       kMathData,
       kTableData,
@@ -632,10 +637,10 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
         NeedsAnchorPositionScrollAdjustmentInXFlag::DefineNextValue<bool, 1>;
     using DataUnionTypeValue =
         NeedsAnchorPositionScrollAdjustmentInYFlag::DefineNextValue<uint8_t, 3>;
-    using TextBoxTrimIsAppliedFlag =
+    using IsBlockStartTrimmedFlag =
         DataUnionTypeValue::DefineNextValue<bool, 1>;
     using IsBlockEndTrimmedFlag =
-        TextBoxTrimIsAppliedFlag::DefineNextValue<bool, 1>;
+        IsBlockStartTrimmedFlag::DefineNextValue<bool, 1>;
 
     struct BlockData {
       GC_PLUGIN_IGNORE("crbug.com/1146383")
@@ -662,9 +667,31 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       std::unique_ptr<const GridLayoutData> grid_layout_data;
     };
 
-    struct LineData {
-      LayoutUnit clearance_after_line;
+    // `LineSmallData` can save allocations When only fields in it are needed.
+    struct LineSmallData {
+      std::optional<LayoutUnit> ClearanceAfterLine() const {
+        return clearance_after_line.NullOptIfMin();
+      }
+      std::optional<LayoutUnit> TrimBlockEndBy() const {
+        return trim_block_end_by.NullOptIfMin();
+      }
+
+      LayoutUnit clearance_after_line = LayoutUnit::Min();
+      LayoutUnit trim_block_end_by = LayoutUnit::Min();
+    };
+
+    // `LineData` is allocated separately as it's larger than data unions.
+    struct LineData : public LineSmallData {
       LayoutUnit annotation_block_offset_adjustment;
+    };
+
+    struct LineDataPtr {
+      LineDataPtr() = default;
+      LineDataPtr(const LineDataPtr& other) {
+        line_data = std::make_unique<LineData>(*other.line_data);
+      }
+
+      std::unique_ptr<LineData> line_data = std::make_unique<LineData>();
     };
 
     struct MathData {
@@ -717,12 +744,12 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       return bit_field.set<DataUnionTypeValue>(static_cast<uint8_t>(data_type));
     }
 
-    bool text_box_trim_is_applied() const {
-      return bit_field.get<TextBoxTrimIsAppliedFlag>();
+    bool is_block_start_trimmed() const {
+      return bit_field.get<IsBlockStartTrimmedFlag>();
     }
 
-    void set_text_box_trim_is_applied() {
-      bit_field.set<TextBoxTrimIsAppliedFlag>(true);
+    void set_is_block_start_trimmed() {
+      bit_field.set<IsBlockStartTrimmedFlag>(true);
     }
 
     bool is_block_end_trimmed() const {
@@ -741,6 +768,9 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
         new (address) DataType();
       }
       return address;
+    }
+    bool HasData(DataUnionType data_type) const {
+      return data_union_type() == data_type;
     }
     template <typename DataType>
     const DataType* GetData(const DataType* address,
@@ -766,11 +796,25 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
     const GridData* GetGridData() const {
       return GetData<GridData>(&grid_data, kGridData);
     }
+    // When both `EnsureLineData()` and `EnsureLineSmallData()` are needed,
+    // `EnsureLineData()` must be done first. Upgrading `kLineSmallData` to
+    // `kLineData` isn't supported due to the lack of the needs.
     LineData* EnsureLineData() {
-      return EnsureData<LineData>(&line_data, kLineData);
+      return EnsureData(&line_data, kLineData)->line_data.get();
     }
     const LineData* GetLineData() const {
-      return GetData<LineData>(&line_data, kLineData);
+      const LineDataPtr* data = GetData(&line_data, kLineData);
+      return data ? data->line_data.get() : nullptr;
+    }
+    LineSmallData* EnsureLineSmallData() {
+      return UNLIKELY(HasData(kLineData))
+                 ? EnsureLineData()
+                 : EnsureData(&line_small_data, kLineSmallData);
+    }
+    const LineSmallData* GetLineSmallData() const {
+      return UNLIKELY(HasData(kLineData))
+                 ? GetLineData()
+                 : GetData(&line_small_data, kLineSmallData);
     }
     MathData* EnsureMathData() {
       return EnsureData<MathData>(&math_data, kMathData);
@@ -816,8 +860,11 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
         case kGridData:
           new (&grid_data) GridData(rare_data.grid_data);
           break;
+        case kLineSmallData:
+          new (&line_small_data) LineSmallData(rare_data.line_small_data);
+          break;
         case kLineData:
-          new (&line_data) LineData(rare_data.line_data);
+          new (&line_data) LineDataPtr(rare_data.line_data);
           break;
         case kMathData:
           new (&math_data) MathData(rare_data.math_data);
@@ -843,8 +890,11 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
         case kGridData:
           grid_data.~GridData();
           break;
+        case kLineSmallData:
+          line_small_data.~LineSmallData();
+          break;
         case kLineData:
-          line_data.~LineData();
+          line_data.~LineDataPtr();
           break;
         case kMathData:
           math_data.~MathData();
@@ -865,6 +915,16 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       if (!line_box_bfc_block_offset_is_set())
         return std::nullopt;
       return line_box_bfc_block_offset;
+    }
+
+    std::optional<LayoutUnit> ClearanceAfterLine() const {
+      const RareData::LineSmallData* data = GetLineSmallData();
+      return data ? data->ClearanceAfterLine() : std::nullopt;
+    }
+
+    std::optional<LayoutUnit> TrimBlockEndBy() const {
+      const RareData::LineSmallData* data = GetLineSmallData();
+      return data ? data->TrimBlockEndBy() : std::nullopt;
     }
 
     void SetNonOverflowingScrollRanges(
@@ -928,7 +988,8 @@ class CORE_EXPORT LayoutResult final : public GarbageCollected<LayoutResult> {
       BlockData block_data;
       FlexData flex_data;
       GridData grid_data;
-      LineData line_data;
+      LineSmallData line_small_data;
+      LineDataPtr line_data;
       MathData math_data;
       TableData table_data;
     };

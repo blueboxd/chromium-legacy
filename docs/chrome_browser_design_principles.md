@@ -54,6 +54,21 @@ These design principles make it easier to write, debug, and maintain code in //c
     * `BrowserWindowFeatures` (member of `Browser`)
         * example: omnibox, security chip, bookmarks bar, side panel
     * `BrowserContextKeyedServiceFactory` (functionally a member of `Profile`)
+        * Override `ServiceIsCreatedWithBrowserContext` to return `true`. This
+          guarantees precise lifetime semantics.
+        * Lazy instantiation is an anti-pattern.
+            * Production code is started via `content::ContentMain()`. Test
+              harnesses use a test-suite dependent start-point, e.g.
+              `base::LaunchUnitTests`. Tests typically instantiate a subset of
+              the lazily-instantiated factories instantiated by production code,
+              at a different time, with a different order. This results in
+              different, sometimes broken behavior in tests. This is typically
+              papered over by modifying the production logic to include
+              otherwise unnecessary conditionals, typically early-exits.
+              Overriding `ServiceIsCreatedWithBrowserContext` guarantees
+              identical behavior between test and production code.
+        * Use `TestingProfile::Builder::AddTestingFactory` to stub or fake
+          services.
     * `GlobalFeatures` (member of `BrowserProcess`)
     * The core controller should not be a `NoDestructor` singleton.
 * Global functions should not access non-global state.
@@ -63,6 +78,12 @@ These design principles make it easier to write, debug, and maintain code in //c
       `BASE_FEATURE(kFooFeature,...)`
     * Global functions that access non-global state are disallowed. e.g.
       static methods on `BrowserList`.
+* No distinction between `//chrome/browser/BUILD.gn` and
+  `//chrome/browser/ui/BUILD.gn`
+    * There is plenty of UI code outside of the `ui` subdirectory, and plenty of
+      non-UI code inside of the `ui` subdirectory. Currently the two BUILD files
+      allow circular includes. We will continue to treat these directories and
+      BUILD files as interchangeable.
 
 ## UI
 * Features should use WebUI and Views toolkit, which are x-platform.
@@ -75,7 +96,19 @@ These design principles make it easier to write, debug, and maintain code in //c
     * For simple features that do not require data persistence, we only require
       separation of controller from view.
     * TODO: work with UI/toolkit team to come up with appropriate examples.
-* Avoid subclassing Views/Widgets.
+* Views:
+    * For simple configuration changes, prefer to use existing setter methods
+      and builder syntax.
+    * Feel free to create custom view subclasses to encapsulate logic or
+      override methods where doing so helps implement layout as the composition
+      of smaller standard layouts, or similar. Don't try to jam the kitchen sink
+      into a single giant view.
+    * However, avoid subclassing existing concrete view subclasses, e.g. to add
+      or tweak existing behavior. This risks violating the Google style guidance
+      on multiple inheritance and makes maintenance challenging. In particular
+      do not do this with core controls, as the behaviors of common controls
+      should not vary across the product.
+* Avoid subclassing Widgets.
 * Avoid self-owned objects/classes for views or controllers.
 
 ## General
@@ -143,8 +176,25 @@ if (result.cached) {
 * Avoid re-entrancy. Control flow should remain as localized as possible.
 Bad (unnecessary delegation, re-entrancy)
 ```cpp
+class CarFactory {
+  std::unique_ptr<Car> CreateCar() {
+    if (!CanCreateCar()) {
+      return nullptr;
+    }
+    if (FactoryIsBusy() && !delegate->ShouldShowCarIfFactoryIsBusy()) {
+      return nullptr;
+    }
+    return std::make_unique<Car>();
+  }
+
+  bool CanCreateCar();
+  bool FactoryIsBusy();
+
+  Delegate* delegate_ = nullptr;
+};
+
 class CarSalesPerson : public Delegate {
-  // Can return nullptr, in which case no car is shown
+  // Can return nullptr, in which case no car is shown.
   std::unique_ptr<Car> ShowCar() {
     return car_factory_->CreateCar();
   }
@@ -153,29 +203,28 @@ class CarSalesPerson : public Delegate {
   // Whether the car should be shown, even if the factory is busy.
   bool ShouldShowCarIfFactoryIsBusy() override;
 
-  CarFactory* car_factory_;
-};
-
-class CarFactory {
-  std::unique_ptr<Car> CreateCar() {
-    if (!CanCreateCar())
-      return nullptr;
-    if (FactoryIsBusy() && !delegate->ShouldShowCarIfFactoryIsBusy())
-      return nullptr;
-    return std::make_unique<Car>();
-  }
-
-  bool CanCreateCar();
-  bool FactoryIsBusy();
-
-  Delegate* delegate_;
+  CarFactory* car_factory_ = nullptr;
 };
 ```
 
 Good, version 1: Remove delegation. Pass all relevant state to CarFactory so that CreateCar() does not depend on non-local state.
 ```cpp
+class CarFactory {
+  std::unique_ptr<Car> CreateCar(bool show_even_if_factory_is_busy) {
+    if (!CanCreateCar()) {
+      return nullptr;
+    }
+    if (FactoryIsBusy() && !show_even_if_factory_is_busy) {
+      return nullptr;
+    }
+    return std::make_unique<Car>();
+  }
+  bool CanCreateCar();
+  bool FactoryIsBusy();
+};
+
 class CarSalesPerson {
-  // Can return nullptr, in which case no car is shown
+  // Can return nullptr, in which case no car is shown.
   std::unique_ptr<Car> ShowCar() {
     return car_factory_->CreateCar(ShouldShowCarIfFactoryIsBusy());
   }
@@ -183,44 +232,34 @@ class CarSalesPerson {
   // Whether the car should be shown, even if the factory is busy.
   bool ShouldShowCarIfFactoryIsBusy();
 
-  CarFactory* car_factory_;
-};
-
-class CarFactory {
-  std::unique_ptr<Car> CreateCar(bool show_even_if_factory_is_busy) {
-    if (!CanCreateCar())
-      return nullptr;
-    if (FactoryIsBusy() && !show_even_if_factory_is_busy)
-      return nullptr;
-    return std::make_unique<Car>();
-  }
-  bool CanCreateCar();
-  bool FactoryIsBusy();
+  CarFactory* car_factory_ = nullptr;
 };
 ```
 
-Good, version 2: Remove delegation. CreateCar always create a car (fewer conditionals). State only flows from CarFactory to CarSalesPerson (and never backwards).
+Good, version 2: Remove delegation. CreateCar always creates a car (fewer conditionals). State only flows from CarFactory to CarSalesPerson (and never backwards).
 ```cpp
+class CarFactory {
+  bool CanCreateCar();
+  bool FactoryIsBusy();
+  // Never returns nullptr.
+  std::unique_ptr<Car> CreateCar();
+};
+
 class CarSalesPerson {
   // Can return nullptr, in which case no car is shown
   std::unique_ptr<Car> ShowCar() {
-    if (!car_factory_->CanCreateCar())
+    if (!car_factory_->CanCreateCar()) {
       return nullptr;
-    if (car_factory_->FactoryIsBusy() && !ShouldShowCarIfFactoryIsBusy())
+    }
+    if (car_factory_->FactoryIsBusy() && !ShouldShowCarIfFactoryIsBusy()) {
       return nullptr;
+    }
     return car_factory_->CreateCar();
   }
 
   // Whether the car should be shown, even if the factory is busy.
   bool ShouldShowCarIfFactoryIsBusy();
-  CarFactory* car_factory_;
-};
-
-class CarFactory {
-  bool CanCreateCar();
-  bool FactoryIsBusy();
-  // never returns nullptr.
-  std::unique_ptr<Car> CreateCar();
+  CarFactory* car_factory_ = nullptr;
 };
 ```
 

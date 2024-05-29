@@ -19,6 +19,7 @@ namespace {
 
 constexpr const char kUserActionNext[] = "next";
 constexpr const char kUserActionSkip[] = "skip";
+constexpr const char kUserActionLoaded[] = "loaded";
 
 bool HasBeenSelected(std::string category_id) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
@@ -102,6 +103,7 @@ void CategoriesSelectionScreen::OnResponseReceived(
     AppsFetchingResult result) {
   if (result != AppsFetchingResult::kSuccess) {
     exit_callback_.Run(Result::kError);
+    return;
   }
 
   base::Value::List categories_list;
@@ -133,8 +135,20 @@ void CategoriesSelectionScreen::OnSelect(base::Value::List categories) {
   prefs->SetList(prefs::kOobeCategoriesSelected, std::move(categories));
 }
 
+void CategoriesSelectionScreen::ShowOverviewStep() {
+  if (view_) {
+    view_->SetOverviewStep();
+  }
+}
+
 void CategoriesSelectionScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
+
+  if (action_id == kUserActionLoaded) {
+    delay_overview_timer_.Start(FROM_HERE, delay_overview_step_, this,
+                                &CategoriesSelectionScreen::ShowOverviewStep);
+    return;
+  }
 
   if (action_id == kUserActionSkip) {
     PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();

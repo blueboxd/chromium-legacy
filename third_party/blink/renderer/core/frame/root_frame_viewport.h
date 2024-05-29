@@ -133,16 +133,16 @@ class CORE_EXPORT RootFrameViewport final
   void SetSnapContainerDataNeedsUpdate(bool) override;
   std::optional<gfx::PointF> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;
-  void UpdateSnappedTargetsAndEnqueueSnapChanged() override;
-  std::optional<cc::TargetSnapAreaElementIds> GetSnapchangingTargetIds()
+  void UpdateSnappedTargetsAndEnqueueScrollSnapChange() override;
+  std::optional<cc::TargetSnapAreaElementIds> GetScrollsnapchangingTargetIds()
       const override;
-  void SetSnapchangingTargetIds(
+  void SetScrollsnapchangingTargetIds(
       std::optional<cc::TargetSnapAreaElementIds>) override;
   const cc::SnapSelectionStrategy* GetImplSnapStrategy() const override;
   void SetImplSnapStrategy(
       std::unique_ptr<cc::SnapSelectionStrategy> strategy) override;
-  void EnqueueSnapChangingEventFromImplIfNeeded() override;
-  void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
+  void EnqueueScrollSnapChangingEventFromImplIfNeeded() override;
+  void UpdateScrollSnapChangingTargetsAndEnqueueScrollSnapChanging(
       const cc::TargetSnapAreaElementIds& new_target_ids) override;
 
   void SetPendingHistoryRestoreScrollOffset(

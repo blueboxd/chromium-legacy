@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/check_deref.h"
 #include "base/functional/callback_helpers.h"
 #include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
@@ -25,8 +26,8 @@ FacilitatedPaymentsManager::FacilitatedPaymentsManager(
     FacilitatedPaymentsClient* client,
     std::unique_ptr<FacilitatedPaymentsApiClient> api_client,
     optimization_guide::OptimizationGuideDecider* optimization_guide_decider)
-    : driver_(*driver),
-      client_(*client),
+    : driver_(CHECK_DEREF(driver)),
+      client_(CHECK_DEREF(client)),
       api_client_(std::move(api_client)),
       optimization_guide_decider_(optimization_guide_decider),
       initiate_payment_request_details_(
@@ -139,19 +140,7 @@ void FacilitatedPaymentsManager::ProcessPixCodeDetectionResult(
           base::FeatureList::IsEnabled(kEnablePixDetectionOnDomContentLoaded))
       .Record(ukm::UkmRecorder::Get());
 
-  // If a valid PIX code is found, and the user has Google wallet linked PIX
-  // accounts, verify that the payments API is available, and then show the PIX
-  // payment prompt.
-  // TODO(b/339477906): The check for bank accounts should move to
-  // OnPixCodeValidated.
-  auto* payments_data_manager = client_->GetPaymentsDataManager();
-  if (!payments_data_manager) {
-    Reset();
-    return;
-  }
-  if (result != mojom::PixCodeDetectionResult::kValidPixCodeFound ||
-      !payments_data_manager->HasMaskedBankAccounts() ||
-      !base::FeatureList::IsEnabled(kEnablePixPayments)) {
+  if (result != mojom::PixCodeDetectionResult::kValidPixCodeFound) {
     Reset();
     return;
   }
@@ -174,6 +163,18 @@ void FacilitatedPaymentsManager::OnPixCodeValidated(
   if (!is_pix_code_valid.value()) {
     // Pix code is not valid.
     LogPaymentNotOfferedReason(PaymentNotOfferedReason::kInvalidCode);
+    Reset();
+    return;
+  }
+
+  // If a valid PIX code is found, and the user has Google wallet linked PIX
+  // accounts, verify that the payments API is available, and then show the PIX
+  // payment prompt.
+  auto* payments_data_manager = client_->GetPaymentsDataManager();
+  if (!payments_data_manager ||
+      !payments_data_manager->IsFacilitatedPaymentsPixUserPrefEnabled() ||
+      !payments_data_manager->HasMaskedBankAccounts() ||
+      !base::FeatureList::IsEnabled(kEnablePixPayments)) {
     Reset();
     return;
   }

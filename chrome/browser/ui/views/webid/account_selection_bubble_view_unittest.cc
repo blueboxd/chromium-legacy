@@ -19,6 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/color_parser.h"
 #include "content/public/common/content_features.h"
@@ -50,8 +51,8 @@ class AccountSelectionBubbleViewTest : public ChromeViewsTestBase,
  protected:
   void CreateAccountSelectionBubble(bool exclude_title, bool exclude_iframe) {
     views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+        CreateParams(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                     views::Widget::InitParams::TYPE_WINDOW);
 
     anchor_widget_ = std::make_unique<views::Widget>();
     anchor_widget_->Init(std::move(params));
@@ -415,6 +416,8 @@ class AccountSelectionBubbleViewTest : public ChromeViewsTestBase,
     feature_list_.Reset();
     ChromeViewsTestBase::TearDown();
   }
+
+  void ResetWebContents() { test_web_contents_.reset(); }
 
   AccountSelectionBubbleView* dialog() { return dialog_; }
 
@@ -1308,4 +1311,34 @@ TEST_F(AccountSelectionBubbleViewTest, WebContentsTooSmallToFitDialog) {
   web_contents()->Resize(gfx::Rect(/*x=*/0, /*y=*/0, /*width=*/10,
                                    /*height=*/10));
   EXPECT_FALSE(dialog()->CanFitInWebContents());
+}
+
+// Tests crash scenario from crbug.com/341240034.
+TEST_F(AccountSelectionBubbleViewTest, BoundsChangedAfterWebContentsDestroyed) {
+  TestSingleAccount(kTitleSignIn, /*expected_subtitle=*/std::nullopt,
+                    /*expect_idp_brand_icon_in_header=*/true);
+
+  // Reset the web contents associated with the dialog.
+  ResetWebContents();
+  EXPECT_FALSE(web_contents());
+
+  // Dialog is somehow still alive and receives OnAnchorBoundsChanged calls.
+  // This should not crash.
+  dialog()->OnAnchorBoundsChanged();
+}
+
+// Tests that the brand icon view is hidden if the brand icon URL is invalid.
+TEST_F(AccountSelectionBubbleViewTest, InvalidBrandIconUrlHidesBrandIcon) {
+  const std::string kAccountSuffix = "suffix";
+  content::IdentityRequestAccount account(CreateTestIdentityRequestAccount(
+      kAccountSuffix, content::IdentityRequestAccount::LoginState::kSignUp));
+  content::IdentityProviderMetadata idp_metadata;
+  idp_metadata.brand_icon_url = GURL("invalid url");
+  CreateAndShowSingleAccountPicker(
+      /*show_back_button=*/false, account, idp_metadata, kTermsOfServiceUrl);
+
+  views::View* brand_icon_image_view = static_cast<views::View*>(
+      GetViewWithClassName(dialog()->children()[0], "BrandIconImageView"));
+  ASSERT_TRUE(brand_icon_image_view);
+  EXPECT_FALSE(brand_icon_image_view->GetVisible());
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/core/browser/password_manager_client.h"
+
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
@@ -10,7 +12,6 @@
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/version_info/channel.h"
 #include "url/origin.h"
@@ -64,8 +65,7 @@ void PasswordManagerClient::UpdateCredentialCache(
 void PasswordManagerClient::PasswordWasAutofilled(
     base::span<const PasswordForm> best_matches,
     const url::Origin& origin,
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>*
-        federated_matches,
+    base::span<const PasswordForm> federated_matches,
     bool was_autofilled_on_pageload) {}
 
 void PasswordManagerClient::AutofillHttpAuth(

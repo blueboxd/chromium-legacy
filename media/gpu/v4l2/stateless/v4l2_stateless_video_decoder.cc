@@ -367,6 +367,52 @@ void V4L2StatelessVideoDecoder::ConfigureInputQueue() {
   }
 }
 
+bool V4L2StatelessVideoDecoder::ConfigureOutputQueue(void* ctrls) {
+  // The header needs to be parsed before the video resolution and format
+  // can be decided.
+  if (!request_queue_->SetHeadersForFormatNegotiation(ctrls)) {
+    LogError(media_log_,
+             "Failure to send the header necessary for output queue "
+             "instantiation.");
+    return false;
+  }
+
+  output_queue_ = OutputQueue::Create(device_);
+  if (!output_queue_) {
+    LogError(media_log_, "Unable to create an output queue.");
+    return false;
+  }
+
+  // There needs to be two additional buffers. One for the video frame being
+  // decoded, and one for our client (presumably an ImageProcessor).
+  constexpr size_t kAdditionalOutputBuffers = 2;
+  const size_t num_buffers =
+      decoder_->GetNumReferenceFrames() + kAdditionalOutputBuffers;
+  // Verify |num_buffers| has a reasonable value. Anecdotally
+  // 16 is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_buffers, 32u);
+  if (!output_queue_->PrepareBuffers(num_buffers)) {
+    LogError(media_log_, "Unable to prepare output buffers.");
+    return false;
+  }
+
+  const CroStatus status = SetupOutputFormatForPipeline();
+  if (status != CroStatus::Codes::kOk) {
+    if (status == CroStatus::Codes::kResetRequired) {
+      ClearPendingRequests(DecoderStatus::Codes::kAborted);
+    }
+    return false;
+  }
+
+  if (!output_queue_->StartStreaming()) {
+    LogError(media_log_, "Unable to start streaming on the output queue.");
+    return false;
+  }
+
+  return true;
+}
+
 size_t V4L2StatelessVideoDecoder::GetMaxOutputFramePoolSize() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
@@ -422,41 +468,9 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(
   DVLOGF(4);
 
   if (!output_queue_) {
-    // The header needs to be parsed before the video resolution and format
-    // can be decided.
-    if (!request_queue_->SetHeadersForFormatNegotiation(ctrls)) {
-      LogError(media_log_,
-               "Failure to send the header necessary for output queue "
-               "instantiation.");
+    if (!ConfigureOutputQueue(ctrls)) {
+      output_queue_.reset();
       return false;
-    }
-
-    output_queue_ = OutputQueue::Create(device_);
-    if (!output_queue_) {
-      LogError(media_log_, "Unable to create an output queue.");
-      return false;
-    }
-
-    // There needs to be two additional buffers. One for the video frame being
-    // decoded, and one for our client (presumably an ImageProcessor).
-    constexpr size_t kAdditionalOutputBuffers = 2;
-    const size_t num_buffers =
-        decoder_->GetNumReferenceFrames() + kAdditionalOutputBuffers;
-    // Verify |num_buffers| has a reasonable value. Anecdotally
-    // 16 is the largest amount of reference frames seen, on an ITU-T H.264 test
-    // vector (CAPCM*1_Sand_E.h264).
-    CHECK_LE(num_buffers, 32u);
-    if (!output_queue_->PrepareBuffers(num_buffers)) {
-      LogError(media_log_, "Unable to prepare output buffers.");
-      return false;
-    }
-
-    if (!SetupOutputFormatForPipeline()) {
-      return false;
-    }
-
-    if (!output_queue_->StartStreaming()) {
-      LogError(media_log_, "Unable to start streaming on the output queue.");
     }
   }
 
@@ -630,7 +644,7 @@ bool V4L2StatelessVideoDecoder::CreateDecoder(VideoCodecProfile profile,
   return true;
 }
 
-bool V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
+CroStatus V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
   DCHECK(output_queue_);
@@ -665,10 +679,10 @@ bool V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
              output_queue_->GetQueueFormat().ToString(),
              " format with a resolution of ",
              output_queue_->GetVideoResolution().ToString());
-    return false;
+    return std::move(status_or_output_format).error().code();
   }
 
-  return true;
+  return CroStatus::Codes::kOk;
 }
 
 void V4L2StatelessVideoDecoder::DequeueBuffers(bool success) {
@@ -844,7 +858,7 @@ void V4L2StatelessVideoDecoder::ServiceDecodeRequestQueue() {
         return;
       case AcceleratedVideoDecoder::kDecodeError:
         LogError(media_log_, "AcceleratedVideoDecoder::Decode() failed.");
-        ClearPendingRequests(DecoderStatus::Codes::kPlatformDecodeFailure);
+        ClearPendingRequests(DecoderStatus::Codes::kFailed);
         return;
       case AcceleratedVideoDecoder::kTryAgain:
         // Will be needed for h.264 CENCv1

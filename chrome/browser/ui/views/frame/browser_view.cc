@@ -147,7 +147,6 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_rounded_corner.h"
-#include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
@@ -245,6 +244,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/theme_provider.h"
@@ -3941,8 +3941,9 @@ views::View* BrowserView::CreateMacOverlayView() {
   DCHECK(UsesImmersiveFullscreenMode());
 
   auto create_overlay_widget = [this](views::Widget* parent) -> views::Widget* {
-    views::Widget::InitParams params;
-    params.type = views::Widget::InitParams::TYPE_POPUP;
+    views::Widget::InitParams params(
+        views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+        views::Widget::InitParams::TYPE_POPUP);
     params.child = true;
     params.parent = parent->GetNativeView();
     params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
@@ -4393,12 +4394,6 @@ void BrowserView::AddedToWidget() {
   // TODO(pbos): Investigate whether the side panels should be creatable when
   // the ToolbarView does not create a button for them. This specifically seems
   // to hit web apps. See https://crbug.com/1267781.
-  if (toolbar_->GetSidePanelButton()) {
-    if (toolbar()->side_panel_container()) {
-      toolbar()->side_panel_container()->ObserveSidePanelView(
-          unified_side_panel_);
-    }
-  }
   unified_side_panel_->AddObserver(
       SidePanelUtil::GetSidePanelCoordinatorForBrowser((browser_.get())));
 
@@ -5235,11 +5230,14 @@ void BrowserView::NotifyPromoFeatureUsed(const base::Feature& feature) {
   }
 }
 
-bool BrowserView::MaybeShowNewBadgeFor(const base::Feature& feature) {
+ui::IsNewFeatureAtValue BrowserView::MaybeShowNewBadgeFor(
+    const base::Feature& feature) {
   auto* const service =
       UserEducationServiceFactory::GetForBrowserContext(GetProfile());
-  return service && service->new_badge_controller() &&
-         service->new_badge_controller()->MaybeShowNewBadge(feature);
+  if (!service || !service->new_badge_controller()) {
+    return ui::IsNewFeatureAtValue();
+  }
+  return service->new_badge_controller()->MaybeShowNewBadge(feature);
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(WebContents* contents,

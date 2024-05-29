@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/user_education/recent_session_policy.h"
 
+#include <sstream>
 #include <vector>
 
 #include "base/containers/map_util.h"
@@ -462,6 +463,7 @@ TEST_F(RecentSessionPolicyTest, RecordRecentUsageMetrics_LessThanOneWeek) {
       CreateSessionData({base::Days(1), base::Days(2)}, base::Days(4)));
   EnsureBucketCounts("UserEducation.Session.ShortTermCount", {});
   EnsureBucketCounts("UserEducation.Session.LongTermCount", {});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {});
   EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {});
   EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {});
   EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {});
@@ -474,6 +476,7 @@ TEST_F(RecentSessionPolicyTest, RecordRecentUsageMetrics_MoreThanOneWeek) {
                         base::Days(8)));
   EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{5, 1}});
   EnsureBucketCounts("UserEducation.Session.LongTermCount", {});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {});
   EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 1}});
   EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {});
   EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {});
@@ -485,9 +488,72 @@ TEST_F(RecentSessionPolicyTest, RecordRecentUsageMetrics_FullPeriod) {
        base::Days(6), base::Days(15), base::Days(20)}));
   EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{5, 1}});
   EnsureBucketCounts("UserEducation.Session.LongTermCount", {{7, 1}});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {{6, 1}});
   EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 1}});
   EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {{2, 1}});
   EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {{1, 1}});
+}
+
+TEST_F(RecentSessionPolicyTest,
+       RecordRecentUsageMetrics_SuperActiveCountsDaysNotSessions) {
+  policy_->RecordRecentUsageMetrics(CreateSessionData(
+      {// Initial week with four active days (counting day zero) and no
+       // additional sessions.
+       base::Days(1), base::Days(2), base::Days(6),
+       // Second week with three active days but four sessions.
+       base::Days(15), base::Days(15) + base::Minutes(5),
+       base::Days(15) + base::Minutes(10),
+       base::Days(15) + base::Minutes(15)}));
+  EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{4, 1}});
+  EnsureBucketCounts("UserEducation.Session.LongTermCount", {{8, 1}});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {{5, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {{2, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {{1, 1}});
+}
+
+TEST_F(RecentSessionPolicyTest, RecordRecentUsageMetrics_DailyLimit) {
+  auto data = CreateSessionData(
+      {base::Days(1), base::Days(1) + base::Minutes(5), base::Days(2),
+       base::Days(6), base::Days(15), base::Days(20)});
+  policy_->RecordRecentUsageMetrics(data);
+  EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{5, 1}});
+  EnsureBucketCounts("UserEducation.Session.LongTermCount", {{7, 1}});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {{6, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {{2, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {{1, 1}});
+
+  // Start another session almost right away, so it's in the same day.
+  data.recent_session_start_times.insert(
+      data.recent_session_start_times.begin(),
+      data.recent_session_start_times.front() + base::Seconds(5));
+  policy_->RecordRecentUsageMetrics(data);
+  // Session-based metrics should still be recorded.
+  EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{5, 1}, {6, 1}});
+  EnsureBucketCounts("UserEducation.Session.LongTermCount", {{7, 1}, {8, 1}});
+  // Daily and weekly metrics, however, should not.
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays", {{6, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks", {{2, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {{1, 1}});
+
+  // Start another session on the next calendar day.
+  data.recent_session_start_times.insert(
+      data.recent_session_start_times.begin(),
+      data.recent_session_start_times.front() + base::Days(1));
+  policy_->RecordRecentUsageMetrics(data);
+  // All metrics should now be recorded. Some days will have shifted to the next
+  // week.
+  EnsureBucketCounts("UserEducation.Session.ShortTermCount", {{5, 1}, {6, 2}});
+  EnsureBucketCounts("UserEducation.Session.LongTermCount",
+                     {{7, 1}, {8, 1}, {9, 1}});
+  EnsureBucketCounts("UserEducation.Session.MonthlyActiveDays",
+                     {{6, 1}, {7, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveDays", {{4, 2}});
+  EnsureBucketCounts("UserEducation.Session.RecentActiveWeeks",
+                     {{2, 1}, {4, 1}});
+  EnsureBucketCounts("UserEducation.Session.RecentSuperActiveWeeks", {{1, 2}});
 }
 
 class RecentSessionPolicyFinchTest : public RecentSessionPolicyTest {

@@ -9,6 +9,7 @@
 
 #include "ash/ash_element_identifiers.h"
 #include "ash/picker/metrics/picker_session_metrics.h"
+#include "ash/picker/model/picker_action_type.h"
 #include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/views/picker_category_view.h"
 #include "ash/picker/views/picker_key_event_handler.h"
@@ -161,6 +162,7 @@ PickerView::PickerView(PickerViewDelegate* delegate,
   SetInitiallyFocusedView(search_field_view_);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  key_event_handler_.SetActivePseudoFocusHandler(this);
 }
 
 PickerView::~PickerView() = default;
@@ -197,6 +199,11 @@ void PickerView::SelectZeroStateResult(const PickerSearchResult& result) {
   SelectSearchResult(result);
 }
 
+PickerActionType PickerView::GetActionForResult(
+    const PickerSearchResult& result) {
+  return delegate_->GetActionForResult(result);
+}
+
 void PickerView::GetZeroStateRecentResults(PickerCategory category,
                                            SearchResultsCallback callback) {
   delegate_->GetResultsForCategory(
@@ -227,16 +234,69 @@ void PickerView::SelectSearchResult(const PickerSearchResult& result) {
     delegate_->ShowEditor(editor_data->preset_query_id,
                           editor_data->freeform_text);
   } else {
-    delegate_->GetSessionMetrics().SetInsertedResult(
-        result, search_results_view_->GetIndex(result));
-    delegate_->InsertResultOnNextFocus(result);
-    GetWidget()->Close();
+    switch (delegate_->GetActionForResult(result)) {
+      case PickerActionType::kInsert:
+        delegate_->GetSessionMetrics().SetInsertedResult(
+            result, search_results_view_->GetIndex(result));
+        delegate_->InsertResultOnNextFocus(result);
+        GetWidget()->Close();
+        break;
+      case PickerActionType::kOpen:
+        delegate_->OpenResult(result);
+        GetWidget()->Close();
+        break;
+      case PickerActionType::kDo:
+      case PickerActionType::kCreate:
+        NOTREACHED_NORETURN();
+    }
   }
 }
 
 void PickerView::SelectMoreResults(PickerSectionType type) {
   SelectCategoryWithQuery(GetCategoryForMoreResults(type),
                           search_field_view_->GetQueryText());
+}
+
+bool PickerView::DoPseudoFocusedAction() {
+  if (main_container_view_->active_page() == nullptr) {
+    return false;
+  }
+  return main_container_view_->active_page()->DoPseudoFocusedAction();
+}
+
+bool PickerView::MovePseudoFocusUp() {
+  if (main_container_view_->active_page() == nullptr) {
+    return false;
+  }
+  return main_container_view_->active_page()->MovePseudoFocusUp();
+}
+
+bool PickerView::MovePseudoFocusDown() {
+  if (main_container_view_->active_page() == nullptr) {
+    return false;
+  }
+  return main_container_view_->active_page()->MovePseudoFocusDown();
+}
+
+bool PickerView::MovePseudoFocusLeft() {
+  if (main_container_view_->active_page() == nullptr) {
+    return false;
+  }
+  return main_container_view_->active_page()->MovePseudoFocusLeft();
+}
+
+bool PickerView::MovePseudoFocusRight() {
+  if (main_container_view_->active_page() == nullptr) {
+    return false;
+  }
+  return main_container_view_->active_page()->MovePseudoFocusRight();
+}
+
+void PickerView::AdvancePseudoFocus(PseudoFocusDirection direction) {
+  if (main_container_view_->active_page() == nullptr) {
+    return;
+  }
+  main_container_view_->active_page()->AdvancePseudoFocus(direction);
 }
 
 gfx::Rect PickerView::GetTargetBounds(const gfx::Rect& anchor_bounds,
@@ -390,7 +450,6 @@ void PickerView::AddMainContainerView(PickerLayoutType layout_type) {
 
 void PickerView::SetActivePage(PickerPageView* page_view) {
   main_container_view_->SetActivePage(page_view);
-  key_event_handler_.SetActivePseudoFocusHandler(page_view);
 }
 
 BEGIN_METADATA(PickerView)

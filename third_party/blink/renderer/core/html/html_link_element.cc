@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -97,6 +96,9 @@ void HTMLLinkElement::ParseAttribute(
     }
     if (rel_attribute_.IsTermsOfService()) {
       UseCounter::Count(&GetDocument(), WebFeature::kLinkRelTermsOfService);
+    }
+    if (rel_attribute_.IsPayment() && GetDocument().IsInOutermostMainFrame()) {
+      UseCounter::Count(&GetDocument(), WebFeature::kLinkRelPayment);
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -26,6 +27,8 @@ class ExtensionPrinterServiceAsh : public mojom::ExtensionPrinterService {
       base::RepeatingCallback<void(base::Value::List printers)>;
   using GetPrintersDoneCallback = base::OnceClosure;
   using GetCapabilityCallback = base::OnceCallback<void(::base::Value::Dict)>;
+  using StartPrintCallback = base::OnceCallback<void(mojom::StartPrintStatus)>;
+  using GetPrinterInfoCallback = base::OnceCallback<void(::base::Value::Dict)>;
 
   ExtensionPrinterServiceAsh();
   ExtensionPrinterServiceAsh(const ExtensionPrinterServiceAsh&) = delete;
@@ -52,6 +55,12 @@ class ExtensionPrinterServiceAsh : public mojom::ExtensionPrinterService {
   void Reset();
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback);
+  void StartPrint(const std::u16string& job_title,
+                  base::Value::Dict settings,
+                  scoped_refptr<base::RefCountedMemory> print_data,
+                  StartPrintCallback callback);
+  void StartGrantPrinterAccess(const std::string& printer_id,
+                               GetPrinterInfoCallback callback);
 
   // Returns true if a pending get printer request is found.
   bool HasAnyPendingGetPrintersRequests() const;

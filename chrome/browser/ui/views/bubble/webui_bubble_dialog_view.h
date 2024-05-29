@@ -15,6 +15,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(USE_AURA)
+class WebUIBubbleEventHandlerAura;
+#endif
+
 namespace views {
 class WebView;
 }  // namespace views
@@ -39,7 +43,8 @@ class WebUIBubbleDialogView : public views::WidgetObserver,
       // the contents wrapper is destroyed before `this`.
       base::WeakPtr<WebUIContentsWrapper> contents_wrapper,
       const std::optional<gfx::Rect>& anchor_rect = std::nullopt,
-      views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT);
+      views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT,
+      bool autosize = true);
   WebUIBubbleDialogView(const WebUIBubbleDialogView&) = delete;
   WebUIBubbleDialogView& operator=(const WebUIBubbleDialogView&) = delete;
   ~WebUIBubbleDialogView() override;
@@ -109,6 +114,12 @@ class WebUIBubbleDialogView : public views::WidgetObserver,
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       bubble_widget_observation_{this};
+
+#if defined(USE_AURA)
+  // Pre target event handler used to enable draggable bubbles for non platform
+  // window backed widgets.
+  std::unique_ptr<WebUIBubbleEventHandlerAura> event_handler_;
+#endif
 
   base::WeakPtrFactory<WebUIBubbleDialogView> weak_factory_{this};
 };

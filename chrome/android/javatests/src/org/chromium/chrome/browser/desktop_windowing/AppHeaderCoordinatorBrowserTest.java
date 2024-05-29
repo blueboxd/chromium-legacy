@@ -38,6 +38,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
@@ -236,6 +237,7 @@ public class AppHeaderCoordinatorBrowserTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.ANDROID_HUB)
+    @DisabledTest(message = "Flaky, crbug.com/339854841")
     public void testEnterTabSwitcherInDesktopWindow_HubLayout() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
 
@@ -278,6 +280,7 @@ public class AppHeaderCoordinatorBrowserTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.ANDROID_HUB)
+    @DisabledTest(message = "Flaky, crbug.com/339854841")
     public void testEnterDesktopWindowWithTabSwitcherActive_HubLayout() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
 
@@ -327,6 +330,7 @@ public class AppHeaderCoordinatorBrowserTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky, crbug.com/340589545")
     public void testRecreateActivitiesInDesktopWindow() {
         // Assume that the current activity enters desktop windowing mode.
         ChromeTabbedActivity firstActivity = mActivityTestRule.getActivity();

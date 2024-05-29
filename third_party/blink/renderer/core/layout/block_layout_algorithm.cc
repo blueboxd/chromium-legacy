@@ -625,6 +625,8 @@ NOINLINE const LayoutResult* BlockLayoutAlgorithm::RelayoutForTextBoxTrimEnd() {
     BlockLayoutAlgorithm relayout_algorithm{params};
     relayout_algorithm.override_text_box_trim_end_child_ =
         last_non_empty_inflow_child_;
+    relayout_algorithm.override_text_box_trim_end_break_token_ =
+        last_non_empty_break_token_;
     BoxFragmentBuilder& new_builder = relayout_algorithm.container_builder_;
     new_builder.SetBoxType(container_builder_.GetBoxType());
     return relayout_algorithm.Layout();
@@ -974,7 +976,7 @@ inline const LayoutResult* BlockLayoutAlgorithm::Layout(
   }
 
   if (UNLIKELY(constraint_space.ShouldTextBoxTrimEnd() &&
-               !container_builder_.IsTextBoxTrimApplied())) {
+               !container_builder_.IsBlockEndTrimmed())) {
     // The `text-box-trim: end` should apply to the last inflow child. If that
     // turned out to be empty, it should be applied to the previous child
     // instead.
@@ -2063,7 +2065,7 @@ LayoutResult::EStatus BlockLayoutAlgorithm::FinishInflow(
                (child_space.ShouldTextBoxTrimEnd() &&
                 layout_result->Status() == LayoutResult::kSuccess &&
                 !layout_result->GetPhysicalFragment().GetBreakToken() &&
-                !layout_result->IsTextBoxTrimApplied()))) {
+                !layout_result->IsBlockEndTrimmed()))) {
     // If the child algorithm couldn't apply `text-box-trim: end` to the last
     // fragment, block or line, try to apply to the previous child.
     return LayoutResult::kTextBoxTrimEndDidNotApply;
@@ -2413,20 +2415,22 @@ LayoutResult::EStatus BlockLayoutAlgorithm::FinishInflow(
   }
 
   if (UNLIKELY(should_text_box_trim_start_ || should_text_box_trim_end_)) {
-    if (layout_result->IsTextBoxTrimApplied()) {
+    if (layout_result->IsBlockStartTrimmed()) {
       // Update `should_text_box_trim_{start,end}_` if the child `layout_result`
       // has applied `text-box-trim`.
       should_text_box_trim_start_ = false;
-      if (should_text_box_trim_end_ && child_space.ShouldTextBoxTrimEnd() &&
-          (child.IsInline() || child == override_text_box_trim_end_child_)) {
-        should_text_box_trim_end_ = false;
-      }
-      container_builder_.SetIsTextBoxTrimApplied();
+      container_builder_.SetIsBlockStartTrimmed();
     }
-    if (should_text_box_trim_end_ && child.IsBlock() &&
-        !layout_result->IsSelfCollapsing()) {
+    if (layout_result->IsBlockEndTrimmed() && should_text_box_trim_end_ &&
+        child_space.ShouldTextBoxTrimEnd() &&
+        (child.IsInline() || child == override_text_box_trim_end_child_)) {
+      should_text_box_trim_end_ = false;
+      container_builder_.SetIsBlockEndTrimmed();
+    }
+    if (should_text_box_trim_end_ && !layout_result->IsSelfCollapsing()) {
       // Keep the last non-empty child for `RelayoutForTextBoxTrimEnd`.
       last_non_empty_inflow_child_ = child;
+      last_non_empty_break_token_ = child_break_token;
     }
   }
 
@@ -2509,8 +2513,10 @@ PreviousInflowPosition BlockLayoutAlgorithm::ComputeInflowPosition(
     bool self_collapsing_child_had_clearance) {
   // Determine the child's end logical offset, for the next child to use.
   LayoutUnit logical_block_offset;
+  std::optional<LayoutUnit> clearance_after_line;
+  std::optional<LayoutUnit> trim_block_end_by;
 
-  bool is_self_collapsing = layout_result.IsSelfCollapsing();
+  const bool is_self_collapsing = layout_result.IsSelfCollapsing();
   if (is_self_collapsing) {
     // The default behavior for self-collapsing children is they just pass
     // through the previous inflow position.
@@ -2568,31 +2574,35 @@ PreviousInflowPosition BlockLayoutAlgorithm::ComputeInflowPosition(
     }
     if (!container_builder_.BfcBlockOffset())
       DCHECK_EQ(logical_block_offset, LayoutUnit());
-  } else if (layout_result.IsBlockEndTrimmed()) {
-    // Trim the space to respect the `text-box-trim` property here.
-    const PhysicalFragment& inline_physical_fragment =
-        layout_result.GetPhysicalFragment();
-    CHECK(inline_physical_fragment.IsLineBox());
-    const auto& line_box =
-        To<PhysicalLineBoxFragment>(inline_physical_fragment);
-    LayoutUnit block_end_to_be_trimmed =
-        Style().IsFlippedLinesWritingMode()
-            ? line_box.Metrics().ascent - line_box.IntrinsicMetrics().ascent
-            : line_box.Metrics().descent - line_box.IntrinsicMetrics().descent;
-    logical_block_offset = logical_offset.block_offset + fragment.BlockSize() -
-                           block_end_to_be_trimmed;
   } else {
-    // We add the greater of AnnotationOverflow and ClearanceAfterLine here.
-    // Then, we cancel the AnnotationOverflow part if
-    //  - The next line box has block-start annotation space, or
-    //  - There are no following child boxes and this container has block-end
-    //    padding.
-    //
-    // See InlineLayoutAlgorithm::CreateLine() and
-    // BlockLayoutAlgorithm::Layout().
-    logical_block_offset = logical_offset.block_offset + fragment.BlockSize() +
-                           std::max(layout_result.AnnotationOverflow(),
-                                    layout_result.ClearanceAfterLine());
+    logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
+
+    clearance_after_line = layout_result.ClearanceAfterLine();
+    trim_block_end_by = layout_result.TrimBlockEndBy();
+    if (trim_block_end_by) {
+      // Trim the space to respect the `text-box-trim` property here. Objects
+      // that pushes following boxes down (e.g., Ruby annotations) are also
+      // trimmed.
+      if (clearance_after_line) {
+        // `<br>` with clearance is an exception. It still pushes down, after
+        // all other objects are trimmed. See `AddAnyClearanceAfterLine()`.
+        logical_block_offset += *clearance_after_line;
+      } else {
+        logical_block_offset -= *trim_block_end_by;
+      }
+    } else {
+      // We add the greater of AnnotationOverflow and ClearanceAfterLine here.
+      // Then, we cancel the AnnotationOverflow part if
+      //  - The next line box has block-start annotation space, or
+      //  - There are no following child boxes and this container has block-end
+      //    padding.
+      //
+      // See InlineLayoutAlgorithm::CreateLine() and
+      // BlockLayoutAlgorithm::Layout().
+      logical_block_offset +=
+          std::max(layout_result.AnnotationOverflow(),
+                   clearance_after_line.value_or(LayoutUnit()));
+    }
   }
 
   MarginStrut margin_strut = layout_result.EndMarginStrut();
@@ -2642,14 +2652,17 @@ PreviousInflowPosition BlockLayoutAlgorithm::ComputeInflowPosition(
       (previous_inflow_position.self_collapsing_child_had_clearance &&
        is_self_collapsing);
 
-  LayoutUnit annotation_space = layout_result.BlockEndAnnotationSpace();
-  if (layout_result.AnnotationOverflow() > LayoutUnit()) {
-    DCHECK(!annotation_space);
-    // Allow the portion of the annotation overflow that isn't also part of
-    // clearance to overlap with certain types of subsequent content.
-    annotation_space =
-        -std::max(LayoutUnit(), layout_result.AnnotationOverflow() -
-                                    layout_result.ClearanceAfterLine());
+  LayoutUnit annotation_space;
+  if (!is_self_collapsing && !trim_block_end_by) {
+    annotation_space = layout_result.BlockEndAnnotationSpace();
+    if (layout_result.AnnotationOverflow() > LayoutUnit()) {
+      DCHECK(!annotation_space);
+      // Allow the portion of the annotation overflow that isn't also part of
+      // clearance to overlap with certain types of subsequent content.
+      annotation_space = -std::max(
+          LayoutUnit(), layout_result.AnnotationOverflow() -
+                            clearance_after_line.value_or(LayoutUnit()));
+    }
   }
 
   return {logical_block_offset, margin_strut, annotation_space,
@@ -3114,10 +3127,27 @@ ConstraintSpace BlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     if (UNLIKELY(should_text_box_trim_start_)) {
       builder.SetShouldTextBoxTrimStart();
     }
-    if (UNLIKELY(should_text_box_trim_end_) &&
-        (child.IsInline() || IsLastInflowChild(*child.GetLayoutBox()) ||
-         child == override_text_box_trim_end_child_)) {
-      builder.SetShouldTextBoxTrimEnd();
+    if (UNLIKELY(should_text_box_trim_end_)) {
+      if (child.IsInline()) {
+        // For an inline child, always set the flag. The `InlineLayoutAlgorithm`
+        // can determine if it's the last line or not rather quickly. It can
+        // still fail for empty lines, which is handled by
+        // `RelayoutForTextBoxTrimEnd()`.
+        builder.SetShouldTextBoxTrimEnd();
+        if (child == override_text_box_trim_end_child_ &&
+            InlineBreakToken::IsStartEqual(
+                To<InlineBreakToken>(override_text_box_trim_end_break_token_),
+                To<InlineBreakToken>(child_break_token))) {
+          builder.SetShouldForceTextBoxTrimEnd();
+        }
+      } else if (IsLastInflowChild(*child.GetLayoutBox()) ||
+                 child == override_text_box_trim_end_child_) {
+        // For a block child, set the flag only for the last inflow child,
+        // because `IsLastInflowChild` can determine the last inflow child
+        // rather quickly. It can still fail for empty children, which is
+        // handled by `RelayoutForTextBoxTrimEnd()`.
+        builder.SetShouldTextBoxTrimEnd();
+      }
     }
   }
 

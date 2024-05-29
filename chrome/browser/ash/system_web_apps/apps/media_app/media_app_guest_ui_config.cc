@@ -99,6 +99,8 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
   source->AddBoolean("photosAvailableForVideo", photos_integration_supported);
   source->AddBoolean("pdfA11yOcr", base::FeatureList::IsEnabled(
                                        ash::features::kMediaAppPdfA11yOcr));
+  source->AddBoolean(
+      "pdfMahi", base::FeatureList::IsEnabled(ash::features::kMediaAppPdfMahi));
   source->AddBoolean("flagsMenu", channel != version_info::Channel::BETA &&
                                       channel != version_info::Channel::STABLE);
   source->AddBoolean("isDevChannel", channel == version_info::Channel::DEV);
@@ -107,22 +109,24 @@ void ChromeMediaAppGuestUIDelegate::PopulateLoadTimeData(
 std::unique_ptr<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
 ChromeMediaAppGuestUIDelegate::CreateAndBindOcrHandler(
     content::BrowserContext& context,
+    gfx::NativeWindow native_window,
     mojo::PendingReceiver<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
         receiver,
     mojo::PendingRemote<ash::media_app_ui::mojom::OcrUntrustedPage> page) {
   return ash::AXMediaAppHandlerFactory::GetInstance()
-      ->CreateAXMediaAppUntrustedHandler(context, std::move(receiver),
-                                         std::move(page));
+      ->CreateAXMediaAppUntrustedHandler(context, native_window,
+                                         std::move(receiver), std::move(page));
 }
 
 void ChromeMediaAppGuestUIDelegate::CreateAndBindMahiHandler(
     mojo::PendingReceiver<ash::media_app_ui::mojom::MahiUntrustedPageHandler>
         receiver,
     mojo::PendingRemote<ash::media_app_ui::mojom::MahiUntrustedPage> page,
-    const std::string& file_name) {
+    const std::string& file_name,
+    aura::Window* window) {
   ash::MahiMediaAppHandlerFactory::GetInstance()
       ->CreateMahiMediaAppUntrustedHandler(std::move(receiver), std::move(page),
-                                           file_name);
+                                           file_name, window);
 }
 
 MediaAppGuestUIConfig::MediaAppGuestUIConfig()

@@ -58,18 +58,6 @@ ServiceWorkerMetrics::EventType PurposeToEventType(
   return ServiceWorkerMetrics::EventType::UNKNOWN;
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// TODO(crbug.com/40918057): remove this metrics if we confirm that
-// kContainerNotReady prevents calling the CountFeature IPC.
-enum class CountFeatureDropOutReason {
-  kOk = 0,
-  kContainerNotReady = 1,
-  kExecutionNotReady = 2,
-  kNotBoundOrNotConnected = 3,
-  kMaxValue = kNotBoundOrNotConnected,
-};
-
 // Max number of messages that can be sent before |container_| gets ready.
 // I believe messages may not be sent in that situation for regular way, but
 // we technically do not prevent finding a client and send a message in that
@@ -236,21 +224,22 @@ ServiceWorkerContainerHostForServiceWorker::
 
 ServiceWorkerContainerHostForClient::ServiceWorkerContainerHostForClient(
     base::WeakPtr<ServiceWorkerClient> service_worker_client,
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote)
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr& container_info)
     : service_worker_client_(std::move(service_worker_client)),
-      container_(std::move(container_remote)) {
+      container_(
+          container_info->client_receiver.InitWithNewEndpointAndPassRemote()) {
   CHECK(service_worker_client_);
   DCHECK(container_.is_bound());
+  service_worker_client_->context()->BindHost(
+      *this, container_info->host_remote.InitWithNewEndpointAndPassReceiver());
 }
 
 void ServiceWorkerContainerHostForClient::Create(
     base::WeakPtr<ServiceWorkerClient> service_worker_client,
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote) {
+    blink::mojom::ServiceWorkerContainerInfoForClientPtr& container_info) {
   service_worker_client->set_container_host(
       std::make_unique<ServiceWorkerContainerHostForClient>(
-          service_worker_client, std::move(container_remote)));
+          service_worker_client, container_info));
 }
 
 void ServiceWorkerClient::set_container_host(
@@ -535,8 +524,8 @@ void ServiceWorkerContainerHostForClient::OnExecutionReady() {
 
 void ServiceWorkerClient::OnExecutionReady() {
   // Since `OnExecutionReady()` is a part of `ServiceWorkerContainerHost`,
-  // this method is called only if `is_container_ready_` is true.
-  CHECK(is_container_ready_);
+  // this method is called only if `is_container_ready()` is true.
+  CHECK(is_container_ready());
 
   if (is_execution_ready()) {
     mojo::ReportBadMessage("SWPH_OER_ALREADY_READY");
@@ -738,54 +727,45 @@ void ServiceWorkerClient::AddServiceWorkerToUpdate(
 }
 
 void ServiceWorkerClient::PostMessageToClient(
-    ServiceWorkerVersion* version,
+    ServiceWorkerVersion& version,
     blink::TransferableMessage message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      container_host().version_object_manager().GetOrCreateHost(version);
-  if (!is_container_ready_) {
+  if (!is_container_ready()) {
     if (buffered_messages_.size() < kMaxBufferedMessageSize) {
-      buffered_messages_.emplace_back(object_host, std::move(message));
+      buffered_messages_.emplace_back(base::WrapRefCounted(&version),
+                                      std::move(message));
     }
     return;
   }
 
-  container_host().PostMessageToClient(std::move(object_host),
-                                       std::move(message));
+  container_host().PostMessageToClient(version, std::move(message));
 }
 
 void ServiceWorkerContainerHostForClient::PostMessageToClient(
-    base::WeakPtr<ServiceWorkerObjectHost> object_host,
+    ServiceWorkerVersion& version,
     blink::TransferableMessage message) {
   blink::mojom::ServiceWorkerObjectInfoPtr info;
-  if (object_host)
+  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
+          version_object_manager().GetOrCreateHost(&version)) {
     info = object_host->CreateCompleteObjectInfoToSend();
+  }
   container_->PostMessageToClient(std::move(info), std::move(message));
 }
 
 void ServiceWorkerClient::CountFeature(blink::mojom::WebFeature feature) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SCOPED_CRASH_KEY_NUMBER("SWCH_CF", "feature", static_cast<int32_t>(feature));
-  SCOPED_CRASH_KEY_NUMBER("SWCH_CF", "client_type",
-                          static_cast<int32_t>(GetClientType()));
-
-  constexpr char kDropOutMetrics[] = "ServiceWorker.CountFeature.DropOut";
 
   // `container_` can be used only if ServiceWorkerContainerInfoForClient has
   // been passed to the renderer process. Otherwise, the method call will crash
   // inside the mojo library (See crbug.com/40918057).
-  if (!is_container_ready_) {
-    base::UmaHistogramEnumeration(
-        kDropOutMetrics, CountFeatureDropOutReason::kContainerNotReady);
+  if (!is_container_ready()) {
     buffered_used_features_.insert(feature);
     return;
   }
 
   // And only when loading finished so the controller is really settled.
   if (!is_execution_ready()) {
-    base::UmaHistogramEnumeration(
-        kDropOutMetrics, CountFeatureDropOutReason::kExecutionNotReady);
     buffered_used_features_.insert(feature);
     return;
   }
@@ -795,20 +775,8 @@ void ServiceWorkerClient::CountFeature(blink::mojom::WebFeature feature) {
 
 void ServiceWorkerContainerHostForClient::CountFeature(
     blink::mojom::WebFeature feature) {
-  constexpr char kDropOutMetrics[] = "ServiceWorker.CountFeature.DropOut";
-
-  // `container_` shouldn't be disconnected during the lifetime of `this` but
-  // there seems a situation where `container_` is disconnected or unbound.
-  // TODO(crbug.com/1136843, crbug.com/40918057): Figure out the cause and
-  // remove this check.
-  if (!container_.is_bound() || !container_.is_connected()) {
-    base::UmaHistogramEnumeration(
-        kDropOutMetrics, CountFeatureDropOutReason::kNotBoundOrNotConnected);
-    return;
-  }
-
-  base::UmaHistogramEnumeration(kDropOutMetrics,
-                                CountFeatureDropOutReason::kOk);
+  CHECK(container_.is_bound());
+  CHECK(container_.is_connected());
   container_->CountFeature(feature);
 }
 
@@ -864,13 +832,22 @@ ServiceWorkerClient::CreateControllerServiceWorkerInfo() {
   for (const auto feature : controller()->used_features()) {
     controller_info->used_features.push_back(feature);
   }
+
+  // Set the info for the JavaScript ServiceWorkerContainer#controller object.
+  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
+          container_host().version_object_manager().GetOrCreateHost(
+              controller())) {
+    controller_info->object_info =
+        object_host->CreateCompleteObjectInfoToSend();
+  }
+
   return controller_info;
 }
 
 void ServiceWorkerClient::SendSetControllerServiceWorker(
     bool notify_controllerchange) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(is_container_ready_);
+  CHECK(is_container_ready());
 
   if (!controller_ || !context_) {
     // Do not set |fetch_request_window_id| when |controller_| is not available.
@@ -898,19 +875,11 @@ void ServiceWorkerClient::SendSetControllerServiceWorker(
 
   auto controller_info = CreateControllerServiceWorkerInfo();
 
-  // Set the info for the JavaScript ServiceWorkerContainer#controller object.
-  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
-          container_host().version_object_manager().GetOrCreateHost(
-              controller())) {
-    controller_info->object_info =
-        object_host->CreateCompleteObjectInfoToSend();
-  }
-
   // TODO(crbug.com/331279951): Remove these crash keys after investigation.
   SCOPED_CRASH_KEY_NUMBER("SWCH_SC", "client_type",
                           static_cast<int32_t>(GetClientType()));
   SCOPED_CRASH_KEY_BOOL("SWCH_SC", "is_execution_ready", is_execution_ready());
-  SCOPED_CRASH_KEY_BOOL("SWCH_SC", "is_container_ready", is_container_ready_);
+  SCOPED_CRASH_KEY_BOOL("SWCH_SC", "is_container_ready", is_container_ready());
 
   container_host().SendSetController(std::move(controller_info),
                                      notify_controllerchange);
@@ -1118,6 +1087,7 @@ void ServiceWorkerClient::CommitResponse(
         coep_reporter,
     ukm::SourceId ukm_source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK_EQ(client_phase_, ClientPhase::kInitial);
 
   if (IsContainerForWindowClient()) {
     CHECK(coep_reporter);
@@ -1134,21 +1104,8 @@ void ServiceWorkerClient::CommitResponse(
   DCHECK(!policy_container_policies_.has_value());
   policy_container_policies_ = policy_container_policies.Clone();
 
-  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter_to_be_passed;
   if (coep_reporter) {
     coep_reporter_.Bind(std::move(coep_reporter));
-    coep_reporter_->Clone(
-        coep_reporter_to_be_passed.InitWithNewPipeAndPassReceiver());
-  }
-
-  if (controller_ && controller_->fetch_handler_existence() ==
-                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
-    DCHECK(pending_controller_receiver_);
-    controller_->controller()->Clone(
-        std::move(pending_controller_receiver_),
-        policy_container_policies_->cross_origin_embedder_policy,
-        std::move(coep_reporter_to_be_passed));
   }
 
   if (IsContainerForWindowClient()) {
@@ -1248,38 +1205,29 @@ ServiceWorkerClient::GetRemoteControllerServiceWorker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(controller_);
+  CHECK(is_response_committed());
   if (controller_->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return mojo::Remote<blink::mojom::ControllerServiceWorker>();
   }
 
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  if (!is_response_committed()) {
-    // The receiver will be connected to the controller in
-    // OnBeginNavigationCommit() or CompleteWebWorkerPreparation(). The pair of
-    // Mojo endpoints is created on each main resource response including
-    // redirect. The final Mojo endpoint which is corresponding to the OK
-    // response will be sent to the service worker.
-    pending_controller_receiver_ =
-        remote_controller.BindNewPipeAndPassReceiver();
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_to_be_passed;
+  if (coep_reporter_) {
+    DCHECK(IsContainerForWindowClient());
+    coep_reporter_->Clone(
+        coep_reporter_to_be_passed.InitWithNewPipeAndPassReceiver());
   } else {
-    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-        coep_reporter_to_be_passed;
-    if (coep_reporter_) {
-      DCHECK(IsContainerForWindowClient());
-      coep_reporter_->Clone(
-          coep_reporter_to_be_passed.InitWithNewPipeAndPassReceiver());
-    } else {
-      // TODO(crbug.com/41478971): Implement DedicatedWorker and
-      // SharedWorker cases.
-      DCHECK(IsContainerForWorkerClient());
-    }
-
-    controller_->controller()->Clone(
-        remote_controller.BindNewPipeAndPassReceiver(),
-        policy_container_policies_->cross_origin_embedder_policy,
-        std::move(coep_reporter_to_be_passed));
+    // TODO(crbug.com/41478971): Implement DedicatedWorker and
+    // SharedWorker cases.
+    DCHECK(IsContainerForWorkerClient());
   }
+
+  controller_->controller()->Clone(
+      remote_controller.BindNewPipeAndPassReceiver(),
+      policy_container_policies_->cross_origin_embedder_policy,
+      std::move(coep_reporter_to_be_passed));
   return remote_controller;
 }
 
@@ -1356,8 +1304,23 @@ bool ServiceWorkerClient::is_response_committed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (client_phase_) {
     case ClientPhase::kInitial:
+    case ClientPhase::kResponseNotCommitted:
       return false;
     case ClientPhase::kResponseCommitted:
+    case ClientPhase::kContainerReady:
+    case ClientPhase::kExecutionReady:
+      return true;
+  }
+}
+
+bool ServiceWorkerClient::is_container_ready() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kResponseNotCommitted:
+      return false;
+    case ClientPhase::kContainerReady:
     case ClientPhase::kExecutionReady:
       return true;
   }
@@ -1372,7 +1335,15 @@ void ServiceWorkerClient::AddExecutionReadyCallback(
 
 bool ServiceWorkerClient::is_execution_ready() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return client_phase_ == ClientPhase::kExecutionReady;
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kResponseNotCommitted:
+    case ClientPhase::kContainerReady:
+      return false;
+    case ClientPhase::kExecutionReady:
+      return true;
+  }
 }
 
 GlobalRenderFrameHostId ServiceWorkerClient::GetRenderFrameHostId() const {
@@ -1587,14 +1558,38 @@ void ServiceWorkerContainerHostForClient::ReturnRegistrationForReadyIfNeeded() {
 
 void ServiceWorkerClient::SetExecutionReady() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!is_execution_ready());
-  TransitionToClientPhase(ClientPhase::kExecutionReady);
-  RunExecutionReadyCallbacks();
 
-  if (context_)
-    context_->NotifyClientIsExecutionReady(*this);
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      // When `CommitResponse()` is not yet called, it should be skipped because
+      // the service worker client initialization failed somewhere, and thus
+      // ignore the `SetExecutionReady()` call here and transition to
+      // `kResponseNotCommitted` to confirm that no further transitions are
+      // attempted. See also the comment at `kResponseNotCommitted` in the
+      // header file.
+      TransitionToClientPhase(ClientPhase::kResponseNotCommitted);
+      break;
 
-  FlushFeatures();
+    case ClientPhase::kContainerReady:
+      // Successful case.
+      TransitionToClientPhase(ClientPhase::kExecutionReady);
+      RunExecutionReadyCallbacks();
+
+      if (context_) {
+        context_->NotifyClientIsExecutionReady(*this);
+      }
+
+      FlushFeatures();
+      break;
+
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kExecutionReady:
+    case ClientPhase::kResponseNotCommitted:
+      // Invalid state transition.
+      NOTREACHED_NORETURN()
+          << "ServiceWorkerClient::SetExecutionReady() called on ClientPhase "
+          << static_cast<int>(client_phase_);
+  }
 }
 
 void ServiceWorkerClient::RunExecutionReadyCallbacks() {
@@ -1612,14 +1607,19 @@ void ServiceWorkerClient::TransitionToClientPhase(ClientPhase new_phase) {
     return;
   switch (client_phase_) {
     case ClientPhase::kInitial:
-      DCHECK_EQ(new_phase, ClientPhase::kResponseCommitted);
+      CHECK(new_phase == ClientPhase::kResponseCommitted ||
+            new_phase == ClientPhase::kResponseNotCommitted);
       break;
     case ClientPhase::kResponseCommitted:
-      DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
+      CHECK_EQ(new_phase, ClientPhase::kContainerReady);
+      break;
+    case ClientPhase::kContainerReady:
+      CHECK_EQ(new_phase, ClientPhase::kExecutionReady);
       break;
     case ClientPhase::kExecutionReady:
-      NOTREACHED_IN_MIGRATION();
-      break;
+    case ClientPhase::kResponseNotCommitted:
+      NOTREACHED_NORETURN()
+          << "Invalid transition from " << static_cast<int>(client_phase_);
   }
   client_phase_ = new_phase;
 }
@@ -1668,7 +1668,7 @@ void ServiceWorkerClient::UpdateController(bool notify_controllerchange) {
   // sent in the same IPC call. Moreover, it is harmful to resend the past
   // SetController to the renderer because it moves the controller in the
   // renderer to the past one.
-  if (!is_container_ready_) {
+  if (!is_container_ready()) {
     return;
   }
 
@@ -2061,43 +2061,24 @@ ServiceWorkerClient::GetRunningStatusCallbackReceiver() {
 
 SubresourceLoaderParams ServiceWorkerClient::MaybeCreateSubresourceLoaderParams(
     base::WeakPtr<ServiceWorkerClient> service_worker_client) {
-  // We didn't find a matching service worker for this request, and
-  // ServiceWorkerContainerHost::SetControllerRegistration() was not called.
-  if (!service_worker_client || !service_worker_client->controller()) {
-    return {};
-  }
-
-  // Otherwise let's send the controller service worker information along
-  // with the navigation commit.
   SubresourceLoaderParams params;
-  params.controller_service_worker_info =
-      service_worker_client->CreateControllerServiceWorkerInfo();
-  if (base::WeakPtr<ServiceWorkerObjectHost> object_host =
-          service_worker_client->container_host()
-              .version_object_manager()
-              .GetOrCreateHost(service_worker_client->controller())) {
-    params.controller_service_worker_object_host = object_host;
-    params.controller_service_worker_info->object_info =
-        object_host->CreateIncompleteObjectInfo();
-  }
   params.service_worker_client = service_worker_client;
-
   return params;
 }
 
 void ServiceWorkerClient::SetContainerReady() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_container_ready_ = true;
-  std::vector<std::tuple<base::WeakPtr<ServiceWorkerObjectHost>,
+  TransitionToClientPhase(ClientPhase::kContainerReady);
+  std::vector<std::tuple<scoped_refptr<ServiceWorkerVersion>,
                          blink::TransferableMessage>>
       messages;
 
   messages.swap(buffered_messages_);
   base::UmaHistogramCounts1000("ServiceWorker.PostMessage.QueueSize",
                                messages.size());
-  for (auto& [object_host, message] : messages) {
-    container_host().PostMessageToClient(std::move(object_host),
-                                         std::move(message));
+  for (auto& [version, message] : messages) {
+    CHECK(version);
+    container_host().PostMessageToClient(*version, std::move(message));
   }
   CHECK(buffered_messages_.empty());
 

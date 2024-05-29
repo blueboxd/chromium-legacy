@@ -33,9 +33,10 @@ void FakeSafeBrowsingDatabaseManager::ClearDangerousUrl(
   dangerous_urls_.erase(dangerous_url);
 }
 
-bool FakeSafeBrowsingDatabaseManager::CanCheckRequestDestination(
-    network::mojom::RequestDestination request_destination) const {
-  return true;
+void FakeSafeBrowsingDatabaseManager::SetHighConfidenceAllowlistMatchResult(
+    const GURL& url,
+    bool match_allowlist) {
+  high_confidence_allowlist_match_urls_[url] = match_allowlist;
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(
@@ -94,6 +95,19 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
     const std::set<std::string>& extension_ids,
     Client* client) {
   return true;
+}
+
+void FakeSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+    const GURL& url,
+    const std::string& metric_variation,
+    base::OnceCallback<void(bool)> callback) {
+  const auto it = high_confidence_allowlist_match_urls_.find(url);
+  if (it == high_confidence_allowlist_match_urls_.end()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  bool matched_allowlist = it->second;
+  std::move(callback).Run(matched_allowlist);
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(

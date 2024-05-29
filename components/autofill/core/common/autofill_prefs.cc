@@ -60,6 +60,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Non-synced prefs. Used for per-device choices, e.g., signin promo.
   registry->RegisterBooleanPref(prefs::kAutofillCreditCardFidoAuthEnabled,
                                 false);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillRanQuasiDuplicateExtraDeduplication, false);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
@@ -105,9 +107,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutofillUsingVirtualViewStructure,
                                 false);
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(
+      prefs::kAutofillThirdPartyPasswordManagersAllowed, true);
   registry->RegisterBooleanPref(
       prefs::kFacilitatedPaymentsPix, /*default_value=*/true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -297,6 +298,23 @@ bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
 
 void ClearSyncTransportOptIns(PrefService* prefs) {
   prefs->SetDict(prefs::kAutofillSyncTransportOptIn, base::Value::Dict());
+}
+
+// UsesVirtualViewStructureForAutofill is defined in
+// //chrome/browser/ui/autofill/autofill_client_provider.cc
+
+void SetFacilitatedPaymentsPix(PrefService* prefs, bool value) {
+#if BUILDFLAG(IS_ANDROID)
+  prefs->SetBoolean(kFacilitatedPaymentsPix, value);
+#endif  // BUILDFLAG(IS_ANDROID)
+}
+
+bool IsFacilitatedPaymentsPixEnabled(const PrefService* prefs) {
+#if BUILDFLAG(IS_ANDROID)
+  return prefs->GetBoolean(kFacilitatedPaymentsPix);
+#else
+  return false;
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace prefs

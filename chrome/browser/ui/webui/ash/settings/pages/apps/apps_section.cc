@@ -221,6 +221,17 @@ const std::vector<SearchConcept>& GetManageIsolatedWebAppsSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetParentalControlsSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_APPS_PARENTAL_CONTROLS,
+        mojom::kAppParentalControlsSubpagePath,
+        mojom::SearchResultIcon::kAppsParentalControls,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kAppParentalControls}}});
+  return *tags;
+}
+
 const std::vector<SearchConcept>& GetTurnOnIsolatedWebAppsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
       {{IDS_OS_SETTINGS_TAG_TURN_ON_ISOLATED_WEB_APPS,
@@ -409,25 +420,42 @@ void AddBorealisStrings(content::WebUIDataSource* html_source) {
 void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appParentalControlsAccessDialogTitle",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE},
       {"appParentalControlsChoosePinSubtitle",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE},
       {"appParentalControlsChoosePinTitle",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_TITLE},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_TITLE},
       {"appParentalControlsConfirmPinTitle",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE},
       {"appParentalControlsForgotPinLinkName",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME},
+      {"appParentalControlsNoAppsText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_NO_APPS_FOUND_TEXT},
       {"appParentalControlsPinMismatchErrorText",
-       IDS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT},
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT},
+      {"appParentalControlsSearchPrompt",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SEARCH_PROMPT},
       {"appParentalControlsTitle", IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL},
-      {"appParentalControlsSubtitle",
-       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL},
+      {"appParentalControlsPinWrongLengthErrorText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_WRONG_LENGTH_ERROR_TEXT},
+      {"appParentalControlsPinNumericErrorText",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_NUMERIC_ERROR_TEXT},
+      {"appParentalControlsTitle", IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL},
       {"appParentalControlsSetUpButton",
        IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SET_UP_BUTTON},
+      {"appParentalControlsTitle", IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddString("appParentalControlsLearnMoreUrl",
+                         chrome::kAppParentalControlsLearnMoreUrl);
+
+  html_source->AddString(
+      "appParentalControlsSubtitle",
+      l10n_util::GetStringFUTF16(IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL,
+                                 ui::GetChromeOSDeviceName(),
+                                 chrome::kAppParentalControlsLearnMoreUrl));
 }
 
 bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
@@ -484,6 +512,11 @@ AppsSection::AppsSection(Profile* profile,
   if (web_app::IsIwaUnmanagedInstallEnabled(profile)) {
     updater.AddSearchTags(GetManageIsolatedWebAppsSearchConcepts());
     updater.AddSearchTags(GetTurnOnIsolatedWebAppsSearchConcepts());
+  }
+
+  if (on_device_controls::AppControlsServiceFactory::
+          IsOnDeviceAppControlsAvailable(profile)) {
+    updater.AddSearchTags(GetParentalControlsSearchConcepts());
   }
 }
 
@@ -561,6 +594,10 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_CAMERA_CONNECTED_TEXT_WITH_DETAILS},
       {"permissionAllowedButNoMicrophoneConnectedTextWithDetails",
        IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_NO_MICROPHONE_CONNECTED_TEXT_WITH_DETAILS},
+      {"permissionAllowedButMicrophoneHwSwitchActiveText",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_MICROPHONE_HW_SWITCH_ACTIVE_TEXT},
+      {"permissionAllowedButMicrophoneHwSwitchActiveTextWithDetails",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_BUT_MICROPHONE_HW_SWITCH_ACTIVE_TEXT_WITH_DETAILS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -747,7 +784,8 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // On-device parental controls for apps
   generator->RegisterTopLevelSubpage(
       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL,
-      mojom::Subpage::kAppParentalControls, mojom::SearchResultIcon::kAppsGrid,
+      mojom::Subpage::kAppParentalControls,
+      mojom::SearchResultIcon::kAppsParentalControls,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kAppParentalControlsSubpagePath);
 

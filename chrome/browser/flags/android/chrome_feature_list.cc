@@ -166,6 +166,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAndroidTabDeclutterRescueKillswitch,
     &kAndroidToolbarScrollAblation,
     &kAnimatedImageDragShadow,
+    &kAppInfoTabResumptionModule,
     &kAppSpecificHistory,
     &kArchiveTabService,
     &kAsyncNotificationManager,
@@ -180,7 +181,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBrowserControlsEarlyResize,
     &kCacheActivityTaskID,
     &kCastDeviceFilter,
-    &kClearOmniboxFocusAfterNavigation,
     &kCCTBeforeUnload,
     &kCCTClientDataHeader,
     &kCCTExtendTrustedCdnPublisher,
@@ -321,6 +321,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &permissions::features::kPermissionsPromptSurvey,
     &permissions::features::kPermissionDedicatedCpssSettingAndroid,
     &plus_addresses::features::kPlusAddressesEnabled,
+    &plus_addresses::features::kPlusAddressUIRedesign,
     &privacy_sandbox::kFingerprintingProtectionSetting,
     &privacy_sandbox::kIpProtectionV1,
     &privacy_sandbox::kIpProtectionUx,
@@ -357,6 +358,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kSearchEnginePromoDialogRewrite,
     &switches::kSeedAccountsRevamp,
     &syncer::kEnablePasswordsAccountStorageForNonSyncingUsers,
+    &syncer::kReadingListEnableSyncTransportModeUponSignIn,
     &syncer::kReplaceSyncPromosWithSignInPromos,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncEnableContactInfoDataTypeInTransportMode,
@@ -455,6 +457,10 @@ BASE_FEATURE(kAnimatedImageDragShadow,
              "AnimatedImageDragShadow",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAppInfoTabResumptionModule,
+             "AppInfoTabResumptionModule",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAppSpecificHistory,
              "AppSpecificHistory",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -492,10 +498,6 @@ BASE_FEATURE(kCastDeviceFilter,
              "CastDeviceFilter",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClearOmniboxFocusAfterNavigation,
-             "ClearOmniboxFocusAfterNavigation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCCTBeforeUnload,
              "CCTBeforeUnload",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -524,7 +526,7 @@ BASE_FEATURE(kCCTIntentFeatureOverrides,
              "CCTIntentFeatureOverrides",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTMinimized, "CCTMinimized", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCCTMinimized, "CCTMinimized", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTMinimizedEnabledByDefault,
              "CCTMinimizedEnabledByDefault",
@@ -940,7 +942,7 @@ BASE_FEATURE(kTestDefaultEnabled,
 // choice promo. See crbug.com/1471643 for more details.
 BASE_FEATURE(kSearchEnginesPromoV3,
              "SearchEnginesPromoV3",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSearchInCCT, "SearchInCCT", base::FEATURE_DISABLED_BY_DEFAULT);
 

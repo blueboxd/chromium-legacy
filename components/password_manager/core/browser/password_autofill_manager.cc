@@ -23,6 +23,7 @@
 #include "components/affiliations/core/browser/affiliation_utils.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -345,8 +346,9 @@ autofill::FillingProduct PasswordAutofillManager::GetMainFillingProduct()
 
 void PasswordAutofillManager::OnAddPasswordFillData(
     const autofill::PasswordFormFillData& fill_data) {
-  if (!autofill::IsValidPasswordFormFillData(fill_data))
+  if (!autofill::IsValidPasswordFormFillData(fill_data)) {
     return;
+  }
 
   // If the `fill_data_` changes, then it's likely that the filling context
   // changed as well, so the biometric auth is now out of scope.
@@ -372,9 +374,8 @@ void PasswordAutofillManager::OnAddPasswordFillData(
     LogAccountStoredPasswordsCountInFillDataAfterUnlock(fill_data);
   }
   UpdatePopup(suggestion_generator_.GetSuggestionsForDomain(
-      fill_data, page_favicon_, std::u16string(),
-      OffersGeneration(false), ShowPasswordSuggestions(true),
-      ShowWebAuthnCredentials(false)));
+      fill_data, page_favicon_, std::u16string(), OffersGeneration(false),
+      ShowPasswordSuggestions(true), ShowWebAuthnCredentials(false)));
 }
 
 void PasswordAutofillManager::OnNoCredentialsFound() {
@@ -507,8 +508,9 @@ bool PasswordAutofillManager::ShowPopup(
     const gfx::RectF& bounds,
     base::i18n::TextDirection text_direction,
     const std::vector<Suggestion>& suggestions) {
-  if (!password_manager_driver_->CanShowAutofillUi())
+  if (!password_manager_driver_->CanShowAutofillUi()) {
     return false;
+  }
   if (!ContainsOtherThanManagePasswords(suggestions)) {
     autofill_client_->HideAutofillSuggestions(
         autofill::SuggestionHidingReason::kNoSuggestions);
@@ -519,15 +521,16 @@ bool PasswordAutofillManager::ShowPopup(
   last_popup_open_args_ = autofill::AutofillClient::PopupOpenArgs(
       bounds, text_direction, suggestions,
       autofill::AutofillSuggestionTriggerSource::kPasswordManager,
-      /*form_control_ax_id=*/0);
+      /*form_control_ax_id=*/0, autofill::PopupAnchorType::kField);
   autofill_client_->ShowAutofillSuggestions(last_popup_open_args_,
                                             weak_ptr_factory_.GetWeakPtr());
   return true;
 }
 
 void PasswordAutofillManager::UpdatePopup(std::vector<Suggestion> suggestions) {
-  if (!password_manager_driver_->CanShowAutofillUi())
+  if (!password_manager_driver_->CanShowAutofillUi()) {
     return;
+  }
   if (!ContainsOtherThanManagePasswords(suggestions)) {
     autofill_client_->HideAutofillSuggestions(
         autofill::SuggestionHidingReason::kNoSuggestions);
@@ -616,8 +619,9 @@ bool PasswordAutofillManager::GetPasswordAndMetadataForUsername(
 }
 
 void PasswordAutofillManager::RequestFavicon(const GURL& url) {
-  if (!password_client_)
+  if (!password_client_) {
     return;
+  }
   favicon::GetFaviconImageForPageURL(
       password_client_->GetFaviconService(), url,
       favicon_base::IconType::kFavicon,
@@ -628,8 +632,9 @@ void PasswordAutofillManager::RequestFavicon(const GURL& url) {
 
 void PasswordAutofillManager::OnFaviconReady(
     const favicon_base::FaviconImageResult& result) {
-  if (!result.image.IsEmpty())
+  if (!result.image.IsEmpty()) {
     page_favicon_ = result.image;
+  }
 }
 
 void PasswordAutofillManager::OnUnlockReauthCompleted(
@@ -660,15 +665,17 @@ void PasswordAutofillManager::OnBiometricReauthCompleted(
   authenticator_.reset();
   base::UmaHistogramBoolean(
       "PasswordManager.PasswordFilling.AuthenticationResult", auth_succeeded);
-  if (!auth_succeeded)
+  if (!auth_succeeded) {
     return;
+  }
   bool success = FillSuggestion(GetUsernameFromSuggestion(value), type);
   DCHECK(success);
 }
 
 void PasswordAutofillManager::CancelBiometricReauthIfOngoing() {
-  if (!authenticator_)
+  if (!authenticator_) {
     return;
+  }
   authenticator_->Cancel();
   authenticator_.reset();
 }

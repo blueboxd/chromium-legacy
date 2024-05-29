@@ -111,16 +111,6 @@ enum class Microsoft365Availability {
   kMaxValue = kODFS,
 };
 
-// Opens the file specified by |url| in a new tab. |url| must be a
-// docs.google.com URL for an office file.
-void OpenDriveUrl(const GURL& url) {
-  DCHECK(url.host() == "docs.google.com");
-  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-      net::AppendOrReplaceQueryParameter(url, "cros_files", "true"),
-      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
-}
-
 // Handle system error notification "Sign in" click.
 void HandleSignInClick(Profile* profile, std::optional<int> button_index) {
   // If the "Sign in" button was pressed, rather than a click to somewhere
@@ -137,18 +127,24 @@ void HandleSignInClick(Profile* profile, std::optional<int> button_index) {
 }
 
 // TODO(b/288038136): Use a notification manager to handle error notifications.
-// Show system error notification to communicate that their file can't be
-// opened. If the user needs to reauthenticate to OneDrive, prompt the user to
+// TODO(b/242685536) Use "files" in the title for multi-files when support for
+// multi-files is added.
+// Show system notification to communicate that their file can't be opened. If
+// the user needs to reauthenticate to OneDrive, prompt the user to
 // reauthenticate to ODFS via a "Sign in" button.
-void ShowUnableToOpenNotification(Profile* profile,
-                                  bool reauthentication_required = false) {
-  std::string message = GetGenericErrorMessage();
+void ShowUnableToOpenNotification(
+    Profile* profile,
+    std::string message = GetGenericErrorMessage(),
+    std::string title =
+        l10n_util::GetPluralStringFUTF8(IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE,
+                                        1),
+    message_center::SystemNotificationWarningLevel warning_level =
+        message_center::SystemNotificationWarningLevel::WARNING) {
   std::vector<message_center::ButtonInfo> notification_buttons;
 
-  // Special case of |FILE_ERROR_ACCESS_DENIED| where the user needs to
-  // reauthenticate to OneDrive.
-  if (reauthentication_required) {
-    message = GetReauthenticationRequiredMessage();
+  if (message == GetReauthenticationRequiredMessage()) {
+    // Special case of |FILE_ERROR_ACCESS_DENIED| where the user needs to
+    // reauthenticate to OneDrive.
     //  Add "Sign in" button.
     notification_buttons.emplace_back(
         l10n_util::GetStringUTF16(IDS_OFFICE_NOTIFICATION_SIGN_IN_BUTTON));
@@ -157,11 +153,7 @@ void ShowUnableToOpenNotification(Profile* profile,
   auto notification = ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
       /*id=*/kNotificationId,
-      // TODO(b/242685536) Use "files" for multi-files when support for
-      // multi-files is added.
-      /*title=*/
-      l10n_util::GetPluralStringFUTF16(IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE,
-                                       1),
+      /*title*/ base::UTF8ToUTF16(title),
       /*message=*/base::UTF8ToUTF16(message),
       /*display_source=*/
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME_FILES),
@@ -171,12 +163,13 @@ void ShowUnableToOpenNotification(Profile* profile,
       /*delegate=*/
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&HandleSignInClick, profile)),
-      /*small_image=*/ash::kFolderIcon,
-      /*warning_level=*/
-      message_center::SystemNotificationWarningLevel::WARNING);
+      /*small_image=*/ash::kFolderIcon, warning_level);
 
   notification->set_buttons(notification_buttons);
+  // Set never_timeout with the highest priority, SYSTEM_PRIORITY, so that the
+  // notification never times out.
   notification->set_never_timeout(true);
+  notification->SetSystemPriority();
   NotificationDisplayService* notification_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
   notification_service->Display(NotificationHandler::Type::TRANSIENT,
@@ -198,11 +191,14 @@ void OnGetReauthenticationRequired(
     LOG(ERROR) << "Failed to get reauthentication required state: "
                << metadata.error();
   }
-  ShowUnableToOpenNotification(profile, reauthentication_required);
-  std::move(callback).Run(
-      reauthentication_required
-          ? OfficeOneDriveOpenErrors::kGetActionsReauthRequired
-          : OfficeOneDriveOpenErrors::kGetActionsAccessDenied);
+  if (reauthentication_required) {
+    ShowUnableToOpenNotification(profile, GetReauthenticationRequiredMessage());
+    std::move(callback).Run(
+        OfficeOneDriveOpenErrors::kGetActionsReauthRequired);
+    return;
+  }
+  ShowUnableToOpenNotification(profile);
+  std::move(callback).Run(OfficeOneDriveOpenErrors::kGetActionsAccessDenied);
 }
 
 // Open file with |file_path| from ODFS |file_system|. Open in the OneDrive PWA
@@ -400,6 +396,16 @@ void OnWaitingForAndroidUnsupportedPathFallbackChoiceReceived(
   }
 }
 
+bool BringDialogToFrontIfItExists(const std::string& id) {
+  SystemWebDialogDelegate* existing_dialog =
+      SystemWebDialogDelegate::FindInstance(id);
+  if (!existing_dialog) {
+    return false;
+  }
+  existing_dialog->StackAtTop();
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -411,6 +417,26 @@ bool CloudOpenTask::Execute(
     const fm_tasks::TaskDescriptor& task,
     const CloudProvider cloud_provider,
     std::unique_ptr<CloudOpenMetrics> cloud_open_metrics) {
+  DCHECK(!file_urls.empty());
+  auto* event_router = file_manager::EventRouterFactory::GetForProfile(profile);
+  // TODO(b/242685536) add support for multiple files.
+  if (event_router) {
+    if (!event_router->AddCloudOpenTask(file_urls.front())) {
+      LOG(ERROR) << "File already being opened";
+      // Nothing is wrong when the file is already being opened, so use a normal
+      // level notification
+      ShowUnableToOpenNotification(
+          profile, GetAlreadyBeingOpenedMessage(), GetAlreadyBeingOpenedTitle(),
+          /*warning_level=*/
+          message_center::SystemNotificationWarningLevel::NORMAL);
+      cloud_open_metrics->LogTaskResult(
+          OfficeTaskResult::kFileAlreadyBeingOpened);
+      return false;
+    }
+  } else {
+    LOG(ERROR) << "Cannot get EventRouter";
+  }
+
   scoped_refptr<CloudOpenTask> upload_task = WrapRefCounted(new CloudOpenTask(
       profile, file_urls, task, cloud_provider, std::move(cloud_open_metrics)));
   // Keep `upload_task` alive until `TaskFinished` executes.
@@ -448,25 +474,10 @@ CloudOpenTask::~CloudOpenTask() {
 // there are any issues, e.g. ODFS is not mounted. Otherwise, attempts to move
 // files to the correct cloud or open the files if they are already there.
 bool CloudOpenTask::ExecuteInternal() {
-  DCHECK(!file_urls_.empty());
   if (file_urls_.empty()) {
     LOG(ERROR) << "No files to open";
     cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kNoFilesToOpen);
     return false;
-  }
-
-  auto* event_router =
-      file_manager::EventRouterFactory::GetForProfile(profile_);
-  // TODO(b/242685536) add support for multiple files.
-  if (event_router) {
-    if (!event_router->AddCloudOpenTask(file_urls_.front())) {
-      LOG(ERROR) << "File already being opened";
-      cloud_open_metrics_->LogTaskResult(
-          OfficeTaskResult::kFileAlreadyBeingOpened);
-      return false;
-    }
-  } else {
-    LOG(ERROR) << "Cannot get EventRouter";
   }
 
   // Run the setup flow if we don't have explicit default file handlers set for
@@ -613,7 +624,10 @@ void CloudOpenTask::OnGoogleDriveGetMetadata(
     LOG(ERROR) << "URL was not from docs.google.com";
     open_result = OfficeDriveOpenErrors::kUnexpectedAlternateUrl;
   } else {
-    OpenDriveUrl(hosted_url);
+    // TODO(b/242685536) add support for multiple files.
+    ::file_manager::util::OpenHostedFileInNewTabOrApp(
+        profile_, file_urls_.front().path(), base::DoNothing(),
+        net::AppendOrReplaceQueryParameter(hosted_url, "cros_files", "true"));
   }
   LogGoogleDriveOpenResultUMA(OfficeTaskResult::kOpened, open_result);
 }
@@ -622,10 +636,13 @@ void CloudOpenTask::OnGoogleDriveGetMetadata(
 // DriveFS. Check the file was successfully uploaded to DriveFS.
 void CloudOpenTask::OpenUploadedDriveUrl(const GURL& url,
                                          const OfficeTaskResult task_result) {
+  // TODO(b/242685536) add support for multiple files.
+  ::file_manager::util::OpenHostedFileInNewTabOrApp(
+      profile_, file_urls_.front().path(), base::DoNothing(),
+      net::AppendOrReplaceQueryParameter(url, "cros_files", "true"));
   // TODO(b/296950967): This function logs both open result and task result (but
   // only if open fails) metrics internally, pull them up to a higher level so
   // all the metrics are logged in one place.
-  OpenDriveUrl(url);
   LogGoogleDriveOpenResultUMA(task_result, OfficeDriveOpenErrors::kSuccess);
 }
 
@@ -981,10 +998,11 @@ void CloudOpenTask::RecordUploadLatencyUMA() {
 // page.
 bool CloudOpenTask::InitAndShowSetupOrMoveDialog(
     SetupOrMoveDialogPage dialog_page) {
-  // Allow no more than one upload dialog at a time. In the case of multiple
-  // upload requests, they should either be handled simultaneously or queued.
-  if (SystemWebDialogDelegate::HasInstance(
-          GURL(chrome::kChromeUICloudUploadURL))) {
+  // Allow no more than one upload dialog at a time. If one already exists,
+  // bring it to the front to prompt the user to keep going. In the case of
+  // multiple upload requests, they should either be handled simultaneously or
+  // queued.
+  if (BringDialogToFrontIfItExists(chrome::kChromeUICloudUploadURL)) {
     LOG(WARNING) << "Another cloud upload dialog is already being shown";
     if (dialog_page == SetupOrMoveDialogPage::kMoveConfirmationGoogleDrive ||
         dialog_page == SetupOrMoveDialogPage::kMoveConfirmationOneDrive) {
@@ -1523,11 +1541,11 @@ void CloudUploadDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 bool ShowConnectOneDriveDialog(gfx::NativeWindow modal_parent) {
-  // Allow no more than one upload dialog at a time. Only one of either this
-  // dialog, or CloudOpenTask can be shown at a time because they use the same
-  // WebUI for dialogs.
-  if (SystemWebDialogDelegate::HasInstance(
-          GURL(chrome::kChromeUICloudUploadURL))) {
+  // Allow no more than one upload dialog at a time. If one already exists,
+  // bring it to the front to prompt the user to keep going. Only one of either
+  // this dialog, or CloudOpenTask can be shown at a time because they use the
+  // same WebUI for dialogs.
+  if (BringDialogToFrontIfItExists(chrome::kChromeUICloudUploadURL)) {
     LOG(WARNING) << "Another cloud upload dialog is already being shown";
     return false;
   }

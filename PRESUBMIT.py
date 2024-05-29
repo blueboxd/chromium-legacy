@@ -1964,6 +1964,18 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
       treat_as_error = False,
     ),
+    BanRule(
+      pattern = r'/WIDGET_OWNS_NATIVE_WIDGET|'
+                r'NATIVE_WIDGET_OWNS_WIDGET',
+      explanation = (
+        'WIDGET_OWNS_NATIVE_WIDGET and NATIVE_WIDGET_OWNS_WIDGET are in the '
+        'process of being deprecated. Consider using the new '
+        'CLIENT_OWNS_WIDGET ownership model. Eventually, this will be the only '
+        'available ownership model available and the associated enumeration'
+        'will be removed.',
+      ),
+      treat_as_error = False,
+    ),
 )
 
 _DEPRECATED_SYNC_CONSENT_FUNCTION_WARNING = (
@@ -3370,6 +3382,61 @@ def CheckForNewDEPSDownloadFromGoogleStorageHooks(input_api, output_api):
                         items=new_download_from_google_storage_hooks)
                 ]
     return []
+
+
+def CheckEachPerfettoTestDataFileHasDepsEntry(input_api, output_api):
+    test_data_filter = lambda f: input_api.FilterSourceFile(
+        f, files_to_check=[r'^base/tracing/test/data/.*\.sha256'])
+    if not any(input_api.AffectedFiles(file_filter=test_data_filter)):
+        return []
+
+    # Find DEPS entry
+    deps_entry = []
+    for f in input_api.AffectedFiles(include_deletes=False):
+        if f.LocalPath() == 'DEPS':
+            new_deps = _ParseDeps('\n'.join(f.NewContents()))['deps']
+            deps_entry = new_deps['src/base/tracing/test/data']
+    if not deps_entry:
+        return [output_api.PresubmitError(
+            'You must update the DEPS file when you update a '
+            '.sha256 file in base/tracing/test/data'
+        )]
+
+    output = []
+    for f in input_api.AffectedFiles(file_filter=test_data_filter):
+        objects = deps_entry['objects']
+        if not f.NewContents():
+            # Deleted file so check that DEPS entry removed
+            sha256_from_file = f.OldContents()[0]
+            object_entry = next(
+                (item for item in objects if item["sha256sum"] == sha256_from_file),
+                None)
+            if object_entry:
+                output.append(output_api.PresubmitError(
+                    'You deleted %s so you must also remove the corresponding DEPS entry.'
+                    % f.LocalPath()
+                ))
+            continue
+
+        sha256_from_file = f.NewContents()[0]
+        object_entry = next(
+            (item for item in objects if item["sha256sum"] == sha256_from_file),
+            None)
+        if not object_entry:
+            output.append(output_api.PresubmitError(
+                'No corresponding DEPS entry found for %s. '
+                'Run `base/tracing/test/test_data.py get_deps --filepath %s` '
+                'to generate the DEPS entry.'
+                % (f.LocalPath(), f.LocalPath())
+            ))
+
+    if output:
+        output.append(output_api.PresubmitError(
+            'The DEPS entry for `src/base/tracing/test/data` in the DEPS file has not been '
+            'updated properly. Run `base/tracing/test/test_data.py get_all_deps` to see what '
+            'the DEPS entry should look like.'
+        ))
+    return output
 
 
 def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
@@ -6136,6 +6203,7 @@ def CheckForIncludeGuards(input_api, output_api):
         guard_name = None
         guard_line_number = None
         seen_guard_end = False
+        bypass_checks_at_end_of_file = False
 
         file_with_path = input_api.os_path.normpath(f.LocalPath())
         base_file_name = input_api.os_path.splitext(
@@ -6173,7 +6241,7 @@ def CheckForIncludeGuards(input_api, output_api):
         for line_number, line in enumerate(f.NewContents()):
             if ('no-include-guard-because-multiply-included' in line
                     or 'no-include-guard-because-pch-file' in line):
-                guard_name = 'DUMMY'  # To not trigger check outside the loop.
+                bypass_checks_at_end_of_file = True
                 break
 
             if guard_name is None:
@@ -6218,6 +6286,9 @@ def CheckForIncludeGuards(input_api, output_api):
                                 % (guard_name), [f.LocalPath()]))
                         break  # Nothing else to check and enough to warn once.
 
+        if bypass_checks_at_end_of_file:
+            continue
+
         if guard_name is None:
             errors.append(
                 output_api.PresubmitPromptWarning(
@@ -6226,6 +6297,12 @@ def CheckForIncludeGuards(input_api, output_api):
                     'This check can be disabled by having the string\n'
                     '"no-include-guard-because-multiply-included" or\n'
                     '"no-include-guard-because-pch-file" in the header.'
+                    % (f.LocalPath(), expected_guard)))
+        elif not seen_guard_end:
+            errors.append(
+                output_api.PresubmitPromptWarning(
+                    'Incorrect or missing include guard #endif in %s\n'
+                    'Recommended #endif comment: // %s'
                     % (f.LocalPath(), expected_guard)))
 
     return errors

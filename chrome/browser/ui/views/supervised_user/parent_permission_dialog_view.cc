@@ -32,9 +32,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/supervised_user_extensions_delegate.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/icons/extension_icon_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -52,6 +53,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -79,7 +81,11 @@ class MaybeEmptyLabel : public views::Label {
 
  public:
   MaybeEmptyLabel(const std::string& text, const CustomFont& font)
-      : views::Label(base::UTF8ToUTF16(text), font) {}
+      : views::Label(base::UTF8ToUTF16(text), font) {
+    // Set the role to kAlert as this is required for
+    // sending accessibility notification alerts.
+    GetViewAccessibility().SetRole(ax::mojom::Role::kAlert);
+  }
 
   MaybeEmptyLabel& operator=(const MaybeEmptyLabel&) = delete;
   MaybeEmptyLabel(const MaybeEmptyLabel&) = delete;
@@ -93,10 +99,6 @@ class MaybeEmptyLabel : public views::Label {
     } else {
       node_data->SetNameExplicitlyEmpty();
     }
-
-    // Set the role to kAlert as this is required for
-    // sending accessibility notification alerts.
-    node_data->role = ax::mojom::Role::kAlert;
   }
 };
 
@@ -334,6 +336,10 @@ struct ParentPermissionDialogView::Params {
 
   // The message to show. Ignored if extension is set.
   std::u16string message;
+
+  // Entry point leading to the creation of the dialog.
+  SupervisedUserExtensionParentApprovalEntryPoint
+      extension_approval_entry_point;
 
   // An optional extension whose permissions should be displayed
   raw_ptr<const extensions::Extension, AcrossTasksDanglingUntriaged> extension =
@@ -596,11 +602,15 @@ void ParentPermissionDialogView::ShowDialog() {
   supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
       SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
           kOpened);
-
-  if (params_->extension)
+  if (params_->extension) {
     InitializeExtensionData(params_->extension.get());
-  else
+
+    SupervisedUserExtensionsMetricsRecorder::
+        RecordExtensionParentApprovalDialogEntryPointUmaMetrics(
+            params_->extension_approval_entry_point);
+  } else {
     ShowDialogInternal();
+  }
 }
 
 void ParentPermissionDialogView::CloseDialog() {
@@ -790,8 +800,11 @@ void ParentPermissionDialogView::OnReAuthProofTokenFailure(
     const GaiaAuthConsumer::ReAuthProofTokenStatus error) {
   reauth_token_fetcher_.reset();
   if (error == GaiaAuthConsumer::ReAuthProofTokenStatus::kInvalidGrant) {
+    supervised_user_metrics_recorder_.RecordParentPermissionDialogUmaMetrics(
+        SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+            kIncorrectParentPasswordProvided);
     // If invalid password was entered, and the dialog is configured to
-    // re-prompt  show the dialog again with the invalid password error message.
+    // re-prompt, show the dialog again with the invalid password error message.
     // prompt again, this time with a password error message.
     invalid_credential_received_ = true;
     if (reprompt_after_incorrect_credential_) {
@@ -916,14 +929,16 @@ ParentPermissionDialog::CreateParentPermissionDialogForExtension(
     gfx::NativeWindow window,
     const gfx::ImageSkia& icon,
     const extensions::Extension* extension,
+    SupervisedUserExtensionParentApprovalEntryPoint
+        extension_approval_entry_point,
     ParentPermissionDialog::DoneCallback done_callback) {
   auto params = std::make_unique<ParentPermissionDialogView::Params>();
   params->extension = extension;
+  params->extension_approval_entry_point = extension_approval_entry_point;
   params->icon = icon;
   params->profile = profile;
   params->window = window;
   params->done_callback = std::move(done_callback);
-
   return std::make_unique<ParentPermissionDialogImpl>(std::move(params));
 }
 

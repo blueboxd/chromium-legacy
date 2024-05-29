@@ -738,15 +738,14 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
   std::optional<std::string> web_header;
   std::optional<std::string> os_header;
   RegistrationType type;
-  bool cross_app_web_enabled;
+  bool cross_app_web_enabled = false;
 
-  static std::optional<RegistrationDataHeaders> Get(
-      const net::HttpResponseHeaders* headers,
-      bool cross_app_web_runtime_enabled,
-      const Registrations& registrations,
-      const GURL& reporting_url) {
+  static RegistrationDataHeaders Get(const net::HttpResponseHeaders* headers,
+                                     bool cross_app_web_runtime_enabled,
+                                     const Registrations& registrations,
+                                     const GURL& reporting_url) {
     if (!headers) {
-      return std::nullopt;
+      return RegistrationDataHeaders();
     }
 
     // Note that it's important that the browser process check both the
@@ -758,51 +757,24 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
         base::FeatureList::IsEnabled(
             network::features::kAttributionReportingCrossAppWeb);
 
-    std::optional<std::string> web_source_header;
-    {
+    const auto get_header = [&](std::string_view header, bool enabled = true) {
       std::string value;
-      size_t iter = 0;
-      while (headers->EnumerateHeader(
-          &iter,
-          attribution_reporting::kAttributionReportingRegisterSourceHeader,
-          &value)) {
-        if (web_source_header.has_value()) {
-          // TODO(https://crbug.com/40242261): Log an audit issue.
-          return std::nullopt;
-        }
-        web_source_header = std::move(value);
-      }
-    }
-
-    std::optional<std::string> web_trigger_header;
-    {
-      std::string value;
-      size_t iter = 0;
-      while (headers->EnumerateHeader(
-          &iter,
-          attribution_reporting::kAttributionReportingRegisterTriggerHeader,
-          &value)) {
-        if (web_trigger_header.has_value()) {
-          // TODO(https://crbug.com/40242261): Log an audit issue.
-          return std::nullopt;
-        }
-        web_trigger_header = std::move(value);
-      }
-    }
-
-    const auto get_os_header = [&](std::string_view header) {
-      std::string value;
-      return cross_app_web_enabled &&
-                     headers->GetNormalizedHeader(header, &value)
+      return enabled && headers->GetNormalizedHeader(header, &value)
                  ? std::make_optional(std::move(value))
                  : std::nullopt;
     };
 
-    std::optional<std::string> os_source_header = get_os_header(
-        attribution_reporting::kAttributionReportingRegisterOsSourceHeader);
+    std::optional<std::string> web_source_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterSourceHeader);
+    std::optional<std::string> web_trigger_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterTriggerHeader);
 
-    std::optional<std::string> os_trigger_header = get_os_header(
-        attribution_reporting::kAttributionReportingRegisterOsTriggerHeader);
+    std::optional<std::string> os_source_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterOsSourceHeader,
+        cross_app_web_enabled);
+    std::optional<std::string> os_trigger_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterOsTriggerHeader,
+        cross_app_web_enabled);
 
     const bool has_source =
         web_source_header.has_value() || os_source_header.has_value();
@@ -810,7 +782,7 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
         web_trigger_header.has_value() || os_trigger_header.has_value();
 
     if (!has_source && !has_trigger) {
-      return std::nullopt;
+      return RegistrationDataHeaders();
     }
 
     std::optional<RegistrationType> registration_type;
@@ -844,7 +816,7 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
               registrations.devtools_request_id(),
               /*invalid_parameter=*/std::nullopt,
               AttributionReportingIssueType::kSourceAndTriggerHeaders);
-          return std::nullopt;
+          return RegistrationDataHeaders();
         }
         if (has_source) {
           registration_type = RegistrationType::kSource;
@@ -856,7 +828,7 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
     }
     // No eligible header available.
     if (!registration_type.has_value()) {
-      return std::nullopt;
+      return RegistrationDataHeaders();
     }
 
     std::optional<std::string> web_header;
@@ -880,6 +852,8 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
                                    *registration_type, cross_app_web_enabled);
   }
 
+  RegistrationDataHeaders() = default;
+
   RegistrationDataHeaders(std::string info_header,
                           std::optional<std::string> web_header,
                           std::optional<std::string> os_header,
@@ -896,6 +870,10 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
 
   RegistrationDataHeaders(RegistrationDataHeaders&&) = default;
   RegistrationDataHeaders& operator=(RegistrationDataHeaders&&) = default;
+
+  explicit operator bool() const {
+    return web_header.has_value() || os_header.has_value();
+  }
 
   void LogIssues(const Registrations& registrations,
                  const GURL& reporting_url,
@@ -1489,12 +1467,12 @@ bool AttributionDataHostManagerImpl::NotifyNavigationRegistrationData(
           network::AttributionReportingRuntimeFeature::kCrossAppWeb),
       *it, reporting_url);
 
-  if (!header.has_value()) {
+  if (!header) {
     return false;
   }
 
   HandleRegistrationData(
-      it, PendingRegistrationData(std::move(*header),
+      it, PendingRegistrationData(std::move(header),
                                   std::move(reporting_origin.value()),
                                   std::move(reporting_url),
                                   /*verifications=*/std::nullopt));
@@ -1708,18 +1686,18 @@ bool AttributionDataHostManagerImpl::NotifyBackgroundRegistrationData(
           network::AttributionReportingRuntimeFeature::kCrossAppWeb),
       *it, reporting_url);
 
-  if (!header.has_value()) {
+  if (!header) {
     return false;
   }
 
   std::optional<std::vector<network::TriggerVerification>> verifications;
-  if (header->type == RegistrationType::kTrigger) {
+  if (header.type == RegistrationType::kTrigger) {
     verifications = trigger_verifications;
   }
 
   HandleRegistrationData(
       it, PendingRegistrationData(
-              std::move(*header), std::move(suitable_reporting_origin.value()),
+              std::move(header), std::move(suitable_reporting_origin.value()),
               std::move(reporting_url), std::move(verifications)));
 
   return true;
@@ -1952,7 +1930,7 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
           network::AttributionReportingRuntimeFeature::kCrossAppWeb),
       *it, reporting_url);
 
-  if (!header.has_value()) {
+  if (!header) {
     MaybeOnRegistrationsFinished(it);
     return;
   }
@@ -1963,7 +1941,7 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
   }
 
   HandleRegistrationData(
-      it, PendingRegistrationData(std::move(*header),
+      it, PendingRegistrationData(std::move(header),
                                   std::move(suitable_reporting_origin.value()),
                                   std::move(reporting_url),
                                   /*verifications=*/std::nullopt));
@@ -2147,9 +2125,8 @@ void AttributionDataHostManagerImpl::MaybeBufferOsRegistrations(
   CHECK(not_buffered.empty());
 }
 
-void AttributionDataHostManagerImpl::OnOsHeaderParsed(
-    RegistrationsId id,
-    OsParseResult result) {
+void AttributionDataHostManagerImpl::OnOsHeaderParsed(RegistrationsId id,
+                                                      OsParseResult result) {
   auto registrations = registrations_.find(id);
   CHECK(registrations != registrations_.end());
 

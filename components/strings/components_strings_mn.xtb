@@ -191,6 +191,7 @@
           <ph name="LIST_ITEM" />Таны ажил олгогч эсвэл сургууль
           <ph name="LIST_ITEM" />Таны интернэт үйлчилгээ нийлүүлэгч
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">Энэ зүйлийг хянах</translation>
 <translation id="1337692097987160377">Энэ табыг хуваалцах</translation>
 <translation id="1339601241726513588">Бүртгэлийн домэйн:</translation>
 <translation id="1340482604681802745">Авах хаяг</translation>
@@ -360,6 +361,7 @@
 <translation id="1641976391427233992">Дараах хугацаа хүртэл гаралтыг хойшлуулах</translation>
 <translation id="1643651787397909318">Chrome-н аюулгүй байдлын шалгалт руу очих товчлуур, тохиргооны Chrome-н аюулгүй байдлын шалгалтын хуудсанд зочлохын тулд идэвхжүүлнэ үү</translation>
 <translation id="1644574205037202324">Түүх</translation>
+<translation id="1645004815457365098">Тодорхойгүй эх сурвалж</translation>
 <translation id="1645368109819982629">Дэмжигдээгүй протокол</translation>
 <translation id="1650602712345345441">Chrome-н тохиргоогоо удирдана уу</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -575,7 +577,6 @@
 <translation id="2056658168519009885">Сайтууд таны хардаг зарыг хувийн болгоход туслахын тулд Chrome-с мэдээлэл хүсэх боломжтой.</translation>
 <translation id="2059166748188874810">Хотын захиргаа</translation>
 <translation id="2059202684901022309">22 x 34 инч</translation>
-<translation id="206275378685759380">Худалдан авахаар хүлээх</translation>
 <translation id="2064568741209980952">Кредит болон зээл</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 зөвлөмж}other{# зөвлөмж}}</translation>
 <translation id="2066915425250589881">устгуулах хүсэлт тавих</translation>
@@ -1336,6 +1337,7 @@
 <translation id="353816159217417898">Хаалт (салсан)</translation>
 <translation id="3542628208405253498">Картын зураг</translation>
 <translation id="3542768452570884558">Холбоосыг шинэ цонхонд нээх</translation>
+<translation id="3547442767634383572">Ажлын профайлын тойм</translation>
 <translation id="3547746132308051926">20 x 24 инч</translation>
 <translation id="3552155506104542239">Сануулга: Энэ бодлого <ph name="POLICY_NAME" /> бодлоготой зөрчилдөж байгаа бөгөөд Android аппуудад нөлөөлөхгүй. Өөрөөр энэ бодлого зориулалтын дагуу ажиллаж байна.</translation>
 <translation id="3552297013052089404">Санс-сериф фонт</translation>
@@ -2200,6 +2202,7 @@
 <translation id="5230733896359313003">Хүргэлтийн хаяг</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Нэмэлт</translation>
+<translation id="5233071178832586743">Хяналттай профайл, хөтөч болон төхөөрөмжийн зарим мэдээлэлд таны администратор хандах боломжтой. Администратор дараах мэдээллийг харж болох бөгөөд жишээлбэл:</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="5238301240406177137">Бүртгэлд хадгалах</translation>
 <translation id="5239119062986868403">Дундаж үнэ</translation>
@@ -2213,6 +2216,7 @@
 <translation id="52517543715119994">Chrome-н онцлогуудын талаар мэдэж аваарай</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5254043433801397071">Хэвлэлийн контентыг оновчлох</translation>
+<translation id="5255583962255635076">Таны ажлын профайлд хэрэгжүүлсэн хөтчийн бодлого</translation>
 <translation id="5255690596502591079">Ямартай ч зургийг нь авах</translation>
 <translation id="5255833070095767006">350 x 460 мм</translation>
 <translation id="5257739419779698609">{0,plural, =1{Администраторын бодлого нь энэ файлыг <ph name="DESTINATION_NAME" /> руу хуулахыг санал болгодоггүй}other{Администраторын бодлого нь эдгээр файлыг <ph name="DESTINATION_NAME" /> руу хуулахыг санал болгодоггүй}}</translation>
@@ -2452,7 +2456,7 @@
 <translation id="571403275720188526">(arm64)</translation>
 <translation id="571510845185711675">Малын эмч</translation>
 <translation id="5715150588940290235">Хадгалсан аюулгүй байдлын кодуудыг устгах уу?</translation>
-<translation id="5715918316982363436">Энэ төхөөрөмж дээрх <ph name="WINDOW_COUNT" />-с <ph name="TAB_COUNT" /></translation>
+<translation id="5715918316982363436">Энэ төхөөрөмж дээрх <ph name="WINDOW_COUNT" />-ны <ph name="TAB_COUNT" /></translation>
 <translation id="5717509257172454543">Уран гулгалт</translation>
 <translation id="5720705177508910913">Одоогийн хэрэглэгч</translation>
 <translation id="5720895412771013401">Суурин компьютерууд</translation>
@@ -2609,6 +2613,7 @@
 <translation id="6035491133925068289">Гүйлтийн зам, талбай</translation>
 <translation id="6039846035001940113">Асуудал үргэлжилсээр байвал сайтын эзэмшигчтэй холбогдоно уу.</translation>
 <translation id="6040143037577758943">Хаах</translation>
+<translation id="6040539895181423374">Үнийн статистик</translation>
 <translation id="604124094241169006">Автомат</translation>
 <translation id="6041777658117377052">Танхимын температур</translation>
 <translation id="6042308850641462728">Илүү их</translation>
@@ -3213,7 +3218,6 @@
 <translation id="719464814642662924">Виз</translation>
 <translation id="7195852673246414183">Энэ тохиргоог асаасныхаа дараа бичиж эхлэхийн тулд энэ таб руу буцаж ирнэ үү</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">Таны админ дараахыг харах боломжтой:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, Нууцлалтайгаар үзэхийн тулд шинэ Нууцлалтай табыг эхлээд Tab, дараа нь Enter дээр дарж нээнэ үү</translation>
 <translation id="7203375778433816396">Chrome-г системийн өгөгдмөл хөтөч болгон тохируулах</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> нь аюулгүй байдлын стандартыг дагахгүй байна.</translation>
@@ -3332,6 +3336,7 @@
 <translation id="7421067045979951561">протокол хариуцагчид</translation>
 <translation id="7422347648202898039">Шошго (аюулгүй байдлын)</translation>
 <translation id="7423283032694727565">Күүки удирдах товчлуур, Chrome-н тохиргоонд күүкиний сонголтоо удирдахын тулд идэвхжүүлнэ үү</translation>
+<translation id="742435751935045381">Таны ажлын профайлд суулгасан апп, өргөтгөлүүд</translation>
 <translation id="7424421098814895617">Хаягийг устгах сонголтыг сонгосон</translation>
 <translation id="7425037327577270384">Надад бичихэд тусал</translation>
 <translation id="7425878584435172632">Визуал урлаг, дизайн</translation>
@@ -3878,6 +3883,7 @@
 Нэмэлт дэлгэрэнгүй мэдээлэл:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">Микрофоныг энэ удаад зөвшөөрсөн</translation>
+<translation id="8421158157346464398">Ажлын профайлын мэдээлэл (таны ажлын профайлын хэрэглэгчийн нэр гэх мэт)</translation>
 <translation id="8422228580902424274">Таны зочлохоор оролдож буй сайт дээрх халдагчид таныг программ хангамжийг суулгах эсвэл нууц үг, утас эсвэл кредит картын дугаар зэрэг зүйлсээ илчлэх үйлдэл хийлгэхээр хуурч магадгүй.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Өөрчлөлт</translation>
@@ -4246,6 +4252,7 @@
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">Таны зочилсон сайтууд мөн сайт дээрх үйл ажиллагаанд тань тулгуурлан таны юунд дуртайг тодорхойлох боломжтой. Жишээ нь, хэрэв та холын зайн гүйлтийн гутал зардаг сайтад зочилсон бол тухайн сайт таныг марафонд гүйх сонирхолтой гэж үзэж болох юм.</translation>
 <translation id="9166851138617700776">Сайтын санал болгосон зар болон зарын хэмжигдэхүүний тухай дэлгэрэнгүй</translation>
+<translation id="9167054383925257837">Хөтөч болон төхөөрөмжийн OS-н мэдээлэл (хөтөч, OS-н хувилбар гэх мэт)</translation>
 <translation id="9167594211215946097">Таны хэвлэгчид шууд хандах эрхтэй</translation>
 <translation id="9168814207360376865">Танд хадгалсан төлбөрийн хэрэгсэл байгаа эсэхийг шалгахыг сайтуудад зөвшөөрөх</translation>
 <translation id="9169664750068251925">Энэ сайт дээр үргэлж хориглох</translation>

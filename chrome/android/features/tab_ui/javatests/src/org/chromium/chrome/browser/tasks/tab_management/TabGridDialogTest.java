@@ -123,7 +123,6 @@ import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -956,7 +955,7 @@ public class TabGridDialogTest {
                                 isDisplayed()))
                 .perform(click());
 
-        BookmarkFolderPickerActivity activity = BookmarkTestUtil.waitForFolderPickerActivity();
+        BookmarkEditActivity activity = BookmarkTestUtil.waitForEditActivity();
         activity.finish();
 
         mSelectionEditorRobot.resultRobot.verifyTabListEditorIsVisible();
@@ -1981,6 +1980,10 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.DATA_SHARING_ANDROID})
+    @DisabledTest(
+            message =
+                    "Failing due to side-effects from testDataSharingIncognitoMode,"
+                            + " crbug.com/342638430")
     public void testDataSharing() {
         final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         // Create a tab group.
@@ -2075,7 +2078,7 @@ public class TabGridDialogTest {
                 .check((v, e) -> assertEquals(0f, v.getAlpha(), 0.0));
         onView(
                         allOf(
-                                withParent(withId(R.id.dialog_parent_view)),
+                                isDescendantOfA(withId(R.id.dialog_parent_view)),
                                 withId(R.id.dialog_animation_card_view)))
                 .check((v, e) -> assertEquals(0f, v.getAlpha(), 0.0));
 

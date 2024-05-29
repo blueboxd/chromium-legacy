@@ -44,6 +44,7 @@
 #import "components/invalidation/impl/invalidation_switches.h"
 #import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/switches.h"
+#import "components/omnibox/browser/omnibox_feature_configs.h"
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
@@ -81,6 +82,7 @@
 #import "ios/chrome/browser/follow/model/follow_features.h"
 #import "ios/chrome/browser/iph_for_new_chrome_user/model/features.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
+#import "ios/chrome/browser/price_insights/model/price_insights_feature.h"
 #import "ios/chrome/browser/promos_manager/model/features.h"
 #import "ios/chrome/browser/screen_time/model/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/features.h"
@@ -548,6 +550,22 @@ const FeatureEntry::FeatureVariation kBottomOmniboxPromoVariations[] = {
      nullptr},
 };
 
+constexpr flags_ui::FeatureEntry::FeatureParam kPriceInsightsPriceIsLowParam[] =
+    {{kLowPriceParam, kLowPriceParamPriceIsLow}};
+constexpr flags_ui::FeatureEntry::FeatureParam
+    kPriceInsightsGoodDealNowParam[] = {
+        {kLowPriceParam, kLowPriceParamGoodDealNow}};
+constexpr flags_ui::FeatureEntry::FeatureParam
+    kPriceInsightsSeePriceHistoryParam[] = {
+        {kLowPriceParam, kLowPriceParamSeePriceHistory}};
+constexpr flags_ui::FeatureEntry::FeatureVariation kPriceInsightsVariations[] =
+    {{"Price is low", kPriceInsightsPriceIsLowParam,
+      std::size(kPriceInsightsPriceIsLowParam), nullptr},
+     {"Good deal now", kPriceInsightsGoodDealNowParam,
+      std::size(kPriceInsightsGoodDealNowParam), nullptr},
+     {"See price history", kPriceInsightsSeePriceHistoryParam,
+      std::size(kPriceInsightsSeePriceHistoryParam), nullptr}};
+
 const FeatureEntry::FeatureParam kBottomOmniboxPromoDefaultPositionTop[] = {
     {kBottomOmniboxPromoDefaultPositionParam,
      kBottomOmniboxPromoDefaultPositionParamTop}};
@@ -567,19 +585,23 @@ const FeatureEntry::FeatureParam kRichAutocompletionImplementationLabel[] = {
 const FeatureEntry::FeatureParam
     kRichAutocompletionImplementationTextField3Chars[] = {
         {kRichAutocompletionParam, kRichAutocompletionParamTextField},
-        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"}};
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"},
+        {"RichAutocompletionAutocompleteTitlesMinChar", "3"}};
 const FeatureEntry::FeatureParam
     kRichAutocompletionImplementationTextField4Chars[] = {
         {kRichAutocompletionParam, kRichAutocompletionParamTextField},
-        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"}};
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"},
+        {"RichAutocompletionAutocompleteTitlesMinChar", "4"}};
 const FeatureEntry::FeatureParam
     kRichAutocompletionImplementationNoAdditionalText3Chars[] = {
         {kRichAutocompletionParam, kRichAutocompletionParamNoAdditionalText},
-        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"}};
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "3"},
+        {"RichAutocompletionAutocompleteTitlesMinChar", "3"}};
 const FeatureEntry::FeatureParam
     kRichAutocompletionImplementationNoAdditionalText4Chars[] = {
         {kRichAutocompletionParam, kRichAutocompletionParamNoAdditionalText},
-        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"}};
+        {"RichAutocompletionAutocompleteShortcutTextMinChar", "4"},
+        {"RichAutocompletionAutocompleteTitlesMinChar", "4"}};
 const FeatureEntry::FeatureVariation
     kRichAutocompletionImplementationVariations[] = {
         {"In Label", kRichAutocompletionImplementationLabel,
@@ -874,9 +896,20 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"unified-bookmark-model", flag_descriptions::kUnifiedBookmarkModelName,
      flag_descriptions::kUnifiedBookmarkModelDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(syncer::kEnableBookmarkFoldersForAccountStorage)},
+    {"price-insights", commerce::flag_descriptions::kPriceInsightsName,
+     commerce::flag_descriptions::kPriceInsightsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(commerce::kPriceInsights)},
     {"price-insights-ios", commerce::flag_descriptions::kPriceInsightsIosName,
      commerce::flag_descriptions::kPriceInsightsIosDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(commerce::kPriceInsightsIos)},
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kPriceInsightsIos,
+                                    kPriceInsightsVariations,
+                                    "PriceInsightsIos")},
+    {"price-insights-high-price-ios",
+     commerce::flag_descriptions::kPriceInsightsHighPriceIosName,
+     commerce::flag_descriptions::kPriceInsightsHighPriceIosDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(commerce::kPriceInsightsHighPriceIos)},
     {"autofill-enable-card-product-name",
      flag_descriptions::kAutofillEnableCardProductNameName,
      flag_descriptions::kAutofillEnableCardProductNameDescription,
@@ -917,6 +950,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"intents-on-viewport", flag_descriptions::kEnableViewportIntentsName,
      flag_descriptions::kEnableViewportIntentsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableViewportIntents)},
+    {"improve-parcel-detection",
+     flag_descriptions::kEnableNewParcelTrackingNumberDetectionName,
+     flag_descriptions::kEnableNewParcelTrackingNumberDetectionDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         web::features::kEnableNewParcelTrackingNumberDetection)},
     {"enable-expkit-text-classifier-date",
      flag_descriptions::kEnableExpKitTextClassifierDateName,
      flag_descriptions::kEnableExpKitTextClassifierDateDescription,
@@ -1381,10 +1420,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPasswordSignInUffName,
      flag_descriptions::kIOSPasswordSignInUffDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordSignInUff)},
-    {"tab-grid-compositional-layout",
-     flag_descriptions::kTabGridCompositionalLayoutName,
-     flag_descriptions::kTabGridCompositionalLayoutDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kTabGridCompositionalLayout)},
     {"bottom-omnibox-promo-fre", flag_descriptions::kBottomOmniboxPromoFREName,
      flag_descriptions::kBottomOmniboxPromoFREDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kBottomOmniboxPromoFRE,
@@ -1624,6 +1659,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableVcnEnrollLoadingAndConfirmation)},
+    {"lens-web-page-early-transition-enabled",
+     flag_descriptions::kLensWebPageEarlyTransitionEnabledName,
+     flag_descriptions::kLensWebPageEarlyTransitionEnabledDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kLensWebPageEarlyTransitionEnabled)},
+    {"omnibox-suggestion-answer-migration",
+     flag_descriptions::kOmniboxSuggestionAnswerMigrationName,
+     flag_descriptions::kOmniboxSuggestionAnswerMigrationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox_feature_configs::SuggestionAnswerMigration::
+                            kOmniboxSuggestionAnswerMigration)},
+    {"tab-resumption1-5", flag_descriptions::kTabResumption1_5Name,
+     flag_descriptions::kTabResumption1_5Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabResumption1_5)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

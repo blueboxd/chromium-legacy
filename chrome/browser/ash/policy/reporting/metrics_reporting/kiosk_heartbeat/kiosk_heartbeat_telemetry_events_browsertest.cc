@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(KioskHeartbeatEventsBrowserTest, ReportKioskHeartbeats) {
   ::chromeos::MissiveClientTestObserver missive_observer(
       base::BindRepeating(&IsKioskHeartbeatTelemetryEvent));
 
-  // Consume all queued tasks so that policy is synched and collector started.
+  // Consume all queued tasks so that policy is synced and collector started.
   base::RunLoop().RunUntilIdle();
 
   // Fail if no heartbeat is queued immediately.

@@ -15,6 +15,7 @@
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/browser/file_select_listener.h"
@@ -165,7 +166,8 @@ ExternalAppDialog::ExternalAppDialog(const InitParams& params)
   set_dialog_modal_type(ui::MODAL_TYPE_SYSTEM);
   set_dialog_title(base::UTF8ToUTF16(params.app_name));
 
-  views::Widget::InitParams widget_params{};
+  views::Widget::InitParams widget_params{
+      views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET};
   widget_params.z_order = ui::ZOrderLevel::kFloatingWindow;
   web_dialog_view_ = new views::WebDialogView(
       params.context, this, std::make_unique<WebContentsHandler>());

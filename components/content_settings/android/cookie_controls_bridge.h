@@ -50,11 +50,14 @@ class CookieControlsBridge : public CookieControlsObserver {
   void OnEntryPointAnimated(JNIEnv* env);
 
   // CookieControlsObserver:
-  void OnStatusChanged(bool controls_visible,
-                       bool protections_on,
-                       CookieControlsEnforcement enforcement,
-                       CookieBlocking3pcdStatus blocking_status,
-                       base::Time expiration) override;
+  void OnStatusChanged(
+      bool controls_visible,
+      bool protections_on,
+      CookieControlsEnforcement enforcement,
+      CookieBlocking3pcdStatus blocking_status,
+      base::Time expiration,
+      std::vector<TrackingProtectionFeature> features) override;
+
   void OnCookieControlsIconStatusChanged(
       bool icon_visible,
       bool protections_on,

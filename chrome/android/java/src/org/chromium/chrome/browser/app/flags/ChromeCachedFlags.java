@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabDataService;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
@@ -107,6 +108,7 @@ public class ChromeCachedFlags {
                         MinimizedFeatureUtils.MANUFACTURER_EXCLUDE_LIST,
                         MultiWindowUtils.BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS,
                         OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
+                        SearchActivity.SEARCH_IN_CCT_APPLY_REFERRER_ID,
                         ShoppingPersistedTabDataService
                                 .SKIP_SHOPPING_PERSISTED_TAB_DATA_DELAYED_INITIALIZATION,
                         StartSurfaceConfiguration.IS_DOODLE_SUPPORTED,
@@ -125,6 +127,8 @@ public class ChromeCachedFlags {
                         TabManagementFieldTrial.DELAY_TEMP_STRIP_TIMEOUT_MS,
                         HomeModulesMetricsUtils.HOME_MODULES_SHOW_ALL_MODULES,
                         HomeModulesMetricsUtils.HOME_MODULES_COMBINE_TABS,
+                        TabResumptionModuleUtils.TAB_RESUMPTION_DISABLE_BLEND,
+                        TabResumptionModuleUtils.TAB_RESUMPTION_FETCH_LOCAL_TABS_BACKEND,
                         TabResumptionModuleUtils.TAB_RESUMPTION_MAX_TILES_NUMBER,
                         TabResumptionModuleUtils.TAB_RESUMPTION_SHOW_SEE_MORE,
                         TabResumptionModuleUtils.TAB_RESUMPTION_USE_DEFAULT_APP_FILTER,

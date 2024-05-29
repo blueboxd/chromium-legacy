@@ -232,7 +232,6 @@ void GoFullscreen(Element& element,
   // element should hide all open popovers.
   auto* hide_until = HTMLElement::TopLayerElementPopoverAncestor(
       element, TopLayerElementType::kFullscreen);
-  DCHECK(RuntimeEnabledFeatures::NestedTopLayerSupportEnabled() || !hide_until);
   HTMLElement::HideAllPopoversUntil(
       hide_until, document, HidePopoverFocusBehavior::kNone,
       HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions);
@@ -737,9 +736,9 @@ ScriptPromise<IDLUndefined> Fullscreen::RequestFullscreen(
   // TypeError exception and return |promise|.
   if (!document.IsActive() || !document.GetFrame()) {
     if (!exception_state)
-      return ScriptPromise<IDLUndefined>();
+      return EmptyPromise();
     exception_state->ThrowTypeError("Document not active");
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
 
   if (script_state) {
@@ -986,9 +985,9 @@ ScriptPromise<IDLUndefined> Fullscreen::ExitFullscreen(
   // reject |promise| with a TypeError exception and return |promise|.
   if (!doc.IsActive() || !doc.GetFrame() || !FullscreenElementFrom(doc)) {
     if (!exception_state)
-      return ScriptPromise<IDLUndefined>();
+      return EmptyPromise();
     exception_state->ThrowTypeError("Document not active");
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
 
   if (script_state) {

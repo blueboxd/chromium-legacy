@@ -45,17 +45,21 @@ enum ShouldCapture {
 // DO NOT invoke the test callback if the entry no longer exists.
 void InvokeTestCallbackForNoScreenshot(
     const NavigationRequest& navigation_request) {
+  SkBitmap override_unused;
   GetTestScreenshotCallback().Run(navigation_request.frame_tree_node()
                                       ->navigator()
                                       .controller()
                                       .GetLastCommittedEntryIndex(),
-                                  {}, false);
+                                  {}, false, override_unused);
 }
 
-void InvokeTestCallback(int index, const SkBitmap bitmap, bool requested) {
+void InvokeTestCallback(int index,
+                        const SkBitmap bitmap,
+                        bool requested,
+                        SkBitmap& override_bitmap) {
   SkBitmap test_copy(bitmap);
   test_copy.setImmutable();
-  GetTestScreenshotCallback().Run(index, test_copy, requested);
+  GetTestScreenshotCallback().Run(index, test_copy, requested, override_bitmap);
 }
 
 // Returns the first entry that matches `destination_token`. Returns null if no
@@ -76,14 +80,9 @@ NavigationEntryImpl* GetEntryForToken(
 
 void CacheScreenshotImpl(NavigationControllerImpl& controller,
                          NavigationEntryImpl& entry,
+                         bool is_copied_from_embedder,
                          const SkBitmap& bitmap) {
   auto navigation_entry_id = entry.GetUniqueID();
-
-  if (GetTestScreenshotCallback()) {
-    InvokeTestCallback(
-        controller.GetEntryIndexWithUniqueID(navigation_entry_id), bitmap,
-        true);
-  }
 
   if (&entry == controller.GetLastCommittedEntry()) {
     // TODO(crbug.com/40278616): We shouldn't cache the screenshot into
@@ -104,18 +103,29 @@ void CacheScreenshotImpl(NavigationControllerImpl& controller,
     return;
   }
 
-  if (bitmap.drawsNothing()) {
+  SkBitmap bitmap_copy(bitmap);
+
+  if (GetTestScreenshotCallback()) {
+    SkBitmap override_bitmap;
+    InvokeTestCallback(
+        controller.GetEntryIndexWithUniqueID(navigation_entry_id), bitmap, true,
+        override_bitmap);
+    if (!override_bitmap.drawsNothing()) {
+      bitmap_copy = override_bitmap;
+    }
+  }
+
+  if (bitmap_copy.drawsNothing()) {
     // The GPU is not able to produce a valid bitmap. This is an error case.
     LOG(ERROR) << "Cannot generate a valid bitmap for entry "
                << entry.GetUniqueID() << " url " << entry.GetURL();
     return;
   }
 
-  SkBitmap immutable_copy(bitmap);
-  immutable_copy.setImmutable();
+  bitmap_copy.setImmutable();
 
   auto screenshot = std::make_unique<NavigationEntryScreenshot>(
-      immutable_copy, entry.GetUniqueID());
+      bitmap_copy, entry.GetUniqueID(), is_copied_from_embedder);
   NavigationEntryScreenshotCache* cache =
       controller.GetNavigationEntryScreenshotCache();
   cache->SetScreenshot(&entry, std::move(screenshot));
@@ -124,6 +134,7 @@ void CacheScreenshotImpl(NavigationControllerImpl& controller,
 void CacheScreenshotForCrossDocNavigations(
     base::WeakPtr<NavigationControllerImpl> controller,
     int navigation_entry_id,
+    bool is_copied_from_embedder,
     const SkBitmap& bitmap) {
   if (!controller) {
     // The tab was destroyed by the time we receive the bitmap from the GPU.
@@ -137,7 +148,7 @@ void CacheScreenshotForCrossDocNavigations(
     // `NavigationEntry` was replaced or deleted, etc.
     return;
   }
-  CacheScreenshotImpl(*controller, *entry, bitmap);
+  CacheScreenshotImpl(*controller, *entry, is_copied_from_embedder, bitmap);
 }
 
 // We only want to capture screenshots for navigation entries reachable via
@@ -259,7 +270,8 @@ void CacheScreenshotForSameDocNavigations(
     return;
   }
 
-  CacheScreenshotImpl(*controller, *destination_entry, bitmap);
+  CacheScreenshotImpl(*controller, *destination_entry,
+                      /*is_copied_from_embedder=*/false, bitmap);
 
   destination_entry->SetSameDocumentNavigationEntryScreenshotToken(
       std::nullopt);
@@ -348,11 +360,10 @@ void NavigationTransitionUtils::
 
   bool copied_via_delegate =
       navigation_request.GetDelegate()->MaybeCopyContentAreaAsBitmap(
-          base::BindOnce(
-              &CacheScreenshotForCrossDocNavigations,
-              nav_controller.GetWeakPtr(),
-              nav_controller.GetLastCommittedEntry()->GetUniqueID()));
-
+          base::BindOnce(&CacheScreenshotForCrossDocNavigations,
+                         nav_controller.GetWeakPtr(),
+                         nav_controller.GetLastCommittedEntry()->GetUniqueID(),
+                         /*is_copied_from_embedder=*/true));
   if (!copied_via_delegate &&
       should_capture == ShouldCapture::kOnlyAskEmbedder) {
     if (GetTestScreenshotCallback()) {
@@ -384,7 +395,8 @@ void NavigationTransitionUtils::
       /*src_rect=*/gfx::Rect(), output_size,
       base::BindOnce(&CacheScreenshotForCrossDocNavigations,
                      nav_controller.GetWeakPtr(),
-                     nav_controller.GetLastCommittedEntry()->GetUniqueID()));
+                     nav_controller.GetLastCommittedEntry()->GetUniqueID(),
+                     /*is_copied_from_embedder=*/false));
 
   ++g_num_copy_requests_issued_for_testing;
 }

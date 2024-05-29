@@ -603,7 +603,8 @@ void InlineLayoutAlgorithm::ApplyTextBoxTrim(LineInfo& line_info) {
   const bool should_apply_start =
       space.ShouldTextBoxTrimStart() && line_info.IsFirstFormattedLine();
   const bool should_apply_end =
-      space.ShouldTextBoxTrimEnd() && !line_info.GetBreakToken();
+      space.ShouldTextBoxTrimEnd() &&
+      (!line_info.GetBreakToken() || space.ShouldForceTextBoxTrimEnd());
   if (!should_apply_start && !should_apply_end) {
     return;
   }
@@ -624,7 +625,6 @@ void InlineLayoutAlgorithm::ApplyTextBoxTrim(LineInfo& line_info) {
                               intrinsic_metrics);
 
   container_builder_.SetIntrinsicMetrics(intrinsic_metrics);
-  container_builder_.SetIsTextBoxTrimApplied();
 
   if (should_apply_start) {
     // Apply `text-box-trim: start` if this is the first formatted line.
@@ -637,6 +637,7 @@ void InlineLayoutAlgorithm::ApplyTextBoxTrim(LineInfo& line_info) {
             ? offset_for_trimming_box +
                   container_builder_.LineBoxBfcBlockOffset().value()
             : offset_for_trimming_box);
+    container_builder_.SetIsBlockStartTrimmed();
 
     // Cancel adjusting the block start for the initial letters and Ruby
     // annotation. The use of the `text-box-trim` accepts the risk of collisions
@@ -648,6 +649,11 @@ void InlineLayoutAlgorithm::ApplyTextBoxTrim(LineInfo& line_info) {
 
   if (should_apply_end) {
     // Ask the block layout algorithm to trim the end of the line box.
+    const LayoutUnit block_end_to_be_trimmed =
+        UNLIKELY(is_flipped_line)
+            ? line_box_metrics.ascent - intrinsic_metrics.ascent
+            : line_box_metrics.descent - intrinsic_metrics.descent;
+    container_builder_.SetTrimBlockEndBy(block_end_to_be_trimmed);
     container_builder_.SetIsBlockEndTrimmed();
   }
 

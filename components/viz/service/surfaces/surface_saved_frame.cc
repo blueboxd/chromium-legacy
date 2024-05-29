@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/blit_request.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame_transition_directive.h"
@@ -72,6 +73,11 @@ SurfaceSavedFrame::SurfaceSavedFrame(
     : directive_(std::move(directive)),
       shared_image_interface_(shared_image_interface),
       directive_finished_callback_(std::move(directive_finished_callback)) {
+  // If we're using BlitRequests, then we better have a shared image interface.
+  CHECK(
+      !base::FeatureList::IsEnabled(features::kBlitRequestsForViewTransition) ||
+      shared_image_interface_);
+
   // We should only be constructing a saved frame from a save directive.
   DCHECK_EQ(directive_.type(), CompositorFrameTransitionDirective::Type::kSave);
 }
@@ -119,13 +125,14 @@ void SurfaceSavedFrame::RequestCopyOfOutput(Surface* surface) {
 
   if (copy_request_count_ == 0) {
     InitFrameResult();
-
-    // Dispatch the callback asynchronously from the ctor; otherwise CompositorFrameSinkSupport
-    // tries to access the SurfaceAnimationManager before it's initialized.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(directive_finished_callback_), directive_));
+    DispatchCopyDoneCallback();
   }
+}
+
+void SurfaceSavedFrame::DispatchCopyDoneCallback() {
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(directive_finished_callback_), directive_));
 }
 
 std::unique_ptr<CopyOutputRequest> SurfaceSavedFrame::CreateCopyRequestIfNeeded(
@@ -183,9 +190,10 @@ bool SurfaceSavedFrame::IsSharedElementRenderPass(
 
 size_t SurfaceSavedFrame::ExpectedResultCount() const {
   base::flat_set<CompositorRenderPassId> ids;
-  for (auto& shared_element : directive_.shared_elements())
+  for (auto& shared_element : directive_.shared_elements()) {
     if (!shared_element.render_pass_id.is_null())
       ids.insert(shared_element.render_pass_id);
+  }
   return ids.size();
 }
 
@@ -198,7 +206,7 @@ void SurfaceSavedFrame::NotifyCopyOfOutputComplete(
   // Even if we early out, we update the count since we are no longer waiting
   // for this result.
   if (--copy_request_count_ == 0) {
-    std::move(directive_finished_callback_).Run(directive_);
+    DispatchCopyDoneCallback();
   }
 
   // Return if the result is empty.

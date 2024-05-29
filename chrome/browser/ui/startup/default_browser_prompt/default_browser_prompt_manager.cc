@@ -119,6 +119,14 @@ void DefaultBrowserPromptManager::CreateInfoBarForWebContents(
 
   infobars::InfoBar *infobar = chrome::DefaultBrowserInfoBarDelegate::Create(
       infobars::ContentInfoBarManager::FromWebContents(web_contents), profile);
+
+  if (infobar == nullptr) {
+    // Infobar may be null if `InfoBarManager::ShouldShowInfoBar` returns false,
+    // in which case this function should do nothing. One case where this can
+    // happen is if the --headless command  line switch is present.
+    return;
+  }
+
   infobars_[web_contents] = infobar;
 
   static_cast<ConfirmInfoBarDelegate *>(infobar->delegate())->AddObserver(this);
@@ -167,8 +175,13 @@ void DefaultBrowserPromptManager::SetShowAppMenuPromptVisibility(bool show) {
 
     app_menu_prompt_dismiss_timer_.Start(
         FROM_HERE, app_menu_remaining_duration, base::BindOnce([]() {
-          chrome::startup::default_prompt::UpdatePrefsForDismissedPrompt(
-              BrowserList::GetInstance()->GetLastActive()->profile());
+          Browser* last_active = BrowserList::GetInstance()->GetLastActive();
+          // If there is no active browser, just dismiss the prompts and the
+          // prefs will be updated on the next startup.
+          if (last_active) {
+            chrome::startup::default_prompt::UpdatePrefsForDismissedPrompt(
+                last_active->profile());
+          }
           DefaultBrowserPromptManager::GetInstance()->CloseAllPrompts(
               CloseReason::kDismiss);
         }));

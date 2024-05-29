@@ -61,7 +61,6 @@
 <translation id="4139634748112164403">ແຖບຈະຍັງເປີດຢູ່ໃນອຸປະກອນນີ້ ແຕ່ລະບົບຈະລຶບກຸ່ມອອກຢ່າງຖາວອນ</translation>
 <translation id="4156086991340739772">{NUMBER_OF_TABS,plural, =1{ປິດກຸ່ມ <ph name="TITLE_OF_GROUP" /> ດ້ວຍ <ph name="TABS_COUNT_ONE" /> ແຖບ, ສີ <ph name="COLOR_NAME" />.}other{ປິດກຸ່ມ <ph name="TITLE_OF_GROUP" /> ດ້ວຍ <ph name="TABS_COUNT_MANY" /> ແຖບ, ສີ <ph name="COLOR_NAME" />.}}</translation>
 <translation id="4159784952369912983">ສີມ່ວງ</translation>
-<translation id="4212246570487010370">ສືບຕໍ່ທ່ອງເວັບ</translation>
 <translation id="4220650239473304853">{NUMBER_OF_TABS,plural, =1{ຂະຫຍາຍກຸ່ມແຖບ <ph name="TITLE_OF_GROUP" /> ທີ່ມີ <ph name="TABS_COUNT_ONE" /> ແຖບ.}other{ຂະຫຍາຍກຸ່ມແຖບ <ph name="TITLE_OF_GROUP" /> ທີ່ມີ <ph name="TABS_COUNT_MANY" /> ແຖບ.}}</translation>
 <translation id="427987768447457592">ກຸ່ມແຖບໃໝ່</translation>
 <translation id="4460014764210899310">ຍົກເລີກການຈັດກຸ່ມ</translation>
@@ -107,7 +106,6 @@
 <translation id="6557858706263317126">+<ph name="HIDDEN_TABS_COUNT" /></translation>
 <translation id="6562820390860419811">ຍ້າຍແຖບໄປຊ້າຍ</translation>
 <translation id="6615455863669487791">ສະ​ແດງຂ້ອຍ</translation>
-<translation id="661742612106409204">ທ່ານສາມາດຊອກຫາແຖບທີ່ປິດໄປແລ້ວໄດ້ໃນແຖບຫຼ້າສຸດຢູ່ພາຍໃຕ້ເມນູຫຼັກຂອງ Chrome.</translation>
 <translation id="6744956528665271406">ແກ້ໄຂສີກຸ່ມ</translation>
 <translation id="6840760312327750441">ເພື່ອຈັດກຸ່ມແຖບ, ແຕະແຖບໃດໜຶ່ງຄ້າງໄວ້. ຈາກນັ້ນ, ລາກມັນໄປໃສ່ແຖບອື່ນ.</translation>
 <translation id="6856809498882026482">ເຊື່ອງໂໝດເລືອກຫຼາຍລາຍການ</translation>

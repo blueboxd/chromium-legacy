@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 // The rules for parsing content-types were borrowed from Firefox:
 // http://lxr.mozilla.org/mozilla/source/netwerk/base/src/nsURLHelper.cpp#834
 
@@ -270,8 +275,7 @@ bool HttpUtil::ParseRetryAfterHeader(const std::string& retry_after_string,
   base::Time time;
   base::TimeDelta interval;
 
-  if (net::ParseUint32(retry_after_string, ParseIntFormat::NON_NEGATIVE,
-                       &seconds)) {
+  if (ParseUint32(retry_after_string, ParseIntFormat::NON_NEGATIVE, &seconds)) {
     interval = base::Seconds(seconds);
   } else if (base::Time::FromUTCString(retry_after_string.c_str(), &time)) {
     interval = time - now;
@@ -427,11 +431,7 @@ bool HttpUtil::IsNonCoalescingHeader(std::string_view name) {
       "www-authenticate", "proxy-authenticate",
       // STS specifies that UAs must not process any STS headers after the first
       // one.
-      "strict-transport-security",
-      // Attribution reporting registration header values are JSON, coalescing
-      // them changes the semantic. See https://crbug.com/40242261 for details.
-      "attribution-reporting-register-source",
-      "attribution-reporting-register-trigger"};
+      "strict-transport-security"};
 
   for (std::string_view header : kNonCoalescingHeaders) {
     if (base::EqualsCaseInsensitiveASCII(name, header)) {

@@ -30,6 +30,7 @@ namespace ash::file_system_provider {
 namespace {
 
 using base::test::IsNotNullCallback;
+using base::test::RunClosure;
 using base::test::RunOnceCallback;
 using base::test::TestFuture;
 using testing::_;
@@ -95,10 +96,6 @@ class MockContentCache : public ContentCache {
               (ProvidedFileSystemObserver::Changes & changes),
               (override));
   MOCK_METHOD(void, Evict, (const base::FilePath& file_path), (override));
-  MOCK_METHOD(void,
-              SetOnItemEvictedCallback,
-              (OnItemEvictedCallback on_item_evicted_callback),
-              (override));
   MOCK_METHOD(const SizeInfo, GetSize, (), (const override));
   MOCK_METHOD(void, SetMaxBytesOnDisk, (int64_t), (override));
   MOCK_METHOD(void, AddObserver, (Observer * observer), (override));
@@ -113,9 +110,26 @@ class MockContentCache : public ContentCache {
   base::WeakPtrFactory<MockContentCache> weak_ptr_factory_{this};
 };
 
+class MockContentCacheObserver : public ContentCache::Observer {
+ public:
+  MOCK_METHOD(void,
+              OnItemEvicted,
+              (const base::FilePath& fsp_path),
+              (override));
+  MOCK_METHOD(void,
+              OnItemRemovedFromDisk,
+              (const base::FilePath& fsp_path, int64_t bytes_removed),
+              (override));
+};
+
 // Holder for the constructed mock content cache and the cloud file system.
 struct MockContentCacheAndCloudFileSystem {
   base::WeakPtr<MockContentCache> mock_content_cache;
+  std::unique_ptr<CloudFileSystem> cloud_file_system;
+};
+
+struct MockContentCacheObserverAndCloudFileSystem {
+  std::unique_ptr<MockContentCacheObserver> mock_content_cache_observer;
   std::unique_ptr<CloudFileSystem> cloud_file_system;
 };
 
@@ -163,14 +177,14 @@ class FileSystemProviderCloudFileSystemTest : public testing::Test,
         std::make_unique<MockContentCache>();
     base::WeakPtr<MockContentCache> cache_weak_ptr =
         mock_content_cache->GetMockWeakPtr();
-    EXPECT_CALL(*mock_content_cache, SetOnItemEvictedCallback(_)).Times(1);
     EXPECT_CALL(mock_cache_manager_,
                 InitializeForProvider(_, IsNotNullCallback()))
         .WillOnce(RunOnceCallback<1>(std::move(mock_content_cache)));
     return cache_weak_ptr;
   }
 
-  void CreateContentCache() {
+  std::unique_ptr<MockContentCacheObserver>
+  CreateContentCacheAndMockObserver() {
     EXPECT_TRUE(temp_cache_dir_.CreateUniqueTempDir());
 
     // Initialize a `ContextDatabase` in memory on a blocking task runner.
@@ -185,16 +199,23 @@ class FileSystemProviderCloudFileSystemTest : public testing::Test,
     db.AsyncCall(&ContextDatabase::Initialize).Then(future.GetCallback());
     EXPECT_TRUE(future.Get());
 
+    auto content_cache_observer = std::make_unique<MockContentCacheObserver>();
     std::unique_ptr<ContentCache> content_cache =
         ContentCacheImpl::Create(temp_cache_dir_.GetPath(), std::move(db));
+    content_cache->AddObserver(content_cache_observer.get());
+
     EXPECT_CALL(mock_cache_manager_,
                 InitializeForProvider(_, IsNotNullCallback()))
         .WillOnce(RunOnceCallback<1>(std::move(content_cache)));
+    return content_cache_observer;
   }
 
-  std::unique_ptr<CloudFileSystem> CreateContentCacheAndCloudFileSystem() {
-    CreateContentCache();
-    return CreateCloudFileSystem(/*with_mock_cache_manager=*/true);
+  MockContentCacheObserverAndCloudFileSystem
+  CreateContentCacheAndObserverAndCloudFileSystem() {
+    return MockContentCacheObserverAndCloudFileSystem{
+        .mock_content_cache_observer = CreateContentCacheAndMockObserver(),
+        .cloud_file_system =
+            CreateCloudFileSystem(/*with_mock_cache_manager=*/true)};
   }
 
   MockContentCacheAndCloudFileSystem
@@ -224,6 +245,25 @@ class FileSystemProviderCloudFileSystemTest : public testing::Test,
     EXPECT_EQ(read_file_future.Get<base::File::Error>(), base::File::FILE_OK);
   }
 
+  void WriteFileSuccessfully(CloudFileSystem& cloud_file_system,
+                             int file_handle,
+                             scoped_refptr<net::IOBuffer> buffer,
+                             int64_t offset = 0,
+                             int length = 1) {
+    FileErrorFuture write_file_future;
+    cloud_file_system.WriteFile(file_handle, buffer.get(), offset, length,
+                                write_file_future.GetRepeatingCallback());
+    EXPECT_EQ(write_file_future.Get(), base::File::FILE_OK);
+  }
+
+  void DeleteFileSuccessfully(CloudFileSystem& cloud_file_system,
+                              const base::FilePath& entry_path) {
+    FileErrorFuture delete_file_future;
+    cloud_file_system.DeleteEntry(entry_path, /*recursive=*/false,
+                                  delete_file_future.GetRepeatingCallback());
+    EXPECT_EQ(delete_file_future.Get(), base::File::FILE_OK);
+  }
+
   int GetFileHandleFromSuccessfulOpenFile(
       CloudFileSystem& cloud_file_system,
       const base::FilePath& file_path,
@@ -235,7 +275,7 @@ class FileSystemProviderCloudFileSystemTest : public testing::Test,
   }
 
   void DeleteEntryOnFakeFileSystem(const base::FilePath& entry_path) {
-    TestFuture<base::File::Error> delete_entry_future;
+    FileErrorFuture delete_entry_future;
     fake_provided_file_system_->DeleteEntry(entry_path, /*recursive=*/true,
                                             delete_entry_future.GetCallback());
     EXPECT_EQ(delete_entry_future.Get(), base::File::FILE_OK);
@@ -486,8 +526,8 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
   // Underlying FakeProvidedFileSystem is (always) initialised with fake file
   // with kFakeFilePath.
   const base::FilePath fake_file_path(kFakeFilePath);
-  std::unique_ptr<CloudFileSystem> cloud_file_system =
-      CreateContentCacheAndCloudFileSystem();
+  auto [mock_content_cache_observer, cloud_file_system] =
+      CreateContentCacheAndObserverAndCloudFileSystem();
 
   // Add file to the cache.
   int file_handle =
@@ -509,6 +549,7 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
   DeleteEntryOnFakeFileSystem(fake_file_path);
 
   // The file will be evicted after the unsuccessful GetMetadata request.
+  EXPECT_CALL(*mock_content_cache_observer, OnItemEvicted(fake_file_path));
   GetMetadataFuture get_metadata_future;
   cloud_file_system->GetMetadata(fake_file_path,
                                  /*fields*/ {},
@@ -576,6 +617,100 @@ TEST_F(FileSystemProviderCloudFileSystemTest,
                               open_file_future2.GetRepeatingCallback());
   EXPECT_EQ(open_file_future2.Get<base::File::Error>(),
             base::File::FILE_ERROR_NOT_FOUND);
+}
+
+TEST_F(FileSystemProviderCloudFileSystemTest, OkFromWriteFileEvictsCachedFile) {
+  const base::FilePath fake_file_path(kFakeFilePath);
+  auto [mock_content_cache, cloud_file_system] =
+      CreateMockContentCacheAndCloudFileSystem();
+
+  // Open the `kFakeFilePath` file to stage it in the `FakeProvidedFileSystem`.
+  int file_handle = GetFileHandleFromSuccessfulOpenFile(
+      *cloud_file_system, base::FilePath(kFakeFilePath));
+
+  // The file will be evicted after the successful `WriteFile` request.
+  EXPECT_CALL(*mock_content_cache, Evict(fake_file_path)).Times(1);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(1);
+  WriteFileSuccessfully(*cloud_file_system, file_handle, buffer);
+}
+
+TEST_F(FileSystemProviderCloudFileSystemTest,
+       OkFromDeleteEntryEvictsCachedFile) {
+  const base::FilePath fake_file_path(kFakeFilePath);
+  auto [mock_content_cache, cloud_file_system] =
+      CreateMockContentCacheAndCloudFileSystem();
+
+  // The file will be evicted after the successful `WriteFile` request.
+  EXPECT_CALL(*mock_content_cache, Evict(fake_file_path)).Times(1);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(1);
+  DeleteFileSuccessfully(*cloud_file_system, fake_file_path);
+}
+
+TEST_F(FileSystemProviderCloudFileSystemTest, CurrentReaderCanReadEvictedFile) {
+  // Underlying FakeProvidedFileSystem is (always) initialised with fake file
+  // with kFakeFilePath.
+  const base::FilePath fake_file_path(kFakeFilePath);
+  auto [mock_content_cache_observer, cloud_file_system] =
+      CreateContentCacheAndObserverAndCloudFileSystem();
+
+  // Read 2 bytes of the `kFakeFilePath` file and insert them into the cache.
+  int file_handle = GetFileHandleFromSuccessfulOpenFile(
+      *cloud_file_system, base::FilePath(kFakeFilePath));
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(1);
+
+  ReadFileSuccessfully(*cloud_file_system, file_handle, buffer, /*offset=*/0,
+                       /*length=*/1);
+  ReadFileSuccessfully(*cloud_file_system, file_handle, buffer, /*offset=*/1,
+                       /*length=*/1);
+  CloseFileSuccessfully(*cloud_file_system, file_handle);
+
+  // Open the file again.
+  file_handle = GetFileHandleFromSuccessfulOpenFile(
+      *cloud_file_system, base::FilePath(kFakeFilePath));
+
+  // Read the first byte from the cache.
+  ReadFileSuccessfully(*cloud_file_system, file_handle, buffer, /*offset=*/0,
+                       /*length=*/1);
+
+  // Remove the entry from the underlying FSP to ensure that the ReadFile is
+  // indeed reading from the cache.
+  DeleteEntryOnFakeFileSystem(fake_file_path);
+
+  // Send a delete notification. Expect that the item gets evicted.
+  auto changes = std::make_unique<ProvidedFileSystemObserver::Changes>();
+  changes->emplace_back(
+      fake_file_path, storage::WatcherManager::ChangeType::DELETED,
+      std::make_unique<ash::file_system_provider::CloudFileInfo>("versionA"));
+  EXPECT_CALL(*mock_content_cache_observer, OnItemEvicted(fake_file_path));
+  cloud_file_system->Notify(fake_file_path, /*recursive=*/true,
+                            storage::WatcherManager::ChangeType::DELETED,
+                            std::move(changes), /*tag=*/"", base::DoNothing());
+
+  // Read the second byte from the cache.
+  ReadFileSuccessfully(*cloud_file_system, file_handle, buffer, /*offset=*/1,
+                       /*length=*/1);
+
+  // Fail to read the third byte. Expect that the request is forwarded to the
+  // FSP which responds with a `base::File::FILE_ERROR_INVALID_OPERATION` due to
+  // the file not existing.
+  ReadFileFuture read_file_future;
+  cloud_file_system->ReadFile(file_handle, buffer.get(), /*offset=*/2,
+                              /*length=*/1,
+                              read_file_future.GetRepeatingCallback());
+  EXPECT_EQ(read_file_future.Get<int>(), 0);
+  EXPECT_EQ(read_file_future.Get<base::File::Error>(),
+            base::File::FILE_ERROR_INVALID_OPERATION);
+
+  // Close the file, expect that it now gets removed.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*mock_content_cache_observer,
+              OnItemRemovedFromDisk(fake_file_path, /*bytes_removed=*/2))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  CloseFileSuccessfully(*cloud_file_system, file_handle);
+  run_loop.Run();
 }
 
 }  // namespace

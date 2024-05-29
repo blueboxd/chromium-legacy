@@ -181,7 +181,6 @@
 #include "ui/accessibility/ax_action_handler_base.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_id_forward.h"
-#include "ui/accessibility/mojom/ax_updates_and_events.mojom.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager_delegate.h"
 #include "ui/base/page_transition_types.h"
@@ -298,7 +297,6 @@ class WebAuthRequestSecurityChecker;
 class WebUIImpl;
 struct PendingNavigation;
 struct ResourceTimingInfo;
-struct SubresourceLoaderParams;
 
 // To be called when a RenderFrameHostImpl receives an event.
 // Provides the host, the event fired, and which node id the event was for.
@@ -1525,7 +1523,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      SubresourceLoaderParams subresource_loader_params,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller,
       std::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
@@ -1687,25 +1685,24 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
           receiver);
 
-  // Exposed so that tests can swap the implementation and intercept calls.
+  // Expose Mojo receivers to tests for use with
+  // `mojo::test::ScopedSwapImplForTesting`.
+  mojo::AssociatedReceiver<blink::mojom::BackForwardCacheControllerHost>&
+  back_forward_cache_controller_host_receiver_for_testing() {
+    return back_forward_cache_controller_host_associated_receiver_;
+  }
   mojo::AssociatedReceiver<mojom::FrameHost>&
   frame_host_receiver_for_testing() {
     return frame_host_associated_receiver_;
   }
-
-  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>&
   local_frame_host_receiver_for_testing() {
     return local_frame_host_receiver_;
   }
-
-  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>&
   local_main_frame_host_receiver_for_testing() {
     return local_main_frame_host_receiver_;
   }
-
-  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
   browser_interface_broker_receiver_for_testing() {
     return broker_receiver_;
@@ -1800,11 +1797,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the last committed ServiceWorkerClient of this frame.
   base::WeakPtr<ServiceWorkerClient> GetLastCommittedServiceWorkerClient();
 
-  // Called to taint |this| so the pages which have requested MediaStream
-  // (audio/video/etc capture stream) access would not enter BackForwardCache.
-  void OnGrantedMediaStreamAccess();
-  bool was_granted_media_access() { return was_granted_media_access_; }
-
   // Request a new NavigationClient interface from the renderer and returns the
   // ownership of the mojo::AssociatedRemote. This is intended for use by the
   // NavigationRequest.
@@ -1883,12 +1875,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // information than `GetBackForwardCacheDisablingFeatures()`, which returns
   // only a list of features used.
   BackForwardCacheBlockingDetails GetBackForwardCacheBlockingDetails() const;
-  using BackForwardCacheDisablingFeaturesCallback =
-      base::RepeatingCallback<void(BackForwardCacheDisablingFeatures)>;
-  void SetBackForwardCacheDisablingFeaturesCallbackForTesting(
-      BackForwardCacheDisablingFeaturesCallback callback) {
-    back_forward_cache_disabling_features_callback_for_testing_ = callback;
-  }
 
   // Returns a PrefetchedSignedExchangeCache which is attached to |this|.
   scoped_refptr<PrefetchedSignedExchangeCache>
@@ -1982,8 +1968,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
 
-  void BindModelManager(
-      mojo::PendingReceiver<blink::mojom::ModelManager> receiver);
+  void BindAIManager(mojo::PendingReceiver<blink::mojom::AIManager> receiver);
 
   void GetPresentationService(
       mojo::PendingReceiver<blink::mojom::PresentationService> receiver);
@@ -2872,8 +2857,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  JavaScriptResultAndTypeCallback callback);
 
   // Call |HandleAXEvents()| for tests.
-  void HandleAXEventsForTests(const ui::AXTreeID& tree_id,
-                              ui::AXUpdatesAndEvents updates_and_events) {
+  void HandleAXEventsForTests(
+      const ui::AXTreeID& tree_id,
+      blink::mojom::AXUpdatesAndEventsPtr updates_and_events) {
     HandleAXEvents(tree_id, std::move(updates_and_events),
                    *accessibility_reset_token_);
   }
@@ -3059,6 +3045,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   base::Uuid GetBaseAuctionNonce() const { return base_auction_nonce_; }
+
+  void GetBoundInterfacesForTesting(std::vector<std::string>& out);
+
+  void GetBoundAssociatedInterfacesForTesting(std::vector<std::string>& out) {
+    associated_registry_->GetInterfacesForTesting(out);
+  }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3424,7 +3416,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   friend class RenderAccessibilityHost;
   void HandleAXEvents(const ui::AXTreeID& tree_id,
-                      ui::AXUpdatesAndEvents updates_and_events,
+                      blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
                       uint32_t reset_token);
   void HandleAXLocationChanges(
       const ui::AXTreeID& tree_id,
@@ -4581,7 +4573,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Indicates the number of media streams (audio or video) that are tracked
   // via OnMediaStreamAdded/OnMediaStreamRemoved, split by the stream type.
-  int media_stream_counts_[MediaStreamType::kCount] = {};
+  std::array<int, MediaStreamType::kCount> media_stream_counts_ = {};
 
   // If true, then this RenderFrameHost is waiting to update its
   // LifecycleStateImpl. Happens when the old RenderFrameHost is waiting to
@@ -4867,9 +4859,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //    will be used.  This will match the opaque origin of such a frame.
   net::IsolationInfo isolation_info_ = net::IsolationInfo::CreateTransient();
 
-  // Tainted once MediaStream access was granted.
-  bool was_granted_media_access_ = false;
-
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
 
@@ -5052,9 +5041,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // associated with a fenced frame root, or `this` is associated with an iframe
   // nested within a fenced frame.
   const FencedFrameStatus fenced_frame_status_;
-
-  BackForwardCacheDisablingFeaturesCallback
-      back_forward_cache_disabling_features_callback_for_testing_;
 
   // Manages a transient affordance for this frame or subframes to open a popup.
   TransientAllowPopup transient_allow_popup_;

@@ -86,18 +86,9 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kChromeOsPasskeys);
 #endif
 
-// Update the minimum, maximum, and default timeout values for webauthn requests
-// to be more generous and meet https://www.w3.org/TR/WCAG21/#enough-time.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnAccessibleTimeouts);
-
 // Support cross-domain RP ID assertions.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnRelatedOrigin);
-
-// CHECK an invariant about credential sources.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnChromeImplementedInvariant);
 
 // Allow extensions to assert WebAuthn relying party identifiers for domains
 // they have host permissions for.

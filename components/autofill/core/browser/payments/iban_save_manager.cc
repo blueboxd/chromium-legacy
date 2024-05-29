@@ -140,8 +140,12 @@ IbanSaveManager::TypeOfOfferToSave IbanSaveManager::DetermineHowToSaveIban(
                           client_->GetPersonalDataManager()
                               ->payments_data_manager()
                               .GetPaymentsSigninStateForMetrics())) {
+    autofill_metrics::LogIbanSaveOfferedCountry(
+        import_candidate.GetCountryCode());
     return TypeOfOfferToSave::kOfferServerSave;
   } else if (import_candidate.record_type() != Iban::kLocalIban) {
+    autofill_metrics::LogIbanSaveOfferedCountry(
+        import_candidate.GetCountryCode());
     return TypeOfOfferToSave::kOfferLocalSave;
   }
   return TypeOfOfferToSave::kDoNotOfferToSave;
@@ -232,6 +236,8 @@ void IbanSaveManager::OnUserDidDecideOnLocalSave(
       autofill_metrics::LogStrikesPresentWhenIbanSaved(
           iban_save_strike_database_->GetStrikes(partial_iban_hash),
           /*is_upload_save=*/false);
+      autofill_metrics::LogIbanSaveAcceptedCountry(
+          import_candidate.GetCountryCode());
       // Clear all IbanSave strikes for this IBAN, so that if it's later removed
       // the strike count starts over with respect to re-saving it.
       GetIbanSaveStrikeDatabase()->ClearStrikes(partial_iban_hash);
@@ -270,6 +276,8 @@ void IbanSaveManager::OnUserDidDecideOnUploadSave(
   switch (user_decision) {
     case payments::PaymentsAutofillClient::SaveIbanOfferUserDecision::kAccepted:
       action_metric = autofill_metrics::UploadIbanActionMetric::kAccepted;
+      autofill_metrics::LogIbanSaveAcceptedCountry(
+          import_candidate.GetCountryCode());
       SendUploadRequest(import_candidate, show_save_prompt);
       break;
     case payments::PaymentsAutofillClient::SaveIbanOfferUserDecision::kIgnored:

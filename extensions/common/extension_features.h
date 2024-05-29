@@ -89,6 +89,9 @@ BASE_DECLARE_FEATURE(kEnableWebHidInWebView);
 // Determine if dynamic extension URLs are handled and redirected.
 BASE_DECLARE_FEATURE(kExtensionDynamicURLRedirection);
 
+// A replacement key for declaring icons, in addition to supporting dark mode.
+BASE_DECLARE_FEATURE(kExtensionIconVariants);
+
 // Controls displaying a warning that affected MV2 extensions may no longer be
 // supported.
 BASE_DECLARE_FEATURE(kExtensionManifestV2DeprecationWarning);
@@ -192,6 +195,11 @@ BASE_DECLARE_FEATURE(kDeclarativeNetRequestSafeRuleLimits);
 // Enables declarative net request rules to specify response headers as a
 // matching condition.
 BASE_DECLARE_FEATURE(kDeclarativeNetRequestResponseHeaderMatching);
+
+// If enabled, include JS call stack data in the extension API request
+// sent to the browser process. This data is used for telemetry purpose
+// only.
+BASE_DECLARE_FEATURE(kIncludeJSCallStackInExtensionApiRequest);
 
 // If enabled, use the new CWS itemSnippets API to fetch extension info.
 BASE_DECLARE_FEATURE(kUseItemSnippetsAPI);

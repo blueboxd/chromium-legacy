@@ -431,6 +431,7 @@ builder.
   * [`//content/renderer/accessibility/.+`](https://cs.chromium.org/chromium/src/content/renderer/accessibility/)
   * [`//content/browser/accessibility/.+`](https://cs.chromium.org/chromium/src/content/browser/accessibility/)
   * [`//ui/accessibility/.+`](https://cs.chromium.org/chromium/src/ui/accessibility/)
+  * [`//ui/views/accessibility/.+`](https://cs.chromium.org/chromium/src/ui/views/accessibility/)
 
 * [linux-cfm-rel](https://ci.chromium.org/p/chromium/builders/try/linux-cfm-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-cfm-rel""))
 
@@ -469,6 +470,12 @@ builder.
 
   Location filters:
   * [`//chrome/updater/.+`](https://cs.chromium.org/chromium/src/chrome/updater/)
+
+* [linux-utr-tester](https://ci.chromium.org/p/chromium/builders/try/linux-utr-tester) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-utr-tester""))
+
+  Location filters:
+  * [`//tools/utr/.+`](https://cs.chromium.org/chromium/src/tools/utr/)
+  * [`//tools/mb/.+`](https://cs.chromium.org/chromium/src/tools/mb/)
 
 * [linux-v4l2-codec-rel](https://ci.chromium.org/p/chromium/builders/try/linux-v4l2-codec-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-v4l2-codec-rel""))
 
@@ -584,12 +591,6 @@ builder.
   Location filters:
   * [`//infra/config/generated/builders/[^/]+/[^/]+/targets/.+\.json`](https://cs.chromium.org/search?q=+file:infra/config/generated/builders/[^/]+/[^/]+/targets/.+\.json)
 
-* [win-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/win-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-arm64-rel""))
-
-  Location filters:
-  * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
-  * [`//sandbox/policy/win/.+`](https://cs.chromium.org/chromium/src/sandbox/policy/win/)
-
 * [win-updater-try-builder-dbg](https://ci.chromium.org/p/chromium/builders/try/win-updater-try-builder-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-updater-try-builder-dbg""))
 
   Location filters:
@@ -687,6 +688,13 @@ as required builders.
 
 * [mac14-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac14-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac14-arm64-rel""))
   * Experiment percentage: 1.0
+
+* [win-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/win-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-arm64-rel""))
+  * Experiment percentage: 100.0
+
+  Location filters:
+  * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
+  * [`//sandbox/policy/win/.+`](https://cs.chromium.org/chromium/src/sandbox/policy/win/)
 
 
 ## Mega CQ builders

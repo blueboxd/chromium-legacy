@@ -45,6 +45,12 @@ void PaymentsAutofillClient::ShowWebauthnOfferDialog(
 
 void PaymentsAutofillClient::ShowWebauthnVerifyPendingDialog(
     WebauthnDialogCallback verify_pending_dialog_callback) {}
+
+void PaymentsAutofillClient::UpdateWebauthnOfferDialogWithError() {}
+
+bool PaymentsAutofillClient::CloseWebauthnDialog() {
+  return false;
+}
 #endif  // BUILDFLAG(IS_ANDROID)
 
 void PaymentsAutofillClient::CreditCardUploadCompleted(
@@ -122,6 +128,19 @@ CreditCardOtpAuthenticator* PaymentsAutofillClient::GetOtpAuthenticator() {
 
 CreditCardRiskBasedAuthenticator*
 PaymentsAutofillClient::GetRiskBasedAuthenticator() {
+  return nullptr;
+}
+
+void PaymentsAutofillClient::ShowMandatoryReauthOptInPrompt(
+    base::OnceClosure accept_mandatory_reauth_callback,
+    base::OnceClosure cancel_mandatory_reauth_callback,
+    base::RepeatingClosure close_mandatory_reauth_callback) {}
+
+IbanManager* PaymentsAutofillClient::GetIbanManager() {
+  return nullptr;
+}
+
+IbanAccessManager* PaymentsAutofillClient::GetIbanAccessManager() {
   return nullptr;
 }
 

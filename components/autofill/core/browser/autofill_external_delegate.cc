@@ -43,7 +43,9 @@
 #include "components/autofill/core/browser/metrics/suggestions_list_metrics.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
+#include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/aliases.h"
@@ -57,6 +59,7 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/accessibility/platform/ax_platform.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
 
@@ -222,9 +225,11 @@ bool AutofillExternalDelegate::IsAutofillAndFirstLayerSuggestionId(
 void AutofillExternalDelegate::OnQuery(
     const FormData& form,
     const FormFieldData& field,
+    const gfx::Rect& caret_bounds,
     AutofillSuggestionTriggerSource trigger_source) {
   query_form_ = form;
   query_field_ = field;
+  caret_bounds_ = caret_bounds;
   trigger_source_ = trigger_source;
 }
 
@@ -293,9 +298,31 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
       DidAcceptSuggestion(*test_suggestion, {});
       return;
     }
+
+    AutofillComposeDelegate* delegate = manager_->client().GetComposeDelegate();
+    const bool show_proactive_nudge_at_caret =
+        shown_suggestion_types_.size() == 1 &&
+        shown_suggestion_types_[0] == SuggestionType::kComposeProactiveNudge &&
+        (delegate && delegate->ShouldAnchorNudgeOnCaret());
+    const bool are_caret_bounds_valid =
+        caret_bounds_ != gfx::Rect() &&
+        query_field_.bounds().Contains(gfx::RectF(caret_bounds_));
+    const bool should_use_caret_bounds =
+        show_proactive_nudge_at_caret && are_caret_bounds_valid;
+
+    const PopupAnchorType default_anchor_type =
+#if BUILDFLAG(IS_ANDROID)
+        PopupAnchorType::kKeyboardAccessory;
+#else
+        PopupAnchorType::kField;
+#endif
     AutofillClient::PopupOpenArgs open_args(
-        query_field_.bounds(), query_field_.text_direction(), suggestions,
-        trigger_source_, query_field_.form_control_ax_id());
+        should_use_caret_bounds ? gfx::RectF(caret_bounds_)
+                                : query_field_.bounds(),
+        query_field_.text_direction(), suggestions, trigger_source_,
+        query_field_.form_control_ax_id(),
+        should_use_caret_bounds ? PopupAnchorType::kCaret
+                                : default_anchor_type);
     manager_->client().ShowAutofillSuggestions(open_args, GetWeakPtr());
   }
 }
@@ -982,6 +1009,9 @@ void AutofillExternalDelegate::FillAddressFieldByFieldFillingSuggestion(
         mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
         query_form_, query_field_, filling_value, suggestion.type,
         suggestion.field_by_field_filling_type_used);
+    manager_->OnDidFillAddressFormFillingSuggestion(
+        profile, query_form_, query_field_,
+        TriggerSourceFromSuggestionTriggerSource(trigger_source_));
   }
 }
 
@@ -1044,23 +1074,20 @@ void AutofillExternalDelegate::FillAutofillFormData(
     Suggestion::BackendId backend_id,
     bool is_preview,
     const AutofillTriggerDetails& trigger_details) {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillGranularFillingAvailable)) {
-    // Only address suggestions store the last field types to
-    // fill. This is because this is the only use case where filling
-    // granularies need to be persisted.
-    static constexpr auto kAutofillAddressSuggestions =
-        base::MakeFixedFlatSet<SuggestionType>(
-            {SuggestionType::kAddressEntry, SuggestionType::kFillFullAddress,
-             SuggestionType::kFillFullPhoneNumber,
-             SuggestionType::kFillFullEmail, SuggestionType::kFillFullName,
-             SuggestionType::kFillEverythingFromAddressProfile});
-    const AutofillField* autofill_trigger_field = GetQueriedAutofillField();
-    if (autofill_trigger_field && kAutofillAddressSuggestions.contains(type) &&
-        !is_preview) {
-      last_accepted_address_suggestion_for_address_form_section_
-          [autofill_trigger_field->section()] = type;
-    }
+  // Only address suggestions store the last field types to fill. This is
+  // because this is the only use case where filling granularies need to be
+  // persisted.
+  static constexpr auto kAutofillAddressSuggestions =
+      base::MakeFixedFlatSet<SuggestionType>(
+          {SuggestionType::kAddressEntry, SuggestionType::kFillFullAddress,
+           SuggestionType::kFillFullPhoneNumber, SuggestionType::kFillFullEmail,
+           SuggestionType::kFillFullName,
+           SuggestionType::kFillEverythingFromAddressProfile});
+  const AutofillField* autofill_trigger_field = GetQueriedAutofillField();
+  if (autofill_trigger_field && kAutofillAddressSuggestions.contains(type) &&
+      !is_preview) {
+    last_accepted_address_suggestion_for_address_form_section_
+        [autofill_trigger_field->section()] = type;
   }
 
   mojom::ActionPersistence action_persistence =
@@ -1241,7 +1268,7 @@ void AutofillExternalDelegate::DidAcceptAddressSuggestion(
       ->address_data_manager()
       .ClearStrikesToBlockAddressSuggestions(
           CalculateFormSignature(query_form_),
-          CalculateFieldSignatureForField(query_field_), query_form_.url);
+          CalculateFieldSignatureForField(query_field_), query_form_.url());
 #endif
 }
 
@@ -1298,20 +1325,23 @@ void AutofillExternalDelegate::DidAcceptPaymentsSuggestion(
       // value will directly populate the IBAN field. In the case of a server
       // IBAN, a request to unmask the IBAN will be sent to the GPay server, and
       // the IBAN value will be filled if the request is successful.
-      manager_->client().GetIbanAccessManager()->FetchValue(
-          suggestion.GetPayload<Suggestion::BackendId>(),
-          base::BindOnce(
-              [](base::WeakPtr<AutofillExternalDelegate> delegate,
-                 const std::u16string& value) {
-                if (delegate) {
-                  delegate->manager_->FillOrPreviewField(
-                      mojom::ActionPersistence::kFill,
-                      mojom::FieldActionType::kReplaceAll,
-                      delegate->query_form_, delegate->query_field_, value,
-                      SuggestionType::kIbanEntry, IBAN_VALUE);
-                }
-              },
-              GetWeakPtr()));
+      manager_->client()
+          .GetPaymentsAutofillClient()
+          ->GetIbanAccessManager()
+          ->FetchValue(suggestion.GetPayload<Suggestion::BackendId>(),
+                       base::BindOnce(
+                           [](base::WeakPtr<AutofillExternalDelegate> delegate,
+                              const std::u16string& value) {
+                             if (delegate) {
+                               delegate->manager_->FillOrPreviewField(
+                                   mojom::ActionPersistence::kFill,
+                                   mojom::FieldActionType::kReplaceAll,
+                                   delegate->query_form_,
+                                   delegate->query_field_, value,
+                                   SuggestionType::kIbanEntry, IBAN_VALUE);
+                             }
+                           },
+                           GetWeakPtr()));
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
                                                 suggestion.type, query_form_,
                                                 query_field_);

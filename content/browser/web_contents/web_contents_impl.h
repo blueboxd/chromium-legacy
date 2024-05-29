@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/common/content_export.h"
@@ -146,6 +147,7 @@ class SiteInstanceGroup;
 class TestWCDelegateForDialogsAndFullscreen;
 class TestWebContents;
 class TextInputManager;
+class TouchEmulatorImpl;
 class WakeLockContextHost;
 class WebContentsDelegate;
 class WebContentsImpl;
@@ -184,18 +186,20 @@ using PageVisibilityState = blink::mojom::PageVisibilityState;
 
 using ClipboardPasteData = content::ClipboardPasteData;
 
-class CONTENT_EXPORT WebContentsImpl : public WebContents,
-                                       public FrameTree::Delegate,
-                                       public RenderFrameHostDelegate,
-                                       public RenderViewHostDelegate,
-                                       public RenderWidgetHostDelegate,
-                                       public RenderFrameHostManager::Delegate,
-                                       public PageDelegate,
-                                       public blink::mojom::ColorChooserFactory,
-                                       public NavigationControllerDelegate,
-                                       public NavigatorDelegate,
-                                       public ui::NativeThemeObserver,
-                                       public ui::ColorProviderSourceObserver {
+class CONTENT_EXPORT WebContentsImpl
+    : public WebContents,
+      public FrameTree::Delegate,
+      public RenderFrameHostDelegate,
+      public RenderViewHostDelegate,
+      public RenderWidgetHostDelegate,
+      public RenderFrameHostManager::Delegate,
+      public PageDelegate,
+      public blink::mojom::ColorChooserFactory,
+      public NavigationControllerDelegate,
+      public NavigatorDelegate,
+      public ui::NativeThemeObserver,
+      public ui::ColorProviderSourceObserver,
+      public RenderWidgetHostInputEventRouter::Delegate {
  public:
   class FriendWrapper;
 
@@ -686,8 +690,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Broadcasts the mode change to all frames.
   void ResetAccessibility() override;
   void AXTreeIDForMainFrameHasChanged() override;
-  void ProcessAccessibilityUpdatesAndEvents(
-      ui::AXUpdatesAndEvents& details) override;
+  void AccessibilityEventReceived(
+      const ui::AXUpdatesAndEvents& details) override;
   void AccessibilityLocationChangesReceived(
       const std::vector<ui::AXLocationChanges>& details) override;
   ui::AXNode* GetAccessibilityRootNode() override;
@@ -1144,6 +1148,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHostImpl* GetProspectiveOuterDocument() override;
   FrameTree* LoadingTree() override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
+  FrameTree* GetOwnedPictureInPictureFrameTree() override;
+  FrameTree* GetPictureInPictureOpenerFrameTree() override;
 
   // NavigationControllerDelegate ----------------------------------------------
 
@@ -1156,6 +1162,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool ShouldPreserveAbortedURLs() override;
   void NotifyNavigationStateChangedFromController(
       InvalidateTypes changed_flags) override;
+
+  //  RenderWidgetHostInputEventRouter::Delegate -------------------------------
+  TouchEmulator* GetTouchEmulator(bool create_if_necessary) override;
 
   // Invoked before a form repost warning is shown.
   void NotifyBeforeFormRepostWarningShow() override;
@@ -2052,6 +2061,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // is opened with "noopener", and won't be unset if the opener is closed.
   bool opened_by_another_window_;
 
+  // Set to true while calling out to notify one-off observers (ie non-
+  // WebContentsObservers). These observers should not destroy WebContentsImpl
+  // while it is on the call stack, as that leads to use-after-frees.
+  bool prevent_destruction_ = false;
+
+  bool is_being_destroyed_ = false;
+
 #if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<WebContentsAndroid> web_contents_android_;
 #endif
@@ -2139,13 +2155,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Whether there has been a call to UpdateWebContentsVisibility(VISIBLE).
   bool did_first_set_visible_ = false;
-
-  // Set to true while calling out to notify one-off observers (ie non-
-  // WebContentsObservers). These observers should not destroy WebContentsImpl
-  // while it is on the call stack, as that leads to use-after-frees.
-  bool prevent_destruction_ = false;
-
-  bool is_being_destroyed_ = false;
 
   // Indicates whether we should notify about disconnection of this
   // WebContentsImpl. This is used to ensure disconnection notifications only
@@ -2318,6 +2327,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 
+  std::unique_ptr<TouchEmulatorImpl> touch_emulator_;
+
   // TextInputManager tracks the IME-related state for all the
   // RenderWidgetHostViews on this WebContents. Only exists on the outermost
   // WebContents and is automatically destroyed when a WebContents becomes an
@@ -2482,6 +2493,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents::CreateParams::picture_in_picture_options.
   std::optional<blink::mojom::PictureInPictureWindowOptions>
       picture_in_picture_options_;
+
+  // Only set if this WebContents represents a document picture-in-picture
+  // window. This points to the WebContents that originally opened this
+  // WebContents.
+  base::WeakPtr<WebContents> picture_in_picture_opener_;
 
   VisibleTimeRequestTrigger visible_time_request_trigger_;
 

@@ -13,6 +13,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/picker/model/picker_action_type.h"
+#include "ash/picker/model/picker_mode_type.h"
 #include "ash/picker/model/picker_model.h"
 #include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/picker_asset_fetcher.h"
@@ -81,6 +83,8 @@ constexpr std::string_view kPickerFeatureTestKeyHash(
 constexpr base::TimeDelta kBurnInPeriod = base::Milliseconds(200);
 
 enum class PickerFeatureKeyType { kNone, kDev, kTest };
+
+constexpr int kMaxRecentFiles = 10;
 
 PickerFeatureKeyType MatchPickerFeatureKeyHash() {
   // Command line looks like:
@@ -270,10 +274,8 @@ void OpenFile(const base::FilePath& path) {
 
 }  // namespace
 
-PickerController::PickerController() {
-  // `base::Unretained` is safe here because this class owns `asset_fetcher_`.
-  asset_fetcher_ = std::make_unique<PickerAssetFetcherImpl>(base::BindRepeating(
-      &PickerController::GetSharedURLLoaderFactory, base::Unretained(this)));
+PickerController::PickerController()
+    : asset_fetcher_(std::make_unique<PickerAssetFetcherImpl>(this)) {
   clipboard_provider_ = std::make_unique<PickerClipboardProvider>();
 }
 
@@ -389,11 +391,13 @@ void PickerController::GetResultsForCategory(PickerCategory category,
       NOTREACHED_NORETURN();
     case PickerCategory::kDriveFiles:
       client_->GetRecentDriveFileResults(
+          kMaxRecentFiles,
           base::BindRepeating(CreateSingleSectionForCategoryResults)
               .Then(std::move(callback)));
       return;
     case PickerCategory::kLocalFiles:
       client_->GetRecentLocalFileResults(
+          kMaxRecentFiles,
           base::BindRepeating(CreateSingleSectionForCategoryResults)
               .Then(std::move(callback)));
       return;
@@ -550,6 +554,69 @@ PickerSessionMetrics& PickerController::GetSessionMetrics() {
   return *session_metrics_;
 }
 
+PickerActionType PickerController::GetActionForResult(
+    const PickerSearchResult& result) {
+  const PickerModeType mode = model_->GetMode();
+  return std::visit(
+      base::Overloaded{
+          [mode](const PickerSearchResult::TextData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::EmojiData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::SymbolData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::EmoticonData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::ClipboardData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::GifData& data) {
+            CHECK(mode == PickerModeType::kNoSelection ||
+                  mode == PickerModeType::kHasSelection);
+            return PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::BrowsingHistoryData& data) {
+            return mode == PickerModeType::kUnfocused
+                       ? PickerActionType::kOpen
+                       : PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::LocalFileData& data) {
+            return mode == PickerModeType::kUnfocused
+                       ? PickerActionType::kOpen
+                       : PickerActionType::kInsert;
+          },
+          [mode](const PickerSearchResult::DriveFileData& data) {
+            return mode == PickerModeType::kUnfocused
+                       ? PickerActionType::kOpen
+                       : PickerActionType::kInsert;
+          },
+          [](const PickerSearchResult::CategoryData& data) {
+            return PickerActionType::kDo;
+          },
+          [](const PickerSearchResult::SearchRequestData& data) {
+            return PickerActionType::kDo;
+          },
+          [](const PickerSearchResult::EditorData& data) {
+            return PickerActionType::kCreate;
+          },
+      },
+      result.data());
+}
+
 void PickerController::OnWidgetDestroying(views::Widget* widget) {
   feature_usage_metrics_.StopUsage();
   session_metrics_.reset();
@@ -559,6 +626,12 @@ void PickerController::OnWidgetDestroying(views::Widget* widget) {
 scoped_refptr<network::SharedURLLoaderFactory>
 PickerController::GetSharedURLLoaderFactory() {
   return client_->GetSharedURLLoaderFactory();
+}
+
+void PickerController::FetchFileThumbnail(const base::FilePath& path,
+                                          const gfx::Size& size,
+                                          FetchFileThumbnailCallback callback) {
+  client_->FetchFileThumbnail(path, size, std::move(callback));
 }
 
 }  // namespace ash

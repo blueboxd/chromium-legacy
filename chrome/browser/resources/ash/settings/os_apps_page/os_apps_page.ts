@@ -214,6 +214,11 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
         value: false,
       },
 
+      isPinVerified_: {
+        type: Boolean,
+        value: false,
+      },
+
       /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
@@ -269,6 +274,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   private appsWithNotifications_: AppWithNotifications[];
   private isArcVmManageUsbAvailable_: boolean;
   private isDndEnabled_: boolean;
+  private isPinVerified_: boolean;
   private readonly isPlayStoreAvailable_: boolean;
   private isPluginVmAvailable_: boolean;
   private isRevampWayfindingEnabled_: boolean;
@@ -382,7 +388,7 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
     this.showParentalControlsVerifyPinDialog_ = false;
     // TODO(b/332936481): Only navigate to the subpage on successful PIN
     // verification.
-    Router.getInstance().navigateTo(routes.APP_PARENTAL_CONTROLS);
+    this.navigateToParentalControls_();
   }
 
   private onDisablePinDialogClose_(): void {
@@ -394,6 +400,10 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
 
   private onSetupPinDialogClose_(): void {
     this.showParentalControlsSetupPinDialog_ = false;
+  }
+
+  private onSetupPinSuccess_(): void {
+    this.navigateToParentalControls_();
   }
 
   private onClickManageIsolatedWebApps_(): void {
@@ -458,6 +468,11 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
         this.i18n(
             'appNotificationsCountDescription',
             this.appsWithNotifications_.length);
+  }
+
+  private navigateToParentalControls_(): void {
+    this.isPinVerified_ = true;
+    Router.getInstance().navigateTo(routes.APP_PARENTAL_CONTROLS);
   }
 }
 

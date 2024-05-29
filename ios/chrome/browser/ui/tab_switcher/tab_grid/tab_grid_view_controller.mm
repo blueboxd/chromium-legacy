@@ -1165,12 +1165,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
-// Updates the views, buttons, toolbars as well as broadcasts incognito tabs
-// visibility after the tab count has changed.
-- (void)handleTabCountChangeWithTabCount:(NSUInteger)tabCount {
-  [self broadcastIncognitoContentVisibility];
-}
-
 // Broadcasts whether incognito tabs are showing.
 - (void)broadcastIncognitoContentVisibility {
   // It is programmer error to broadcast incognito content visibility when the
@@ -1605,16 +1599,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                        focusOmnibox:NO];
 }
 
-- (void)pinnedTabsViewController:
-            (PinnedTabsViewController*)pinnedTabsViewController
-              didChangeItemCount:(NSUInteger)count {
-  self.topToolbar.pageControl.pinnedTabCount = count;
-  const NSUInteger totalTabCount =
-      count + self.topToolbar.pageControl.regularTabCount;
-
-  [self handleTabCountChangeWithTabCount:totalTabCount];
-}
-
 - (void)pinnedTabsViewControllerVisibilityDidChange:
     (PinnedTabsViewController*)pinnedTabsViewController {
   UIEdgeInsets insets = [self calculateInsetsForRegularGridView];
@@ -1656,8 +1640,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.mutator dragAndDropSessionEnded];
 }
 
-- (void)pinnedViewController:(PinnedTabsViewController*)pinnedTabsViewController
-    didRequestContextMenuForItemWithID:(web::WebStateID)itemID {
+- (void)pinnedViewControllerDidRequestContextMenu:
+    (PinnedTabsViewController*)pinnedTabsViewController {
   [self tabGridDidPerformAction:TabGridActionType::kInPageAction];
 }
 
@@ -1793,19 +1777,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)gridViewController:(BaseGridViewController*)gridViewController
-        didChangeItemCount:(NSUInteger)count {
-  if (gridViewController == self.regularTabsViewController) {
-    self.topToolbar.pageControl.regularTabCount = count;
-    const NSUInteger totalTabCount =
-        count + self.topToolbar.pageControl.pinnedTabCount;
-
-    [self handleTabCountChangeWithTabCount:totalTabCount];
-  } else if (gridViewController == self.incognitoTabsViewController) {
-    [self handleTabCountChangeWithTabCount:count];
-  }
-}
-
-- (void)gridViewController:(BaseGridViewController*)gridViewController
        didRemoveItemWIthID:(web::WebStateID)itemID {
   [self tabGridDidPerformAction:TabGridActionType::kInPageAction];
 }
@@ -1867,9 +1838,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   NOTREACHED_IN_MIGRATION();
 }
 
-- (void)gridViewController:(BaseGridViewController*)gridViewController
-    didRequestContextMenuForItemWithID:(web::WebStateID)itemID {
+- (void)gridViewControllerDidRequestContextMenu:
+    (BaseGridViewController*)gridViewController {
   [self tabGridDidPerformAction:TabGridActionType::kInPageAction];
+  // The searchBar must relinquish its status as first responder to become
+  // interactable again.
+  [self.topToolbar unfocusSearchBar];
 }
 
 #pragma mark - TabGridToolbarsMainTabGridDelegate

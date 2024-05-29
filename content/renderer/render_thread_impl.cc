@@ -615,14 +615,7 @@ void RenderThreadImpl::Init() {
       discardable_memory_allocator_.get());
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  // The SandboxedProcessThreadTypeHandler isn't created in
-  // render_thread_impl_browsertest.cc, nor in --single-process mode.
-  if (SandboxedProcessThreadTypeHandler* sandboxed_process_thread_type_handler =
-          SandboxedProcessThreadTypeHandler::Get()) {
-    sandboxed_process_thread_type_handler->HandleThreadTypeChange(
-        ChildProcess::current()->io_thread_id(),
-        base::ThreadType::kCompositing);
-  }
+  ChildProcess::current()->SetIOThreadType(base::ThreadType::kCompositing);
 #endif
 
   process_foregrounded_count_ = 0;
@@ -631,8 +624,7 @@ void RenderThreadImpl::Init() {
     BindHostReceiver(compositing_mode_reporter_.BindNewPipeAndPassReceiver());
 
     compositing_mode_reporter_->AddCompositingModeWatcher(
-        compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote(
-            main_thread_scheduler_->CompositorTaskRunner()));
+        compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote());
   }
 
   variations_observer_ = std::make_unique<VariationsRenderThreadObserver>();

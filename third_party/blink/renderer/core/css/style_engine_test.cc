@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -571,7 +572,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       t8->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
   gfx::SizeF page_size(400, 400);
-  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(WebPrintParams(page_size));
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(
       Color::FromRGB(0, 0, 0),
@@ -2710,7 +2711,7 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   // After registering, there should be initial data.
   css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "10px",
                                      false);
-  auto data1 = GetStyleEngine().MaybeCreateAndGetInitialData();
+  auto* data1 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data1);
 
   // After a full recalc, we should have the same initial data.
@@ -2718,7 +2719,7 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   EXPECT_TRUE(GetDocument().documentElement()->NeedsStyleRecalc());
   EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
   UpdateAllLifecyclePhases();
-  auto data2 = GetStyleEngine().MaybeCreateAndGetInitialData();
+  auto* data2 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data2);
   EXPECT_EQ(data1, data2);
 
@@ -3554,7 +3555,7 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
       body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
   gfx::SizeF page_size(400, 400);
-  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(WebPrintParams(page_size));
   EXPECT_EQ(Color::kBlack, root->GetComputedStyle()->VisitedDependentColor(
                                GetCSSPropertyColor()));
   EXPECT_EQ(mojom::blink::ColorScheme::kLight,
@@ -3589,7 +3590,7 @@ TEST_F(StyleEngineTest, PrintNoForceDarkMode) {
             true);
 
   gfx::SizeF page_size(400, 400);
-  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(WebPrintParams(page_size));
   EXPECT_EQ(frame_view->DocumentBackgroundColor(), Color::kWhite);
   EXPECT_EQ(GetDocument().documentElement()->GetComputedStyle()->ForceDark(),
             false);
@@ -3624,7 +3625,7 @@ TEST_F(StyleEngineTest, PrintScriptingEnabled) {
       body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
   gfx::SizeF page_size(400, 400);
-  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(WebPrintParams(page_size));
   EXPECT_EQ(
       Color::FromRGB(0, 128, 0),
       body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
@@ -4940,7 +4941,7 @@ TEST_F(StyleEngineTest, AudioUAStyleNameSpace) {
   EXPECT_FALSE(html_audio->GetComputedStyle());
 
   gfx::SizeF page_size(400, 400);
-  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(WebPrintParams(page_size));
 
   // Also for printing.
   EXPECT_TRUE(audio->GetComputedStyle());

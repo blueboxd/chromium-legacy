@@ -82,10 +82,7 @@ class HashRealTimeService : public KeyedService {
   ~HashRealTimeService() override;
 
   // Returns whether the |url| is eligible for hash-prefix real-time checks.
-  // It's never eligible if the |request_destination| is not mainframe.
-  static bool CanCheckUrl(
-      const GURL& url,
-      network::mojom::RequestDestination request_destination);
+  static bool CanCheckUrl(const GURL& url);
 
   // Start the lookup for |url|, and call |response_callback| on
   // |callback_task_runner| when response is received.
@@ -129,7 +126,7 @@ class HashRealTimeService : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
                            TestBackoffModeSet_RetriableError);
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
-                           TestBackoffModeSet_MissingOhttpKey);
+                           TestBackoffModeNotSet_MissingOhttpKey);
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
                            TestBackoffModeRespected_FullyCached);
   FRIEND_TEST_ALL_PREFIXES(HashRealTimeServiceTest,
@@ -167,18 +164,9 @@ class HashRealTimeService : public KeyedService {
     // Fetching the OHTTP key needed for the HPRT network request was
     // unsuccessful.
     kOhttpKeyFetchFailed = 10,
-    // There is no OHTTP key service.
-    kNoOhttpKeyService = 11,
-    kMaxValue = kNoOhttpKeyService,
-  };
-
-  // The reason why ReportError is called on backoff operator.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class BackoffReportErrorReason {
-    kInvalidKey = 0,
-    kResponseError = 1,
-    kMaxValue = kResponseError,
+    // [Deprecated] There is no OHTTP key service.
+    kDeprecatedNoOhttpKeyService = 11,
+    kMaxValue = kDeprecatedNoOhttpKeyService,
   };
 
   // Used only for the return type of the function |DetermineSBThreatInfo|.

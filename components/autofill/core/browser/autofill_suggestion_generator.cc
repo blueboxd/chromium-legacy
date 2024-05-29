@@ -724,18 +724,28 @@ std::vector<std::u16string> GetProfileSuggestionLabels(
     const std::string& app_locale) {
   // Generate disambiguating labels based on the list of matches.
   std::vector<std::u16string> differentiating_labels;
+  const bool is_in_full_form_filling_mode =
+      suggestion_type == SuggestionType::kAddressEntry;
   if (!IsAddressType(trigger_field_type) &&
       base::FeatureList::IsEnabled(
           features::kAutofillForUnclassifiedFieldsAvailable)) {
     differentiating_labels =
         GetProfileSuggestionLabelForNonAddressField(profiles, app_locale);
-  } else if (base::FeatureList::IsEnabled(
+  } else if ((!is_in_full_form_filling_mode ||
+              features::kAutofillGranularFillingAvailableWithImprovedLabelsParam
+                  .Get()) &&
+             base::FeatureList::IsEnabled(
                  features::kAutofillGranularFillingAvailable)) {
+    // When in full form filling mode, this flow should only be used if
+    // `features::kAutofillGranularFillingAvailableWithImprovedLabelsParam` of
+    // the feature is enabled.
+    // All other granular filling modes should always use this flow.
     AutofillProfile::CreateInferredLabels(
         profiles, /*suggested_fields=*/std::nullopt, trigger_field_type,
         {trigger_field_type},
         GetNumberOfMinimalFieldsToShow(trigger_field_type, suggestion_type),
-        app_locale, &differentiating_labels);
+        app_locale, &differentiating_labels,
+        /*use_improved_labels_order=*/true);
   } else {
     AutofillProfile::CreateInferredLabels(
         profiles, field_types, /*triggering_field_type=*/std::nullopt,
@@ -765,9 +775,7 @@ CreateSuggestionLabelsWithGranularFillingDetails(
   // field which is not classified as an address, labels should be added because
   // the first-level suggestion is not clickable. The first-level suggestion
   // needs to give plenty of info about the profile.
-  if (field_types.size() == 1 && IsAddressType(trigger_field_type) &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillGranularFillingAvailable)) {
+  if (field_types.size() == 1 && IsAddressType(trigger_field_type)) {
     return std::vector<std::vector<Suggestion::Text>>(profiles.size());
   }
 
@@ -959,6 +967,7 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
           trigger_field_type, trigger_field.value(),
           trigger_field.is_autofilled(), field_types,
           GetProfilesToSuggestOptions(trigger_field_type, trigger_field.value(),
+                                      trigger_field.is_autofilled(),
                                       trigger_source));
   // If autofill for addresses is triggered from the context menu on an address
   // field and no suggestions can be shown (i.e. if a user has only addresses
@@ -995,6 +1004,7 @@ AutofillSuggestionGenerator::ProfilesToSuggestOptions
 AutofillSuggestionGenerator::GetProfilesToSuggestOptions(
     FieldType trigger_field_type,
     const std::u16string& trigger_field_contents,
+    bool trigger_field_is_autofilled,
     AutofillSuggestionTriggerSource trigger_source) const {
   // By default, disused profiles are excluded only if the normalized field
   // value is empty. However, triggering suggestions via manual fallback should
@@ -1016,8 +1026,15 @@ AutofillSuggestionGenerator::GetProfilesToSuggestOptions(
   // all their profiles, which is why this option is disabled there. Moreover,
   // prefix matching in that case could result in poor UX, since the user
   // explicitly asked for Autofill address suggestions.
+  // Additionally, if AutofillAddressFieldSwapping is enabled, prefix matching
+  // is disabled because we want to offer the user suggestions to swap the
+  // current value of the field with something else, making the prefix matching
+  // not useful.
   bool should_prefix_match_suggestions =
-      trigger_source != AutofillSuggestionTriggerSource::kManualFallbackAddress;
+      trigger_source !=
+          AutofillSuggestionTriggerSource::kManualFallbackAddress &&
+      (!trigger_field_is_autofilled ||
+       !base::FeatureList::IsEnabled(features::kAutofillAddressFieldSwapping));
   // By default, suggestions should be deduplicated in order to not offer
   // redundant suggestions. However, triggering suggestions via manual fallback
   // should allow the user to access all their profiles, which is why this
@@ -1040,7 +1057,7 @@ AutofillSuggestionGenerator::GetProfilesToSuggest(
     const FieldTypeSet& field_types,
     ProfilesToSuggestOptions options) {
   // Get the profiles to suggest, which are already sorted.
-  std::vector<AutofillProfile*> sorted_profiles =
+  std::vector<const AutofillProfile*> sorted_profiles =
       personal_data().address_data_manager().GetProfilesToSuggest();
   if (options.require_non_empty_value_on_trigger_field) {
     std::erase_if(sorted_profiles, [&](const AutofillProfile* profile) {
@@ -1084,6 +1101,10 @@ AutofillSuggestionGenerator::CreateSuggestionsFromProfiles(
     SuggestionType suggestion_type,
     FieldType trigger_field_type,
     uint64_t trigger_field_max_length) {
+  // TODO(b/): Remove when launching AutofillGranularFillingAvailable.
+  if (profiles.empty()) {
+    return {};
+  }
   std::vector<Suggestion> suggestions;
   std::string app_locale = personal_data().app_locale();
   std::vector<std::vector<Suggestion::Text>> labels =
@@ -1101,13 +1122,17 @@ AutofillSuggestionGenerator::CreateSuggestionsFromProfiles(
       }) > 1;
   FieldTypeGroup trigger_field_type_group =
       GroupTypeOfFieldType(trigger_field_type);
-  // Name fields should have `NAME_FULL` as main text, unless in field by
-  // field filling mode.
+  // If `features::kAutofillGranularFillingAvailableWithImprovedLabelsParam` of
+  // the `kAutofillGranularFillingAvailable` feature is enabled, name fields
+  // should have `NAME_FULL` as main text, unless in field by field filling
+  // mode.
   FieldType main_text_field_type =
       GroupTypeOfFieldType(trigger_field_type) == FieldTypeGroup::kName &&
               suggestion_type != SuggestionType::kAddressFieldByFieldFilling &&
               base::FeatureList::IsEnabled(
-                  features::kAutofillGranularFillingAvailable)
+                  features::kAutofillGranularFillingAvailable) &&
+              features::kAutofillGranularFillingAvailableWithImprovedLabelsParam
+                  .Get()
           ? NAME_FULL
           : trigger_field_type;
   for (size_t i = 0; i < profiles.size(); ++i) {
@@ -1237,7 +1262,7 @@ AutofillSuggestionGenerator::DeduplicatedProfilesForSuggestions(
 
 std::vector<raw_ptr<const AutofillProfile, VectorExperimental>>
 AutofillSuggestionGenerator::GetPrefixMatchedProfiles(
-    const std::vector<AutofillProfile*>& profiles,
+    const std::vector<const AutofillProfile*>& profiles,
     FieldType trigger_field_type,
     const std::u16string& raw_field_contents,
     const std::u16string& field_contents_canon,

@@ -4,14 +4,17 @@
 
 package org.chromium.chrome.browser.tab_resumption;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
@@ -37,13 +41,13 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Features.JUnitProcessor;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallbacks;
+import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
 import org.chromium.chrome.browser.tab_resumption.UrlImageProvider.UrlImageCallback;
 import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
-import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.url.GURL;
@@ -61,11 +65,10 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
     private static final int TAB_ID = 11;
 
     @Mock private UrlImageProvider mUrlImageProvider;
-    @Mock private ThumbnailProvider mThumbnailProvider;
     @Mock private Tab mTab;
 
     @Captor private ArgumentCaptor<GURL> mFetchImagePageUrlCaptor;
-    @Captor private ArgumentCaptor<Callback<Bitmap>> mThumbnailProviderCaptor;
+    @Captor private ArgumentCaptor<Callback<Bitmap>> mThumbnailCallbackCaptor;
     @Captor private ArgumentCaptor<UrlImageCallback> mFetchImageCallbackCaptor;
     @Captor private ArgumentCaptor<Callback<Bitmap>> mFetchSalientImageCallbackCaptor;
 
@@ -73,11 +76,10 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
     private Size mThumbnailSize;
     private TabResumptionTileContainerView mTileContainerView;
 
-    private SuggestionClickCallbacks mClickCallbacks;
+    private SuggestionClickCallback mClickCallback;
     private SuggestionBundle mSuggestionBundle;
 
-    private GURL mLastClickUrl;
-    private int mLastClickTabId;
+    private SuggestionEntry mLastClickEntry;
     private int mClickCount;
 
     @Before
@@ -103,24 +105,14 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
                                         .single_tab_module_tab_thumbnail_size_big);
         mThumbnailSize = new Size(size, size);
 
-        mClickCallbacks =
-                new SuggestionClickCallbacks() {
-                    @Override
-                    public void onSuggestionClickByUrl(GURL gurl) {
-                        mLastClickUrl = gurl;
-                        ++mClickCount;
-                    }
-
-                    @Override
-                    public void onSuggestionClickByTabId(int tabId) {
-                        mLastClickTabId = tabId;
-                        ++mClickCount;
-                    }
+        mClickCallback =
+                (SuggestionEntry entry) -> {
+                    mLastClickEntry = entry;
+                    ++mClickCount;
                 };
         mSuggestionBundle = new SuggestionBundle(CURRENT_TIME_MS);
         mModuleView.setUrlImageProvider(mUrlImageProvider);
-        mModuleView.setClickCallbacks(mClickCallbacks);
-        mModuleView.setThumbnailProvider(mThumbnailProvider);
+        mModuleView.setClickCallback(mClickCallback);
         mTileContainerView = mModuleView.getTileContainerViewForTesting();
     }
 
@@ -150,12 +142,11 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
     @SmallTest
     public void testRenderSingle() {
         SuggestionEntry entry1 =
-                new SuggestionEntry(
+                SuggestionEntry.createFromForeignFields(
                         /* sourceName= */ "Desktop",
                         /* url= */ JUnitTestGURLs.GOOGLE_URL_DOG,
                         /* title= */ "Google Dog",
-                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0),
-                        /* id= */ 90);
+                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0));
         mSuggestionBundle.entries.add(entry1);
 
         Assert.assertEquals(0, mTileContainerView.getChildCount());
@@ -196,10 +187,10 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
 
         // Simulate click.
         Assert.assertEquals(0, mClickCount);
-        Assert.assertEquals(null, mLastClickUrl);
+        Assert.assertNull(mLastClickEntry);
         tile1.performClick();
         Assert.assertEquals(1, mClickCount);
-        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickUrl);
+        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickEntry.url);
     }
 
     @Test
@@ -208,12 +199,11 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
         mModuleView.setUseSalientImage(true);
 
         SuggestionEntry entry1 =
-                new SuggestionEntry(
+                SuggestionEntry.createFromForeignFields(
                         /* sourceName= */ "Desktop",
                         /* url= */ JUnitTestGURLs.GOOGLE_URL_DOG,
                         /* title= */ "Google Dog",
-                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0),
-                        /* id= */ 90);
+                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0));
         mSuggestionBundle.entries.add(entry1);
 
         Assert.assertEquals(0, mTileContainerView.getChildCount());
@@ -223,13 +213,11 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
 
         // Capture call to fetch image.
         verify(mUrlImageProvider, atLeastOnce())
-                .fetchSalientImageWithFallback(
+                .fetchSalientImage(
                         mFetchImagePageUrlCaptor.capture(),
                         eq(true),
-                        mFetchSalientImageCallbackCaptor.capture(),
-                        mFetchImageCallbackCaptor.capture());
+                        mFetchSalientImageCallbackCaptor.capture());
         Assert.assertEquals(1, mFetchImagePageUrlCaptor.getAllValues().size());
-        Assert.assertEquals(1, mFetchSalientImageCallbackCaptor.getAllValues().size());
         Assert.assertEquals(
                 JUnitTestGURLs.GOOGLE_URL_DOG, mFetchImagePageUrlCaptor.getAllValues().get(0));
 
@@ -257,16 +245,75 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
 
         // Simulate click.
         Assert.assertEquals(0, mClickCount);
-        Assert.assertEquals(null, mLastClickUrl);
+        Assert.assertNull(mLastClickEntry);
         tile1.performClick();
         Assert.assertEquals(1, mClickCount);
-        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickUrl);
+        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickEntry.url);
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadTileUrlImageWithSalientImage() {
+        String histogramName = "MagicStack.Clank.TabResumption.IsSalientImageAvailable";
+        GURL expectedUrl = JUnitTestGURLs.BLUE_3;
+        SuggestionEntry entry1 =
+                SuggestionEntry.createFromForeignFields(
+                        /* sourceName= */ "My Tablet",
+                        /* url= */ expectedUrl,
+                        /* title= */ "Blue website with a very long title that might not fit",
+                        /* timestamp= */ makeTimestamp(24 - 1, 60 - 16, 0));
+        TabResumptionTileView tile1 = Mockito.mock(TabResumptionTileView.class);
+
+        mTileContainerView.loadTileUrlImage(
+                entry1,
+                mUrlImageProvider,
+                tile1,
+                /* isSingle= */ false,
+                /* usSalientImage= */ true);
+
+        verify(mUrlImageProvider)
+                .fetchSalientImage(
+                        eq(expectedUrl),
+                        /* isSingle= */ eq(false),
+                        mFetchSalientImageCallbackCaptor.capture());
+
+        // Verifies the case that a salient image is returned.
+        Bitmap bitmap = makeBitmap(100, 100);
+        var histogramWatcher =
+                HistogramWatcher.newBuilder().expectBooleanRecord(histogramName, true).build();
+        mFetchSalientImageCallbackCaptor.getValue().onResult(bitmap);
+        verify(tile1).setImageDrawable(any(Drawable.class));
+        verify(tile1).updateForSalientImage();
+        histogramWatcher.assertExpected();
+
+        // Verifies the case that no salient image is available.
+        mFetchSalientImageCallbackCaptor.getValue().onResult(null);
+        verify(mUrlImageProvider)
+                .fetchImageForUrl(eq(expectedUrl), mFetchImageCallbackCaptor.capture());
+
+        // Verifies the case there isn't a fallback image is available.
+        histogramWatcher =
+                HistogramWatcher.newBuilder().expectBooleanRecord(histogramName, false).build();
+        mFetchImageCallbackCaptor.getValue().onBitmap(null);
+        verify(tile1, times(2)).setImageDrawable(any(Drawable.class));
+        // Verifies that the tile isn't updated for salient image.
+        verify(tile1).updateForSalientImage();
+        histogramWatcher.assertExpected();
+
+        // Verifies the case there is a fallback image available.
+        histogramWatcher =
+                HistogramWatcher.newBuilder().expectBooleanRecord(histogramName, false).build();
+        mFetchImageCallbackCaptor.getValue().onBitmap(bitmap);
+        verify(tile1, times(3)).setImageDrawable(any(Drawable.class));
+        // Verifies that the tile isn't updated for salient image.
+        verify(tile1).updateForSalientImage();
+        histogramWatcher.assertExpected();
     }
 
     @Test
     @SmallTest
     public void testRenderSingleLocalView() {
-        SuggestionEntry entry1 = new LocalTabSuggestionEntry(mTab);
+        SuggestionEntry entry1 = SuggestionEntry.createFromLocalTab(mTab);
         mSuggestionBundle.entries.add(entry1);
 
         Assert.assertEquals(0, mTileContainerView.getChildCount());
@@ -280,14 +327,9 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
                         mFetchImagePageUrlCaptor.capture(), mFetchImageCallbackCaptor.capture());
 
         // Capture call to fetch tab thumbnail.
-        verify(mThumbnailProvider, atLeastOnce())
-                .getTabThumbnailWithCallback(
-                        eq(TAB_ID),
-                        eq(mThumbnailSize),
-                        mThumbnailProviderCaptor.capture(),
-                        /* forceUpdate= */ eq(true),
-                        /* writeToCache= */ eq(true),
-                        /* isSelected= */ eq(false));
+        verify(mUrlImageProvider, atLeastOnce())
+                .getTabThumbnail(
+                        eq(TAB_ID), eq(mThumbnailSize), mThumbnailCallbackCaptor.capture());
 
         // Check tile texts.
         LocalTileView localTileView = (LocalTileView) mTileContainerView.getChildAt(0);
@@ -312,7 +354,7 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
         Assert.assertNotNull(drawable);
         Assert.assertEquals(expectedBitmap, drawable.getBitmap());
 
-        mThumbnailProviderCaptor.getAllValues().get(0).onResult(makeBitmap(64, 64));
+        mThumbnailCallbackCaptor.getAllValues().get(0).onResult(makeBitmap(64, 64));
         // Verifies that the placeholder icon drawable is removed after setting a foreground bitmap.
         Assert.assertNull(
                 ((TabThumbnailView) localTileView.findViewById(R.id.tab_thumbnail))
@@ -320,29 +362,27 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
 
         // Simulate click on the local Tab.
         Assert.assertEquals(0, mClickCount);
-        Assert.assertEquals(0, mLastClickTabId);
+        Assert.assertNull(mLastClickEntry);
         localTileView.performClick();
         Assert.assertEquals(1, mClickCount);
-        Assert.assertEquals(TAB_ID, mLastClickTabId);
+        Assert.assertEquals(TAB_ID, mLastClickEntry.localTabId);
     }
 
     @Test
     @SmallTest
     public void testRenderDouble() {
         SuggestionEntry entry1 =
-                new SuggestionEntry(
+                SuggestionEntry.createFromForeignFields(
                         /* sourceName= */ "My Tablet",
                         /* url= */ JUnitTestGURLs.BLUE_3,
                         /* title= */ "Blue website with a very long title that might not fit",
-                        /* timestamp= */ makeTimestamp(24 - 1, 60 - 16, 0),
-                        /* id= */ 50);
+                        /* timestamp= */ makeTimestamp(24 - 1, 60 - 16, 0));
         SuggestionEntry entry2 =
-                new SuggestionEntry(
+                SuggestionEntry.createFromForeignFields(
                         /* sourceName= */ "Desktop",
                         /* url= */ JUnitTestGURLs.GOOGLE_URL_DOG,
                         /* title= */ "Google Dog",
-                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0),
-                        /* id= */ 90);
+                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0));
         mSuggestionBundle.entries.add(entry1);
         mSuggestionBundle.entries.add(entry2);
 
@@ -401,23 +441,22 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
 
         // Simulate click.
         Assert.assertEquals(0, mClickCount);
-        Assert.assertEquals(null, mLastClickUrl);
+        Assert.assertNull(mLastClickEntry);
         tile1.performClick();
         Assert.assertEquals(1, mClickCount);
-        Assert.assertEquals(JUnitTestGURLs.BLUE_3, mLastClickUrl);
+        Assert.assertEquals(JUnitTestGURLs.BLUE_3, mLastClickEntry.url);
     }
 
     @Test
     @SmallTest
     public void testRenderDoubleWithLocalTab() {
-        SuggestionEntry entry1 = new LocalTabSuggestionEntry(mTab);
+        SuggestionEntry entry1 = SuggestionEntry.createFromLocalTab(mTab);
         SuggestionEntry entry2 =
-                new SuggestionEntry(
+                SuggestionEntry.createFromForeignFields(
                         /* sourceName= */ "Desktop",
                         /* url= */ JUnitTestGURLs.GOOGLE_URL_DOG,
                         /* title= */ "Google Dog",
-                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0),
-                        /* id= */ 90);
+                        /* timestamp= */ makeTimestamp(24 - 3, 0, 0));
         mSuggestionBundle.entries.add(entry1);
         mSuggestionBundle.entries.add(entry2);
 
@@ -474,17 +513,16 @@ public class TabResumptionModuleViewUnitTest extends TestSupport {
         Assert.assertEquals(bitmap2, drawable2.getBitmap());
 
         Assert.assertEquals(0, mClickCount);
-        Assert.assertEquals(null, mLastClickUrl);
-        Assert.assertEquals(0, mLastClickTabId);
+        Assert.assertNull(mLastClickEntry);
 
         // Simulate click on a local Tab.
         tile1.performClick();
         Assert.assertEquals(1, mClickCount);
-        Assert.assertEquals(TAB_ID, mLastClickTabId);
+        Assert.assertEquals(TAB_ID, mLastClickEntry.localTabId);
 
         // Simulate click on a remote Tab.
         tile2.performClick();
         Assert.assertEquals(2, mClickCount);
-        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickUrl);
+        Assert.assertEquals(JUnitTestGURLs.GOOGLE_URL_DOG, mLastClickEntry.url);
     }
 }

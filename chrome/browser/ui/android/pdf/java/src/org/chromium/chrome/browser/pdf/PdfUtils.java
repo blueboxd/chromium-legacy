@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.pdf;
 
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
@@ -16,6 +17,7 @@ import org.jni_zero.CalledByNative;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.fakepdf.PdfDocumentListener;
 import org.chromium.chrome.browser.fakepdf.PdfDocumentRequest;
 import org.chromium.chrome.browser.fakepdf.PdfViewSettings;
@@ -129,7 +131,7 @@ public class PdfUtils {
         sShouldOpenPdfInlineForTesting = shouldOpenPdfInlineForTesting;
     }
 
-    static PdfDocumentRequest getPdfDocumentRequest(String pdfFilePath) {
+    static PdfDocumentRequest getPdfDocumentRequest(String pdfFilePath, boolean isIncognito) {
         Uri uri = Uri.parse(pdfFilePath);
         String scheme = uri.getScheme();
         PdfDocumentRequest.Builder builder = new PdfDocumentRequest.Builder();
@@ -139,18 +141,28 @@ public class PdfUtils {
             } else if (UrlConstants.FILE_SCHEME.equals(scheme)) {
                 File file = new File(Objects.requireNonNull(uri.getPath()));
                 builder.setFile(file);
+            } else if (isIncognito) {
+                int fd = getFileDescriptor(pdfFilePath);
+                ParcelFileDescriptor pfd = ParcelFileDescriptor.adoptFd(fd);
+                builder.setPfd(pfd);
             } else {
                 File file = new File(pdfFilePath);
+                // TODO: use builder.setFile(file) once supported.
                 Uri generatedUri = ChromeFileProvider.generateUri(file);
                 builder.setUri(generatedUri);
             }
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Couldn't generate URI for pdf file: " + e);
+        } catch (Exception e) {
+            Log.e(TAG, "Couldn't generate PdfDocumentRequest: " + e);
             return null;
         }
         builder.setPdfViewSettings(
                 new PdfViewSettings(/* overrideDefaultUrlClickBehavior= */ true));
         return new PdfDocumentRequest(builder);
+    }
+
+    private static int getFileDescriptor(String filepath) throws NumberFormatException {
+        String fd = filepath.substring(filepath.lastIndexOf('/') + 1);
+        return Integer.parseInt(fd);
     }
 
     static void loadPdf(
@@ -167,6 +179,23 @@ public class PdfUtils {
                 fragmentManager, String.valueOf(fragmentContainerViewId), fragmentContainerViewId);
         pdfViewerFragment.loadRequest(pdfDocumentRequest, pdfDocumentListener);
         // TODO: pdfViewerFragment.addPdfEventsListener(eventsListener);
+    }
+
+    /**
+     * Record boolean histogram Android.Pdf.IsFrozenWhenDisplayed.
+     *
+     * @param nativePage When the native page is a pdf page, record whether it is frozen before the
+     *     tab is displayed.
+     */
+    public static void recordIsPdfFrozen(NativePage nativePage) {
+        if (nativePage == null) {
+            return;
+        }
+        if (!nativePage.isPdf()) {
+            return;
+        }
+        RecordHistogram.recordBooleanHistogram(
+                "Android.Pdf.IsFrozenWhenDisplayed", nativePage.isFrozen());
     }
 
     static void skipLoadPdfForTesting(boolean skipLoadPdfForTesting) {

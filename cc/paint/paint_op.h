@@ -636,7 +636,7 @@ class CC_PAINT_EXPORT DrawLineLiteOp final : public PaintOp {
   static void Raster(const DrawLineLiteOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return true; }
+  bool IsValid() const { return core_paint_flags.IsValid(); }
   bool EqualsForTesting(const DrawLineLiteOp& other) const;
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -669,7 +669,7 @@ class CC_PAINT_EXPORT DrawArcLiteOp final : public PaintOp {
   static void Raster(const DrawArcLiteOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return true; }
+  bool IsValid() const { return core_paint_flags.IsValid(); }
   bool EqualsForTesting(const DrawArcLiteOp& other) const;
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -1137,7 +1137,7 @@ class CC_PAINT_EXPORT SaveLayerFiltersOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return true; }
+  bool IsValid() const { return flags.IsValid(); }
   bool EqualsForTesting(const SaveLayerFiltersOp& other) const;
   bool HasSaveLayerOps() const { return true; }
   HAS_SERIALIZATION_FUNCTIONS();

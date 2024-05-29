@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_float32array_uint16array_uint8clampedarray.h"
 #include "third_party/blink/renderer/core/html/canvas/predefined_color_space.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -296,7 +297,7 @@ ScriptPromise<ImageBitmap> ImageData::CreateImageBitmap(
   if (IsBufferBaseDetached()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The source data has been detached.");
-    return ScriptPromise<ImageBitmap>();
+    return EmptyPromise();
   }
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),

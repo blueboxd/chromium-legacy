@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/color/color_provider.h"
+#include "ui/gfx/color_utils.h"
 
 namespace lens {
 
@@ -42,9 +43,10 @@ void SearchBubblePageHandler::CloseUI() {
   }
 }
 
-lens::mojom::ThemePtr MakeTheme(const ui::ColorProvider& color_provider,
-                                const PrefService* pref_service) {
-  auto theme = lens::mojom::Theme::New();
+lens::mojom::SearchboxThemePtr MakeTheme(
+    const ui::ColorProvider& color_provider,
+    const PrefService* pref_service) {
+  auto theme = lens::mojom::SearchboxTheme::New();
   theme->background_color = color_provider.GetColor(kColorNewTabPageBackground);
   theme->text_color = color_provider.GetColor(kColorNewTabPageText);
   if (!CurrentThemeIsGrayscale(pref_service) &&

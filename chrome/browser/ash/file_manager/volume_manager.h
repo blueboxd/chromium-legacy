@@ -26,7 +26,7 @@
 #include "chrome/browser/ash/file_system_provider/observer.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chrome/browser/ash/policy/skyvault/observer.h"
+#include "chrome/browser/ash/policy/skyvault/local_user_files_policy_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
@@ -65,7 +65,7 @@ class VolumeManager : public KeyedService,
                       storage_monitor::RemovableStorageObserver,
                       ui::ClipboardObserver,
                       DocumentsProviderRootManager::Observer,
-                      policy::local_user_files::Observer {
+                      policy::local_user_files::LocalUserFilesPolicyObserver {
  public:
   // An alternate to device::mojom::MtpManager::GetStorageInfo.
   // Used for injecting fake MTP manager for testing in VolumeManagerTest.
@@ -344,7 +344,7 @@ class VolumeManager : public KeyedService,
                                     ash::MountError error);
 
   // Registers and mounts the downloads volume.
-  void MountDownloadsVolume();
+  void MountDownloadsVolume(bool read_only = false);
 
   // Unmounts and revokes the downloads volume.
   void UnmountDownloadsVolume();
@@ -393,6 +393,8 @@ class VolumeManager : public KeyedService,
   bool ignore_clipboard_changed_ = false;
   // TODO(b/328006921): Replace with a check if the volumes are mounted.
   bool local_user_files_allowed_ = true;
+  // Whether a read only version of local folders (My Files) is needed.
+  bool read_only_local_folders_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

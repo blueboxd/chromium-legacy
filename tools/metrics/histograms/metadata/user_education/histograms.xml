@@ -23,6 +23,9 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <variants name="NewBadgeFeature">
+  <variant name="AutofillForUnclassifiedFieldsAvailable"
+      summary="For address and card field-by-field filling; shown in the
+               autofill section of the context menu."/>
   <variant name="Compose"
       summary="For Compose feature; shown in web context menu."/>
   <variant name="ComposeNudge"
@@ -251,6 +254,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="UserEducation.Session.MonthlyActiveDays" units="count"
+    expires_after="2024-09-21">
+  <owner>dfried@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    When a new User Education session starts, records the number of days with at
+    least one session in the past month. This helps us understand how frequently
+    our product is being used in alignment with standard Google user
+    segmentation metrics.
+  </summary>
+</histogram>
+
 <histogram name="UserEducation.Session.RecentActiveDays" units="count"
     expires_after="2024-09-21">
   <owner>dfried@chromium.org</owner>
@@ -281,7 +296,7 @@ chromium-metrics-reviews@google.com.
   <owner>frizzle-team@google.com</owner>
   <summary>
     When a new User Education session starts, records the number of weeks with
-    at least four sessions in the past month. This helps us understand how
+    at least four active days in the past month. This helps us understand how
     frequently our product is being used in alignment with standard Google user
     segmentation metrics.
   </summary>
@@ -295,6 +310,44 @@ chromium-metrics-reviews@google.com.
     When a new User Education session starts, records the number of recent
     sessions in the &quot;short-term&quot; window, which is 7 days. This helps
     us understand how frequently new sessions are triggered.
+  </summary>
+</histogram>
+
+<histogram name="WhatsNew.LoadEvent" enum="WhatsNewLoadEvent"
+    expires_after="2024-11-03">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    Records load events for the What's New page when a load event occurs. This
+    tracks how many times loading remote content is attempted, and whether it
+    succeeds, fails and results in an error page, fails and redirects to the New
+    Tab Page, fails and doesn't open the tab (for preloading), or fails and
+    closes the tab. Load is attempted when the page is first opened or on first
+    startup after updating to a new milestone. Success or failure will occur
+    when the network request completes. Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="WhatsNew.LoadResponseCode"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-11-03">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    Records the net error or HTTP response code of the network request for the
+    remote content for the iframe in the What's New page. This request is
+    triggered when the What's New page is opened. Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="WhatsNew.StartupType" enum="WhatsNewStartupType"
+    expires_after="2024-11-03">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>
+    Records whether the What's New page should try to show, whether it is
+    overridden (e.g. by welcome) and whether the user is ineligible (e.g. due to
+    being in incognito mode). Recorded when startup tabs are being determined at
+    initialization. Desktop only.
   </summary>
 </histogram>
 

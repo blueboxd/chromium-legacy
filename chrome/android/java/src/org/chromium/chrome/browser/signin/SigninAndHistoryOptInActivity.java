@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.drawable.ColorDrawable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -93,6 +92,7 @@ public class SigninAndHistoryOptInActivity extends FirstRunActivityBase
 
         Intent intent = getIntent();
         if (intent.getBooleanExtra(ARGUMENT_IS_UPGRADE_PROMO, false)) {
+            setTheme(org.chromium.chrome.R.style.Theme_Chromium_DialogWhenLarge);
             mUpgradePromoCoordinator =
                     new UpgradePromoCoordinator(
                             this,
@@ -101,8 +101,6 @@ public class SigninAndHistoryOptInActivity extends FirstRunActivityBase
                             PrivacyPreferencesManagerImpl.getInstance(),
                             this);
 
-            // Reset the activity background to transparent for fullscreen upgrade promo view.
-            getWindow().setBackgroundDrawable(new ColorDrawable(0));
             setContentView(mUpgradePromoCoordinator.getViewSwitcher());
             onInitialLayoutInflationComplete();
             return;
@@ -116,7 +114,7 @@ public class SigninAndHistoryOptInActivity extends FirstRunActivityBase
         @NoAccountSigninMode
         int noAccountSigninMode =
                 intent.getIntExtra(
-                        ARGUMENT_NO_ACCOUNT_SIGNIN_MODE, NoAccountSigninMode.ADD_ACCOUNT);
+                        ARGUMENT_NO_ACCOUNT_SIGNIN_MODE, NoAccountSigninMode.BOTTOM_SHEET);
         @WithAccountSigninMode
         int withAccountSigninMode =
                 intent.getIntExtra(

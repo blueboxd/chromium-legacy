@@ -276,7 +276,8 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
 }
 
 void SyncServiceImpl::RegisterTrustedVaultSyntheticFieldTrialsIfNecessary() {
-  if (trusted_vault_auto_upgrade_synthetic_field_trial_registered_) {
+  if (registered_trusted_vault_auto_upgrade_synthetic_field_trial_group_
+          .has_value()) {
     // Registration function already invoked. It cannot be invoked twice, as
     // runtime changes to the group assignment is not supported (e.g. signout).
     return;
@@ -296,7 +297,7 @@ void SyncServiceImpl::RegisterTrustedVaultSyntheticFieldTrialsIfNecessary() {
     return;
   }
 
-  trusted_vault_auto_upgrade_synthetic_field_trial_registered_ = true;
+  registered_trusted_vault_auto_upgrade_synthetic_field_trial_group_ = group;
   sync_client_->RegisterTrustedVaultAutoUpgradeSyntheticFieldTrial(group);
 }
 
@@ -417,6 +418,16 @@ void SyncServiceImpl::Initialize() {
   RecordSyncInitialState(GetDisableReasons(),
                          is_sync_feature_requested_for_metrics,
                          user_settings_->IsInitialSyncFeatureSetupComplete());
+
+  if (registered_trusted_vault_auto_upgrade_synthetic_field_trial_group_
+          .has_value() &&
+      base::FeatureList::IsEnabled(
+          syncer::kTrustedVaultAutoUpgradeSyntheticFieldTrial)) {
+    CHECK(registered_trusted_vault_auto_upgrade_synthetic_field_trial_group_
+              ->is_valid());
+    registered_trusted_vault_auto_upgrade_synthetic_field_trial_group_
+        ->LogValidationMetricsUponOnProfileLoad(GetAccountInfo().gaia);
+  }
 
   ModelTypeSet data_types_to_track =
       Intersection(GetRegisteredDataTypes(), ProtocolTypes());
@@ -1180,11 +1191,6 @@ void SyncServiceImpl::OnActionableProtocolError(
                                ERROR_REASON_ACTIONABLE_ERROR);
       break;
     case DISABLE_SYNC_ON_CLIENT:
-      if (error.error_type == NOT_MY_BIRTHDAY) {
-        base::UmaHistogramEnumeration("Sync.StopSource", BIRTHDAY_ERROR,
-                                      STOP_SOURCE_LIMIT);
-      }
-
       if (error.error_type == NOT_MY_BIRTHDAY ||
           error.error_type == ENCRYPTION_OBSOLETE) {
         // Note: For legacy reasons, `kImplicitPassphrase` is used to represent
@@ -1424,17 +1430,17 @@ bool SyncServiceImpl::IsCustomPassphraseAllowed() const {
 SyncPrefs::SyncAccountState SyncServiceImpl::GetSyncAccountStateForPrefs()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Local sync does not require an actual signed in account to be running.
-  if (!IsSignedIn() && !IsLocalSyncEnabled()) {
+  if (IsLocalSyncEnabled()) {
+    // Local sync should behave like a syncing user.
+    return SyncPrefs::SyncAccountState::kSyncing;
+  }
+  if (!IsSignedIn()) {
     return SyncPrefs::SyncAccountState::kNotSignedIn;
   }
-  if (!IsSetupInProgress() && UseTransportOnlyMode()) {
-    // While the setup for Sync-the-feature is in progress, the account state
-    // should be syncing so that the user can properly select the types they
-    // want to sync.
-    return SyncPrefs::SyncAccountState::kSignedInNotSyncing;
-  }
-  return SyncPrefs::SyncAccountState::kSyncing;
+  // This doesn't check IsSyncFeatureEnabled() so it covers the case of advanced
+  // sync setup, where IsInitialSyncFeatureSetupComplete() is not true yet.
+  return HasSyncConsent() ? SyncPrefs::SyncAccountState::kSyncing
+                          : SyncPrefs::SyncAccountState::kSignedInNotSyncing;
 }
 
 CoreAccountInfo SyncServiceImpl::GetSyncAccountInfoForPrefs() const {

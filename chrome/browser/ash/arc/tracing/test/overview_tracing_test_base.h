@@ -16,6 +16,7 @@
 class TestingProfile;
 
 namespace exo {
+class Surface;
 class WMHelper;
 }  // namespace exo
 
@@ -47,6 +48,13 @@ class OverviewTracingTestBase : public ash::AshTestBase {
   // restored in the TearDown method.
   static void SetTimeZone(const char* name);
 
+  // Runs commit and present events for `count` frames on `surface`, each
+  // separated by `delta`.
+  void CommitAndPresentFrames(arc::OverviewTracingTestHandler* handler,
+                              exo::Surface* surface,
+                              int count,
+                              base::TimeDelta delta);
+
  protected:
   void FastForwardClockAndTaskQueue(arc::OverviewTracingTestHandler* handler,
                                     base::TimeDelta delta);
@@ -63,4 +71,4 @@ class OverviewTracingTestBase : public ash::AshTestBase {
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_ASH_ARC_TRACING_TEST_OVERVIEW_TRACING_TEST_HANDLER_H_
+#endif  // CHROME_BROWSER_ASH_ARC_TRACING_TEST_OVERVIEW_TRACING_TEST_BASE_H_

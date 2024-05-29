@@ -18,7 +18,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/to_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -250,13 +252,10 @@ void GotManifest(protocol::Maybe<std::string> manifest_id,
   auto convert_icon = [](const blink::Manifest::ImageResource& input_icon)
       -> std::unique_ptr<Page::ImageResource> {
     auto icon = Page::ImageResource::Create();
-    std::string sizes;
-    for (const auto& size : input_icon.sizes) {
-      sizes += gfx::Size(size.width(), size.height()).ToString();
-      sizes += ' ';
-    }
-    sizes.pop_back();
-    icon.SetSizes(sizes);
+    std::vector<std::string> size_strings;
+    base::ranges::transform(input_icon.sizes, std::back_inserter(size_strings),
+                            &gfx::Size::ToString);
+    icon.SetSizes(base::JoinString(size_strings, " "));
     icon.SetType(base::UTF16ToUTF8(input_icon.type));
     return icon.SetUrl(input_icon.src.possibly_invalid_spec()).Build();
   };
@@ -1607,8 +1606,6 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::SchemeNotHTTPOrHTTPS;
     case Reason::kLoading:
       return Page::BackForwardCacheNotRestoredReasonEnum::Loading;
-    case Reason::kWasGrantedMediaAccess:
-      return Page::BackForwardCacheNotRestoredReasonEnum::WasGrantedMediaAccess;
     case Reason::kDisableForRenderFrameHostCalled:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           DisableForRenderFrameHostCalled;
@@ -1964,7 +1961,6 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kHTTPStatusNotOK:
     case Reason::kSchemeNotHTTPOrHTTPS:
     case Reason::kLoading:
-    case Reason::kWasGrantedMediaAccess:
     case Reason::kDisableForRenderFrameHostCalled:
     case Reason::kDomainNotAllowed:
     case Reason::kHTTPMethodNotGET:

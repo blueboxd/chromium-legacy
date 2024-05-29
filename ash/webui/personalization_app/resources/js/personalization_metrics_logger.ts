@@ -5,14 +5,14 @@
 import {assert} from 'chrome://resources/js/assert.js';
 
 import {ColorScheme} from '../color_scheme.mojom-webui.js';
-import {StaticColor} from '../personalization_app.mojom-webui.js';
+import {StaticColor, TopicSource} from '../personalization_app.mojom-webui.js';
 
 import {Paths} from './personalization_router_element.js';
 
 // Numerical values are used for metrics; do not change or reuse values. These
 // enum values map to Paths enum string values from
 // personalization_router_element.ts.
-enum MetricsPath {
+const enum MetricsPath {
   AMBIENT = 0,
   AMBIENT_ALBUMS = 1,
   WALLPAPER_COLLECTION_IMAGES = 2,
@@ -29,9 +29,12 @@ enum MetricsPath {
 
 const enum HistogramName {
   PATH = 'Ash.Personalization.Path',
+  AMBIENT_ALBUMS_PATH = 'Ash.Personalization.AmbientMode.AlbumsPath',
   AMBIENT_OPTIN = 'Ash.Personalization.AmbientMode.OptIn',
   AMBIENT_PERFORMANCE_GOOGLE_PHOTOS_PREVIEWS =
       'Ash.Personalization.Ambient.GooglePhotosPreviewsLoadTime',
+  AMBIENT_LINK_TO_GOOGLE_PHOTOS_CLICKED =
+      'Ash.Personalization.Ambient.LinkToGooglePhotosClicked',
   DYNAMIC_COLOR_COLOR_SCHEME_BUTTON =
       'Ash.Personalization.DynamicColor.ColorSchemeButton',
   DYNAMIC_COLOR_STATIC_COLOR_BUTTON =
@@ -73,6 +76,12 @@ export function logPersonalizationPathUMA(path: Paths) {
       HistogramName.PATH, metricsPath, MetricsPath.MAX_VALUE + 1);
 }
 
+export function logAmbientAlbumsPathUMA(topicSource: TopicSource) {
+  chrome.metricsPrivate.recordEnumerationValue(
+      HistogramName.AMBIENT_ALBUMS_PATH, topicSource,
+      TopicSource.MAX_VALUE + 1);
+}
+
 export function logAmbientModeOptInUMA() {
   chrome.metricsPrivate.recordBoolean(HistogramName.AMBIENT_OPTIN, true);
 }
@@ -106,4 +115,9 @@ export function logDynamicColorColorSchemeButtonClick(color: ColorScheme) {
   chrome.metricsPrivate.recordEnumerationValue(
       HistogramName.DYNAMIC_COLOR_COLOR_SCHEME_BUTTON, color,
       ColorScheme.MAX_VALUE);
+}
+
+export function logAmbientModeLinkToGooglePhotosClick() {
+  chrome.metricsPrivate.recordBoolean(
+      HistogramName.AMBIENT_LINK_TO_GOOGLE_PHOTOS_CLICKED, true);
 }

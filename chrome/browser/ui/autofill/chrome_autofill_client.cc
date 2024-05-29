@@ -23,7 +23,6 @@
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/autofill/autofill_offer_manager_factory.h"
 #include "chrome/browser/autofill/autofill_optimization_guide_factory.h"
-#include "chrome/browser/autofill/iban_manager_factory.h"
 #include "chrome/browser/autofill/merchant_promo_code_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -78,7 +77,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/offer_notification_options.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
@@ -86,6 +84,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_otp_input_dialog_controller_impl.h"
+#include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -160,9 +159,6 @@
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_dialog.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -271,19 +267,6 @@ ChromeAutofillClient::GetAutocompleteHistoryManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return AutocompleteHistoryManagerFactory::GetForProfile(profile);
-}
-
-IbanManager* ChromeAutofillClient::GetIbanManager() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return IbanManagerFactory::GetForProfile(profile);
-}
-
-IbanAccessManager* ChromeAutofillClient::GetIbanAccessManager() {
-  if (!iban_access_manager_) {
-    iban_access_manager_ = std::make_unique<IbanAccessManager>(this);
-  }
-  return iban_access_manager_.get();
 }
 
 AutofillComposeDelegate* ChromeAutofillClient::GetComposeDelegate() {
@@ -542,17 +525,6 @@ ChromeAutofillClient::GetOrCreatePaymentsMandatoryReauthManager() {
   return payments_mandatory_reauth_manager_.get();
 }
 
-void ChromeAutofillClient::ShowMandatoryReauthOptInPrompt(
-    base::OnceClosure accept_mandatory_reauth_callback,
-    base::OnceClosure cancel_mandatory_reauth_callback,
-    base::RepeatingClosure close_mandatory_reauth_callback) {
-  MandatoryReauthBubbleControllerImpl::CreateForWebContents(web_contents());
-  MandatoryReauthBubbleControllerImpl::FromWebContents(web_contents())
-      ->ShowBubble(std::move(accept_mandatory_reauth_callback),
-                   std::move(cancel_mandatory_reauth_callback),
-                   std::move(close_mandatory_reauth_callback));
-}
-
 void ChromeAutofillClient::ShowMandatoryReauthOptInConfirmation() {
 #if BUILDFLAG(IS_ANDROID)
   if (!autofill_snackbar_controller_impl_) {
@@ -579,27 +551,6 @@ void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
   if (controller && controller->IsIconVisible())
     controller->HideIconAndBubble();
 }
-#endif
-
-#if !BUILDFLAG(IS_ANDROID)
-void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
-  WebauthnDialogControllerImpl* controller =
-      WebauthnDialogControllerImpl::GetForPage(
-          web_contents()->GetPrimaryPage());
-  if (controller)
-    controller->UpdateDialog(WebauthnDialogState::kOfferError);
-}
-
-bool ChromeAutofillClient::CloseWebauthnDialog() {
-  WebauthnDialogControllerImpl* controller =
-      WebauthnDialogControllerImpl::GetForPage(
-          web_contents()->GetPrimaryPage());
-  if (controller)
-    return controller->CloseDialog();
-
-  return false;
-}
-
 #else  // BUILDFLAG(IS_ANDROID)
 void ChromeAutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
@@ -1178,9 +1129,9 @@ void ChromeAutofillClient::ShowAutofillSuggestionsImpl(
   // Deletes or reuses the old `suggestion_controller_`.
   suggestion_controller_ = AutofillSuggestionController::GetOrCreate(
       suggestion_controller_, delegate, web_contents(),
-      PopupControllerCommon(element_bounds_in_screen_space,
-                            open_args.text_direction,
-                            web_contents()->GetNativeView()),
+      PopupControllerCommon(
+          element_bounds_in_screen_space, open_args.text_direction,
+          web_contents()->GetNativeView(), open_args.anchor_type),
       open_args.form_control_ax_id);
 
   suggestion_controller_->Show(

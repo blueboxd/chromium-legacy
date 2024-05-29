@@ -178,25 +178,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Event.Jank.PredictorJankyFramePercentage" units="%"
-    expires_after="2024-09-22">
-  <owner>mekk@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    This metric is deprecated, please use
-    Event.Jank.PredictorJankyFramePercentage2.
-
-    A frame is deemed janky if an irregular jump in screen displacement occured
-    in consecutive frames, this metric is the percentage of those janky frames
-    per 50 produced frames and is only emitted if a scroll has more than 50
-    frames in a sequence. This metric is used to asses the scrolling prediction
-    performance as the scroll predictor should smooth out those irregular jumps.
-
-    For more details about this metric, please check
-    http://doc/1Y0u0Tq5eUZff75nYUzQVw6JxmbZAW9m64pJidmnGWsY.
-  </summary>
-</histogram>
-
 <histogram name="Event.Jank.PredictorJankyFramePercentage2" units="%"
     expires_after="2024-09-29">
   <owner>mekk@google.com</owner>
@@ -214,39 +195,6 @@ chromium-metrics-reviews@google.com.
     Example of a slow scroll: https://youtube.com/shorts/K1ZhyjYr0No
 
     Example of a fast scroll: https://youtube.com/shorts/dGj6XTD-PYA
-  </summary>
-</histogram>
-
-<histogram name="Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration"
-    enum="JankyBoolean" expires_after="2022-11-24">
-  <owner>nuskos@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    IMPORTANT: This was deprecated and stopped being emitted due to overflow
-    from the counters being emitted in Microseconds instead of milliseconds like
-    it was supposed to. Please see
-    Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration2.
-
-    Each time a ScrollUpdate event which was displayed on the screen is
-    processed, an amount of samples equal to the event processing duration in
-    milliseconds is emitted into the corresponding bucket.
-
-    Thus the ratio of the two represents the average amount of time scrolling is
-    janky.
-  </summary>
-</histogram>
-
-<histogram name="Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration2"
-    enum="JankyBoolean" expires_after="2024-11-03">
-  <owner>nuskos@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Each time a ScrollUpdate event which was displayed on the screen is
-    processed, an amount of samples equal to the event processing duration in
-    milliseconds is emitted into the corresponding bucket.
-
-    Thus the ratio of the two represents the average amount of time scrolling is
-    janky.
   </summary>
 </histogram>
 
@@ -384,67 +332,6 @@ chromium-metrics-reviews@google.com.
     Note: This histogram was expired from 2022-11-23 to 2023-06-20.
 
     Team: input-dev@chromium.org.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollJank" enum="Boolean"
-    expires_after="2024-11-03">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Tracks janky frames while processing scroll events, which are defined as
-    frames taking longer than half of vsync interval compared to previous or
-    next frame.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollUpdate.JankyDuration" units="ms"
-    expires_after="2024-11-03">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Total duration (wall time in milliseconds of potentially concurrent events)
-    of LatencyInfo::GestureScrollUpdate events that are detected as janky during
-    a particular scroll.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2024-11-03">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Percentage of duration of scroll events that are detected as janky during a
-    particular scroll.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollUpdate.JankyEvents" units="counts"
-    expires_after="2024-11-03">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Count of LatencyInfo::GestureScrollUpdate events that are detected as janky
-    during a particular scroll.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollUpdate.TotalDuration" units="ms"
-    expires_after="2024-11-03">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Total duration (wall time in milliseconds of potentially concurrent events)
-    of LatencyInfo::GestureScrollUpdate events during a particular scroll.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.ScrollUpdate.TotalEvents" units="counts"
-    expires_after="2024-09-22">
-  <owner>ddrone@google.com</owner>
-  <owner>chrometto-team@google.com</owner>
-  <summary>
-    Count of LatencyInfo::GestureScrollUpdate events during a particular scroll.
   </summary>
 </histogram>
 
@@ -665,7 +552,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncsPercentage.FixedWindow" units="%"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>mekk@google.com</owner>
   <owner>woa-performance-team@google.com</owner>
   <summary>
@@ -687,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncsPercentage.PerScroll{Length}"
-    units="%" expires_after="2024-09-22">
+    units="%" expires_after="2024-11-24">
   <owner>kartarsingh@google.com</owner>
   <owner>mekk@google.com</owner>
   <owner>woa-performance-team@google.com</owner>
@@ -712,7 +599,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs{Operator}.FixedWindow"
-    units="counts" expires_after="2024-09-22">
+    units="counts" expires_after="2024-11-24">
   <owner>kartarsingh@google.com</owner>
   <owner>mekk@google.com</owner>
   <owner>woa-performance-team@google.com</owner>
@@ -761,7 +648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.ScrollJank.MissedVsyncs{Operator}.PerScroll{Length}"
-    units="counts" expires_after="2024-09-22">
+    units="counts" expires_after="2024-11-24">
   <owner>kartarsingh@google.com</owner>
   <owner>mekk@google.com</owner>
   <owner>woa-performance-team@google.com</owner>
@@ -858,7 +745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -880,7 +767,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="EventLatency.GestureScrollUpdate.{NonTouchscreenScrollInputType}.TotalLatency2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -951,7 +838,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{NonScrollPinchEventType}.TotalLatency"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1025,7 +912,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.{ScrollEventType}.TotalLatency2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

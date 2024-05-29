@@ -1466,7 +1466,7 @@ ScriptPromise<Response> FetchManager::Fetch(ScriptState* script_state,
   DCHECK(signal);
   if (signal->aborted()) {
     exception_state.RethrowV8Exception(signal->reason(script_state).V8Value());
-    return ScriptPromise<Response>();
+    return EmptyPromise();
   }
 
   request->SetDestination(network::mojom::RequestDestination::kEmpty);
@@ -1647,9 +1647,9 @@ FetchLaterManager::FetchLaterManager(ExecutionContext* ec)
     // not have enough time to wait for response.
     auto descriptor = mojom::blink::PermissionDescriptor::New();
     descriptor->name = mojom::blink::PermissionName::BACKGROUND_SYNC;
-    permission_service->AddPermissionObserver(
-        std::move(descriptor), background_sync_permission_,
-        /*should_include_device_status=*/false, std::move(observer));
+    permission_service->AddPermissionObserver(std::move(descriptor),
+                                              background_sync_permission_,
+                                              std::move(observer));
   }
 }
 

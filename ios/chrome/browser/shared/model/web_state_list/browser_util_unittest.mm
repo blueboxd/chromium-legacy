@@ -326,3 +326,88 @@ TEST_F(BrowserUtilTest, TestMoveTabGroupsAcrossRegularBrowsers) {
   EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(0, other_browser_.get()));
   EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(1, other_browser_.get()));
 }
+
+// Tests that moving a tab group to its owning browser with the same destination
+// index is a no-op.
+TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_SameIndex) {
+  WebStateList* web_state_list = browser_->GetWebStateList();
+
+  // Create a group of two tabs.
+  TabGroupVisualData visual_data =
+      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
+  const TabGroup* tab_group =
+      web_state_list->CreateGroup({0, 1}, TabGroupVisualData(visual_data));
+  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
+  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
+  ASSERT_EQ(3, web_state_list->count());
+  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
+
+  // Move the group.
+  MoveTabGroupToBrowser(tab_group, browser_.get(), 0);
+
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
+  EXPECT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(2));
+  EXPECT_EQ(2, tab_group->range().count());
+  EXPECT_EQ(visual_data, tab_group->visual_data());
+  EXPECT_EQ(3, web_state_list->count());
+  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(0, browser_.get()));
+  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(1, browser_.get()));
+}
+
+// Tests that moving a tab group to its owning browser to a position on its
+// right moves the group accordingly.
+TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_MovingRight) {
+  WebStateList* web_state_list = browser_->GetWebStateList();
+
+  // Create a group of two tabs.
+  TabGroupVisualData visual_data =
+      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
+  const TabGroup* tab_group =
+      web_state_list->CreateGroup({0, 1}, TabGroupVisualData(visual_data));
+  web::WebStateID tab_id_0 = GetTabIDForWebStateAt(0, browser_.get());
+  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
+  ASSERT_EQ(3, web_state_list->count());
+  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
+
+  // Move the group.
+  MoveTabGroupToBrowser(tab_group, browser_.get(), 3);
+
+  EXPECT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(0));
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(2));
+  EXPECT_EQ(2, tab_group->range().count());
+  EXPECT_EQ(visual_data, tab_group->visual_data());
+  EXPECT_EQ(3, web_state_list->count());
+  EXPECT_EQ(tab_id_0, GetTabIDForWebStateAt(1, browser_.get()));
+  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(2, browser_.get()));
+}
+
+// Tests that moving a tab group to its owning browser to a position on its left
+// moves the group accordingly.
+TEST_F(BrowserUtilTest, MoveTabGroupToItsOwningBrowser_MovingLeft) {
+  WebStateList* web_state_list = browser_->GetWebStateList();
+
+  // Create a group of two tabs.
+  TabGroupVisualData visual_data =
+      TabGroupVisualData(u"Group", tab_groups::TabGroupColorId::kGrey);
+  const TabGroup* tab_group =
+      web_state_list->CreateGroup({1, 2}, TabGroupVisualData(visual_data));
+  web::WebStateID tab_id_1 = GetTabIDForWebStateAt(1, browser_.get());
+  web::WebStateID tab_id_2 = GetTabIDForWebStateAt(2, browser_.get());
+  ASSERT_EQ(3, web_state_list->count());
+  ASSERT_EQ(nullptr, web_state_list->GetGroupOfWebStateAt(0));
+  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
+  ASSERT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(2));
+
+  // Move the group to the left.
+  MoveTabGroupToBrowser(tab_group, browser_.get(), 0);
+
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(0));
+  EXPECT_EQ(tab_group, web_state_list->GetGroupOfWebStateAt(1));
+  EXPECT_EQ(2, tab_group->range().count());
+  EXPECT_EQ(visual_data, tab_group->visual_data());
+  EXPECT_EQ(3, web_state_list->count());
+  EXPECT_EQ(tab_id_1, GetTabIDForWebStateAt(0, browser_.get()));
+  EXPECT_EQ(tab_id_2, GetTabIDForWebStateAt(1, browser_.get()));
+}

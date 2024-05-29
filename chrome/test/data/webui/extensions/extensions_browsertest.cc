@@ -291,6 +291,16 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest, SafetyCheckWarning) {
   RunTestCase("SafetyCheckWarning");
 }
 
+IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
+                       Mv2DeprecationMessageWarning_Disabled) {
+  RunTestCase("Mv2DeprecationMessageWarning_Disabled");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest,
+                       MvDeprecationMessageWarning_Enabled) {
+  RunTestCase("Mv2DeprecationMessageWarning_Enabled");
+}
+
 IN_PROC_BROWSER_TEST_F(CrExtensionsDetailViewTest, PinnedToToolbar) {
   RunTestCase("PinnedToToolbar");
 }
@@ -328,8 +338,18 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, LoadTimeData) {
   RunTestCase("LoadTimeData");
 }
 
-IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, SafetyCheckPanel) {
-  RunTestCase("SafetyCheckPanel");
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest, SafetyCheckPanel_Disabled) {
+  RunTestCase("SafetyCheckPanel_Disabled");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       SafetyCheckPanel_EnabledSafetyCheck) {
+  RunTestCase("SafetyCheckPanel_EnabledSafetyCheck");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       SafetyCheckPanel_EnabledSafetyHub) {
+  RunTestCase("SafetyCheckPanel_EnabledSafetyHub");
 }
 
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
@@ -340,6 +360,11 @@ IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
 IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
                        ManifestV2DeprecationPanel_Enabled) {
   RunTestCase("ManifestV2DeprecationPanel_Enabled");
+}
+
+IN_PROC_BROWSER_TEST_F(CrExtensionsItemListTest,
+                       ManifestV2DeprecationPanel_TitleVisibility) {
+  RunTestCase("ManifestV2DeprecationPanel_TitleVisibility");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

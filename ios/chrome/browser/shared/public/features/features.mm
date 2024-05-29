@@ -143,7 +143,7 @@ BASE_FEATURE(kIOSEditMenuHideSearchWeb,
 
 BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableColorLensAndVoiceIconsInHomeScreenWidget,
              "kEnableColorLensAndVoiceIconsInHomeScreenWidget",
@@ -309,14 +309,6 @@ BASE_FEATURE(kTabGridAlwaysBounce,
              "TabGridAlwaysBounce",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTabGridCompositionalLayout,
-             "TabGridCompositionalLayout",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsTabGridCompositionalLayoutEnabled() {
-  return base::FeatureList::IsEnabled(kTabGridCompositionalLayout);
-}
-
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -388,7 +380,7 @@ BASE_FEATURE(kContentNotificationExperiment,
              "ContentNotificationExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsContentNotificationExperimentEnalbed() {
+bool IsContentNotificationExperimentEnabled() {
   return base::FeatureList::IsEnabled(kContentNotificationExperiment);
 }
 
@@ -410,7 +402,8 @@ BASE_FEATURE(kTabGroupsIPad,
 
 bool IsTabGroupInGridEnabled() {
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    return base::FeatureList::IsEnabled(kTabGroupsIPad);
+    return base::FeatureList::IsEnabled(kTabGroupsIPad) &&
+           base::FeatureList::IsEnabled(kModernTabStrip);
   }
   return base::FeatureList::IsEnabled(kTabGroupsInGrid);
 }
@@ -428,6 +421,10 @@ BASE_FEATURE(kDisableLensCamera,
 
 BASE_FEATURE(kOmniboxColorIcons,
              "OmniboxColorIcons",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kClearDeviceDataOnSignOutForManagedUsers,
+             "ClearDeviceDataOnSignOutForManagedUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -743,6 +740,15 @@ const base::TimeDelta TabResumptionForXDevicesTimeThreshold() {
     return base::Days(1);
   }
   return base::Hours(12);
+}
+
+BASE_FEATURE(kTabResumption1_5,
+             "TabResumption1_5",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsTabResumption1_5Enabled() {
+  return IsTabResumptionEnabled() &&
+         base::FeatureList::IsEnabled(kTabResumption1_5);
 }
 
 bool ShouldPutMostVisitedSitesInMagicStack() {

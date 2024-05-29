@@ -91,12 +91,12 @@ using signin_metrics::PromoAction;
       AuthenticationService::ServiceStatus::SigninForcedByPolicy;
   self.viewController = viewController;
   self.mediator = [[GoogleServicesSettingsMediator alloc]
-      initWithUserPrefService:self.browser->GetBrowserState()->GetPrefs()
+      initWithIdentityManager:IdentityManagerFactory::GetForBrowserState(
+                                  self.browser->GetBrowserState())
+              userPrefService:self.browser->GetBrowserState()->GetPrefs()
              localPrefService:GetApplicationContext()->GetLocalState()];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
-  self.mediator.identityManager = IdentityManagerFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
   self.mediator.commandHandler = self;
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
@@ -160,6 +160,10 @@ using signin_metrics::PromoAction;
   BOOL isSyncConsentGiven =
       syncService &&
       syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+  BOOL shouldClearDataOnSignOut =
+      self.authService->HasPrimaryIdentityManaged(
+          signin::ConsentLevel::kSignin) &&
+      base::FeatureList::IsEnabled(kClearDeviceDataOnSignOutForManagedUsers);
 
   self.signOutCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -168,6 +172,7 @@ using signin_metrics::PromoAction;
                          message:nil
                             rect:targetRect
                             view:self.viewController.view];
+
   // Because setting `title` to nil automatically forces the title-style text on
   // `message` in the UIAlertController, the attributed message below
   // specifically denotes the font style to apply.
@@ -175,6 +180,16 @@ using signin_metrics::PromoAction;
     self.signOutCoordinator.attributedMessage = [[NSAttributedString alloc]
         initWithString:l10n_util::GetNSString(
                            IDS_IOS_SIGNOUT_DIALOG_MESSAGE_WITH_SYNC)
+            attributes:@{
+              NSFontAttributeName :
+                  [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+            }];
+    [self.signOutCoordinator updateAttributedText];
+  } else if (shouldClearDataOnSignOut) {
+    self.signOutCoordinator.attributedMessage = [[NSAttributedString alloc]
+        initWithString:
+            l10n_util::GetNSString(
+                IDS_IOS_SIGNOUT_AND_DISALLOW_SIGNIN_CLEARS_DATA_MESSAGE_WITH_MANAGED_ACCOUNT)
             attributes:@{
               NSFontAttributeName :
                   [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]

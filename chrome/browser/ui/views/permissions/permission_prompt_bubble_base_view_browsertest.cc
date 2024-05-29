@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/permissions/chip_controller.h"
+#include "chrome/browser/ui/views/permissions/chip/chip_controller.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_bubble_base_view.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_chip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -129,7 +129,8 @@ class PermissionPromptBubbleBaseViewBrowserTest : public DialogBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  static GURL GetTestUrl() { return GURL("https://example.com"); }
+  GURL GetTestUrl() { return test_url_; }
+  void SetTestUrl(GURL test_url) { test_url_ = test_url; }
 
   content::RenderFrameHost* GetActiveMainFrame() {
     return browser()
@@ -254,6 +255,7 @@ class PermissionPromptBubbleBaseViewBrowserTest : public DialogBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_;
   GURL embedding_origin_ = GURL("https://www.origin.test.com");
+  GURL test_url_ = GURL("https://example.com");
 };
 
 // Flaky on Mac: http://crbug.com/1502621
@@ -660,6 +662,7 @@ class LongOriginPermissionPromptBubbleBaseViewBrowserTest
   void SetUpOnMainThread() override {
     PermissionPromptBubbleBaseViewBrowserTest::SetUpOnMainThread();
     SetOrigin(long_origin_);
+    SetTestUrl(long_origin_);
   }
 
   void SetOrigin(const GURL& origin) { GetTestApi().SetOrigin(origin); }

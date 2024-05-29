@@ -65,7 +65,6 @@ chromium/try/dawn-win11-arm64-deps-rel
 chromium/try/fuchsia-arm64-cast-receiver-rel
 chromium/try/fuchsia-fyi-arm64-dbg
 chromium/try/fuchsia-fyi-x64-asan
-chromium/try/fuchsia-fyi-x64-dbg
 chromium/try/fuchsia-fyi-x64-dbg-persistent-emulator
 chromium/try/fuchsia-x64-cast-receiver-dbg
 chromium/try/fuchsia-x64-cast-receiver-dbg-compile
@@ -151,7 +150,6 @@ chromium/try/mac_chromium_compile_dbg_ng
 chromium/try/mac_chromium_compile_rel_ng
 chromium/try/network_service_linux
 chromium/try/win-arm64-compile-dbg
-chromium/try/win-arm64-rel
 chromium/try/win-asan
 chromium/try/win-asan-media-rel
 chromium/try/win-asan-rel

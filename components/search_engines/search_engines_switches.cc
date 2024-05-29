@@ -37,14 +37,8 @@ BASE_FEATURE(kSearchEngineChoiceTrigger,
              "SearchEngineChoiceTrigger",
 #if BUILDFLAG(IS_ANDROID)
              base::FEATURE_DISABLED_BY_DEFAULT
-#elif BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#elif BUILDFLAG(IS_WIN)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#elif BUILDFLAG(IS_CHROMEOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
 #else
-             base::FEATURE_DISABLED_BY_DEFAULT
+             base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 );
 
@@ -61,7 +55,7 @@ BASE_FEATURE(kPersistentSearchEngineChoiceImport,
 
 COMPONENT_EXPORT(SEARCH_ENGINES_SWITCHES)
 const base::FeatureParam<bool> kSearchEngineChoiceTriggerForTaggedProfilesOnly{
-    &kSearchEngineChoiceTrigger, /*name=*/"for_tagged_profiles_only", true};
+    &kSearchEngineChoiceTrigger, /*name=*/"for_tagged_profiles_only", false};
 
 COMPONENT_EXPORT(SEARCH_ENGINES_SWITCHES)
 const base::FeatureParam<bool> kSearchEngineChoiceTriggerWithForceEeaCountry{
@@ -94,7 +88,7 @@ BASE_FEATURE(kSearchEngineChoice,
 
 BASE_FEATURE(kSearchEnginePromoDialogRewrite,
              "SearchEnginePromoDialogRewrite",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 }  // namespace switches

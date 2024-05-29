@@ -614,6 +614,10 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  CreateChildThreadPool(process_type);
+
   // Re-randomize our stack canary, so processes don't share a single
   // stack canary.
   base::ScopedClosureRunner stack_canary_debug_message;
@@ -631,13 +635,8 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
 
   delegate->ZygoteForked();
 
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-
   base::allocator::PartitionAllocSupport::Get()->ReconfigureAfterZygoteFork(
       process_type);
-
-  CreateChildThreadPool(process_type);
 
   ContentClientInitializer::Set(process_type, delegate);
 
@@ -818,16 +817,54 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   delegate_ = std::exchange(params.delegate, nullptr);
   content_main_params_.emplace(std::move(params));
 
-#if BUILDFLAG(IS_ANDROID)
-  // Now that mojo's core is initialized we can enable tracing. Note that only
-  // Android builds have the ctor/dtor handlers set up to use trace events at
-  // this point (because AtExitManager is already set up when the library is
-  // loaded). Other platforms enable tracing below, after the initialization of
-  // AtExitManager.
-  tracing::EnableStartupTracingIfNeeded();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
 
+  // Create and start the ThreadPool early to allow the rest of the startup
+  // code to use the thread_pool.h API.
+  if (!process_type.empty()) {
+    if (process_type != switches::kZygoteProcess) {
+      // Zygotes will run this at a later point in time when the command line
+      // has been updated.
+      CreateChildThreadPool(process_type);
+    }
+  } else {
+    // Create and start the ThreadPool early to allow the rest of the startup
+    // code to use the thread_pool.h API.
+    delegate_->CreateThreadPool("Browser");
+    DCHECK_NE(base::ThreadPoolInstance::Get(), nullptr);
+  }
+
+  // Enable startup tracing asap now that mojo's core is initialized, to avoid
+  // early TRACE_EVENT calls being ignored.
+  //
+  // Startup tracing flags are not (and should not be) passed to Zygote
+  // processes. We will enable tracing when forked, if needed.
+  bool enable_startup_tracing = process_type != switches::kZygoteProcess;
+#if BUILDFLAG(USE_ZYGOTE)
+  // In the browser process, we have to enable startup tracing after
+  // InitializeZygoteSandboxForBrowserProcess() is run below, because that
+  // function forks and may call trace macros in the forked process.
+  if (process_type.empty()) {
+    enable_startup_tracing = false;
+  }
+#endif  // BUILDFLAG(USE_ZYGOTE)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+  // A sandboxed process won't be able to allocate the SMB needed for startup
+  // tracing until Mojo IPC support is brought up, at which point the Mojo
+  // broker will transparently broker the SMB creation.
+  if (!sandbox::policy::IsUnsandboxedSandboxType(
+          sandbox::policy::SandboxTypeFromCommandLine(command_line))) {
+    enable_startup_tracing = false;
+    needs_startup_tracing_after_mojo_init_ = true;
+  }
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+  if (enable_startup_tracing) {
+    tracing::EnableStartupTracingIfNeeded();
+  }
   TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_WIN)
 
@@ -888,11 +925,6 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   if (basic_startup_exit_code.has_value())
     return basic_startup_exit_code.value();
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
   base::allocator::PartitionAllocSupport::Get()->ReconfigureEarlyish(
       process_type);
 
@@ -908,40 +940,6 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
 
   RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
   ContentClientInitializer::Set(process_type, delegate_);
-
-#if !BUILDFLAG(IS_ANDROID)
-  // Enable startup tracing asap to avoid early TRACE_EVENT calls being
-  // ignored. For Android, startup tracing is enabled in an even earlier place
-  // above.
-  //
-  // Startup tracing flags are not (and should not be) passed to Zygote
-  // processes. We will enable tracing when forked, if needed.
-  bool enable_startup_tracing = process_type != switches::kZygoteProcess;
-#if BUILDFLAG(USE_ZYGOTE)
-  // In the browser process, we have to enable startup tracing after
-  // InitializeZygoteSandboxForBrowserProcess() is run below, because that
-  // function forks and may call trace macros in the forked process.
-  if (process_type.empty())
-    enable_startup_tracing = false;
-#endif  // BUILDFLAG(USE_ZYGOTE)
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
-  // A sandboxed process won't be able to allocate the SMB needed for startup
-  // tracing until Mojo IPC support is brought up, at which point the Mojo
-  // broker will transparently broker the SMB creation.
-  if (!sandbox::policy::IsUnsandboxedSandboxType(
-          sandbox::policy::SandboxTypeFromCommandLine(command_line))) {
-    enable_startup_tracing = false;
-    needs_startup_tracing_after_mojo_init_ = true;
-  }
-#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
-  if (enable_startup_tracing)
-    tracing::EnableStartupTracingIfNeeded();
-
-  // Android tracing started at the beginning of the method.
-  // Other OSes have to wait till we get here in order for all the memory
-  // management setup to be completed.
-  TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
-#endif  // !BUILDFLAG(IS_ANDROID)
 
   // If we are on a platform where the default allocator is overridden (e.g.
   // with PartitionAlloc on most platforms) smoke-tests that the overriding
@@ -1096,9 +1094,6 @@ int NO_STACK_PROTECTOR ContentMainRunnerImpl::Run() {
   // Run this logic on all child processes.
   if (!process_type.empty()) {
     if (process_type != switches::kZygoteProcess) {
-      // Zygotes will run this at a later point in time when the command line
-      // has been updated.
-      CreateChildThreadPool(process_type);
       if (delegate_->ShouldCreateFeatureList(
               ContentMainDelegate::InvokedInChildProcess())) {
         InitializeFieldTrialAndFeatureList();
@@ -1185,11 +1180,6 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
       InitializeMojoCore();
     }
 
-    // Create and start the ThreadPool early to allow the rest of the startup
-    // code to use the thread_pool.h API.
-    const bool has_thread_pool =
-        GetContentClient()->browser()->CreateThreadPool("Browser");
-
     std::optional<int> pre_browser_main_exit_code = delegate_->PreBrowserMain();
     if (pre_browser_main_exit_code.has_value())
       return pre_browser_main_exit_code.value();
@@ -1236,10 +1226,8 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
       base::HangWatcher::GetInstance()->Start();
     }
 
-    if (has_thread_pool) {
-      // The FeatureList needs to create before starting the ThreadPool.
-      StartBrowserThreadPool();
-    }
+    // The FeatureList needs to be created before starting the ThreadPool.
+    StartBrowserThreadPool();
 
     BrowserTaskExecutor::PostFeatureListSetup();
 

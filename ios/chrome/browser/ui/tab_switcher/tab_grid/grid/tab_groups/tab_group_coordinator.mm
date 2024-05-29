@@ -255,11 +255,6 @@ constexpr CGFloat kTabGroupBackgroundElementDurationFactor = 0.75;
 }
 
 - (void)gridViewController:(BaseGridViewController*)gridViewController
-        didChangeItemCount:(NSUInteger)count {
-  // No-op.
-}
-
-- (void)gridViewController:(BaseGridViewController*)gridViewController
        didRemoveItemWIthID:(web::WebStateID)itemID {
   // No-op.
 }
@@ -304,8 +299,8 @@ constexpr CGFloat kTabGroupBackgroundElementDurationFactor = 0.75;
   NOTREACHED_NORETURN();
 }
 
-- (void)gridViewController:(BaseGridViewController*)gridViewController
-    didRequestContextMenuForItemWithID:(web::WebStateID)itemID {
+- (void)gridViewControllerDidRequestContextMenu:
+    (BaseGridViewController*)gridViewController {
   [self.tabGridIdleStatusHandler
       tabGridDidPerformAction:TabGridActionType::kInPageAction];
 }

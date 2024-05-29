@@ -5,12 +5,16 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h"
 
 #import "base/metrics/user_metrics.h"
+#import "base/strings/sys_string_conversions.h"
+#import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 @interface ManualFillAddressItem ()
 
@@ -97,10 +101,24 @@
 // Layout guide for the cell's content.
 @property(nonatomic, strong) UILayoutGuide* layoutGuide;
 
+// The menu button displayed in the top right corner of the cell.
+@property(nonatomic, strong) UIButton* overflowMenuButton;
+
 // Button to autofill the current form with the address' data.
 @property(nonatomic, strong) UIButton* autofillFormButton;
 
+// The address data for this cell.
+@property(nonatomic, weak) ManualFillAddress* address;
+
 @end
+
+namespace {
+
+// Vertical spacing between the top of the cell and the top of the overflow
+// menu.
+constexpr CGFloat kOverflowMenuButtonTopSpacing = 14;
+
+}  // namespace
 
 @implementation ManualFillAddressCell
 
@@ -125,6 +143,7 @@
   [self.phoneNumberButton setTitle:@"" forState:UIControlStateNormal];
   [self.emailAddressButton setTitle:@"" forState:UIControlStateNormal];
   self.contentInjector = nil;
+  self.address = nil;
 }
 
 - (void)setUpWithAddress:(ManualFillAddress*)address
@@ -133,6 +152,7 @@
     [self createViewHierarchy];
   }
   self.contentInjector = contentInjector;
+  self.address = address;
 
   // Holds the views whose leading anchor is constrained relative to the cell's
   // leading anchor.
@@ -231,9 +251,11 @@
     self.lastNameButton.hidden = YES;
   }
 
+  UIView* trailingView =
+      IsKeyboardAccessoryUpgradeEnabled() ? self.overflowMenuButton : nil;
   LayViewsHorizontallyWhenPossible(nameLineViews, self.layoutGuide,
                                    self.dynamicConstraints,
-                                   nameGroupVerticalLeadChips);
+                                   nameGroupVerticalLeadChips, trailingView);
 
   // Holds the chip buttons related to the company name that are vertical leads.
   NSMutableArray<UIView*>* companyGroupVerticalLeadChips =
@@ -386,6 +408,13 @@
     [self.contentView addSubview:self.addressLabel];
     AppendHorizontalConstraintsForViews(
         staticConstraints, @[ self.addressLabel ], self.layoutGuide);
+  } else {
+    self.overflowMenuButton = CreateOverflowMenuButton();
+    [self.contentView addSubview:self.overflowMenuButton];
+    [staticConstraints
+        addObject:[self.overflowMenuButton.topAnchor
+                      constraintEqualToAnchor:self.contentView.topAnchor
+                                     constant:kOverflowMenuButtonTopSpacing]];
   }
 
   self.firstNameButton =
@@ -459,6 +488,9 @@
   if (IsKeyboardAccessoryUpgradeEnabled()) {
     self.autofillFormButton = CreateAutofillFormButton();
     [self.contentView addSubview:self.autofillFormButton];
+    [self.autofillFormButton addTarget:self
+                                action:@selector(onAutofillFormButtonTapped)
+                      forControlEvents:UIControlEventTouchUpInside];
     AppendHorizontalConstraintsForViews(
         staticConstraints, @[ self.autofillFormButton ], self.layoutGuide);
   }
@@ -503,6 +535,24 @@
   [self.contentInjector userDidPickContent:sender.titleLabel.text
                              passwordField:NO
                              requiresHTTPS:NO];
+}
+
+// Called when the "Autofill Form" button is tapped. Fills the current form with
+// the address' data.
+- (void)onAutofillFormButtonTapped {
+  FormSuggestion* suggestion = [FormSuggestion
+             suggestionWithValue:nil
+                      minorValue:nil
+              displayDescription:nil
+                            icon:nil
+                     popupItemId:autofill::SuggestionType::kAddressEntry
+               backendIdentifier:[self.address GUID]
+                  requiresReauth:NO
+      acceptanceA11yAnnouncement:
+          base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_A11Y_ANNOUNCE_FILLED_FORM))];
+
+  [self.contentInjector autofillFormWithSuggestion:suggestion];
 }
 
 @end

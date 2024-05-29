@@ -312,12 +312,6 @@ BASE_DECLARE_FEATURE(kTabGridAlwaysBounce);
 // Feature flag enabling tab grid refactoring.
 BASE_DECLARE_FEATURE(kTabGridRefactoring);
 
-// Feature flag enabling the tab grid new compositional layout.
-BASE_DECLARE_FEATURE(kTabGridCompositionalLayout);
-
-// Whether the Tab Grid should use its compositional layout.
-bool IsTabGridCompositionalLayoutEnabled();
-
 // Whether the Safety Check module should be shown in the Magic Stack.
 bool IsSafetyCheckMagicStackEnabled();
 
@@ -397,6 +391,9 @@ BASE_DECLARE_FEATURE(kDisableLensCamera);
 
 // Feature flag to enable color icons in the Omnibox.
 BASE_DECLARE_FEATURE(kOmniboxColorIcons);
+
+// Feature flag that allows clearing data for managed users signing out.
+BASE_DECLARE_FEATURE(kClearDeviceDataOnSignOutForManagedUsers);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -491,7 +488,7 @@ bool IsFeedAblationEnabled();
 bool IsFollowUIUpdateEnabled();
 
 // YES if content push notification experiments are enabled.
-bool IsContentNotificationExperimentEnalbed();
+bool IsContentNotificationExperimentEnabled();
 
 // YES when any of the content push notification variations are enabled.
 bool IsContentPushNotificationsEnabled();
@@ -540,6 +537,9 @@ BASE_DECLARE_FEATURE(kEnableFeedContainment);
 // Feature that enables tab resumption.
 BASE_DECLARE_FEATURE(kTabResumption);
 
+// Feature that enables enhancements for Tab Resumption.
+BASE_DECLARE_FEATURE(kTabResumption1_5);
+
 // A parameter to indicate whether the Most Visited Tiles should be in the Magic
 // Stack.
 extern const char kMagicStackMostVisitedModuleParam[];
@@ -581,6 +581,9 @@ bool IsTabResumptionEnabled();
 
 // Whether the tab resumption feature is enabled for most recent tab only.
 bool IsTabResumptionEnabledForMostRecentTabOnly();
+
+// Whether the tab resumption enhancements feature is enabled.
+bool IsTabResumption1_5Enabled();
 
 // Convenience method for determining the tab resumption time threshold for
 // X-Devices tabs only.

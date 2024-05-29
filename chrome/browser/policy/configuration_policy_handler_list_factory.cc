@@ -141,13 +141,14 @@
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_auto_open_policy_handler.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
-#include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_policy_handler.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "chrome/browser/policy/managed_account_policy_handler.h"
+#include "chrome/browser/ui/lens/lens_overlay_permission_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_settings_policy_handler.h"
 #include "components/enterprise/connectors/connectors_prefs.h"
+#include "components/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "components/headless/policy/headless_mode_policy_handler.h"
 #include "components/media_router/common/pref_names.h"
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -194,6 +195,7 @@
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chrome/browser/policy/device_login_screen_geolocation_access_level_policy_handler.h"
 #include "chrome/browser/policy/os_color_mode_policy_handler.h"
+#include "chromeos/ash/components/kiosk/vision/pref_names.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
@@ -408,6 +410,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTosDialogBehavior,
     first_run::kTosDialogBehavior,
     base::Value::Type::INTEGER },
+  { key::kThirdPartyPasswordManagersAllowed,
+    autofill::prefs::kAutofillThirdPartyPasswordManagersAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kWebXRImmersiveArEnabled,
     prefs::kWebXRImmersiveArEnabled,
     base::Value::Type::BOOLEAN },
@@ -1658,6 +1663,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kLocalUserFilesAllowed,
     prefs::kLocalUserFilesAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kKioskVisionTelemetryEnabled,
+    ash::prefs::kKioskVisionTelemetryEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kGenAIWallpaperSettings,
+    ash::prefs::kGenAIWallpaperSettings,
+    base::Value::Type::INTEGER },
+  { key::kGenAIVcBackgroundSettings,
+    ash::prefs::kGenAIVcBackgroundSettings,
+    base::Value::Type::INTEGER },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1682,6 +1696,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserLegacyExtensionPointsBlocked,
     prefs::kBlockBrowserLegacyExtensionPoints,
     base::Value::Type::BOOLEAN },
+  { key::kDynamicCodeSettings,
+    prefs::kDynamicCodeSettings,
+    base::Value::Type::INTEGER },
   { key::kBrowserSwitcherUseIeSitelist,
     browser_switcher::prefs::kUseIeSitelist,
     base::Value::Type::BOOLEAN },
@@ -2172,6 +2189,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     client_certificates::prefs::kProvisionManagedClientCertificateForUserPrefs,
     base::Value::Type::INTEGER },
 #endif  //
+#if !BUILDFLAG(IS_ANDROID)
+  { key::kLensOverlaySettings,
+    lens::prefs::kLensOverlaySettings,
+    base::Value::Type::INTEGER},
+#endif
 };
 // clang-format on
 
@@ -2265,6 +2287,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kMemorySaverModeSavings,
+      performance_manager::user_tuning::prefs::kMemorySaverModeAggressiveness,
+      static_cast<int>(performance_manager::user_tuning::prefs::
+                           MemorySaverModeAggressiveness::kConservative),
+      static_cast<int>(performance_manager::user_tuning::prefs::
+                           MemorySaverModeAggressiveness::kAggressive),
+      false));
   handlers->AddHandler(
       std::make_unique<performance_manager::MemorySaverPolicyHandler>());
   // Note: This needs to be created after `DefaultSearchPolicyHandler`.

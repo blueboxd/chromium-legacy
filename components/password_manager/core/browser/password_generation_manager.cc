@@ -28,8 +28,9 @@ std::vector<PasswordForm> DeepCopyVector(
     const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>& forms) {
   std::vector<PasswordForm> result;
   result.reserve(forms.size());
-  for (const PasswordForm* form : forms)
+  for (const PasswordForm* form : forms) {
     result.emplace_back(*form);
+  }
   return result;
 }
 
@@ -53,14 +54,12 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
   base::span<const PasswordForm> GetBestMatches() const override;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetFederatedMatches() const override;
+  base::span<const PasswordForm> GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
   metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetInsecureCredentials() const override;
+  base::span<const PasswordForm> GetInsecureCredentials() const override;
   bool IsBlocklisted() const override;
   bool IsMovableToAccountStore() const override;
   void Save() override;
@@ -103,8 +102,9 @@ PasswordDataForUI::PasswordDataForUI(
       non_federated_matches_(DeepCopyVector(matches)),
       store_for_saving_(store_for_saving),
       bubble_interaction_cb_(std::move(bubble_interaction)) {
-  for (const PasswordForm& form : non_federated_matches_)
+  for (const PasswordForm& form : non_federated_matches_) {
     matches_.push_back(form);
+  }
 }
 
 const GURL& PasswordDataForUI::GetURL() const {
@@ -115,13 +115,8 @@ base::span<const PasswordForm> PasswordDataForUI::GetBestMatches() const {
   return matches_;
 }
 
-std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-PasswordDataForUI::GetFederatedMatches() const {
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> result(
-      federated_matches_.size());
-  base::ranges::transform(federated_matches_, result.begin(),
-                          [](const PasswordForm& form) { return &form; });
-  return result;
+base::span<const PasswordForm> PasswordDataForUI::GetFederatedMatches() const {
+  return federated_matches_;
 }
 
 const PasswordForm& PasswordDataForUI::GetPendingCredentials() const {
@@ -142,8 +137,8 @@ base::span<const InteractionsStats> PasswordDataForUI::GetInteractionsStats()
   return {};
 }
 
-std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-PasswordDataForUI::GetInsecureCredentials() const {
+base::span<const PasswordForm> PasswordDataForUI::GetInsecureCredentials()
+    const {
   return {};
 }
 
@@ -208,8 +203,9 @@ const PasswordForm* FindUsernameConflict(
     const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
         matches) {
   for (const password_manager::PasswordForm* form : matches) {
-    if (form->username_value == generated.username_value)
+    if (form->username_value == generated.username_value) {
       return form;
+    }
   }
   return nullptr;
 }
@@ -372,8 +368,9 @@ void PasswordGenerationManager::PresaveGeneratedPassword(
   CHECK(!generated.password_value.empty());
   // Clear the username value if there are already saved credentials with
   // the same username in order to prevent overwriting.
-  if (FindUsernameConflict(generated, matches))
+  if (FindUsernameConflict(generated, matches)) {
     generated.username_value.clear();
+  }
   generated.date_created = base::Time::Now();
   if (presaved_) {
     form_saver->UpdateReplace(generated, {} /* matches */,

@@ -1297,7 +1297,35 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <!-- TODO(crbug.com/335387869): Make string translatable once we have the complete UI. -->
       <message name="IDS_IOS_DELETE_BROWSING_DATA_CANCEL" translateable="false" desc="Label for the option to cancel and dismiss deleting browsing data. [iOS only]">
-        Cancel
+        **Cancel**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_AUTOFILL_DATA" translateable="false" desc="Summary of the autofill data to be deleted when deleting browsing data. [iOS only]">
+       **{COUNT, plural,
+          =1 {1 Address}
+          other {# Addresses}}**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_CACHED_FILES" translateable="false" desc="Summary of the cached data to be deleted when deleting browsing data. [iOS only]">
+       **Cached Files**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_PASSWORDS" translateable="false" desc="Summary of the passwords to be deleted when deleting browsing data. [iOS only]">
+       **{COUNT, plural,
+          =1 {1 Password}
+          other {# Passwords}}**
+      </message>
+      <!-- IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_SEPARATOR should include a space after the comma. This is achieved by adding ''' after the space. -->
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_SEPARATOR" translateable="false" desc="Text/punctuation that separates items in a list. For example, this is used in a list of browsing data items descriptions, e.g. '1 Site, Site Data, 2 passwords'.">
+        **, '''**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_SITE_DATA" translateable="false" desc="Summary of the site data to be deleted when deleting browsing data. [iOS only]">
+       **Site Data**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_SUMMARY_SITES" translateable="false" desc="Summary of the sites to be deleted when deleting browsing data. [iOS only]">
+       **{COUNT, plural,
+          =1 {1 Site}
+          other {# Sites}}**
+      </message>
+      <message name="IDS_IOS_DELETE_BROWSING_DATA_TITLE" translateable="false" desc="Label for the option that summarises the browsing data to be deleted. [iOS only]">
+        **Browsing Data**
       </message>
       <message name="IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION" desc="Message on top of the confirmation alert when the user tapped delete password button. [iOS only]" meaning="Explaining to the user that deleting password locally won't delete account on a website.">
         Deleting this password will not delete your account on <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>. Change your password on <ph name="WEBSITE">$1<ex>twitter.com</ex></ph> to keep it safe from others.
@@ -1821,6 +1849,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device).">
         When on, use and save data in your Google Account. When off, data is saved only to this device.
+      </message>
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION_FOR_MANAGED_ACCOUNT" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device). This is the footer for managed users mentioning that the on-device data will be cleared on sign out.">
+        When on, use and save data in your Google Account. When off, data is saved only to this device data is saved only to this device and is deleted if you sign out.
       </message>
       <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER" desc="Header of a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device). Try to avoid long strings because this is a header in large font size.">
         In Your Google Account
@@ -3428,6 +3459,27 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PHONE_CALL_BUTTON" desc="Text in the confirmation dialog button that will initiate a phone call for the presented number. [Length: 10em] [iOS only]">
         Call
       </message>
+      <message name="IDS_IOS_PHONE_NUMBER_ADD" desc="Title for the button to add a country code to a phone number">
+        Add
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_ADD_TO_CONTACTS" desc="Title for the action prompting the user to a phone number to their contacts">
+        Add To Contacts
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_CANCEL" desc="Title for the button to dismiss the country code view controller">
+        Cancel
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_CALL" desc="Title for the action prompting the user to call a phone number">
+        Call
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_COUNTRY_CODE" desc="Title of the country code view controller, this view will provide the user with a list of country codes that the user can choose one to add as a prefix of a phone number" meaning="Title of the country code view controller, this view will provide the user with a list of country codes that the user can choose one to add as a prefix of a phone number">
+        Country Code
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_FACETIME" desc="Title for the action prompting the user to facetime a phone number">
+        Facetime
+      </message>
+      <message name="IDS_IOS_PHONE_NUMBER_SEND_MESSAGE" desc="Title for the action prompting the user to send a message to a phone number">
+        Send Message
+      </message>
       <message name="IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION" desc="Specifies the reason for writing to the user's photo library while the app is in use [Length: unlimited] [iOS only].">
         This lets you save photos to your photo library.
       </message>
@@ -4693,6 +4745,15 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SIGNIN_SNACKBAR_UNDO" desc="This string is found on a button that signs the user out when the user taps it. It is on a confirmation message that users see when they sign in to Chrome with their Google Account. This text is a verb and is short for the longer phrase 'Undo my sign-in.' The tone should be informative. [Length: 15em] [iOS only]">
         Undo
       </message>
+      <message name="IDS_IOS_SIGNOUT_AND_DISALLOW_SIGNIN_CLEARS_DATA_MESSAGE_WITH_MANAGED_ACCOUNT" desc="Text to inform the managed user about why their their device data is being cleared on signout. [iOS only]">
+        After you sign out, unsaved data will be deleted from this device. This could include passwords, history, and more.
+      </message>
+      <message name="IDS_IOS_SIGNOUT_CLEARS_DATA_DIALOG_MESSAGE_WITH_MANAGED_ACCOUNT" desc="Text to inform the managed user about why their their device data is being cleared on signout. [iOS only]">
+          To protect your organization's security, unsaved data will be deleted from this device. This could include passwords, browsing history, cookies and more.
+      </message>
+      <message name="IDS_IOS_SIGNOUT_CLEARS_DATA_DIALOG_TITLE_WITH_MANAGED_ACCOUNT" desc="The signout dialog title. This is the new dialog that is used when the user have a managed account (other than gmail account) [iOS only].">
+        Unsaved account data will be deleted
+      </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_CLEAR_DATA_BUTTON" desc="This button signs the user out and delete all the data from the user device. The data remain in their Google account. Related to IDS_IOS_SIGNOUT_DIALOG_TITLE [iOS only].">
         Clear Data
       </message>
@@ -5057,6 +5118,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE" desc="The accessibility label of the Remote Tabs page in the tab grid UI. [iOS only]">
         Tabs from other devices
       </message>
+      <message name="IDS_IOS_TAB_GRID_SAVED_TAB_GROUPS" desc="Explanation text letting the user know that even if they close a tab group, it would still be saved on their device.">
+        Your tab groups are saved here
+      </message>
       <message name="IDS_IOS_TAB_GRID_SEARCHBAR_PLACEHOLDER" desc="Placeholder text for the search bar used to search tabs on the tab grid. [iOS only]">
         Search Tabs...
       </message>
@@ -5109,6 +5173,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TAB_GROUP_CREATION_PLACEHOLDER" desc="Placeholder shown in tab group creation view to indicate to the user the expected action which is to type the name of the group currently created. [iOS only]">
           Name This Group
       </message>
+      <message name="IDS_IOS_TAB_GROUP_CREATION_SAVED_EXPLANATION" desc="Explanation text letting the user know that the group they are about to create will be saved on their device.">
+          Your tab groups automatically save
+      </message>
+      <message name="IDS_IOS_TAB_GROUP_CREATION_SYNC_EXPLANATION" desc="Explanation text letting the user know that the group they are about to create will be sync across their devices.">
+          Your tab groups automatically save and update across all your signed-in devices
+      </message>
       <message name="IDS_IOS_TAB_GROUP_TABS_NUMBER" desc="Shown in tab group UI to display the current number of tabs in the group. [iOS only]">
         {count, plural,
         =1 {1 Tab}
@@ -5141,11 +5211,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER" desc="The accessibility label of the tab strip button to enter the tab switcher. The tab switcher is a view showing the opened tabs, and allows users to switch, close, and open new tabs. [iOS only]">
         Enter Tab Switcher
       </message>
+      <message name="IDS_IOS_TAB_STRIP_GROUP_CELL_COLLAPSED_VOICE_OVER_VALUE" desc="Accessibility value to let the user know the focused tab strip cell is a collapsed group. Read by Text-to-Speech">
+        Tab Group. Collapsed.
+      </message>
+      <message name="IDS_IOS_TAB_STRIP_GROUP_CELL_EXPANDED_VOICE_OVER_VALUE" desc="Accessibility value to let the user know the focused tab strip cell is an expanded group (not collapsed). Read by Text-to-Speech">
+        Tab Group. Expanded.
+      </message>
       <message name="IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER" desc="The accessibility label of the tab strip button to leave the tab switcher. The tab switcher is a view showing the opened tabs, and allows users to switch, close, and open new tabs. [iOS only]">
         Leave Tab Switcher
       </message>
       <message name="IDS_IOS_TAB_STRIP_TAB_CELL_VOICE_OVER_VALUE" desc="Accessibility value to let the user know the position of the currently focused tab compared to the others. Read by Text-to-Speech">
         Tab. <ph name="TAB_INDEX">$1<ex>3</ex></ph> of <ph name="NUMBER_OF_TABS">$2<ex>27</ex></ph>.
+      </message>
+      <message name="IDS_IOS_TAB_STRIP_TAB_CELL_IN_GROUP_VOICE_OVER_VALUE" desc="Accessibility value to let the user know the position of the currently focused grouped tab compared to the others. Read by Text-to-Speech">
+        Tab Group Tab. <ph name="TAB_INDEX_IN_GROUP">$1<ex>3</ex></ph> of <ph name="NUMBER_OF_TABS_IN_GROUP">$2<ex>27</ex></ph>.
       </message>
       <message name="IDS_IOS_TAB_SWITCHER_CLOSE_TAB" desc="The accessibility label for the closing of a selected tab. [iOS only]">
         Close tab.
@@ -5331,7 +5410,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         New Incognito Tab
       </message>
       <message name="IDS_IOS_TOOLS_MENU_CUSTOMIZATION_IPH" desc="The text on an IPH for the iOS menu telling users they can customize the menu">
-        Swipe to learn how to customize your menu
+        Customize your menu
       </message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_SEARCH" desc="The iOS menu item for opening a new tab and doing a new search in that tab." meaning="Do a new search in a new tab">
         New Search
@@ -5916,6 +5995,16 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SHOW_DETAILS_ACTION_TITLE" desc="Title of the action used to show the details of a selected item. [iOS only]" meaning="Title-cased">
         Show Details
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_PASSWORD_CELL_INDEX" desc="Accessibility label for the password suggestions in the manual fallback view to indicate the position of the password suggestion in the list of password suggestions.">
+      {count, plural,
+           =1 {{position} of {count} password}
+           other {{position} of {count} passwords}}
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_PAYMENT_CELL_INDEX" desc="Accessibility label for the payment method suggestions in the manual fallback view to indicate the position of the payment method suggestion in the list of payment method suggestions.">
+      {count, plural,
+           =1 {{position} of {count} payment method}
+           other {{position} of {count} payment methods}}
       </message>
     </messages>
   </release>

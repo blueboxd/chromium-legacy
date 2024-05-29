@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ash/login/reporting/login_logout_reporter_test_delegate.h"
-
 #include <string_view>
 
 #include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/ash/login/reporting/login_logout_reporter_test_delegate.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/reporting/user_event_reporter_helper_testing.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -19,6 +17,7 @@
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "components/policy/core/common/device_local_account_type.h"
 #include "components/reporting/client/mock_report_queue.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -70,7 +69,7 @@ class LoginLogoutTestHelper {
   std::unique_ptr<TestingProfile> CreatePublicAccountProfile() {
     AccountId account_id =
         AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-            "managed_guest", policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+            "managed_guest", policy::DeviceLocalAccountType::kPublicSession));
     auto* const user = fake_user_manager_->AddPublicAccountUser(account_id);
     return CreateProfile(user);
   }
@@ -83,23 +82,15 @@ class LoginLogoutTestHelper {
   std::unique_ptr<TestingProfile> CreateKioskAppProfile() {
     AccountId account_id =
         AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-            "kiosk", policy::DeviceLocalAccount::TYPE_KIOSK_APP));
+            "kiosk", policy::DeviceLocalAccountType::kKioskApp));
     auto* const user = fake_user_manager_->AddKioskAppUser(account_id);
-    return CreateProfile(user);
-  }
-
-  std::unique_ptr<TestingProfile> CreateArcKioskAppProfile() {
-    AccountId account_id =
-        AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-            "arc_kiosk", policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP));
-    auto* const user = fake_user_manager_->AddArcKioskAppUser(account_id);
     return CreateProfile(user);
   }
 
   std::unique_ptr<TestingProfile> CreateWebKioskAppProfile() {
     AccountId account_id =
         AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-            "webkiosk", policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP));
+            "webkiosk", policy::DeviceLocalAccountType::kWebKioskApp));
     auto* const user = fake_user_manager_->AddWebKioskAppUser(account_id);
     return CreateProfile(user);
   }
@@ -115,8 +106,6 @@ class LoginLogoutTestHelper {
         return CreatePublicAccountProfile();
       case user_manager::UserType::kKioskApp:
         return CreateKioskAppProfile();
-      case user_manager::UserType::kArcKioskApp:
-        return CreateArcKioskAppProfile();
       case user_manager::UserType::kWebKioskApp:
         return CreateWebKioskAppProfile();
       default:
@@ -340,8 +329,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                                LoginLogoutSessionType::PUBLIC_ACCOUNT_SESSION},
                               {user_manager::UserType::kKioskApp,
                                LoginLogoutSessionType::KIOSK_SESSION},
-                              {user_manager::UserType::kArcKioskApp,
-                               LoginLogoutSessionType::KIOSK_SESSION},
                               {user_manager::UserType::kWebKioskApp,
                                LoginLogoutSessionType::KIOSK_SESSION}}));
 
@@ -458,7 +445,7 @@ TEST_F(LoginFailureReporterTest,
   policy::ManagedSessionService managed_session_service;
   AccountId account_id =
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-          "managed_guest", policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+          "managed_guest", policy::DeviceLocalAccountType::kPublicSession));
   auto delegate = std::make_unique<LoginLogoutReporterTestDelegate>(account_id);
   auto reporter_helper = test_helper_.GetReporterHelper(
       /*reporting_enabled=*/true,
@@ -491,7 +478,7 @@ TEST_F(LoginFailureReporterTest,
   policy::ManagedSessionService managed_session_service;
   AccountId account_id =
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-          "managed_guest", policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+          "managed_guest", policy::DeviceLocalAccountType::kPublicSession));
   auto delegate = std::make_unique<LoginLogoutReporterTestDelegate>(account_id);
   auto reporter_helper = test_helper_.GetReporterHelper(
       /*reporting_enabled=*/true,
@@ -790,7 +777,7 @@ TEST_P(LoginFailureReporterTest,
   policy::ManagedSessionService managed_session_service;
   AccountId account_id =
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-          "managed_guest", policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+          "managed_guest", policy::DeviceLocalAccountType::kPublicSession));
   auto delegate = std::make_unique<LoginLogoutReporterTestDelegate>(account_id);
   auto reporter_helper = test_helper_.GetReporterHelper(
       /*reporting_enabled=*/true,

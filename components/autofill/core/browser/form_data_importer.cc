@@ -454,10 +454,11 @@ AutofillProfile FormDataImporter::ConstructProfileFromObservedValues(
     if (type == ADDRESS_HOME_COUNTRY) {
       continue;
     }
-    // We need to store phone data in the variables, before building the whole
-    // number at the end. If |value| is not from a phone field, phone.SetInfo()
-    // returns false and data is stored directly in `candidate_profile`.
-    if (!combined_phone.SetInfo(AutofillType(type), value)) {
+    if (GroupTypeOfFieldType(type) == FieldTypeGroup::kPhone) {
+      // We need to store phone data in the variables, before building the whole
+      // number at the end.
+      combined_phone.SetInfo(type, value);
+    } else {
       candidate_profile.SetInfoWithVerificationStatus(
           type, value, app_locale_, VerificationStatus::kObserved);
     }
@@ -1002,9 +1003,7 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
     std::u16string_view user_input_view =
         base::TrimWhitespace(field.user_input(), base::TRIM_ALL);
     if (!user_input_view.empty() &&
-        field.Type().GetStorableType() == FieldType::CREDIT_CARD_NUMBER &&
-        base::FeatureList::IsEnabled(
-            features::kAutofillUseTypedCreditCardNumber)) {
+        field.Type().GetStorableType() == FieldType::CREDIT_CARD_NUMBER) {
       value_view = user_input_view;
     }
     std::u16string value(value_view);

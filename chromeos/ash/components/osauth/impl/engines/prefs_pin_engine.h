@@ -19,8 +19,12 @@
 
 namespace ash {
 
-class PrefsPinEngine : public AuthFactorEngine, public CryptohomeCore::Client {
+class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_OSAUTH) PrefsPinEngine
+    : public AuthFactorEngine,
+      public CryptohomeCore::Client {
  public:
+  static constexpr int kMaximumUnlockAttempts = 5;
+
   PrefsPinEngine(CryptohomeCore& core, PrefService& pref_service);
 
   ~PrefsPinEngine() override;
@@ -29,8 +33,6 @@ class PrefsPinEngine : public AuthFactorEngine, public CryptohomeCore::Client {
   void PerformPinAttempt(const std::string& raw_pin);
 
  private:
-  static constexpr int kMaximumUnlockAttempts = 3;
-
   // Functions to implement AuthFactorEngine.
   AshAuthFactor GetFactor() const override;
   void InitializeCommon(CommonInitCallback callback) override;
@@ -62,7 +64,6 @@ class PrefsPinEngine : public AuthFactorEngine, public CryptohomeCore::Client {
   raw_ptr<FactorEngineObserver> observer_;
   UsageAllowed usage_allowed_ = UsageAllowed::kDisabled;
   bool is_supported_ = false;
-  int unlock_attempt_count_ = 0;
 
   base::WeakPtrFactory<PrefsPinEngine> weak_factory_{this};
 };

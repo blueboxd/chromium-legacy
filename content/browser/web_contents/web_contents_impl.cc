@@ -92,6 +92,7 @@
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/input/touch_emulator_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -237,6 +238,11 @@
 #include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
 #include "content/browser/starscan_load_observer.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "content/public/browser/document_picture_in_picture_window_controller.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace content {
 
@@ -1258,6 +1264,8 @@ WebContentsImpl::~WebContentsImpl() {
   }
 
   FullscreenContentsSet(GetBrowserContext())->erase(this);
+
+  touch_emulator_.reset();
 
   rwh_input_event_router_.reset();
 
@@ -3556,6 +3564,10 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
 
   if (params.picture_in_picture_options.has_value()) {
     picture_in_picture_options_ = params.picture_in_picture_options;
+    if (GetOpener()) {
+      picture_in_picture_opener_ =
+          FromRenderFrameHostImpl(GetOpener())->GetWeakPtr();
+    }
   }
 
   // This is set before initializing the render manager since
@@ -3930,7 +3942,7 @@ RenderWidgetHostInputEventRouter* WebContentsImpl::GetInputEventRouter() {
     if (!rwh_input_event_router_.get()) {
       rwh_input_event_router_ =
           std::make_unique<RenderWidgetHostInputEventRouter>(
-              GetHostFrameSinkManager());
+              GetHostFrameSinkManager(), this);
     }
   }
   return rwh_input_event_router_.get();
@@ -5194,24 +5206,12 @@ void WebContentsImpl::AXTreeIDForMainFrameHasChanged() {
       &WebContentsObserver::AXTreeIDForMainFrameHasChanged);
 }
 
-void WebContentsImpl::ProcessAccessibilityUpdatesAndEvents(
-    ui::AXUpdatesAndEvents& details) {
+void WebContentsImpl::AccessibilityEventReceived(
+    const ui::AXUpdatesAndEvents& details) {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::AccessibilityEventReceived");
-
-  // First, supply the data to consumers that won't change it.
   observers_.NotifyObservers(&WebContentsObserver::AccessibilityEventReceived,
                              details);
-
-  // Next, supply the data to consumers that may change it or who need to avoid
-  // extra copying. Note that this also includes those who will pass to mojo
-  // pipes not taking const.
-  // TODO(accessibility): when we add multiple consumers, we will need some kind
-  // of intermediate class to ensure each consumer gets an unmutated copy of the
-  // data, but also minimize copying.
-  if (delegate_) {
-    delegate_->ProcessAccessibilityUpdatesAndEvents(details);
-  }
 }
 
 void WebContentsImpl::AccessibilityLocationChangesReceived(
@@ -6722,6 +6722,18 @@ bool WebContentsImpl::ShouldPreserveAbortedURLs() {
 void WebContentsImpl::NotifyNavigationStateChangedFromController(
     InvalidateTypes changed_flags) {
   NotifyNavigationStateChanged(changed_flags);
+}
+
+TouchEmulator* WebContentsImpl::GetTouchEmulator(bool create_if_necessary) {
+  CHECK(rwh_input_event_router_);
+
+  if (!touch_emulator_ && create_if_necessary) {
+    touch_emulator_ = std::make_unique<TouchEmulatorImpl>(
+        rwh_input_event_router_.get(),
+        rwh_input_event_router_->last_device_scale_factor());
+  }
+
+  return touch_emulator_.get();
 }
 
 void WebContentsImpl::DidNavigateMainFramePreCommit(
@@ -8997,6 +9009,34 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   CloseListenerManager::DidChangeFocusedFrame(this);
 }
 
+FrameTree* WebContentsImpl::GetOwnedPictureInPictureFrameTree() {
+#if !BUILDFLAG(IS_ANDROID)
+  if (has_picture_in_picture_document_) {
+    WebContents* picture_in_picture_web_contents =
+        PictureInPictureWindowController::
+            GetOrCreateDocumentPictureInPictureController(this)
+                ->GetChildWebContents();
+    if (picture_in_picture_web_contents) {
+      return &(static_cast<WebContentsImpl*>(picture_in_picture_web_contents)
+                   ->GetPrimaryFrameTree());
+    }
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+  return nullptr;
+}
+
+FrameTree* WebContentsImpl::GetPictureInPictureOpenerFrameTree() {
+#if !BUILDFLAG(IS_ANDROID)
+  if (picture_in_picture_opener_) {
+    return &(static_cast<WebContentsImpl*>(picture_in_picture_opener_.get())
+                 ->GetPrimaryFrameTree());
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+  return nullptr;
+}
+
 void WebContentsImpl::DidCallFocus() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidCallFocus");
   // Any explicit focusing of another window while this WebContents is in
@@ -9141,7 +9181,17 @@ void WebContentsImpl::FocusOwningWebContents(
   if (focused_widget != render_widget_host &&
       (!focused_widget ||
        focused_widget->delegate() != render_widget_host->delegate())) {
+#if BUILDFLAG(IS_ANDROID)
+    if (&GetPrimaryFrameTree() != GetFocusedFrameTree()) {
+      UMA_HISTOGRAM_BOOLEAN("Android.FocusChanged.FocusOwningWebContents",
+                            true);
+    }
+#endif
     SetAsFocusedWebContentsIfNecessary();
+  } else {
+#if BUILDFLAG(IS_ANDROID)
+    UMA_HISTOGRAM_BOOLEAN("Android.FocusChanged.FocusOwningWebContents", false);
+#endif
   }
 }
 
@@ -10821,6 +10871,7 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
       prerendering_url, trigger_type, embedder_histogram_suffix,
       /*target_hint=*/std::nullopt, content::Referrer(),
       /*eagerness=*/std::nullopt,
+      /*no_vary_search_expected=*/std::nullopt,
       /*initiator_origin=*/std::nullopt,
       content::ChildProcessHost::kInvalidUniqueID, GetWeakPtr(),
       /*initiator_frame_token=*/std::nullopt,

@@ -192,6 +192,7 @@
           <ph name="LIST_ITEM" />និយោជក ឬសាលារៀនរបស់អ្នក
           <ph name="LIST_ITEM" />ក្រុមហ៊ុនផ្តល់សេវាអ៊ីនធឺណិតរបស់អ្នក
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">តាមដាន​ទំនិញ​នេះ</translation>
 <translation id="1337692097987160377">ចែករំលែក​ផ្ទាំងនេះ</translation>
 <translation id="1339601241726513588">ដែនចុះឈ្មោះ៖</translation>
 <translation id="1340482604681802745">អាសយដ្ឋានទទួល</translation>
@@ -361,6 +362,7 @@
 <translation id="1641976391427233992">ពន្យារពេល​ធាតុបញ្ចេញ​រហូតដល់</translation>
 <translation id="1643651787397909318">ចូលទៅកាន់ប៊ូតុងពិនិត្យសុវត្ថិភាព Chrome, បើកដំណើរការ ដើម្បីចូលទៅកាន់ទំព័រនៃការពិនិត្យសុវត្ថិភាព Chrome នៅក្នុងការកំណត់</translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
+<translation id="1645004815457365098">ប្រភពដែល​មិនស្គាល់</translation>
 <translation id="1645368109819982629">ប្រូតូកូលមិនគាំទ្រ</translation>
 <translation id="1650602712345345441">គ្រប់គ្រង​ការកំណត់ Chrome របស់អ្នក</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -456,6 +458,7 @@
 <translation id="1812527064848182527">ផ្ដេក</translation>
 <translation id="1812975699435941848">ការអប់រំ​ផ្នែកសុខភាព និង​ការបណ្ដុះបណ្ដាល​វេជ្ជសាស្ត្រ</translation>
 <translation id="1816436748874040213">អាចស្នើសុំ​រំកិល និង​ពង្រីកបង្រួម​ផ្ទាំង​ដែលបាន​ចែករំលែក</translation>
+<translation id="1817364650920811003">តួនាទី៖ គន្លឹះ Chrome។ ស្លាក​ភាពងាយស្រួល៖ <ph name="CHROME_TIP" /></translation>
 <translation id="1818522458013171885">ឈប់ទប់ស្កាត់</translation>
 <translation id="1818585559878922121">ភាពយន្ត​ឯកសារ</translation>
 <translation id="182139138257690338">ការទាញយក​ដោយស្វ័យប្រវត្តិ</translation>
@@ -577,7 +580,6 @@
 <translation id="2056658168519009885">គេហទំព័រ​អាច​ស្នើសុំ​​ព័ត៌មានពី Chrome ​ដើម្បី​ជួយកំណត់​កា​រផ្សាយពាណិជ្ជកម្ម​ដែល​អ្នកមើលឃើញ​ឱ្យ​មានលក្ខណៈ​ផ្ទាល់ខ្លួន។</translation>
 <translation id="2059166748188874810">ក្រុង</translation>
 <translation id="2059202684901022309">22 x 34 in</translation>
-<translation id="206275378685759380">រង់ចាំ​ទិញ</translation>
 <translation id="2064568741209980952">ឥណទាន និង​កម្ចី</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{ការផ្តល់យោបល់ 1}other{ការផ្តល់យោបល់ #}}</translation>
 <translation id="2066915425250589881">ស្នើសុំ​ឱ្យលុប</translation>
@@ -1400,6 +1402,7 @@
 <translation id="3642638418806704195">កម្មវិធី៖</translation>
 <translation id="3646643500201740985">ការវាស់ស្ទង់​ថាការ​ផ្សាយ​ពាណិជ្ជកម្មធ្វើបាន​ល្អប៉ុនណា</translation>
 <translation id="3647286794400715637">ធាតុ​ជួរ​អក្សរ url នីមួយៗ​ត្រូវតែ​មាន​ពី 1 ទៅ 2 URL។</translation>
+<translation id="3647400963805615193">ប៊ូតុង​ច្រានចោល​គន្លឹះ Chrome, ចុច Enter ដើម្បី​ច្រានចោល, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="3650584904733503804">ការពិនិត្យសុពលភាពបានជោគជ័យ</translation>
 <translation id="3650594806107685466">ដើម្បី​ជួយ​រក្សា​កាត​របស់​អ្នក​ឱ្យ​មាន​សុវត្ថិភាព សូម​បញ្ចូល CVC ដែល​ស្ថិត​នៅ<ph name="SIDE_OF_CARD" /></translation>
 <translation id="3650917416636556301">ការដើរកាត់ព្រៃ​ភ្នំ និង​ការបោះ​ជំរំ</translation>
@@ -2615,6 +2618,7 @@
 <translation id="6035491133925068289">ផ្លូវរត់ និង​ទីលាន</translation>
 <translation id="6039846035001940113">ប្រសិន​បើ​បញ្ហា​នេះនៅតែបន្តកើតឡើង សូម​ទាក់ទងម្ចាស់ទំព័រ។</translation>
 <translation id="6040143037577758943">បិទ</translation>
+<translation id="6040539895181423374">ស្ថិតិតម្លៃ</translation>
 <translation id="604124094241169006">ស្វ័យប្រវត្តិ</translation>
 <translation id="6041777658117377052">សីតុណ្ហភាព​ក្នុងម៉ាស៊ីនបោះពុម្ព</translation>
 <translation id="6042308850641462728">ច្រើនទៀត</translation>
@@ -3220,7 +3224,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">បន្ទាប់ពីអ្នក​បើកការកំណត់​នេះ សូម​ត្រឡប់មក​ផ្ទាំងនេះវិញ ដើម្បី​ចាប់ផ្ដើម​សរសេរ</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">អ្នកគ្រប់គ្រង​របស់អ្នកអាច​មើលឃើញ៖</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច "Tab" រួចចុច "Enter" ដើម្បីបើក​ផ្ទាំងឯកជនថ្មី ដើម្បីរុករកជាលក្ខណៈឯកជន</translation>
 <translation id="7203375778433816396">កំណត់ Chrome ជា​កម្មវិធីរុករកតាមអ៊ីនធឺណិតលំនាំដើម​របស់​ប្រព័ន្ធ</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> មិនត្រូវតាមបទដ្ឋានសុវត្ថិភាពទេ</translation>
@@ -3373,6 +3376,7 @@
 <translation id="7481312909269577407">ទៅមុខ</translation>
 <translation id="7481603210197454575">ស្រោមសំបុត្រអ៊ីតាលី</translation>
 <translation id="7483482939016730822">សម្ភារ​ផ្គត់ផ្គង់​សាលារៀន និង​បរិក្ខារ​ថ្នាក់​រៀន</translation>
+<translation id="7483863401933039889"><ph name="CHROME_TIP" />, ចុច Tab រួចចុច Enter ដើម្បី​ច្រានចោល​គន្លឹះ Chrome។</translation>
 <translation id="7485085230273446323">អាជីវកម្ម​ និង​ឧស្សាហកម្ម</translation>
 <translation id="7485870689360869515">គ្មានទិន្នន័យត្រូវបានរកឃើញទេ។</translation>
 <translation id="7489392576326061356">សាប៊ូ​កក់សក់ និងសាប៊ូកក់​បន្ទន់សក់</translation>

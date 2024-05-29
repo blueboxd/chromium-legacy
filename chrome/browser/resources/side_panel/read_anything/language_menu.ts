@@ -12,6 +12,7 @@ import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import './icons.html.js';
 
 import type {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
+import type {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.js';
 import type {DomRepeatEvent} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -71,6 +72,7 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
     };
   }
 
+  private availableVoices: SpeechSynthesisVoice[];
   private languageSearchValue_: string;
   private readonly voicePackInstallStatus:
       {[language: string]: VoicePackStatus};
@@ -79,6 +81,18 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
   // Use this variable instead of AVAILABLE_GOOGLE_TTS_LOCALES
   // directly to better aid in testing.
   private baseLanguages = AVAILABLE_GOOGLE_TTS_LOCALES;
+
+  // A non-Google language is one that's not associated with a Google voice
+  // that can be downloaded from the language pack.
+  private nonGoogleLanguages: string[] = [];
+
+  constructor() {
+    super();
+    this.addEventListener('cr-dialog-open', () => {
+      this.$.languageMenu.querySelector<CrInputElement>('.search-field')
+          ?.focus();
+    });
+  }
 
   private closeLanguageMenu_() {
     this.$.languageMenu.close();
@@ -113,6 +127,9 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
       return [];
     }
 
+    // Ensure this is cleared each time we recompute available languages.
+    this.nonGoogleLanguages = [];
+
     const selectedLangLowerCase = selectedLang?.toLowerCase();
     // Ensure we've added the available pack manager supported languages to
     // the language menu first, only on ChromeOS.
@@ -134,6 +151,10 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
           lang.toLowerCase(),
           this.getDisplayName(localeToDisplayName, lang),
         ]);
+
+        if (chrome.readingMode.isLanguagePackDownloadingEnabled) {
+          this.nonGoogleLanguages.push(lang.toLowerCase());
+        }
       }
     });
 
@@ -182,6 +203,12 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
   private isNotificationError(
       lang: string,
       voicePackInstallStatus: {[language: string]: VoicePackStatus}): boolean {
+    // Don't show notification text for a non-Google TTS language, as we're
+    // not attempting a download.
+    if (this.nonGoogleLanguages.includes(lang)) {
+      return false;
+    }
+
     const voicePackLanguage = convertLangOrLocaleForVoicePackManager(lang);
 
     if (!voicePackLanguage) {
@@ -200,12 +227,19 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
     // TODO(b/40927698): In the future, some of our install error messages
     // might not be set to an "error" in the notification status span, so
     // be more specific.
-    return notification === VoicePackStatus.INSTALL_ERROR;
+    return notification === VoicePackStatus.INSTALL_ERROR ||
+        notification === VoicePackStatus.INSTALL_ERROR_ALLOCATION;
   }
 
   private getNotificationText(
       lang: string,
       voicePackInstallStatus: {[language: string]: VoicePackStatus}): string {
+    // Don't show notification text for a non-Google TTS language, as we're
+    // not attempting a download.
+    if (this.nonGoogleLanguages.includes(lang)) {
+      return '';
+    }
+
     // Make sure to convert the lang string, otherwise there could be a
     // mismatch in a language and locale and what is stored in the installation
     // map.
@@ -239,10 +273,18 @@ export class LanguageMenuElement extends LanguageMenuElementBase {
           return 'readingModeLanguageMenuNoInternet';
         }
         return '';
+      case VoicePackStatus.INSTALL_ERROR_ALLOCATION:
+        // If we get an allocation error but voices exist for the given
+        // language, show an allocation error specific to downloading high
+        // quality voices.
+        if (this.availableVoices.some(
+                voice => voice.lang.toLowerCase() === lang)) {
+          return 'allocationErrorHighQuality';
+        }
+        return 'allocationError';
       case VoicePackStatus.NONE:
       case VoicePackStatus.EXISTS:
       case VoicePackStatus.INSTALLED:
-      case VoicePackStatus.REMOVED_BY_USER:
       default:
         return '';
     }

@@ -136,6 +136,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Browser.ERP.DataLossErrorReason"
+    enum="DataLossErrorReasonBrowser" expires_after="2025-04-01">
+  <owner>jrhilke@google.com</owner>
+  <owner>src/components/reporting/OWNERS</owner>
+  <summary>
+    Recorded once each time reporting::error::DATA_LOSS is returned in the
+    browser. There is a 1:1 relationship between the UMA values and error
+    messages used with reporting::error::DATA_LOSS so that we can understand
+    exactly which parts of the code are failing.
+  </summary>
+</histogram>
+
 <histogram name="Browser.ERP.EnqueueFailureDestination"
     enum="EnterpriseCloudReportingDestination" expires_after="2024-11-20">
   <owner>vshenvi@google.com</owner>
@@ -391,6 +403,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Browser.ERP.UnavailableErrorReason"
+    enum="UnavailableErrorReasonBrowser" expires_after="2025-04-01">
+  <owner>jrhilke@google.com</owner>
+  <owner>src/components/reporting/OWNERS</owner>
+  <summary>
+    Recorded once each time reporting::error::UNAVAILABLE is returned in the
+    browser. There is a 1:1 relationship between the UMA values and error
+    messages used with reporting::error::UNAVAILABLE so that we can understand
+    exactly which parts of the code are failing.
+  </summary>
+</histogram>
+
 <histogram name="Browser.ERP.UnuploadedCrashShouldNotReportReason"
     enum="EnterpriseReportingUnuploadedCrashShouldNotReportReason"
     expires_after="2024-10-18">
@@ -486,6 +510,26 @@ chromium-metrics-reviews@google.com.
     <variant name="8" summary="8 to 15 extensions"/>
     <variant name="16" summary="16 or more extensions"/>
   </token>
+</histogram>
+
+<histogram name="Browser.MainThreadsCongestion.LowMemory" units="janks"
+    expires_after="2024-11-21">
+  <owner>vovoy@chromium.org</owner>
+  <owner>chromeos-memory@google.com</owner>
+  <summary>
+    This metric is emitted every 30 seconds after main message loop start, when
+    there is user activity. Each 30 second duration is divided into 100ms
+    intervals. This metric counts the number of these intervals that were
+    &quot;congested&quot;. An interval is congested if during it the UI or IO
+    thread executes an &quot;important&quot; task that was queued more than 100
+    ms ago, or a non-important task or a native event handler that started
+    executing more than 100 ms ago. See
+    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
+    for more details.
+
+    This metric is only recorded if the available physical memory is below a
+    threshold based on Memory.Experimental.AvailableMemoryPercent 10 percentile.
+  </summary>
 </histogram>
 
 <histogram name="Browser.MainThreadsCongestion.Used" units="janks"

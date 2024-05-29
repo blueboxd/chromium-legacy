@@ -8,6 +8,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 class PrefService;

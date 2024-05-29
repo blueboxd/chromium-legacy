@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/dom_selection.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fragment_directive/css_selector_directive.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_directive.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_selector_generator.h"
@@ -88,7 +89,7 @@ ScriptPromise<SelectorDirective> FragmentDirective::createSelectorDirective(
     ScriptState* state,
     const V8UnionRangeOrSelection* arg) {
   if (ExecutionContext::From(state)->IsContextDestroyed())
-    return ScriptPromise<SelectorDirective>();
+    return EmptyPromise();
 
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver<SelectorDirective>>(state);

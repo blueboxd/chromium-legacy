@@ -256,6 +256,15 @@ bool MediaItemUIUpdatedView::OnKeyPressed(const ui::KeyEvent& event) {
   return progress_view_->OnKeyPressed(event);
 }
 
+bool MediaItemUIUpdatedView::OnMousePressed(const ui::MouseEvent& event) {
+  // Activate the original source page if it exists when any part of the media
+  // background view is pressed.
+  for (auto& observer : observers_) {
+    observer.OnMediaItemUIClicked(id_, /*activate_original_media=*/true);
+  }
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // MediaItemUI implementations:
 
@@ -301,7 +310,7 @@ void MediaItemUIUpdatedView::UpdateWithMediaSessionInfo(
   if (in_picture_in_picture_) {
     picture_in_picture_button_->Update(
         static_cast<int>(MediaSessionAction::kExitPictureInPicture),
-        vector_icons::kPictureInPictureAltIcon,
+        vector_icons::kPipExitIcon,
         IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_EXIT_PIP,
         media_color_theme_.secondary_foreground_color_id);
   } else {

@@ -950,7 +950,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DefaultBrowserPromo.Outcome.{CurrentState}"
-    enum="AndroidDefaultBrowserPromoOutcomeType" expires_after="M130">
+    enum="AndroidDefaultBrowserPromoOutcomeType" expires_after="2024-11-24">
   <owner>lazzzis@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1587,6 +1587,36 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.FocusChanged.FocusOwningWebContents" enum="Boolean"
+    expires_after="2025-05-22">
+  <owner>amanvr@google.com</owner>
+  <owner>nuskos@chromium.org</owner>
+  <summary>
+    Records whether the WebContents associated with the RenderWidgetHost
+    responsible for handling input is focused specifically on TouchStart or
+    GestureTap or MouseDown events. This histogram is recorded for each input
+    event sequence on TouchStart/GestureTap/MouseDown input events. This would
+    help us in understanding if focus changes on input events need to be handled
+    by Viz once it starts receiving transferred input events after InputVizard
+    (go/chrome-inputvizard).
+  </summary>
+</histogram>
+
+<histogram name="Android.FocusChanged.RenderWidgetHostViewChildFrame"
+    enum="Boolean" expires_after="2025-05-22">
+  <owner>amanvr@google.com</owner>
+  <owner>nuskos@chromium.org</owner>
+  <summary>
+    Tracks if the RenderWidgetHostViewChildFrame requests focus on the root
+    RenderWidgetHostViewAndroid during the beginning of a touch interaction.
+    This tracking occurs every time the Focus() function is called from
+    RenderWidgetHostViewChildFrame::PreProcessTouchEvent when a touch sequence
+    begins (on TouchStart). This would help us in understanding if focus changes
+    on touch input events need to be handled by Viz once it starts receiving
+    transferred input events after InputVizard (go/chrome-inputvizard).
+  </summary>
+</histogram>
+
 <histogram name="Android.FontLookup.Blink.DLFontsLatencyFailure2"
     units="microseconds" expires_after="2023-01-15">
   <owner>drott@chromium.org</owner>
@@ -2149,7 +2179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued" enum="MessageIdentifier"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2187,7 +2217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Visible" enum="MessageIdentifier"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2652,7 +2682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.InputToNavigationControllerStart" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2025-04-30">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -2698,7 +2728,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.OmniboxAction.Valid" enum="BooleanValid"
-    expires_after="2024-06-30">
+    expires_after="2025-04-30">
   <owner>ender@google.com</owner>
   <owner>chrome-mobile-search@google.com</owner>
   <summary>
@@ -3527,6 +3557,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Pdf.IsFrozenWhenDisplayed" enum="Boolean"
+    expires_after="2024-10-28">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records whether the pdf native page is frozen before the tab is displayed,
+    such as being selected from tab switcher or tab strip. Used to determine how
+    often the pdf native page is frozen.
+  </summary>
+</histogram>
+
 <histogram name="Android.PhotoPicker.BitmapScalerTask" units="ms"
     expires_after="2024-06-01">
   <owner>finnur@chromium.org</owner>
@@ -3875,7 +3916,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.UserSwitchToDesktop" enum="Boolean"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>gangwu@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -4156,7 +4197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ShowSelectionMenuSourceType" enum="MenuSourceType"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>wbjacksonjr@chromium.org</owner>
   <summary>
@@ -6151,7 +6192,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.HistogramRecordAge"
-    units="minutes" expires_after="2024-09-22">
+    units="minutes" expires_after="2024-11-24">
   <owner>avvall@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -6165,7 +6206,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.NumHistograms"
-    units="histograms" expires_after="2024-09-22">
+    units="histograms" expires_after="2024-11-24">
   <owner>ntfschr@chromium.org</owner>
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -6178,7 +6219,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.ParsingLogResult"
     enum="AndroidWebViewNonEmbeddedMetricsParsingLogResult"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>avvall@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -6204,7 +6245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.TransmissionResult"
-    enum="AndroidWebViewDevUiMetricsTransmission" expires_after="2024-09-22">
+    enum="AndroidWebViewDevUiMetricsTransmission" expires_after="2024-11-24">
   <owner>ntfschr@chromium.org</owner>
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -6430,6 +6471,17 @@ chromium-metrics-reviews@google.com.
     where WebView takes extra steps during startup to reduce the risk of
     starting in a bad state. This is recorded once during WebView startup,
     regardless of whether SafeMode is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ScheduleOnVizAndBlockTime"
+    units="microseconds" expires_after="2024-11-20">
+  <owner>cduvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the total time spent running a blocking task in
+    TaskQueueWebView::ScheduleOnVizAndBlock(). This is recorded only on devices
+    that support high resolution timers.
   </summary>
 </histogram>
 
@@ -6718,6 +6770,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.UsedInPopupWindow"
+    enum="WebViewUsedInPopupWindow" expires_after="2024-12-01">
+  <owner>peconn@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Recorded when a WebView is attached to the window. Records whether the
+    window the WebView is attached to is a PopupWindow.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.UserAgentClientHintsMetadata.AvailableType"
     enum="UserAgentMetadataAvailableType" expires_after="2024-12-01">
   <owner>victortan@chromium.org</owner>
@@ -6863,6 +6925,17 @@ chromium-metrics-reviews@google.com.
     <variant name="javascript"/>
     <variant name="unknown"/>
   </token>
+</histogram>
+
+<histogram name="Android.WebView.VizCompositorRunnerPostTaskBlockTime"
+    units="microseconds" expires_after="2024-11-20">
+  <owner>cduvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the total time spent running a blocking task in
+    VizCompositorThreadRunnerWebView::PostTaskAndBlock(). This is recorded only
+    on devices that support high resolution timers.
+  </summary>
 </histogram>
 
 <histogram name="AndroidSearchEngineLogo.Events"

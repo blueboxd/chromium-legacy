@@ -58,12 +58,14 @@ PasswordForm PendingCredentialsForNewCredentials(
     const std::u16string& password_element,
     bool is_http_auth,
     bool is_credential_api_save) {
-  if (is_http_auth || is_credential_api_save)
+  if (is_http_auth || is_credential_api_save) {
     return parsed_submitted_form;
+  }
 
   PasswordForm pending_credentials = parsed_submitted_form;
-  if (observed_form)
+  if (observed_form) {
     pending_credentials.form_data = *observed_form;
+  }
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials.password_value.clear();
   // The password element should be determined earlier in |PasswordToSave|.
@@ -78,8 +80,9 @@ PasswordForm PendingCredentialsForNewCredentials(
 // Copies field properties masks from the form |from| to the form |to|.
 void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
   // Skip copying if the number of fields is different.
-  if (from.fields.size() != to->fields.size())
+  if (from.fields.size() != to->fields.size()) {
     return;
+  }
 
   for (size_t i = 0; i < from.fields.size(); ++i) {
     to->fields[i].set_properties_mask(
@@ -247,6 +250,20 @@ void PopulateAlternativeUsernames(base::span<const PasswordForm> best_matches,
   }
 }
 
+// TODO(crbug.com/327343301) to be replaced after refactoring of
+// GetAllRelevantMatches.
+// Helper function used for internal handling and
+// filtering of PasswordForms. Returns vector of pointers to the forms holded by
+// form_fetcher_.
+std::vector<raw_ptr<const PasswordForm, VectorExperimental>> MakeWeakCopies(
+    base::span<const PasswordForm> matches) {
+  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> result(
+      matches.size());
+  base::ranges::transform(matches, result.begin(),
+                          [](const PasswordForm& form) { return &form; });
+  return result;
+}
+
 }  // namespace
 
 PendingCredentialsStates ComputePendingCredentialsStates(
@@ -343,8 +360,9 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
       parsed_submitted_form, observed_form, submitted_form, is_http_auth,
       is_credential_api_save);
 
-  if (votes_uploader_)
+  if (votes_uploader_) {
     SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
+  }
 }
 
 void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
@@ -469,10 +487,17 @@ void PasswordSaveManagerImpl::GeneratedPasswordAccepted(
     PasswordForm parsed_form,
     base::WeakPtr<PasswordManagerDriver> driver) {
   generation_manager_ = std::make_unique<PasswordGenerationManager>(client_);
+
+  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
+      non_federated_matches =
+          MakeWeakCopies(form_fetcher_->GetNonFederatedMatches());
+  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
+      federated_matches = MakeWeakCopies(form_fetcher_->GetFederatedMatches());
+
   generation_manager_->GeneratedPasswordAccepted(
       std::move(parsed_form),
-      GetRelevantMatchesForGeneration(form_fetcher_->GetNonFederatedMatches()),
-      GetRelevantMatchesForGeneration(form_fetcher_->GetFederatedMatches()),
+      GetRelevantMatchesForGeneration(non_federated_matches),
+      GetRelevantMatchesForGeneration(federated_matches),
       ShouldStoreGeneratedPasswordsInAccountStore()
           ? PasswordForm::Store::kAccountStore
           : PasswordForm::Store::kProfileStore,
@@ -500,26 +525,27 @@ void PasswordSaveManagerImpl::MoveCredentialsToAccountStore(
       "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted2",
       trigger);
 
+  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
+      non_federated_matches =
+          MakeWeakCopies(form_fetcher_->GetNonFederatedMatches());
+  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
+      federated_matches = MakeWeakCopies(form_fetcher_->GetFederatedMatches());
+
   // TODO(crbug.com/40111151): Moving credentials upon an update. FormFetch will
   // have an outdated credentials. Fix it if this turns out to be a product
   // requirement.
-
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      account_store_matches =
-          AccountStoreMatches(form_fetcher_->GetNonFederatedMatches());
+      account_store_matches = AccountStoreMatches(non_federated_matches);
   const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      account_store_federated_matches =
-          AccountStoreMatches(form_fetcher_->GetFederatedMatches());
+      account_store_federated_matches = AccountStoreMatches(federated_matches);
   account_store_matches.insert(account_store_matches.end(),
                                account_store_federated_matches.begin(),
                                account_store_federated_matches.end());
 
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      profile_store_matches =
-          ProfileStoreMatches(form_fetcher_->GetNonFederatedMatches());
+      profile_store_matches = ProfileStoreMatches(non_federated_matches);
   const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      profile_store_federated_matches =
-          ProfileStoreMatches(form_fetcher_->GetFederatedMatches());
+      profile_store_federated_matches = ProfileStoreMatches(federated_matches);
   profile_store_matches.insert(profile_store_matches.end(),
                                profile_store_federated_matches.begin(),
                                profile_store_federated_matches.end());
@@ -527,8 +553,9 @@ void PasswordSaveManagerImpl::MoveCredentialsToAccountStore(
   for (const PasswordForm* match : profile_store_matches) {
     DCHECK(!match->IsUsingAccountStore());
     // Ignore credentials matches for other usernames.
-    if (match->username_value != pending_credentials_.username_value)
+    if (match->username_value != pending_credentials_.username_value) {
       continue;
+    }
 
     // Don't call Save() if the credential already exists in the account
     // store, 1) to avoid unnecessary sync cycles, 2) to avoid potential
@@ -575,7 +602,7 @@ void PasswordSaveManagerImpl::BlockMovingToAccountStoreFor(
 
 void PasswordSaveManagerImpl::UpdateSubmissionIndicatorEvent(
     autofill::mojom::SubmissionIndicatorEvent event) {
-  pending_credentials_.form_data.submission_event = event;
+  pending_credentials_.form_data.set_submission_event(event);
   pending_credentials_.submission_event = event;
 }
 
@@ -709,10 +736,11 @@ PasswordSaveManagerImpl::FindSimilarSavedFormAndComputeState(
   // matter which one we pick for updating, since the result will be the same
   // anyway.
   const PasswordForm* resolved_similar_saved_form = nullptr;
-  if (resolved_state == states.profile_store_state)
+  if (resolved_state == states.profile_store_state) {
     resolved_similar_saved_form = states.similar_saved_form_from_profile_store;
-  else if (resolved_state == states.account_store_state)
+  } else if (resolved_state == states.account_store_state) {
     resolved_similar_saved_form = states.similar_saved_form_from_account_store;
+  }
 
   return std::make_pair(resolved_similar_saved_form, resolved_state);
 }
@@ -893,8 +921,9 @@ PasswordSaveManagerImpl::GetRelevantMatchesForGeneration(
 
 void PasswordSaveManagerImpl::CloneInto(PasswordSaveManagerImpl* clone) {
   DCHECK(clone);
-  if (generation_manager_)
+  if (generation_manager_) {
     clone->generation_manager_ = generation_manager_->Clone();
+  }
 
   clone->pending_credentials_ = pending_credentials_;
   clone->pending_credentials_state_ = pending_credentials_state_;

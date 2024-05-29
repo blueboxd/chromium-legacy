@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.account_storage_toggle.AccountStorageToggleFragmentArgs;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
@@ -70,7 +71,12 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.SimpleModalDialogController;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.HashMap;
@@ -122,6 +128,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
     @VisibleForTesting public static final String PREF_SYNC_SETTINGS = "sync_settings";
     @VisibleForTesting public static final String PREF_SYNC_APPS = "sync_apps";
     @VisibleForTesting public static final String PREF_TURN_OFF_SYNC = "turn_off_sync";
+    @VisibleForTesting public static final String PREF_SYNC_REVIEW_DATA = "sync_review_data";
     private static final String PREF_ADVANCED_CATEGORY = "advanced_category";
 
     @VisibleForTesting
@@ -156,14 +163,16 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
 
     @VisibleForTesting public static final String PREF_ENCRYPTION = "encryption";
-    @VisibleForTesting public static final String PREF_SYNC_REVIEW_DATA = "sync_review_data";
+
+    @VisibleForTesting
+    public static final String PREF_ACCOUNT_DATA_DASHBOARD = "account_data_dashboard";
 
     @VisibleForTesting
     public static final String PREF_MANAGE_YOUR_GOOGLE_ACCOUNT = "manage_your_google_account";
 
     @VisibleForTesting
-    public static final String PREF_MANAGE_ACCOUNTS_ON_THIS_DEVICE =
-            "manage_accounts_on_this_device";
+    public static final String PREF_ACCOUNT_ANDROID_DEVICE_ACCOUNTS =
+            "account_android_device_accounts";
 
     @VisibleForTesting
     public static final String PREF_SEARCH_AND_BROWSE_CATEGORY = "search_and_browse_category";
@@ -226,7 +235,8 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         setHasOptionsMenu(true);
 
         if (shouldReplaceSyncSettingsWithAccountSettings()) {
-            getActivity().setTitle(R.string.account_section_header);
+            // Set title with an empty string to have no title on the top of the page.
+            getActivity().setTitle("");
 
             SettingsUtils.addPreferencesFromResource(
                     this, R.xml.unified_account_settings_preferences);
@@ -258,9 +268,13 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                     findPreference(PREF_ACCOUNT_SECTION_HISTORY_TOGGLE));
             mSyncTypeSwitchPreferencesMap.put(
                     UserSelectableType.TABS, findPreference(PREF_ACCOUNT_SECTION_HISTORY_TOGGLE));
-            mSyncTypeSwitchPreferencesMap.put(
-                    UserSelectableType.PASSWORDS,
-                    findPreference(PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE));
+            ChromeSwitchPreference passwordsToggle =
+                    (ChromeSwitchPreference) findPreference(PREF_ACCOUNT_SECTION_PASSWORDS_TOGGLE);
+            mSyncTypeSwitchPreferencesMap.put(UserSelectableType.PASSWORDS, passwordsToggle);
+            if (getArguments() != null
+                    && getArguments().getBoolean(AccountStorageToggleFragmentArgs.HIGHLIGHT)) {
+                passwordsToggle.setBackgroundColor(R.color.iph_highlight_blue);
+            }
             mSyncTypeSwitchPreferencesMap.put(
                     UserSelectableType.PAYMENTS,
                     findPreference(PREF_ACCOUNT_SECTION_PAYMENTS_TOGGLE));
@@ -275,6 +289,11 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                     .values()
                     .forEach(pref -> pref.setOnPreferenceChangeListener(this));
 
+            Preference reviewSyncData = findPreference(PREF_ACCOUNT_DATA_DASHBOARD);
+            reviewSyncData.setOnPreferenceClickListener(
+                    SyncSettingsUtils.toOnClickListener(
+                            this, () -> SyncSettingsUtils.openSyncDashboard(getActivity())));
+
             Preference manageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
             manageYourGoogleAccount.setOnPreferenceClickListener(
                     SyncSettingsUtils.toOnClickListener(
@@ -284,7 +303,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                             }));
 
             Preference manageAccountsOnThisDevice =
-                    findPreference(PREF_MANAGE_ACCOUNTS_ON_THIS_DEVICE);
+                    findPreference(PREF_ACCOUNT_ANDROID_DEVICE_ACCOUNTS);
             manageAccountsOnThisDevice.setOnPreferenceClickListener(
                     SyncSettingsUtils.toOnClickListener(
                             this, () -> SigninUtils.openSettingsForAllAccounts(getActivity())));
@@ -390,6 +409,10 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                                     .isUrlKeyedAnonymizedDataCollectionManaged(profile);
                         }
                     });
+            Preference reviewSyncData = findPreference(PREF_SYNC_REVIEW_DATA);
+            reviewSyncData.setOnPreferenceClickListener(
+                    SyncSettingsUtils.toOnClickListener(
+                            this, () -> SyncSettingsUtils.openSyncDashboard(getActivity())));
         }
 
         mGoogleActivityControls = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
@@ -408,11 +431,6 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         mSyncEncryption = findPreference(PREF_ENCRYPTION);
         mSyncEncryption.setOnPreferenceClickListener(
                 SyncSettingsUtils.toOnClickListener(this, this::onSyncEncryptionClicked));
-
-        Preference reviewSyncData = findPreference(PREF_SYNC_REVIEW_DATA);
-        reviewSyncData.setOnPreferenceClickListener(
-                SyncSettingsUtils.toOnClickListener(
-                        this, () -> SyncSettingsUtils.openSyncDashboard(getActivity())));
     }
 
     @Override
@@ -495,6 +513,18 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        if (mSyncService.isUsingExplicitPassphrase()
+                && shouldReplaceSyncSettingsWithAccountSettings()
+                && preference
+                        .getKey()
+                        .equals(ManageSyncSettings.PREF_ACCOUNT_SECTION_ADDRESSES_TOGGLE)
+                && (Boolean) newValue) {
+            // Shows a dialog that warns user that addresses are not encrypted with their custom
+            // passphrase.
+            showAdressesNotEncryptedDialog(preference);
+            // Preference state shouldn't be changed until the user chooses to continue.
+            return false;
+        }
         // A change to Preference state hasn't been applied yet. Defer
         // updateSyncStateFromSelectedTypes so it gets the updated state from
         // isChecked().
@@ -761,6 +791,44 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                 mSnackbarManager,
                 SignoutReason.USER_CLICKED_REVOKE_SYNC_CONSENT_SETTINGS,
                 () -> {});
+    }
+
+    private void showAdressesNotEncryptedDialog(Preference preference) {
+        ModalDialogManager modalDialogManager =
+                ((ModalDialogManagerHolder) getActivity()).getModalDialogManager();
+        assert modalDialogManager != null;
+        ModalDialogProperties.Controller dialogController =
+                new SimpleModalDialogController(
+                        modalDialogManager,
+                        dismissalCause -> {
+                            if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
+                                // Preference state should change when the user chooses to continue.
+                                ((ChromeSwitchPreference) preference).setChecked(true);
+                                PostTask.postTask(
+                                        TaskTraits.UI_DEFAULT,
+                                        this::updateSyncStateFromSelectedTypes);
+                            }
+                        });
+        PropertyModel dialog =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, dialogController)
+                        .with(
+                                ModalDialogProperties.TITLE,
+                                getContext().getString(R.string.sync_addresses_title))
+                        .with(
+                                ModalDialogProperties.MESSAGE_PARAGRAPH_1,
+                                getContext().getString(R.string.sync_addresses_body))
+                        .with(
+                                ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                getContext().getString(R.string.sync_addresses_accept))
+                        .with(
+                                ModalDialogProperties.BUTTON_STYLES,
+                                ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
+                        .with(
+                                ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                getContext().getString(R.string.sync_addresses_cancel))
+                        .build();
+        modalDialogManager.showDialog(dialog, ModalDialogManager.ModalDialogType.APP);
     }
 
     private void onSyncEncryptionClicked() {

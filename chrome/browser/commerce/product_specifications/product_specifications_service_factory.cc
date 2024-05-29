@@ -21,8 +21,9 @@ namespace {
 std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor>
 CreateChangeProcessor() {
   return std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-      syncer::COMPARE, base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                           chrome::GetChannel()));
+      syncer::PRODUCT_COMPARISON,
+      base::BindRepeating(&syncer::ReportUnrecoverableError,
+                          chrome::GetChannel()));
 }
 
 }  // namespace
@@ -66,11 +67,10 @@ std::unique_ptr<KeyedService>
 ProductSpecificationsServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   return std::make_unique<commerce::ProductSpecificationsService>(
-      std::make_unique<ProductSpecificationsSyncBridge>(
-          ModelTypeStoreServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(context))
-              ->GetStoreFactory(),
-          CreateChangeProcessor()));
+      ModelTypeStoreServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context))
+          ->GetStoreFactory(),
+      CreateChangeProcessor());
 }
 
 }  // namespace commerce

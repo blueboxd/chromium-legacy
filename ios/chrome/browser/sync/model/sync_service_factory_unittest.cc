@@ -48,7 +48,7 @@ class SyncServiceFactoryTest : public PlatformTest {
  protected:
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(52 == syncer::GetNumModelTypes(),
+    static_assert(53 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -70,7 +70,7 @@ class SyncServiceFactoryTest : public PlatformTest {
     datatypes.Put(syncer::AUTOFILL_WALLET_OFFER);
     datatypes.Put(syncer::BOOKMARKS);
     if (base::FeatureList::IsEnabled(commerce::kProductSpecificationsSync)) {
-      datatypes.Put(syncer::COMPARE);
+      datatypes.Put(syncer::PRODUCT_COMPARISON);
     }
     datatypes.Put(syncer::CONTACT_INFO);
     datatypes.Put(syncer::DEVICE_INFO);
@@ -93,6 +93,9 @@ class SyncServiceFactoryTest : public PlatformTest {
     }
     if (base::FeatureList::IsEnabled(syncer::kSyncPlusAddress)) {
       datatypes.Put(syncer::PLUS_ADDRESS);
+    }
+    if (base::FeatureList::IsEnabled(syncer::kSyncPlusAddressSetting)) {
+      datatypes.Put(syncer::PLUS_ADDRESS_SETTING);
     }
     if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)) {
       datatypes.Put(syncer::WEBAUTHN_CREDENTIAL);

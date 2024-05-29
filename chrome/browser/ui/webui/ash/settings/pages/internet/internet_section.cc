@@ -747,12 +747,10 @@ InternetSection::InternetSection(Profile* profile,
   cros_network_config_->AddObserver(
       network_config_receiver_.BindNewPipeAndPassRemote());
 
-  if (ash::features::IsHotspotEnabled()) {
-    // Receive updates when hotspot info changed.
-    GetHotspotConfigService(cros_hotspot_config_.BindNewPipeAndPassReceiver());
-    cros_hotspot_config_->AddObserver(
-        hotspot_config_receiver_.BindNewPipeAndPassRemote());
-  }
+  // Receive updates when hotspot info changed.
+  GetHotspotConfigService(cros_hotspot_config_.BindNewPipeAndPassReceiver());
+  cros_hotspot_config_->AddObserver(
+      hotspot_config_receiver_.BindNewPipeAndPassRemote());
 
   // Fetch initial list of devices and active networks.
   FetchDeviceList();
@@ -1153,10 +1151,11 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "showMeteredToggle",
       base::FeatureList::IsEnabled(::features::kMeteredShowToggle));
   html_source->AddBoolean(
+      "trafficCountersForWifiTesting",
+      ash::features::IsTrafficCountersForWiFiTestingEnabled());
+  html_source->AddBoolean(
       "showHiddenToggle",
       base::FeatureList::IsEnabled(::features::kShowHiddenNetworkToggle));
-  html_source->AddBoolean("isHotspotEnabled",
-                          ash::features::IsHotspotEnabled());
   html_source->AddBoolean("isInstantHotspotRebrandEnabled",
                           ash::features::IsInstantHotspotRebrandEnabled());
   html_source->AddBoolean("isPasspointSettingsEnabled",
@@ -1440,10 +1439,8 @@ void InternetSection::OnHotspotInfoChanged() {
 }
 
 void InternetSection::FetchHotspotInfo() {
-  if (ash::features::IsHotspotEnabled()) {
-    cros_hotspot_config_->GetHotspotInfo(base::BindOnce(
-        &InternetSection::OnHotspotInfo, base::Unretained(this)));
-  }
+  cros_hotspot_config_->GetHotspotInfo(
+      base::BindOnce(&InternetSection::OnHotspotInfo, base::Unretained(this)));
 }
 
 void InternetSection::OnHotspotInfo(

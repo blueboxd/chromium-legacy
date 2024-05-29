@@ -104,6 +104,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "sandbox/policy/switches.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
 #include "ui/accessibility/platform/ax_platform.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -380,6 +383,39 @@ void MigratePinnedTaskBarShortcutsIfNeeded() {
     }
   }
 }
+
+void MaybeBlockDynamicCodeForBrowserProcess() {
+  // This mitigation is not enabled if running in single-process mode or the GPU
+  // is in-process. It is also not enabled if the sandbox is disabled.
+  const char* const kUnsupportedSwitches[] = {
+      switches::kSingleProcess, switches::kInProcessGPU,
+      sandbox::policy::switches::kNoSandbox};
+
+  for (const auto* unsupported_switch : kUnsupportedSwitches) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(unsupported_switch)) {
+      return;
+    }
+  }
+
+  bool block_dynamic_code =
+      base::FeatureList::IsEnabled(features::kBrowserDynamicCodeDisabled);
+
+  PrefService* local_state = g_browser_process->local_state();
+  // Policy intentionally takes precedence over the feature.
+  if (local_state->IsManagedPreference(prefs::kDynamicCodeSettings) &&
+      local_state->GetInteger(prefs::kDynamicCodeSettings) ==
+          /*EnabledForBrowser=*/1) {
+    block_dynamic_code = true;
+  }
+
+  if (block_dynamic_code) {
+    // This must happen when Chrome is still in single-threaded mode, in
+    // particular, before the launcher thread has been created.
+    sandbox::SandboxFactory::GetBrokerServices()
+        ->RatchetDownSecurityMitigations(
+            sandbox::MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT);
+  }
+}
 // This error message is not localized because we failed to load the
 // localization data files.
 const char kMissingLocaleDataTitle[] = "Missing File Error";
@@ -509,6 +545,10 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
   platform_auth_policy_observer_.reset();
 
   ChromeBrowserMainParts::PostMainMessageLoopRun();
+}
+
+void ChromeBrowserMainPartsWin::PostEarlyInitialization() {
+  MaybeBlockDynamicCodeForBrowserProcess();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
@@ -853,10 +893,6 @@ void ChromeBrowserMainPartsWin::OnModuleEvent(
       }
     }
   }
-  // Since OnModuleEvent can be invoked from any thread, the above trace event's
-  // END might be the last event on this thread, emit an empty event to force
-  // the END to be flushed. TODO(crbug.com/40657156): Remove this once fixed.
-  PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
 }
 
 // Helper function for initializing the module database subsystem and populating

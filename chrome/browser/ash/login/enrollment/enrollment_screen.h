@@ -259,9 +259,8 @@ class EnrollmentScreen
   // Evaluates device policy TPMFirmwareUpdateSettings and updates the TPM if
   // the policy is set to "auto-update vulnerable TPM firmware at enrollment".
   base::RepeatingClosure tpm_updater_;
-  policy::EnrollmentConfig config_;
-  policy::EnrollmentConfig enrollment_config_;
-  policy::LicenseType license_type_to_use_ = policy::LicenseType::kEnterprise;
+  policy::EnrollmentConfig prescribed_config_;
+  policy::EnrollmentConfig effective_config_;
   ErrorScreensHistogramHelper histogram_helper_;
 
   // 'Current' and 'Next' authentication mechanisms to be used.
@@ -279,9 +278,6 @@ class EnrollmentScreen
   int install_state_retries_ = 0;
   // Timer for install attribute to resolve.
   base::OneShotTimer wait_state_timer_;
-
-  // Whether the ongoing flow belongs to an enterprise rollback.
-  bool is_rollback_flow_ = false;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;

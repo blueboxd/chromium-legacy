@@ -252,7 +252,7 @@ TEST_F(PasswordFormHelperTest, FindPasswordFormsInView) {
     if (data.expected_form_found) {
       ASSERT_EQ(1U, forms.size());
       EXPECT_EQ(data.expected_number_of_fields, forms[0].fields.size());
-      EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(forms[0].name));
+      EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(forms[0].name()));
     } else {
       ASSERT_TRUE(forms.empty());
     }
@@ -760,6 +760,24 @@ TEST_F(PasswordFormHelperTest, FillUsernameAndPassword_MissingFillResultField) {
     ASSERT_TRUE(called);
     EXPECT_FALSE(succeeded);
   }
+
+  // Test a nullptr result.
+  {
+    main_frame_ptr->AddJsResultForFunctionCall(nullptr,
+                                               "passwords.fillPasswordForm");
+    __block bool called = false;
+    __block BOOL succeeded = false;
+    [helper fillPasswordFormWithFillData:fill_data
+                                 inFrame:main_frame_ptr
+                        triggeredOnField:username_field_id
+                       completionHandler:^(BOOL success) {
+                         called = true;
+                         succeeded = success;
+                       }];
+    WaitForBackgroundTasks();
+    ASSERT_TRUE(called);
+    EXPECT_FALSE(succeeded);
+  }
 }
 
 // Tests that extractPasswordFormData extracts wanted form on page with mutiple
@@ -790,7 +808,7 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
     return call_counter == 1;
   }));
   EXPECT_EQ(1, success_counter);
-  EXPECT_EQ(result.renderer_id, FormRendererId(1));
+  EXPECT_EQ(result.renderer_id(), FormRendererId(1));
 
   call_counter = 0;
   success_counter = 0;

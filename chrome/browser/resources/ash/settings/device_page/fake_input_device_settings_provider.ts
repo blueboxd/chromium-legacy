@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 
-import {ActionChoice, Button, ButtonPressObserverInterface, GraphicsTablet, GraphicsTabletObserverInterface, GraphicsTabletSettings, InputDeviceSettingsProviderInterface, Keyboard, KeyboardBrightnessObserverInterface, KeyboardObserverInterface, KeyboardSettings, MetaKey, ModifierKey, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, SixPackShortcutModifier, Stylus, StylusObserverInterface, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
+import {ActionChoice, Button, ButtonPressObserverInterface, GraphicsTablet, GraphicsTabletObserverInterface, GraphicsTabletSettings, InputDeviceSettingsProviderInterface, Keyboard, KeyboardAmbientLightSensorObserverInterface, KeyboardBrightnessObserverInterface, KeyboardObserverInterface, KeyboardSettings, MetaKey, ModifierKey, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, SixPackShortcutModifier, Stylus, StylusObserverInterface, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
 
 /**
  * @fileoverview
@@ -92,6 +92,8 @@ export class FakeInputDeviceSettingsProvider implements
   private buttonPressObservers: ButtonPressObserverInterface[] = [];
   private keyboardBrightnessObserver: KeyboardBrightnessObserverInterface|null =
       null;
+  private keyboardAmbientLightSensorObserver:
+      KeyboardAmbientLightSensorObserverInterface|null = null;
   private observedIds: number[] = [];
   private keyboardBrightness: number = 40.0;
   private keyboardAmbientLightSensorEnabled: boolean = false;
@@ -361,6 +363,11 @@ export class FakeInputDeviceSettingsProvider implements
     this.keyboardBrightnessObserver = observer;
   }
 
+  observeKeyboardAmbientLightSensor(
+      observer: KeyboardAmbientLightSensorObserverInterface): void {
+    this.keyboardAmbientLightSensorObserver = observer;
+  }
+
   getActionsForMouseButtonCustomization(): Promise<{options: ActionChoice[]}> {
     return this.methods.resolveMethod('fakeMouseButtonActions');
   }
@@ -405,6 +412,13 @@ export class FakeInputDeviceSettingsProvider implements
   sendKeyboardBrightnessChange(percent: number): void {
     if (this.keyboardBrightnessObserver) {
       this.keyboardBrightnessObserver.onKeyboardBrightnessChanged(percent);
+    }
+  }
+
+  sendKeyboardAmbientLightSensorEnabledChange(enabled: boolean): void {
+    if (this.keyboardAmbientLightSensorObserver) {
+      this.keyboardAmbientLightSensorObserver
+          .onKeyboardAmbientLightSensorEnabledChanged(enabled);
     }
   }
 

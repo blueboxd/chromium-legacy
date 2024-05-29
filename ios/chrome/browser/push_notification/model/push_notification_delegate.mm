@@ -28,7 +28,11 @@
 #import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_util.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_provider.h"
+#import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
@@ -78,7 +82,7 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
     base::FilePath path = info_cache->GetPathOfBrowserStateAtIndex(i);
     PrefService* pref_service = GetApplicationContext()
                                     ->GetChromeBrowserStateManager()
-                                    ->GetBrowserState(path)
+                                    ->GetBrowserStateByPath(path)
                                     ->GetPrefs();
 
     NSMutableDictionary<NSString*, NSNumber*>* preference_map =
@@ -232,22 +236,40 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
 }
 
 #pragma mark - AppStateObserver
+
+- (void)appState:(AppState*)appState
+    didTransitionFromInitStage:(InitStage)previousInitStage {
+  if (appState.initStage < InitStageFinal) {
+    return;
+  }
+  SceneState* sceneState = appState.foregroundActiveScene;
+  if (sceneState == nil) {
+    return;
+  }
+  [self appDidEnterForeground:sceneState];
+}
+
 - (void)appState:(AppState*)appState
     sceneDidBecomeActive:(SceneState*)sceneState {
   if (appState.initStage < InitStageFinal) {
     return;
   }
+  [self appDidEnterForeground:sceneState];
+}
+
+#pragma mark - Private
+
+// Notifies the client manager that the scene is "foreground active".
+- (void)appDidEnterForeground:(SceneState*)sceneState {
   PushNotificationClientManager* clientManager =
       GetApplicationContext()
           ->GetPushNotificationService()
           ->GetPushNotificationClientManager();
   DCHECK(clientManager);
   clientManager->OnSceneActiveForegroundBrowserReady();
-  // TODO(crbug.com/339102426): Cleanup browserStates.
   ChromeBrowserState* browserState =
-      GetApplicationContext()
-          ->GetChromeBrowserStateManager()
-          ->GetLastUsedBrowserStateDeprecatedDoNotUse();
+      sceneState.browserProviderInterface.mainBrowserProvider.browser
+          ->GetBrowserState();
   if ([self isContentNotificationAvailable:browserState]) {
     // Send an NAU every time the OS authorization status changes.
     [PushNotificationUtil
@@ -278,13 +300,12 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
       }];
 }
 
-#pragma mark - Private
 - (void)recordLifeCycleEvent:(PushNotificationLifecycleEvent)event {
   base::UmaHistogramEnumeration(kLifecycleEventsHistogram, event);
 }
 
 - (BOOL)isContentNotificationAvailable:(ChromeBrowserState*)browserState {
-  if (!IsContentNotificationExperimentEnalbed()) {
+  if (!IsContentNotificationExperimentEnabled()) {
     return false;
   }
   if (!browserState) {

@@ -39,9 +39,9 @@
 #include "extensions/common/api/management.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/icons/extension_icon_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
@@ -464,6 +464,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
         << "Implied by IsExtensionApprovalFlowRequired";
     supervised_user_extensions_delegate->RequestToEnableExtensionOrShowError(
         *target_extension, GetSenderWebContents(),
+        SupervisedUserExtensionParentApprovalEntryPoint::
+            kOnExtensionManagementSetEnabledOperation,
         std::move(extension_approval_callback));
     return RespondLater();
   }

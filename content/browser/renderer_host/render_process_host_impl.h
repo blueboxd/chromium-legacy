@@ -862,6 +862,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void SetStableVideoDecoderEventCBForTesting(
       StableVideoDecoderEventCB cb);
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+
+  void GetBoundInterfacesForTesting(std::vector<std::string>& out);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -913,6 +916,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
     // Indicates whether this RenderProcessHost is exclusively hosting PDF
     // contents.
     kPdf = 1 << 2,
+
+#if BUILDFLAG(IS_WIN)
+    // Indicates whether this RenderProcessHost should use SkiaFontManager as
+    // the default font manager.
+    kSkiaFontManager = 1 << 3,
+#endif
   };
 
   // Use CreateRenderProcessHost() instead of calling this constructor

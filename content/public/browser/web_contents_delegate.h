@@ -33,7 +33,6 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_updates_and_events.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -734,10 +733,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   ShouldOverrideUserAgentForPrerender2();
 
   // Returns true if the embedder allows initiator and transition type mismatch
-  // of prerender activation that activation navigation has no initiator
-  // (embedder-initiated).
+  // for prerender activation navigations that are embedder-initiated and have
+  // no initiators.
   //
-  // This mitigation is mainly for Android WebView (speculationrules +
+  // This relaxation is mainly for Android WebView (speculationrules +
   // `WebView.loadUrl`), as WebView is intended to host embedder-trusted
   // contents.
   virtual bool ShouldAllowPartialParamMismatchOfPrerender2(
@@ -816,9 +815,12 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool MaybeCopyContentAreaAsBitmap(
       base::OnceCallback<void(const SkBitmap&)> callback);
 
-  // Processes accessibility updates and events, taking ownership of the data.
-  virtual void ProcessAccessibilityUpdatesAndEvents(
-      ui::AXUpdatesAndEvents& updates_and_events) {}
+#if BUILDFLAG(IS_ANDROID)
+  // Notifies the delegate that the back forward transition animation state
+  // has changed. If necessary, the delegate should use this notification to
+  // hold on its animation until the back forward transition has completed.
+  virtual void DidBackForwardTransitionAnimationChange() {}
+#endif  // BUILDFLAG(IS_ANDROID)
 
  protected:
   virtual ~WebContentsDelegate();

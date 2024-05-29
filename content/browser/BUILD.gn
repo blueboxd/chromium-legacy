@@ -82,6 +82,7 @@ source_set("browser") {
     "//components/download/public/common:public",
     "//components/file_access",
     "//components/filename_generation",
+    "//components/input",
     "//components/link_header_util",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
@@ -417,6 +418,10 @@ source_set("browser") {
     "aggregation_service/public_key_parsing_utils.h",
     "aggregation_service/report_scheduler_timer.cc",
     "aggregation_service/report_scheduler_timer.h",
+    "ai/mock_ai_manager_impl.cc",
+    "ai/mock_ai_manager_impl.h",
+    "ai/mock_ai_text_session.cc",
+    "ai/mock_ai_text_session.h",
     "attribution_reporting/aggregatable_attribution_utils.cc",
     "attribution_reporting/aggregatable_attribution_utils.h",
     "attribution_reporting/attribution_background_registrations_id.h",
@@ -1354,10 +1359,6 @@ source_set("browser") {
     "ml/ml_service_factory.h",
     "ml/ml_service_impl.cc",
     "ml/ml_service_impl.h",
-    "model_execution/mock_model_execution_session.cc",
-    "model_execution/mock_model_execution_session.h",
-    "model_execution/mock_model_manager.cc",
-    "model_execution/mock_model_manager.h",
     "mojo_binder_policy_applier.cc",
     "mojo_binder_policy_applier.h",
     "mojo_binder_policy_map_impl.cc",
@@ -1695,9 +1696,9 @@ source_set("browser") {
     "renderer_host/input/synthetic_gesture_target_aura.h",
     "renderer_host/input/synthetic_gesture_target_base.cc",
     "renderer_host/input/synthetic_gesture_target_base.h",
-    "renderer_host/input/touch_emulator.cc",
-    "renderer_host/input/touch_emulator.h",
     "renderer_host/input/touch_emulator_client.h",
+    "renderer_host/input/touch_emulator_impl.cc",
+    "renderer_host/input/touch_emulator_impl.h",
     "renderer_host/input/touch_selection_controller_client_aura.cc",
     "renderer_host/input/touch_selection_controller_client_aura.h",
     "renderer_host/input/touch_selection_controller_client_child_frame.cc",
@@ -1903,8 +1904,6 @@ source_set("browser") {
     "renderer_host/transient_allow_popup.h",
     "renderer_host/transient_focus_source_user_activation.cc",
     "renderer_host/transient_focus_source_user_activation.h",
-    "renderer_host/ui_events_helper.cc",
-    "renderer_host/ui_events_helper.h",
     "renderer_host/view_transition_commit_deferring_condition.cc",
     "renderer_host/view_transition_commit_deferring_condition.h",
     "renderer_host/view_transition_opt_in_state.cc",
@@ -2633,6 +2632,7 @@ source_set("browser") {
     frameworks += [
       "AppKit.framework",
       "Carbon.framework",
+      "Cocoa.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",
       "IOSurface.framework",
@@ -2811,10 +2811,6 @@ source_set("browser") {
       "media/dcomp_surface_registry_broker.h",
       "media/key_system_support_win.cc",
       "media/key_system_support_win.h",
-      "media/web_app_system_media_controls.cc",
-      "media/web_app_system_media_controls.h",
-      "media/web_app_system_media_controls_manager.cc",
-      "media/web_app_system_media_controls_manager.h",
       "memory/swap_metrics_driver_impl_win.cc",
       "network/network_service_process_tracker_win.cc",
       "network/network_service_process_tracker_win.h",
@@ -2853,6 +2849,15 @@ source_set("browser") {
       "portabledeviceguids.lib",
       "uiautomationcore.lib",
       "wtsapi32.lib",
+    ]
+  }
+
+  if (is_win || is_mac) {
+    sources += [
+      "media/web_app_system_media_controls.cc",
+      "media/web_app_system_media_controls.h",
+      "media/web_app_system_media_controls_manager.cc",
+      "media/web_app_system_media_controls_manager.h",
     ]
   }
 

@@ -333,6 +333,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                 const gfx::ImageSkia& image,
                                 Profile* profile);
 
+  static void CreateLocalBlockDialog(const std::string& app_name);
+
   static void CreatePauseDialog(apps::AppType app_type,
                                 const std::string& app_name,
                                 const gfx::ImageSkia& image,

@@ -62,6 +62,7 @@
 <translation id="1873233029667955273">Google Chrome non é o teu navegador predeterminado</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome está desactualizado</translation>
+<translation id="1907925560334657849">Para compartir a ventá, vai a System Preferences (Preferencias do sistema) e activa a función de gravación de pantalla para Chrome</translation>
 <translation id="1919130412786645364">Permitir inicio de sesión en Chrome</translation>
 <translation id="1953553007165777902">Descargando… Tempo restante: <ph name="MINUTE" /> min</translation>
 <translation id="1982647487457769627">Chrome funciona en diversas plataformas para ofrecerche unha experiencia familiar sen importar o dispositivo</translation>
@@ -126,6 +127,7 @@
 <translation id="2770231113462710648">Cambiar o navegador predeterminado a:</translation>
 <translation id="2775140325783767197">Chrome non puido comprobar os teus contrasinais. Verifica a conexión a Internet.</translation>
 <translation id="2799223571221894425">Iniciar de novo</translation>
+<translation id="2825024317344269723">Este sitio é perigoso. Chrome quitou os permisos de notificación.</translation>
 <translation id="2846251086934905009">Erro de instalación: O instalador non completou o proceso. Abortouse a instalación.</translation>
 <translation id="2847461019998147611">Mostrar Google Chrome neste idioma</translation>
 <translation id="2853415089995957805">Chrome precargará as páxinas que é probable que visites para que carguen máis rapidamente cando accedas a elas</translation>
@@ -187,6 +189,7 @@
 <translation id="3583751698304738917">Xa tes a sesión iniciada como <ph name="USER_EMAIL_ADDRESS" /> noutro perfil de Chrome</translation>
 <translation id="3595784445906693824">Queres iniciar sesión en Chrome cun perfil novo?</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{O teu administrador require que reinicies Chrome para aplicar unha actualización}=1{O teu administrador require que reinicies Chrome para aplicar unha actualización. A ventá do modo de incógnito non se volverá abrir.}other{O teu administrador require que reinicies Chrome para aplicar unha actualización. As # ventás do modo de incógnito non se volverán abrir.}}</translation>
+<translation id="3609788354808247807">Levas un tempo sen entrar. Chrome quitou os seguintes permisos: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="PERMISSION_3" /></translation>
 <translation id="3622797965165704966">Agora é máis fácil utilizar Chrome coa túa conta de Google e en ordenadores compartidos.</translation>
 <translation id="3635073343384702370">Chrome pode comprobar os teus contrasinais cando os gardes</translation>
 <translation id="3667616615096815454">Non se puido levar a cabo a instalación. O servidor non recoñece a aplicación.</translation>
@@ -336,6 +339,7 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5941830788786076944">Converter Google Chrome no navegador predeterminado</translation>
 <translation id="5947104538377036631">Atallo de Chrome</translation>
+<translation id="5953954252731207958">Levas un tempo sen entrar. Chrome quitou o seguinte permiso: <ph name="PERMISSION" /></translation>
 <translation id="6003112304606738118">Descargando… Tempo restante: <ph name="HOURS" /> h</translation>
 <translation id="6014316319780893079">Coas <ph name="BEGIN_LINK" />ferramentas de Chrome<ph name="END_LINK" />, podes navegar de maneira segura e manter o control</translation>
 <translation id="6022659036123304283">Personaliza Chrome</translation>
@@ -350,6 +354,7 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> (versión beta de Google Chrome)</translation>
 <translation id="6182736845697986886">Produciuse un erro na instalación debido a un erro interno do servidor de actualizacións.</translation>
+<translation id="6200139057479872438">Levas un tempo sen entrar. Chrome quitou os seguintes permisos: <ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" /></translation>
 <translation id="6235018212288296708">Norma de entrada de Google Chrome para permitir tráfico mDNS.</translation>
 <translation id="624230925347970731">Chrome pecharase en breve</translation>
 <translation id="6247557882553405851">Xestor de contrasinais de Google</translation>
@@ -413,6 +418,7 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="7088681679121566888">Chrome está actualizado</translation>
 <translation id="7098166902387133879">Google Chrome está usando o teu micrófono.</translation>
 <translation id="7099479769133613710">Reiniciar para actualizar Chrome OS</translation>
+<translation id="7100085796996987445">Para compartir a pantalla, vai a System Preferences (Preferencias do sistema) e activa a función de gravación de pantalla para Chrome</translation>
 <translation id="7106741999175697885">Xestor de tarefas: Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Hai dispoñible unha actualización nova para Chrome e aplicarase en canto o reinicies.}=1{Hai dispoñible unha actualización nova para Chrome e aplicarase en canto o reinicies. A ventá do modo de incógnito non se volverá abrir.}other{Hai dispoñible unha actualización nova para Chrome e aplicarase en canto o reinicies. As # ventás do modo de incógnito non se volverán abrir.}}</translation>
 <translation id="7155997830309522122">Se o fixeches, substitúe o contrasinal gardado en Chrome polo novo.</translation>
@@ -447,6 +453,7 @@ Pódense aplicar a esta conta os permisos que xa lles concedeses aos sitios web 
 <translation id="7651907282515937834">Logotipo de Chrome Enterprise</translation>
 <translation id="76531479118467370">Chrome bloqueou esta descarga porque, como desactivaches Navegación segura, non se puido verificar o ficheiro</translation>
 <translation id="7655455401911432608">O teu historial de navegación e un rexistro dos sitios que visitases usando Chrome neste dispositivo.</translation>
+<translation id="7661924425853052955">Levas un tempo sen entrar. Chrome quitou os seguintes permisos: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="COUNT" /> máis</translation>
 <translation id="7668816516367091728">Leva a cabo accións como traducir textos, facer cálculos e moito máis directamente desde a barra de enderezos</translation>
 <translation id="769538538642757151">Chrome informarate se atopa algo que necesites revisar</translation>
 <translation id="7747138024166251722">O programa de instalación non puido crear un directorio temporal. Comproba se hai espazo libre no disco e se tes autorización para instalar o software.</translation>

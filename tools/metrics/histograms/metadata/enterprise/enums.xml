@@ -448,6 +448,13 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Other error"/>
 </enum>
 
+<enum name="EnterpriseCloudUserAffiliationStatus">
+  <summary>Cloud user affiliation status.</summary>
+  <int value="0" label="Only user managed"/>
+  <int value="1" label="Device and user managed and unaffiliated"/>
+  <int value="2" label="Device and user managed and affiliated"/>
+</enum>
+
 <enum name="EnterpriseCrdSessionResultCode">
   <summary>Types of CRD sessions connection request result code.</summary>
   <int value="0" label="SUCCESS"/>
@@ -2126,8 +2133,7 @@ chromium-metrics-reviews@google.com.
   <int value="1248" label="ShowAiIntroScreenEnabled"/>
   <int value="1249" label="ShowTunaScreenEnabled"/>
   <int value="1250" label="EnterpriseBadgingTemporarySetting"/>
-  <int value="1251"
-      label="GenAILocalFoundationalModelEnterprisePolicySettings"/>
+  <int value="1251" label="GenAILocalFoundationalModelSettings"/>
   <int value="1252" label="DeviceExtensionsSystemLogEnabled"/>
   <int value="1253" label="ChromeDataRegionSetting"/>
   <int value="1254" label="ContextualGoogleIntegrationsEnabled"/>
@@ -2137,6 +2143,13 @@ chromium-metrics-reviews@google.com.
   <int value="1258" label="KeyboardFocusableScrollersEnabled"/>
   <int value="1259" label="ExtensibleEnterpriseSSOEnabled"/>
   <int value="1260" label="CSSCustomStateDeprecatedSyntaxEnabled"/>
+  <int value="1261" label="MemorySaverModeSavings"/>
+  <int value="1262" label="KioskVisionTelemetryEnabled"/>
+  <int value="1263" label="GenAIWallpaperSettings"/>
+  <int value="1264" label="GenAIVcBackgroundSettings"/>
+  <int value="1265" label="DynamicCodeSettings"/>
+  <int value="1266" label="LensOverlaySettings"/>
+  <int value="1267" label="ThirdPartyPasswordManagersAllowed"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">
@@ -2266,6 +2279,7 @@ chromium-metrics-reviews@google.com.
   <int value="9" label="URL filtering interstitial event"/>
   <int value="10" label="Extension install event"/>
   <int value="11" label="Browser crash event"/>
+  <int value="12" label="Extension telemetry event"/>
 </enum>
 
 <enum name="EnterpriseUserInfoFetchStatus">

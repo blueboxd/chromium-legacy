@@ -39,18 +39,15 @@ const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
   return stats_;
 }
 
-std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-FakeFormFetcher::GetInsecureCredentials() const {
+base::span<const PasswordForm> FakeFormFetcher::GetInsecureCredentials() const {
   return insecure_credentials_;
 }
 
-std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-FakeFormFetcher::GetNonFederatedMatches() const {
+base::span<const PasswordForm> FakeFormFetcher::GetNonFederatedMatches() const {
   return non_federated_;
 }
 
-std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-FakeFormFetcher::GetFederatedMatches() const {
+base::span<const PasswordForm> FakeFormFetcher::GetFederatedMatches() const {
   return federated_;
 }
 
@@ -62,23 +59,26 @@ bool FakeFormFetcher::IsMovingBlocked(const signin::GaiaIdHash& destination,
                                       const std::u16string& username) const {
   // This is analogous to the implementation in
   // MultiStoreFormFetcher::IsMovingBlocked().
-  for (const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-           matches_vector : {federated_, non_federated_}) {
-    for (const PasswordForm* form : matches_vector) {
+  for (const std::vector<PasswordForm>& matches_vector :
+       {federated_, non_federated_}) {
+    for (const PasswordForm& form : matches_vector) {
       // Only local entries can be moved to the account store (though
       // account store matches should never have |moving_blocked_for_list|
       // entries anyway).
-      if (form->IsUsingAccountStore())
+      if (form.IsUsingAccountStore()) {
         continue;
+      }
       // Ignore non-exact matches for blocking moving.
-      if (password_manager_util::GetMatchType(*form) !=
+      if (password_manager_util::GetMatchType(form) !=
           password_manager_util::GetLoginMatchType::kExact) {
         continue;
       }
-      if (form->username_value != username)
+      if (form.username_value != username) {
         continue;
-      if (base::Contains(form->moving_blocked_for_list, destination))
+      }
+      if (base::Contains(form.moving_blocked_for_list, destination)) {
         return true;
+      }
     }
   }
   return false;
@@ -105,8 +105,7 @@ std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
 }
 
 void FakeFormFetcher::SetNonFederated(
-    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-        non_federated) {
+    const std::vector<PasswordForm>& non_federated) {
   non_federated_ = non_federated;
   best_matches_ = password_manager_util::FindBestMatches(
       non_federated_, scheme_, &non_federated_same_scheme_);
@@ -118,8 +117,9 @@ void FakeFormFetcher::SetBlocklisted(bool is_blocklisted) {
 
 void FakeFormFetcher::NotifyFetchCompleted() {
   state_ = State::NOT_WAITING;
-  for (Consumer& consumer : consumers_)
+  for (Consumer& consumer : consumers_) {
     consumer.OnFetchCompleted();
+  }
 }
 
 std::optional<PasswordStoreBackendError>

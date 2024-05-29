@@ -14,6 +14,15 @@
 #include "url/gurl.h"
 
 namespace lens {
+
+// The possible text only query types.
+enum class TextOnlyQueryType {
+  // Text was selected from the Lens overlay.
+  kLensTextSelection = 0,
+  // Text was from the search box.
+  kSearchBoxQuery = 1,
+};
+
 void AppendTranslateParamsToMap(std::map<std::string, std::string>& params,
                                 const std::string& query,
                                 const std::string& content_language);
@@ -36,6 +45,7 @@ GURL BuildTextOnlySearchURL(
     std::optional<std::string> page_title,
     std::map<std::string, std::string> additional_search_query_params,
     lens::LensOverlayInvocationSource invocation_source,
+    TextOnlyQueryType text_only_query_type,
     bool use_dark_mode);
 
 GURL BuildLensSearchURL(
@@ -50,6 +60,10 @@ GURL BuildLensSearchURL(
 // URL if any. Empty string otherwise.
 const std::string GetTextQueryParameterValue(const GURL& url);
 
+// Returns the value of the lens mode parameter value from the provided search
+// URL if any. Empty string otherwise.
+const std::string GetLensModeParameterValue(const GURL& url);
+
 // Returns whether the given |url| contains all the common search query
 // parameters required to properly enable the lens overlay results in the side
 // panel. This does not check the value of these query parameters.
@@ -59,6 +73,11 @@ bool HasCommonSearchQueryParameters(const GURL& url);
 // could differ from values in common APIs since the search URL is set via a
 // finch configured flag.
 bool IsValidSearchResultsUrl(const GURL& url);
+
+// Returns whether the given |url| is a valid lens overlay search redirect URL.
+// This could differ from values in common APIs since the search URL is set via
+// a finch configured flag.
+GURL GetSearchResultsUrlFromRedirectUrl(const GURL& url);
 
 // Removes the viewport width (biw) and viewport height (bih) params from the
 // search url. This allows us to compare search url's accurately in

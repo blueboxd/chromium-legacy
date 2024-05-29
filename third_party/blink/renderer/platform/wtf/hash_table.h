@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/atomic_operations.h"
-#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -629,10 +628,7 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-class HashTable final
-    : public ConditionalDestructor<
-          HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>,
-          !Allocator::kIsGarbageCollected> {
+class HashTable final {
   DISALLOW_NEW();
 
  public:
@@ -656,9 +652,13 @@ class HashTable final
 
   HashTable();
 
-  void Finalize() {
-    static_assert(!Allocator::kIsGarbageCollected,
-                  "GCed collections can't be finalized.");
+  ~HashTable()
+    requires(Allocator::kIsGarbageCollected)
+  = default;
+
+  ~HashTable()
+    requires(!Allocator::kIsGarbageCollected)
+  {
     if (LIKELY(!table_))
       return;
     EnterAccessForbiddenScope();
@@ -881,18 +881,13 @@ class HashTable final
     return mask;
   }
 
-  void SetEnqueued() { queue_flag_ = true; }
-  void ClearEnqueued() { queue_flag_ = false; }
-  bool Enqueued() { return queue_flag_; }
-
   // Constructor for hash tables with raw storage.
   struct RawStorageTag {};
   HashTable(RawStorageTag, ValueType* table, unsigned size)
       : table_(table),
         table_size_(size),
         key_count_(0),
-        deleted_count_(0),
-        queue_flag_(0)
+        deleted_count_(0)
 #if DCHECK_IS_ON()
         ,
         access_forbidden_(0),
@@ -906,12 +901,10 @@ class HashTable final
   unsigned key_count_;
 #if DCHECK_IS_ON()
   unsigned deleted_count_ : 30;
-  unsigned queue_flag_ : 1;
   unsigned access_forbidden_ : 1;
   unsigned modifications_;
 #else
   unsigned deleted_count_ : 31;
-  unsigned queue_flag_ : 1;
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
@@ -967,8 +960,7 @@ inline HashTable<Key,
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
-      deleted_count_(0),
-      queue_flag_(false)
+      deleted_count_(0)
 #if DCHECK_IS_ON()
       ,
       access_forbidden_(false),
@@ -1798,8 +1790,7 @@ HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::HashTable(
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
-      deleted_count_(0),
-      queue_flag_(false)
+      deleted_count_(0)
 #if DCHECK_IS_ON()
       ,
       access_forbidden_(false),
@@ -1810,13 +1801,27 @@ HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::HashTable(
       stats_(HashTableStatsPtr<Allocator>::copy(other.stats_))
 #endif
 {
-  if (other.size())
-    ReserveCapacityForSize(other.size());
-  // Copy the hash table the dumb way, by adding each element to the new
-  // table.  It might be more efficient to copy the table slots, but it's not
-  // clear that efficiency is needed.
-  for (const auto& element : other)
-    insert(element);
+  DCHECK(!other.AccessForbidden());
+  table_size_ = other.table_size_;
+  if (table_size_ == 0) {
+    return;
+  }
+  table_ = AllocateTable(table_size_);
+  key_count_ = other.key_count_;
+  deleted_count_ = other.deleted_count_;
+
+  for (unsigned i = 0; i < table_size_; i++) {
+    if (other.IsEmptyBucket(other.table_[i])) {
+      // Do nothing. All entries are initially empty by AllocateTable().
+    } else if (other.IsDeletedBucket(other.table_[i])) {
+      ConstructHashTraitsDeletedValue<KeyTraits>(
+          Extractor::ExtractKey(table_[i]));
+    } else {
+      new (&table_[i]) ValueType(other.table_[i]);
+      ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElement(
+          &table_[i]);
+    }
+  }
 }
 
 template <typename Key,
@@ -1830,8 +1835,7 @@ HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::HashTable(
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
-      deleted_count_(0),
-      queue_flag_(false)
+      deleted_count_(0)
 #if DCHECK_IS_ON()
       ,
       access_forbidden_(false),
@@ -1877,8 +1881,6 @@ void HashTable<Key, Value, Extractor, Traits, KeyTraits, Allocator>::swap(
   unsigned deleted = deleted_count_;
   deleted_count_ = other.deleted_count_;
   other.deleted_count_ = deleted;
-  DCHECK(!queue_flag_);
-  DCHECK(!other.queue_flag_);
 
 #if DCHECK_IS_ON()
   std::swap(modifications_, other.modifications_);

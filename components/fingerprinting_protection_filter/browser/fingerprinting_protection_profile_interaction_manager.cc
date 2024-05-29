@@ -12,6 +12,7 @@
 #include "components/subresource_filter/content/shared/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
+#include "content/public/browser/navigation_handle.h"
 
 namespace fingerprinting_protection_filter {
 
@@ -64,8 +65,8 @@ ActivationLevel ProfileInteractionManager::OnPageActivationComputed(
   if (!enable_fp) {
     *decision = ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
     return ActivationLevel::kDisabled;
-  } else if (tracking_protection_settings_->HasTrackingProtectionException(
-                 navigation_handle->GetURL())) {
+  } else if (tracking_protection_settings_->GetTrackingProtectionSetting(
+                 navigation_handle->GetURL()) == CONTENT_SETTING_ALLOW) {
     *decision = ActivationDecision::URL_ALLOWLISTED;
     return ActivationLevel::kDisabled;
   }

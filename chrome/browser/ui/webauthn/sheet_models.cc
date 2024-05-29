@@ -204,24 +204,6 @@ std::u16string AuthenticatorMechanismSelectorSheetModel::GetStepDescription()
   }
 }
 
-bool AuthenticatorMechanismSelectorSheetModel::IsManageDevicesButtonVisible()
-    const {
-  // If any phones are shown then also show a button that goes to the settings
-  // page to manage them.
-  return base::ranges::any_of(
-      dialog_model()->mechanisms,
-      [](const AuthenticatorRequestDialogModel::Mechanism& mechanism) {
-        return absl::holds_alternative<
-            AuthenticatorRequestDialogModel::Mechanism::Phone>(mechanism.type);
-      });
-}
-
-void AuthenticatorMechanismSelectorSheetModel::OnManageDevices() {
-  if (dialog_model()) {
-    dialog_model()->OnManageDevicesClicked();
-  }
-}
-
 // AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
 AuthenticatorInsertAndActivateUsbSheetModel::
@@ -745,6 +727,18 @@ std::u16string AuthenticatorPaaskSheetModel::GetStepDescription() const {
           base::UTF8ToUTF16(dialog_model()->selected_phone_name.value_or("")));
     }
   }
+}
+
+bool AuthenticatorPaaskSheetModel::IsOtherMechanismButtonVisible() const {
+  return false;
+}
+
+bool AuthenticatorPaaskSheetModel::IsManageDevicesButtonVisible() const {
+  return true;
+}
+
+void AuthenticatorPaaskSheetModel::OnManageDevices() {
+  dialog_model()->OnManageDevicesClicked();
 }
 
 // AuthenticatorAndroidAccessorySheetModel ------------------------------------
@@ -1358,22 +1352,6 @@ std::u16string AuthenticatorQRSheetModel::GetSecurityKeyLabel() const {
   }
 }
 
-std::u16string AuthenticatorQRSheetModel::GetOtherMechanismButtonLabel() const {
-  // If the QR code sheet was the priority mechanism, the button taking the user
-  // to the selection sheet should read "Use a different passkey".
-  if (dialog_model()->priority_mechanism_index &&
-      absl::holds_alternative<
-          AuthenticatorRequestDialogModel::Mechanism::AddPhone>(
-          dialog_model()
-              ->mechanisms[*dialog_model()->priority_mechanism_index]
-              .type)) {
-    return AuthenticatorSheetModelBase::GetOtherMechanismButtonLabel();
-  }
-  // Otherwise, the user must have tapped a button on the selection sheet to get
-  // here. The button taking the user to the selection sheet should read "Back".
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BACK);
-}
-
 // AuthenticatorConnectingSheetModel ------------------------------------------
 
 AuthenticatorConnectingSheetModel::AuthenticatorConnectingSheetModel(
@@ -1965,6 +1943,12 @@ bool AuthenticatorTrustThisComputerAssertionSheetModel::IsCancelButtonVisible()
 std::u16string
 AuthenticatorTrustThisComputerAssertionSheetModel::GetCancelButtonLabel()
     const {
+  const std::optional<std::string>& phone_name =
+      dialog_model()->priority_phone_name;
+  if (phone_name) {
+    return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_USE_PHONE_WITH_NAME,
+                                      base::UTF8ToUTF16(*phone_name));
+  }
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USE_A_DIFFERENT_DEVICE);
 }
 

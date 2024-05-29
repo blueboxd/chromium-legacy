@@ -67,6 +67,7 @@
 -components/
 +components/discardable_memory
 -content/
++content/browser/renderer_host
 -courgette/
 -crypto/
 -data/
@@ -89,8 +90,7 @@
 -mojo/
 -native_client/
 -native_client_sdk/
--net/
--pdf/
+-net/third_party/
 -ppapi/
 -printing/
 -remoting/

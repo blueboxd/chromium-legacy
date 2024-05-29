@@ -207,8 +207,9 @@ void HistoryEmbeddingsService::OnQueryEmbeddingComputed(
     size_t count,
     SearchResultCallback callback,
     std::vector<std::string> query_passages,
-    std::vector<Embedding> query_embeddings) {
-  bool succeeded = !query_embeddings.empty();
+    std::vector<Embedding> query_embeddings,
+    ComputeEmbeddingsStatus status) {
+  bool succeeded = status == ComputeEmbeddingsStatus::SUCCESS;
   base::UmaHistogramBoolean("History.Embeddings.QueryEmbeddingSucceeded",
                             succeeded);
 
@@ -283,8 +284,8 @@ void HistoryEmbeddingsService::SendQualityLog(const std::string& query,
                 UI_SURFACE_OMNIBOX_HISTORY_SCOPE
           : optimization_guide::proto::UiSurface::UI_SURFACE_HISTORY_PAGE);
 
-  size_t i = 0;
-  for (const ScoredUrlRow& scored_url_row : result) {
+  for (size_t i = 0; i < result.size(); ++i) {
+    const ScoredUrlRow& scored_url_row = result[i];
     optimization_guide::proto::DocumentShown* document_shown =
         quality_proto->add_top_documents_shown();
     document_shown->set_url(scored_url_row.row.url().spec());
@@ -298,8 +299,6 @@ void HistoryEmbeddingsService::SendQualityLog(const std::string& query,
         scored_url_row.scored_url.passage_embedding.GetData();
     passage_data->mutable_embedding()->mutable_floats()->mutable_values()->Add(
         embedding.begin(), embedding.end());
-
-    i++;
   }
 
   // The data is sent when `log_entry` destructs. There may eventually
@@ -428,7 +427,8 @@ void HistoryEmbeddingsService::OnPassagesRetrieved(
 void HistoryEmbeddingsService::OnPassagesEmbeddingsComputed(
     UrlPassages url_passages,
     std::vector<std::string> passages,
-    std::vector<Embedding> passages_embeddings) {
+    std::vector<Embedding> passages_embeddings,
+    ComputeEmbeddingsStatus status) {
   url_passages.passages.mutable_passages()->Assign(
       std::make_move_iterator(passages.begin()),
       std::make_move_iterator(passages.end()));
@@ -440,9 +440,19 @@ void HistoryEmbeddingsService::OnPassagesEmbeddingsComputed(
 void HistoryEmbeddingsService::OnSearchCompleted(
     SearchResultCallback callback,
     std::vector<ScoredUrl> scored_urls) {
-  // TODO(b/330925683): Handle search interruption. This may not still need to
-  //  happen by now.
-  DeterminePassageVisibility(std::move(callback), std::move(scored_urls));
+  std::vector<ScoredUrl> filtered;
+  filtered.reserve(scored_urls.size());
+  float threshold = kSearchScoreThreshold.Get();
+  std::copy_if(std::make_move_iterator(scored_urls.begin()),
+               std::make_move_iterator(scored_urls.end()),
+               std::back_inserter(filtered), [=](const ScoredUrl& scored_url) {
+                 return scored_url.score > threshold;
+               });
+  VLOG(3) << "Search found " << scored_urls.size() << " results and kept "
+          << filtered.size() << " after score filtering";
+  base::UmaHistogramCounts100("History.Embeddings.NumUrlsDiscardedForLowScore",
+                              scored_urls.size() - filtered.size());
+  DeterminePassageVisibility(std::move(callback), std::move(filtered));
 }
 
 void HistoryEmbeddingsService::DeterminePassageVisibility(

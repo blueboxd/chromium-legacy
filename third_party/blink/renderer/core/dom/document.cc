@@ -1462,12 +1462,6 @@ Node* Document::importNode(Node* imported_node,
   NodeCloningData data;
   if (deep) {
     data.Put(CloneOption::kIncludeDescendants);
-    if (!RuntimeEnabledFeatures::ShadowRootClonableEnabled()) {
-      auto* fragment = DynamicTo<DocumentFragment>(imported_node);
-      if (fragment && fragment->IsTemplateContent()) {
-        data.Put(CloneOption::kIncludeAllShadowRoots);
-      }
-    }
   }
   return imported_node->Clone(*this, data, /*append_to*/ nullptr);
 }
@@ -2241,9 +2235,13 @@ static void AssertNodeClean(const Node& node) {
 }
 
 static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
-  WTF::Vector<PseudoId> pseudo_ids = {kPseudoIdFirstLetter, kPseudoIdBefore,
-                                      kPseudoIdAfter, kPseudoIdMarker,
-                                      kPseudoIdBackdrop};
+  WTF::Vector<PseudoId> pseudo_ids = {kPseudoIdFirstLetter,
+                                      kPseudoIdBefore,
+                                      kPseudoIdAfter,
+                                      kPseudoIdMarker,
+                                      kPseudoIdBackdrop,
+                                      kPseudoIdScrollMarkerGroupBefore,
+                                      kPseudoIdScrollMarkerGroupAfter};
   for (auto pseudo_id : pseudo_ids) {
     if (auto* pseudo_element = element.GetPseudoElement(pseudo_id))
       AssertNodeClean(*pseudo_element);
@@ -3384,6 +3382,8 @@ bool Document::InitiateStyleOrLayoutDependentLoadForPrint() {
     view->AdjustMediaTypeForPrinting(true);
     UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
 
+    view->FlushAnyPendingPostLayoutTasks();
+
     view->AdjustMediaTypeForPrinting(false);
     UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
 
@@ -4138,6 +4138,16 @@ bool Document::CheckCompletedInternal() {
     if (LCPCriticalPathPredictor* lcpp = GetFrame()->GetLCPP()) {
       lcpp->OnOutermostMainFrameDocumentLoad();
       fetcher_->MaybeRecordLCPPSubresourceMetrics(Url());
+    }
+    if (!data_->accumulated_shape_text_elapsed_time_.is_zero()) {
+      base::UmaHistogramMicrosecondsTimes(
+          "Blink.Layout.InlineNode::ShapeText.TotalTime.InOutermostMainFrame",
+          data_->accumulated_shape_text_elapsed_time_);
+    }
+    if (!data_->max_shape_text_elapsed_time_.is_zero()) {
+      base::UmaHistogramMicrosecondsTimes(
+          "Blink.Layout.InlineNode::ShapeText.MaxTime.InOutermostMainFrame",
+          data_->max_shape_text_elapsed_time_);
     }
   }
 
@@ -5995,26 +6005,27 @@ void Document::EnqueueOverscrollEventForNode(Node* target,
   scripted_animation_controller_->EnqueuePerFrameEvent(overscroll_event);
 }
 
-void Document::EnqueueSnapChangedEvent(Node* target,
-                                       Member<Node>& block_target,
-                                       Member<Node>& inline_target) {
-  Event* snapchanged_event = SnapEvent::Create(
-      event_type_names::kSnapchanged,
+void Document::EnqueueScrollSnapChangeEvent(Node* target,
+                                            Member<Node>& block_target,
+                                            Member<Node>& inline_target) {
+  Event* scrollsnapchange_event = SnapEvent::Create(
+      event_type_names::kScrollsnapchange,
       (target->IsDocumentNode() ? Event::Bubbles::kYes : Event::Bubbles::kNo),
       block_target, inline_target);
-  snapchanged_event->SetTarget(target);
-  scripted_animation_controller_->EnqueuePerFrameEvent(snapchanged_event);
+  scrollsnapchange_event->SetTarget(target);
+  scripted_animation_controller_->EnqueuePerFrameEvent(scrollsnapchange_event);
 }
 
-void Document::EnqueueSnapChangingEvent(Node* target,
-                                        Member<Node>& block_target,
-                                        Member<Node>& inline_target) {
-  Event* snapchanging_event = SnapEvent::Create(
-      event_type_names::kSnapchanging,
+void Document::EnqueueScrollSnapChangingEvent(Node* target,
+                                              Member<Node>& block_target,
+                                              Member<Node>& inline_target) {
+  Event* scrollsnapchanging_event = SnapEvent::Create(
+      event_type_names::kScrollsnapchanging,
       (target->IsDocumentNode() ? Event::Bubbles::kYes : Event::Bubbles::kNo),
       block_target, inline_target);
-  snapchanging_event->SetTarget(target);
-  scripted_animation_controller_->EnqueuePerFrameEvent(snapchanging_event);
+  scrollsnapchanging_event->SetTarget(target);
+  scripted_animation_controller_->EnqueuePerFrameEvent(
+      scrollsnapchanging_event);
 }
 
 void Document::EnqueueMoveEvent() {
@@ -6556,7 +6567,7 @@ ScriptPromise<IDLBoolean> Document::hasPrivateToken(
     exception_state.ThrowTypeError(
         "hasPrivateToken: Private Token issuer origins must be both HTTP(S) "
         "and secure (\"potentially trustworthy\").");
-    return ScriptPromise<IDLBoolean>();
+    return EmptyPromise();
   }
 
   scoped_refptr<const SecurityOrigin> top_frame_origin = TopFrameOrigin();
@@ -6564,7 +6575,7 @@ ScriptPromise<IDLBoolean> Document::hasPrivateToken(
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "hasPrivateToken: Cannot execute in "
                                       "documents lacking top-frame origins.");
-    return ScriptPromise<IDLBoolean>();
+    return EmptyPromise();
   }
 
   DCHECK(top_frame_origin->IsPotentiallyTrustworthy());
@@ -6574,7 +6585,7 @@ ScriptPromise<IDLBoolean> Document::hasPrivateToken(
         DOMExceptionCode::kNotAllowedError,
         "hasPrivateToken: Cannot execute in "
         "documents without secure, HTTP(S), top-frame origins.");
-    return ScriptPromise<IDLBoolean>();
+    return EmptyPromise();
   }
 
   if (!data_->trust_token_query_answerer_.is_bound()) {
@@ -7741,6 +7752,16 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
       dom_window_, GetTaskRunner(TaskType::kInternalDefault));
   return font_matching_metrics_.get();
+}
+
+void Document::MaybeRecordShapeTextElapsedTime(base::TimeDelta elapsed_time) {
+  if (!IsInOutermostMainFrame() || IsLoadCompleted() ||
+      IsInitialEmptyDocument() || !Url().ProtocolIsInHTTPFamily()) {
+    return;
+  }
+  data_->accumulated_shape_text_elapsed_time_ += elapsed_time;
+  data_->max_shape_text_elapsed_time_ =
+      std::max(data_->max_shape_text_elapsed_time_, elapsed_time);
 }
 
 bool Document::AllowInlineEventHandler(Node* node,

@@ -125,6 +125,22 @@ enum class UmaRemoteCallResult {
   MAX_VALUE
 };
 
+// LINT.IfChange
+// The result of either SafetyNet.isVerifyAppsEnabled or
+// SafetyNet.enableVerifyApps. These values are persisted to
+// logs. Entries should not be renumbered and numeric values should
+// never be reused. Please update
+// //tools/metrics/histograms/metadata/sb_client/enums.xml:SafeBrowsingVerifyAppsEnabledResult
+// when changing this enum.
+enum class VerifyAppsEnabledResult {
+  SUCCESS_ENABLED = 0,
+  SUCCESS_NOT_ENABLED = 1,
+  TIMEOUT = 2,
+  FAILED = 3,
+  kMaxValue = FAILED,
+};
+// LINT.ThenChange(/components/safe_browsing/android/java/src/org/chromium/components/safe_browsing/SafetyNetApiHandler.java)
+
 // This parses the JSON from the GMSCore API and then:
 //   1) Picks the most severe threat type
 //   2) Parses that threat's key/value pairs into the metadata struct.

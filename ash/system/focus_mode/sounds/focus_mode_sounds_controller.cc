@@ -5,6 +5,7 @@
 #include "ash/system/focus_mode/sounds/focus_mode_sounds_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/public/cpp/session/session_types.h"
@@ -93,7 +94,13 @@ void DispatchRequests(
         void(std::vector<std::unique_ptr<FocusModeSoundsController::Playlist>>)>
         done_callback,
     const std::vector<FocusModeSoundsDelegate::Playlist>& data) {
-  CHECK_EQ(data.size(), 4u);
+  if (data.empty()) {
+    LOG(WARNING) << "Retrieving Playlist data failed.";
+    std::move(done_callback).Run({});
+    return;
+  }
+
+  CHECK_EQ(static_cast<int>(data.size()), kPlaylistNum);
 
   // TODO(b/340304748): Currently, when opening the focus panel, we will clean
   // up all saved data and then download all playlists. In the future, we can
@@ -107,6 +114,11 @@ void DispatchRequests(
                          base::BindOnce(&OnOneThumbnailDownloaded,
                                         barrier_callback, item.id, item.title));
   }
+}
+
+// In response to receiving the track, start playing the track.
+void OnTrackFetched(const std::optional<FocusModeSoundsDelegate::Track>& data) {
+  // TODO: Play the track here.
 }
 
 }  // namespace
@@ -123,9 +135,12 @@ FocusModeSoundsController::SelectedPlaylist::operator=(
 FocusModeSoundsController::SelectedPlaylist::~SelectedPlaylist() = default;
 
 FocusModeSoundsController::FocusModeSoundsController()
-    : soundscape_delegate_(std::make_unique<FocusModeSoundscapeDelegate>()),
+    : soundscape_delegate_(
+          std::make_unique<FocusModeSoundscapeDelegate>("en-US")),
       youtube_music_delegate_(
           std::make_unique<FocusModeYouTubeMusicDelegate>()) {
+  // TODO(b/341176182): Plumb the locale here and replace the default
+  // locale.
   soundscape_playlists_.reserve(kPlaylistNum);
   youtube_music_playlists_.reserve(kPlaylistNum);
 }
@@ -188,6 +203,14 @@ void FocusModeSoundsController::SelectPlaylist(
   // trigger the player to start playing and set the state as `kPlaying`
   // instead.
   selected_playlist_.state = focus_mode_util::SoundState::kSelected;
+
+  if (playlist_data.type == focus_mode_util::SoundType::kSoundscape) {
+    soundscape_delegate_->GetNextTrack(playlist_data.id,
+                                       base::BindOnce(&OnTrackFetched));
+  } else if (playlist_data.type == focus_mode_util::SoundType::kYouTubeMusic) {
+    youtube_music_delegate_->GetNextTrack(playlist_data.id,
+                                          base::BindOnce(&OnTrackFetched));
+  }
 
   for (auto& observer : observers_) {
     observer.OnSelectedPlaylistChanged();

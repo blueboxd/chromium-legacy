@@ -730,9 +730,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.NonModal.OnScreenTime" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-11-03">
   <owner>sebsg@chromium.org</owner>
-  <owner>bling-get-set-up@google.com</owner>
+  <owner>bling-mony-pod@google.com</owner>
   <summary>
     Logs the time on screen for an impression of a non modal promo. iOS only.
   </summary>
@@ -1585,6 +1585,13 @@ the generic promo launch. -->
   </summary>
 </histogram>
 
+<histogram name="IOS.MagicStack.Module.Disabled" enum="IOSMagicStackModuleType"
+    expires_after="2025-05-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>Records when a module was disabled.</summary>
+</histogram>
+
 <histogram name="IOS.MagicStack.Module.TopImpression"
     enum="IOSMagicStackModuleType" expires_after="2024-11-03">
   <owner>thegreenfrog@chromium.org</owner>
@@ -1594,12 +1601,46 @@ the generic promo launch. -->
   </summary>
 </histogram>
 
+<histogram
+    name="IOS.MagicStack.Module.{Event}.TabResumption.{Surface}.{Source}"
+    units="index" expires_after="2024-09-01">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Records the rank index of the Tab Resumption module displaying a {Source}
+    tab, if it is displaying on {Surface} on {Event} event.
+    &quot;IOS.MagicStack.Module.Click.TabResumption&quot; is also recorded.
+  </summary>
+  <token key="Event">
+    <variant name="Click" summary="a click"/>
+    <variant name="Impression" summary="an impression"/>
+  </token>
+  <token key="Surface">
+    <variant name="OnNTP" summary="NTP"/>
+    <variant name="OnStart" summary="start"/>
+  </token>
+  <token key="Source">
+    <variant name="Recent" summary="local recent"/>
+    <variant name="Sync" summary="distant synced"/>
+  </token>
+</histogram>
+
 <histogram name="IOS.MagicStack.NTP.SegmentationRankingFetchTime" units="ms"
     expires_after="2024-11-03">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
     Records the fetch time for the Segmentation ranking for Magic Stack on NTP.
+  </summary>
+</histogram>
+
+<histogram name="IOS.MagicStack.ScrollActionToIndex" units="index"
+    expires_after="2025-05-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Records the Magic Stack card index to which the user scrolled to each time a
+    scroll to a new module happens.
   </summary>
 </histogram>
 
@@ -2614,6 +2655,18 @@ the generic promo launch. -->
   </summary>
 </histogram>
 
+<histogram name="IOS.ParcelTracking.OptInStatus"
+    enum="IOSParcelTrackingOptInStatus" expires_after="2024-09-21">
+  <owner>hiramahmood@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Logs the opt-in status the user has given for whether or not they allow
+    parcel tracking on the device. Logged once per app start. For users who have
+    not yet interacted with the opt-in prompt, new users on M127 will log
+    StatusNotSet, while users before M127 will log AskToTrack.
+  </summary>
+</histogram>
+
 <histogram name="IOS.ParcelTracking.Tracked.{Source}" units="count"
     expires_after="2024-10-28">
   <owner>hiramahmood@google.com</owner>
@@ -2797,6 +2850,17 @@ the generic promo launch. -->
   </summary>
 </histogram>
 
+<histogram name="IOS.PromosManager.EligiblePromosInQueueCount" units="count"
+    expires_after="2024-11-03">
+  <owner>gayane@google.com</owner>
+  <owner>bling-mony-pod@google.com</owner>
+  <summary>
+    Logs number of eligible for display promos in the promos manager's queue
+    when next promo to display is identified. Recorded only if there is at least
+    1 eligible promo.
+  </summary>
+</histogram>
+
 <histogram name="IOS.PromosManager.Promo" enum="IOSPromosManagerPromo"
     expires_after="2024-11-03">
   <owner>bwwilliams@google.com</owner>
@@ -2809,7 +2873,7 @@ the generic promo launch. -->
 </histogram>
 
 <histogram name="IOS.PromosManager.Promo.DisplayFailure"
-    enum="IOSPromosManagerPromo" expires_after="2024-06-30">
+    enum="IOSPromosManagerPromo" expires_after="2024-11-03">
   <owner>bwwilliams@google.com</owner>
   <owner>rkgibson@google.com</owner>
   <owner>huitingyu@google.com</owner>
@@ -2822,7 +2886,7 @@ the generic promo launch. -->
 </histogram>
 
 <histogram name="IOS.PromosManager.Promo.ForcedDisplayFailure"
-    enum="IOSPromosManagerPromo" expires_after="2024-06-30">
+    enum="IOSPromosManagerPromo" expires_after="2024-11-03">
   <owner>bwwilliams@google.com</owner>
   <owner>rkgibson@google.com</owner>
   <owner>huitingyu@google.com</owner>
@@ -2831,19 +2895,6 @@ the generic promo launch. -->
     forced for display (via Experimental Settings toggle,) but isn't properly
     registered (via chrome://flags). This seldom happens in practice, but may
     happen during manual testing.
-  </summary>
-</histogram>
-
-<histogram name="IOS.PromosManager.Promo.ImpressionLimitEvaluation"
-    enum="IOSPromosManagerPromoImpressionLimitEvaluationType"
-    expires_after="2024-06-30">
-  <owner>bwwilliams@google.com</owner>
-  <owner>rkgibson@google.com</owner>
-  <owner>huitingyu@google.com</owner>
-  <summary>
-    Promo impression limit evaluations made by the Promos Manager. This
-    histograms logs the Promos Manager's assessment of each promos impression
-    limits when presented with the opportunity to display a given promo.
   </summary>
 </histogram>
 
@@ -3157,6 +3208,18 @@ the generic promo launch. -->
   <summary>
     This histgram counts the frequency of sad tabs that occur while loading a
     chrome://external-file URL. This is logged once per sad tab shown.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SafeBrowsing.Enhanced.Infobar.Interaction"
+    enum="IOSEnhancedSafeBrowseringInfobarInteraction"
+    expires_after="2024-05-23">
+  <owner>danieltwhite@google.com</owner>
+  <owner>ajuma@google.com</owner>
+  <summary>
+    This histogram tracks the Enhanced Safe Browsing Infobar promo's conversion
+    rate by comparing how many times the infobar is surfaced to users and how
+    many times it is tapped on.
   </summary>
 </histogram>
 
@@ -3894,7 +3957,7 @@ the generic promo launch. -->
 </histogram>
 
 <histogram name="IOS.Start.Impression" enum="IOSNTPImpressionType"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -4311,6 +4374,17 @@ the generic promo launch. -->
                  without taking into consideration the changes in the unit
                  type."/>
   </token>
+</histogram>
+
+<histogram name="IOS.UpgradeCenter.UpgradeFailed"
+    enum="IOSUpgradeCenterFailureReason" expires_after="2025-01-01">
+  <owner>bwwilliams@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Logs the failure reasons when Chrome on iOS cannot upgrade its version. Each
+    bucket in the histogram corresponds to a distinct failure reason (see
+    IOSUpgradeCenterFailureReason).
+  </summary>
 </histogram>
 
 <histogram name="IOS.Variations.CreateTrials.SeedExpiry"

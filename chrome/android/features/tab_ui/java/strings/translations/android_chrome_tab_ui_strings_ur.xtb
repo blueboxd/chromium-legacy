@@ -40,6 +40,7 @@
 <translation id="2928243913527329289">‏Google | اس اسٹور کے بارے میں</translation>
 <translation id="2977480621796371840">گروپ سے ہٹائیں</translation>
 <translation id="3008554597174452548">پروڈکٹ کو ٹریک کرنا بند کریں</translation>
+<translation id="3026391124054406831">اپنے ٹیبز کو منظم کرنے کیلئے گروپس تخلیق کریں۔</translation>
 <translation id="3052964831964880138"><ph name="PRODUCT_NAME" /> سے قیمت میں <ph name="PRICE_DROP" /> گراوٹ</translation>
 <translation id="3078350928901129212">ٹیب گروپ کے رنگ آئیکن کا رنگ <ph name="COLOR_NAME" /> ہے</translation>
 <translation id="3194464645767632461">درجہ بندی</translation>
@@ -60,7 +61,6 @@
 <translation id="4139634748112164403">اس آلے پر ٹیبز کھلے رہیں گے لیکن گروپ کو مستقل طور پر حذف کر دیا جائے گا</translation>
 <translation id="4156086991340739772">{NUMBER_OF_TABS,plural, =1{<ph name="TABS_COUNT_ONE" /> ٹیب، <ph name="COLOR_NAME" /> رنگ کے ساتھ <ph name="TITLE_OF_GROUP" /> گروپ کو بند کریں}other{<ph name="TABS_COUNT_MANY" /> ٹیبز، <ph name="COLOR_NAME" /> رنگ کے ساتھ <ph name="TITLE_OF_GROUP" /> گروپ کو بند کریں}}</translation>
 <translation id="4159784952369912983">جامنی</translation>
-<translation id="4212246570487010370">براؤز کرنا جاری رکھیں</translation>
 <translation id="4220650239473304853">{NUMBER_OF_TABS,plural, =1{<ph name="TITLE_OF_GROUP" /> ٹیب گروپ کو <ph name="TABS_COUNT_ONE" /> ٹیب کے ساتھ پھیلائیں۔}other{<ph name="TITLE_OF_GROUP" /> ٹیب گروپ کو <ph name="TABS_COUNT_MANY" /> ٹیبز کے ساتھ پھیلائیں۔}}</translation>
 <translation id="427987768447457592">نیا ٹیب گروپ</translation>
 <translation id="4460014764210899310">گروپ ختم کریں</translation>
@@ -106,7 +106,6 @@
 <translation id="6557858706263317126"><ph name="HIDDEN_TABS_COUNT" />+</translation>
 <translation id="6562820390860419811">ٹیب کو بائیں منتقل کریں</translation>
 <translation id="6615455863669487791">مجھے دکھائیں</translation>
-<translation id="661742612106409204">‏آپ اپنے بند ٹیبز Chrome کے مرکزی مینو کے تحت حالیہ ٹیبز میں تلاش کر سکتے ہیں۔</translation>
 <translation id="6744956528665271406">گروپ کے رنگ میں ترمیم کریں</translation>
 <translation id="6840760312327750441">ٹیبز کا گروپ بنانے کے لیے، کسی ٹیب کو ٹچ کریں اور دبائے رکھیں۔ پھر، اسے کسی دوسرے ٹیب پر گھسیٹیں۔</translation>
 <translation id="6856809498882026482">متعدد انتخاب کی وضع کو چھپائیں</translation>

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "net/http/http_stream_parser.h"
 
 #include <stdint.h>
@@ -60,7 +65,7 @@ std::unique_ptr<StreamSocket> CreateConnectedSocket(SequencedSocketData* data) {
   data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
 
   auto socket =
-      std::make_unique<MockTCPClientSocket>(net::AddressList(), nullptr, data);
+      std::make_unique<MockTCPClientSocket>(AddressList(), nullptr, data);
 
   TestCompletionCallback callback;
   EXPECT_THAT(socket->Connect(callback.callback()), IsOk());
@@ -1411,7 +1416,7 @@ TEST(HttpStreamParser, ShoutcastSingleByteReads) {
   get_runner.AddRead("c");
   get_runner.AddRead("Y");
   // Needed because HttpStreamParser::Read returns ERR_CONNECTION_CLOSED on
-  // small response headers, which HttpNetworkTransaction replaces with net::OK.
+  // small response headers, which HttpNetworkTransaction replaces with OK.
   // TODO(mmenke): Can we just change that behavior?
   get_runner.AddRead(" Extra stuff");
   get_runner.SetupParserAndSendRequest();

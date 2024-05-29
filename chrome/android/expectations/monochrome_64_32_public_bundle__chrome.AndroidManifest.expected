@@ -11,6 +11,8 @@
   <dist:module dist:onDemand="false">  # DIFF-ANCHOR: 2805007f
     <dist:fusing dist:include="true"/>
   </dist:module>  # DIFF-ANCHOR: 2805007f
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+  <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
   <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
   <application>
     <activity  # DIFF-ANCHOR: 28dc9019
@@ -305,14 +307,6 @@
         android:supportsPictureInPicture="true"
         android:theme="@style/Theme.Chromium.Activity">
     </activity>  # DIFF-ANCHOR: d706d96e
-    <activity  # DIFF-ANCHOR: 9023f153
-        android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation"
-        android:exported="false"
-        android:hardwareAccelerated="false"
-        android:theme="@style/Theme.Chromium.TabbedMode"
-        android:windowSoftInputMode="adjustResize">
-    </activity>  # DIFF-ANCHOR: 9023f153
     <activity  # DIFF-ANCHOR: e86e2b49
         android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$TrampolineActivity"
         android:autoRemoveFromRecents="true"
@@ -955,6 +949,10 @@
         <action android:name="android.intent.action.MEDIA_BUTTON"/>
       </intent-filter>  # DIFF-ANCHOR: f401157d
     </service>  # DIFF-ANCHOR: 1260bca4
+    <service  # DIFF-ANCHOR: 4b2c1adc
+        android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Service"
+        android:exported="false">
+    </service>  # DIFF-ANCHOR: 4b2c1adc
     <service  # DIFF-ANCHOR: 4b2220c4
         android:name="org.chromium.chrome.browser.notifications.NotificationJobService"
         android:exported="false"

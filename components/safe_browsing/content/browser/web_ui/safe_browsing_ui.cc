@@ -2615,6 +2615,10 @@ std::string SerializeURTLookupResponse(const RTLookupResponse& response) {
   }
   response_dict.Set("threat_infos", std::move(threat_info_list));
 
+  response_dict.Set(
+      "client_side_detection_type",
+      SerializeClientSideDetectionType(response.client_side_detection_type()));
+
   base::Value::List url_categories_list;
   for (const std::string& url_category : response.url_categories()) {
     url_categories_list.Append(url_category);
@@ -2784,6 +2788,7 @@ std::string SerializeContentAnalysisRequest(
   request_dict.Set(per_profile_request ? "profile_token" : "device_token",
                    request.device_token());
   request_dict.Set("fcm_notification_token", request.fcm_notification_token());
+  request_dict.Set("blocking", request.blocking());
   switch (request.analysis_connector()) {
     case enterprise_connectors::ANALYSIS_CONNECTOR_UNSPECIFIED:
       request_dict.Set("analysis_connector", "UNSPECIFIED");

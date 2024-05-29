@@ -4,7 +4,11 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_groups_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/test/query_title_server_util.h"
@@ -43,8 +47,10 @@ namespace {
 NSString* const kTab1Title = @"Tab1";
 NSString* const kTab2Title = @"Tab2";
 
-// Put the number at the beginning to avoid issues with sentence case.
-NSString* const kGroupName = @"1group";
+// Put the number at the beginning to avoid issues with sentence case, as the
+// keyboard default can differ iPhone vs iPad, simulator vs device.
+NSString* const kGroup1Name = @"1group";
+NSString* const kGroup2Name = @"2group";
 
 // Displays the tab cell context menu by long pressing at the tab cell at
 // `tab_cell_index`.
@@ -143,7 +149,7 @@ void CreateDefaultFirstGroupFromTabCellAtIndex(int tab_cell_index) {
 
 // Creates a group with default title from a tab cell at index `tab_cell_index`
 // when the grid contains groups.
-void CreateDefaultGroupFromTabCellAtIndex(int tab_cell_index) {
+void CreateAdditionalDefaultGroupFromTabCellAtIndex(int tab_cell_index) {
   DisplayContextMenuForTabCellAtIndex(tab_cell_index);
   [[EarlGrey
       selectElementWithMatcher:ContextMenuItemWithAccessibilityLabel(
@@ -156,6 +162,12 @@ void CreateDefaultGroupFromTabCellAtIndex(int tab_cell_index) {
       waitForUIElementToAppearWithMatcher:GroupCreationViewMatcher()];
   [[EarlGrey selectElementWithMatcher:CreateGroupButtonInGroupCreation()]
       performAction:grey_tap()];
+}
+
+// Returns the matcher for the tab grid tab count.
+id<GREYMatcher> TabGridTabCount(NSString* count_string) {
+  return grey_allOf(grey_ancestor(grey_kindOfClassName(@"TabGridPageControl")),
+                    grey_text(count_string), grey_sufficientlyVisible(), nil);
 }
 
 // Adds the tab at `tab_cell_index` to the group with `title`.
@@ -172,6 +184,8 @@ void AddTabAtIndexToGroupWithTitle(int tab_cell_index, NSString* title) {
 
 // Opens the tab group at `group_cell_index`.
 void OpenTabGroupAtIndex(int group_cell_index) {
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:TabGridGroupCellAtIndex(
+                                                          group_cell_index)];
   [[EarlGrey selectElementWithMatcher:TabGridGroupCellAtIndex(group_cell_index)]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:TabCellMatcherAtIndex(0)];
@@ -272,6 +286,14 @@ void DeleteGroupAtIndex(int group_cell_index) {
   [super setUp];
   RegisterQueryTitleHandler(self.testServer);
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start");
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kIncognitoAuthenticationSetting];
+}
+
+- (void)tearDown {
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kIncognitoAuthenticationSetting];
+  [super tearDown];
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
@@ -279,7 +301,25 @@ void DeleteGroupAtIndex(int group_cell_index) {
   config.features_enabled.push_back(kTabGroupsInGrid);
   config.features_enabled.push_back(kTabGroupsIPad);
   config.features_enabled.push_back(kModernTabStrip);
+  config.features_enabled.push_back(kTabGroupSync);
   return config;
+}
+
+// Verifies that the tab grid has exactly `expectedCount` tabs.
+- (void)verifyVisibleTabsCount:(NSUInteger)expectedCount {
+  // Verify that the cell # `expectedCount` exist.
+  if (expectedCount == 0) {
+    [[EarlGrey selectElementWithMatcher:TabGridCell()]
+        assertWithMatcher:grey_nil()];
+  } else {
+    [[[EarlGrey selectElementWithMatcher:TabGridCell()]
+        atIndex:expectedCount - 1] assertWithMatcher:grey_notNil()];
+  }
+  // Then verify that there is no more cells after that.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(TabGridCell(),
+                                          TabGridCellAtIndex(expectedCount),
+                                          nil)] assertWithMatcher:grey_nil()];
 }
 
 // Tests that creates a tab group and opens the grouped tab.
@@ -288,7 +328,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
 
   // Open the creation view.
   OpenTabGroupCreationViewUsingLongPressForCellAtIndex(0);
-  SetTabGroupCreationName(kGroupName);
+  SetTabGroupCreationName(kGroup1Name);
 
   // Valid the creation.
   [[EarlGrey selectElementWithMatcher:CreateTabGroupCreateButtonMatcher()]
@@ -297,7 +337,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
       waitForUIElementToDisappearWithMatcher:GroupCreationViewMatcher()];
 
   // Open the group.
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroupName)]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup1Name)]
       performAction:grey_tap()];
 
   // Open the tab.
@@ -313,7 +353,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
 
   // Open the creation view.
   OpenTabGroupCreationViewUsingLongPressForCellAtIndex(0);
-  SetTabGroupCreationName(kGroupName);
+  SetTabGroupCreationName(kGroup1Name);
 
   // Cancel the creation.
   [[EarlGrey selectElementWithMatcher:CreateTabGroupCancelButtonMatcher()]
@@ -321,7 +361,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
 
   [ChromeEarlGrey
       waitForUIElementToDisappearWithMatcher:GroupCreationViewMatcher()];
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroupName)]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup1Name)]
       assertWithMatcher:grey_nil()];
 }
 
@@ -355,7 +395,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
   [ChromeEarlGrey loadURL:GetQueryTitleURL(self.testServer, kTab2Title)];
   [ChromeEarlGreyUI openTabGrid];
 
-  CreateDefaultGroupFromTabCellAtIndex(1);
+  CreateAdditionalDefaultGroupFromTabCellAtIndex(1);
 
   // `Tab 2` tab cell no longer present in the grid.
   [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab2Title)]
@@ -377,6 +417,8 @@ void DeleteGroupAtIndex(int group_cell_index) {
   // Check for the presence of the tab cell with the title `Tab 1` in the grid.
   [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab1Title)]
       assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:TabGridTabCount(@"1")]
+      assertWithMatcher:grey_notNil()];
 
   CreateDefaultFirstGroupFromTabCellAtIndex(0);
 
@@ -388,6 +430,8 @@ void DeleteGroupAtIndex(int group_cell_index) {
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:GetQueryTitleURL(self.testServer, kTab2Title)];
   [ChromeEarlGreyUI openTabGrid];
+  [[EarlGrey selectElementWithMatcher:TabGridTabCount(@"2")]
+      assertWithMatcher:grey_notNil()];
 
   AddTabAtIndexToGroupWithTitle(
       1, l10n_util::GetPluralNSStringF(IDS_IOS_TAB_GROUP_TABS_NUMBER, 1));
@@ -395,6 +439,8 @@ void DeleteGroupAtIndex(int group_cell_index) {
   // `Tab 2` tab cell no longer present in the grid.
   [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab2Title)]
       assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:TabGridTabCount(@"2")]
+      assertWithMatcher:grey_notNil()];
 
   OpenTabGroupAtIndex(0);
 
@@ -426,10 +472,10 @@ void DeleteGroupAtIndex(int group_cell_index) {
   [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab1Title)]
       assertWithMatcher:grey_nil()];
 
-  RenameGroupAtIndex(0, kGroupName);
+  RenameGroupAtIndex(0, kGroup1Name);
 
   // Check the group's new name.
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroupName)]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup1Name)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -474,6 +520,34 @@ void DeleteGroupAtIndex(int group_cell_index) {
                                    l10n_util::GetPluralNSStringF(
                                        IDS_IOS_TAB_GROUP_TABS_NUMBER, 1))]
       assertWithMatcher:grey_nil()];
+}
+
+// Tests closing the group from the close button.
+- (void)testCloseTabGroup {
+  // Create a tab cell with `Tab 1` as its title.
+  [ChromeEarlGrey loadURL:GetQueryTitleURL(self.testServer, kTab1Title)];
+  [ChromeEarlGreyUI openTabGrid];
+
+  CreateDefaultFirstGroupFromTabCellAtIndex(0);
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::TabGridCloseButtonForGroupCellAtIndex(0)]
+      performAction:grey_tap()];
+
+  // The tab and the group are deleted.
+  [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab1Title)]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey
+      selectElementWithMatcher:TabGroupGridCellMatcher(
+                                   l10n_util::GetPluralNSStringF(
+                                       IDS_IOS_TAB_GROUP_TABS_NUMBER, 1))]
+      assertWithMatcher:grey_nil()];
+
+  // The IPH is shown.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_TAB_GRID_SAVED_TAB_GROUPS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests the creation of a new group in selection mode.
@@ -661,16 +735,32 @@ void DeleteGroupAtIndex(int group_cell_index) {
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests opening a tab group after resetting the incognito browser (i.e. closing
+// all incognito tabs).
+- (void)testOpenTabGroupAfterBrowserReset {
+  // Create one incognito tab then close all of them to reset the browser.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:GetQueryTitleURL(self.testServer, kTab1Title)];
+  [ChromeEarlGreyUI openTabGrid];
+
+  CreateDefaultFirstGroupFromTabCellAtIndex(0);
+
+  OpenTabGroupAtIndex(0);
+  [[EarlGrey selectElementWithMatcher:TabWithTitle(kTab1Title)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridCloseButtonForCellAtIndex(0)]
+      performAction:grey_tap()];
+}
+
 // Tests re-opening a group from Search in another window.
-// TODO:(crbug.com/339415297) Test fails on some iPad devices. Re-enable test
-// once fixed.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testReopenGroupFromAnotherWindow testReopenGroupFromAnotherWindow
-#else
-#define MAYBE_testReopenGroupFromAnotherWindow \
-  DISABLED_testReopenGroupFromAnotherWindow
-#endif
-- (void)MAYBE_testReopenGroupFromAnotherWindow {
+- (void)testReopenGroupFromAnotherWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported]) {
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
   }
@@ -678,7 +768,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
   // Create a first group.
   [ChromeEarlGreyUI openTabGrid];
   OpenTabGroupCreationViewUsingLongPressForCellAtIndex(0);
-  SetTabGroupCreationName(@"First group");
+  SetTabGroupCreationName(kGroup1Name);
   [[EarlGrey selectElementWithMatcher:CreateTabGroupCreateButtonMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
@@ -697,7 +787,7 @@ void DeleteGroupAtIndex(int group_cell_index) {
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:GroupCreationViewMatcher()];
-  SetTabGroupCreationName(@"Second group");
+  SetTabGroupCreationName(kGroup2Name);
   [[EarlGrey selectElementWithMatcher:CreateTabGroupCreateButtonMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
@@ -714,43 +804,157 @@ void DeleteGroupAtIndex(int group_cell_index) {
   [[EarlGrey selectElementWithMatcher:TabGridSearchTabsButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:TabGridSearchBar()]
-      performAction:grey_replaceText(@"first")];
+      performAction:grey_replaceText(@"1gr")];
 
   // Tap on it in the second window.
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(@"First group")]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup1Name)]
       performAction:grey_tap()];
 
   // Verify that it opens in the first window.
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(0)];
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:GroupViewMatcher()];
-  [[EarlGrey selectElementWithMatcher:GroupViewTitle(@"First group")]
+  [[EarlGrey selectElementWithMatcher:GroupViewTitle(kGroup1Name)]
       assertWithMatcher:grey_notNil()];
 
   // Tap on it again in the second window.
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(1)];
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(@"First group")]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup1Name)]
       performAction:grey_tap()];
 
   // Verify that it's still open in the first window.
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(0)];
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:GroupViewMatcher()];
-  [[EarlGrey selectElementWithMatcher:GroupViewTitle(@"First group")]
+  [[EarlGrey selectElementWithMatcher:GroupViewTitle(kGroup1Name)]
       assertWithMatcher:grey_notNil()];
 
   // Search in the second window for the second group of the first window.
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(1)];
   [[EarlGrey selectElementWithMatcher:TabGridSearchBar()]
-      performAction:grey_replaceText(@"second")];
+      performAction:grey_replaceText(@"2gr")];
 
   // Tap on it in the second window.
-  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(@"Second group")]
+  [[EarlGrey selectElementWithMatcher:TabGroupGridCellMatcher(kGroup2Name)]
       performAction:grey_tap()];
 
   // Verify that it opens in the first window.
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(0)];
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:GroupViewMatcher()];
-  [[EarlGrey selectElementWithMatcher:GroupViewTitle(@"Second group")]
+  [[EarlGrey selectElementWithMatcher:GroupViewTitle(kGroup2Name)]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the TabGrid is correctly updated when it was presenting a group
+// before being backgrounded while incognito reauth is enabled.
+- (void)testIncognitoReauth {
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI openTabGrid];
+
+  CreateDefaultFirstGroupFromTabCellAtIndex(0);
+
+  OpenTabGroupAtIndex(0);
+
+  [ChromeEarlGrey setBoolValue:YES
+             forLocalStatePref:prefs::kIncognitoAuthenticationSetting];
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridNewIncognitoTabButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridEditButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Label of the button used to reauth.
+  NSString* buttonLabel = l10n_util::GetNSStringF(
+      IDS_IOS_INCOGNITO_REAUTH_UNLOCK_BUTTON_VOICEOVER_LABEL,
+      base::SysNSStringToUTF16(BiometricAuthenticationTypeString()));
+  [[EarlGrey selectElementWithMatcher:testing::ButtonWithAccessibilityLabel(
+                                          buttonLabel)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [ChromeEarlGrey
+      resetDataForLocalStatePref:prefs::kIncognitoAuthenticationSetting];
+
+  // Reset the app to make sure the incognito shield is removed.
+  AppLaunchConfiguration config;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+}
+
+// Tests that the group view is correctly updated after backgrounding and
+// foregrounding the app.
+- (void)testBackgroundingGroupViewWithMultipleNTPs {
+  [ChromeEarlGreyUI openTabGrid];
+
+  CreateDefaultFirstGroupFromTabCellAtIndex(0);
+
+  // Open a second NTP.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGreyUI openTabGrid];
+
+  // Move it to the group.
+  AddTabAtIndexToGroupWithTitle(
+      1, l10n_util::GetPluralNSStringF(IDS_IOS_TAB_GROUP_TABS_NUMBER, 1));
+
+  // Open a third NTP.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGreyUI openTabGrid];
+
+  // Move it to the group.
+  AddTabAtIndexToGroupWithTitle(
+      1, l10n_util::GetPluralNSStringF(IDS_IOS_TAB_GROUP_TABS_NUMBER, 2));
+
+  OpenTabGroupAtIndex(0);
+
+  // Check the UI before backgrounding the app.
+  [self verifyVisibleTabsCount:3];
+  [[EarlGrey
+      selectElementWithMatcher:GroupViewTitle(l10n_util::GetPluralNSStringF(
+                                   IDS_IOS_TAB_GROUP_TABS_NUMBER, 3))]
+      assertWithMatcher:grey_notNil()];
+
+  // Background then foreground the app.
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+  [self verifyVisibleTabsCount:1];
+  [[EarlGrey
+      selectElementWithMatcher:GroupViewTitle(l10n_util::GetPluralNSStringF(
+                                   IDS_IOS_TAB_GROUP_TABS_NUMBER, 1))]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests the different explanation text (signed in/out) in the creation screen.
+- (void)testTabGroupCreationScreenExplanation {
+  [ChromeEarlGreyUI openTabGrid];
+
+  // Open the creation view.
+  OpenTabGroupCreationViewUsingLongPressForCellAtIndex(0);
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_TAB_GROUP_CREATION_SAVED_EXPLANATION)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Cancel the creation.
+  [[EarlGrey selectElementWithMatcher:CreateTabGroupCancelButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Sign in.
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [SigninEarlGrey setSelectedType:syncer::UserSelectableType::kTabs
+                          enabled:YES];
+
+  // Open the creation view.
+  OpenTabGroupCreationViewUsingLongPressForCellAtIndex(0);
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_TAB_GROUP_CREATION_SYNC_EXPLANATION)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Cancel the creation.
+  [[EarlGrey selectElementWithMatcher:CreateTabGroupCancelButtonMatcher()]
+      performAction:grey_tap()];
 }
 
 @end

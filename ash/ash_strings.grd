@@ -764,144 +764,150 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTED_TOAST" desc="The text used in the toast shown when a new Bluetooth device disconnected from Chromebook.">
       <ph name="DEVICE_NAME">$1<ex>Pixel Buds</ex></ph> disconnected
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE" translateable="false" desc="The label used as the header in the focus mode panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE" desc="The label used as the header in the focus mode panel.">
         Focus
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" translateable="false" desc="The text used for the subtext of the quick settings pod for remaining time in an active session.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" desc="The text used for the subtext of the quick settings pod for remaining time in an active session.">
         <ph name="REMAINING_TIME">$1<ex>1 hr, 4 min</ex></ph> left
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DETAILED_VIEW_FIRST_TIME_USER_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for focus mode detailed view for first time user.">
         Focus settings. Set a timer, task, and music to get in the flow.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DETAILED_VIEW_EXPERIENCED_USER_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for focus mode detailed view for experienced user.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DETAILED_VIEW_EXPERIENCED_USER_ACCESSIBLE_NAME" desc="The accessible name for focus mode detailed view for experienced user.">
         Focus settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_SUBHEADER" translateable="false" desc="The text used for the subheader of the timer section of the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_SUBHEADER" desc="The text used for the subheader of the timer section of the focus mode detailed view.">
         Timer
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL" translateable="false" desc="The text that is placed after the textbox used to set the number of minutes for a focus session.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL" desc="The text that is placed after the textbox used to set the number of minutes for a focus session.">
         {MINUTES, plural,
           =1 {minute}
           other {minutes}}
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_TEXTFIELD" translateable="false" desc="The accessible name for the textfield that the user can use to input a specific time value for a focus session.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_TEXTFIELD" desc="The accessible name for the textfield that the user can use to input a specific time value for a focus session.">
         Edit timer. <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_INCREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to increase focus session duration.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_INCREMENT_BUTTON" desc="The accessible name for the button that the user can press to increase focus session duration.">
         Add <ph name="FOCUS_DURATION_DELTA">$1<ex>5 minutes</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_DECREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to decrease focus session duration.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_DECREMENT_BUTTON" desc="The accessible name for the button that the user can press to decrease focus session duration.">
         Reduce <ph name="FOCUS_DURATION_DELTA">$1<ex>5 minutes</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_SUBHEADER" translateable="false" desc="The text used for the subheader of the task section of the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_SUBHEADER" desc="The text used for the subheader of the task section of the focus mode detailed view.">
         Google Tasks
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER" translateable="false" desc="The text used for the placeholder for the textfield in the task section of the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_OFFLINE_SUBHEADER" translateable="false" desc="The text used for the subheader of the task section of the focus mode detailed view when the user is offline.">
+        Google Tasks · Offline
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER" desc="The text used for the placeholder for the textfield in the task section of the focus mode detailed view.">
         What would you like to focus on?
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_RADIO_BUTTON" translateable="false" desc="The accessible name for the radio button of a selected task view in contextual panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_RADIO_BUTTON" desc="The accessible name for the radio button of a selected task view in contextual panel.">
         Mark task as completed: <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_VIEW_RADIO_BUTTON" translateable="false" desc="The accessible name for the radio button of a selected task view in focus panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_VIEW_RADIO_BUTTON" desc="The accessible name for the radio button of a selected task view in focus panel.">
         Mark task as completed
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_DESELECT_BUTTON" translateable="false" desc="The text used for the deselect button accessible name for a selected task view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_DESELECT_BUTTON" desc="The text used for the deselect button accessible name for a selected task view.">
         Stop focusing on task
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_SOUNDSCAPE_BUTTON" translateable="false" desc="The text on the label slider button used for showing music playlists that help users relax and improve focus.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_SOUNDSCAPE_BUTTON" desc="The text on the label slider button used for showing music playlists that help users relax and improve focus.">
         Focus sounds
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_YOUTUBE_MUSIC_BUTTON" translateable="false" desc="The text on the label slider button used for showing personalized YouTube music playlists to help users relax and focus.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_YOUTUBE_MUSIC_BUTTON" desc="The text on the label slider button used for showing personalized YouTube music playlists to help users relax and focus.">
         YouTube Music
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_NON_PREMIUM_LABEL" translateable="false" desc="The text on the label used for showing a text to mention the user without a premium account for YouTube Music.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_NON_PREMIUM_LABEL" desc="The text on the label used for showing a text to mention the user without a premium account for YouTube Music.">
         For personalized playlists and more focus music, try YouTube Music Premium
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_LEARN_MORE_BUTTON" translateable="false" desc="The text on the learn more button.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_LEARN_MORE_BUTTON" desc="The text on the learn more button.">
         Learn more
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_OFFLINE_LABEL" translateable="false" desc="The text shown to the user in the sounds view when they are offline.">
+        You are not connected to the internet
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
         Do Not Disturb while in Focus
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_LABEL" translateable="false" desc="The text used for the label of the add ten minutes button in the countdown view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_LABEL" desc="The text used for the label of the add ten minutes button in the countdown view.">
         +10 min
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the add ten minutes button in the countdown view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the add ten minutes button in the countdown view.">
         Add 10 minutes
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ALERT" translateable="false" desc="The accessibility alert for the add ten minutes button in the countdown view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ALERT" desc="The accessibility alert for the add ten minutes button in the countdown view.">
         10 minutes added. <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ALERT" translateable="false" desc="The accessibility alert for the add ten minutes button in the ending moment.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ALERT" desc="The accessibility alert after pressing the add ten minutes button in the ending moment.">
         Focus is on, 10 minutes left
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_ACTIVE_LABEL" translateable="false" desc="The text used for the label of the focus mode toggle row in the focus mode detailed view when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_ACTIVE_LABEL" desc="The text used for the label of the focus mode toggle row in the focus mode detailed view when focus mode is active.">
         Focus is on
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the toggle row in the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL" desc="The text used for the sublabel of the toggle row in the focus mode detailed view.">
         Until <ph name="END_TIME_EXPRESSION">$1<ex>1:00 PM</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_LABEL" translateable="false" desc="The text used for the label of the toggle button in the focus mode detailed view and countdown view for when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_LABEL" desc="The text used for the label of the toggle button in the focus mode detailed view and countdown view for when focus mode is active.">
         Finish
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_FIRST_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the detailed view toggle row for when a user has never used focus mode before.">
         Set a timer, task, and music to get in the flow
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_FEEDBACK_BUTTON" translateable="false" desc="The text used for the feedback button.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_FEEDBACK_BUTTON" desc="The text used for the feedback button.">
         Send feedback
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE" translateable="false" desc="The text used for the ending moment, as well as the tooltip.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE" desc="The text used for the ending moment, as well as the tooltip.">
         Time's up. Great job! 🎉
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_NUDGE_ALERT" translateable="false" desc="The accessibility alert for the ending moment nudge.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_NUDGE_ALERT" desc="The accessibility alert for the ending moment nudge.">
         <ph name="TITLE">$1<ex>Time's up. Great job!</ex></ph> You've just focused for <ph name="FOCUSED_TIME">$2<ex>24 minutes</ex></ph>. Open Quick settings to focus again.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_BODY" translateable="false" desc="The message for the ending moment panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_BODY" desc="The message for the ending moment panel.">
         You can add a little more time if you need it, or end your focus session
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_DIALOG" translateable="false" desc="The annoucement for the ending moment panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_DIALOG" desc="The annoucement for the ending moment panel.">
         <ph name="TITLE">$1<ex>Time's up. Great job!</ex></ph> <ph name="BODY">$2<ex>Congratulations on another productive session!</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_DONE_BUTTON" translateable="false" desc="The text for the button that dismisses the ending moment panel.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_DONE_BUTTON" desc="The text for the button that dismisses the ending moment panel.">
         Done
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INACTIVE" translateable="false" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode is not active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INACTIVE" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode is not active.">
         Show Focus settings. Timer set to <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_ACTIVE" translateable="false" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_ACTIVE" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode is active.">
         Show Focus settings. Focus is on, <ph name="REMAINING_TIME">$1<ex>7 minutes</ex></ph> left.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INITIAL" translateable="false" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode has never been used before.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_INITIAL" desc="The accessible name for the focus mode feature tile in the quick settings menu when focus mode has never been used before.">
         Show Focus settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_BUTTON_INACTIVE" translateable="false" desc="The accessible name for the toggle button in the focus mode feature tile in the quick settings menu or the focus panel when focus mode is not active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_BUTTON_INACTIVE" desc="The accessible name for the toggle button in the focus mode feature tile in the quick settings menu or the focus panel when focus mode is not active.">
         Start Focus. Timer set to <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_BUTTON_ACTIVE" translateable="false" desc="The accessible name for the toggle button in the focus mode feature tile in the quick settings menu when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TILE_BUTTON_ACTIVE" desc="The accessible name for the toggle button in the focus mode feature tile in the quick settings menu when focus mode is active.">
         Finish Focus. <ph name="REMAINING_TIME">$1<ex>7 minutes</ex></ph> left.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start Focus session
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view for when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view for when focus mode is active.">
         Finish Focus
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_SELECTED_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the task textfield in the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_SELECTED_ACCESSIBLE_NAME" desc="The accessible name for the task textfield in the focus mode detailed view.">
         Task set to focus on: <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph>. Press enter to edit the task.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_UNSELECTED_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the task textfield in the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_UNSELECTED_ACCESSIBLE_NAME" desc="The accessible name for the task textfield in the focus mode detailed view.">
         What would you like to focus on? Press enter to add the task.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the do not disturb switch in the focus mode detailed view.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME" desc="The accessible name for the do not disturb switch in the focus mode detailed view.">
         Enable Do Not Disturb while in Focus
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_TASK_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is a selected task.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_TASK_ACCESSIBLE_NAME" desc="The accessible name for the tray bubble contextual panel when there is a selected task.">
         Focus is on, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left, focusing on: <ph name="TASK_NAME">$2<ex>Plan for trip to Paris</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is no selected task.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ACCESSIBLE_NAME" desc="The accessible name for the tray bubble contextual panel when there is no selected task.">
         Focus is on, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
       </message>
 
@@ -3317,6 +3323,9 @@ No devices connected.
       <message name="IDS_ASH_AUDIO_SELECTION_MULTIPLE_DEVICES_BODY" desc="body of audio selection notification to inform users multiple devices are detected" translateable="false">
         Input audio is "<ph name="INPUT_DEVICE_NAME">$1<ex>Logitech Webcam</ex></ph>" and output audio is "<ph name="OUTPUT_DEVICE_NAME">$2<ex>USB Speaker</ex></ph>". Go to Settings to change.
       </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_MULTIPLE_DEVICES_BODY_WITH_NAME_UNAVAILABLE" desc="body of audio selection notification to inform users multiple devices are detected, used when the current active device name is not available" translateable="false">
+        Input and output devices are set. Go to Settings to change.
+      </message>
       <message name="IDS_ASH_AUDIO_SELECTION_BUTTON_SWITCH" desc="label used for audio selection switch button" translateable="false">
         Switch
       </message>
@@ -3441,6 +3450,10 @@ No devices connected.
 
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_NOISE_CANCELLATION" desc="label used for input noise cancellation toggle">
         Noise cancellation
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_STYLE_TRANSFER" desc="label used for input style transfer toggle">
+        Studio mic
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_HFP_MIC_SR" desc="label used for input hfp mic sr toggle">
@@ -5063,6 +5076,12 @@ No devices connected.
       </message>
       <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_DESCRIPTION" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
         Your Chromebook needs to stay on and connected to power during this time. Make sure the charger or adapter cables are completely plugged in, both to your Chromebook and the power outlet. Do not turn off your Chromebook.
+      </message>
+
+      <!-- Authentication strings -->
+
+      <message name="IDS_ASH_AUTH_PIN_KEYBOARD" desc="The accessibility text for the authentication pin keyboard.">
+        Pin keyboard
       </message>
 
       <!-- Fast Pair strings -->
@@ -7234,8 +7253,20 @@ New install
       <message name="IDS_PICKER_SEE_MORE_BUTTON_TEXT" translateable="false" desc="Button text shown in a section when there are more results.">
         See more
       </message>
+      <message name="IDS_PICKER_MORE_EMOJIS_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible text for a button which opens a panel with more emojis, symbols and emoticons.">
+        Open emojis and more
+      </message>
       <message name="IDS_PICKER_NO_RESULTS_TEXT" translateable="false" desc="Label of the view showing that there are no search results.">
         No results found.
+      </message>
+      <message name="IDS_PICKER_RESULT_BADGE_LABEL_INSERT" translateable="false" desc="Label of the badge in a result that can be inserted.">
+        Insert
+      </message>
+      <message name="IDS_PICKER_RESULT_BADGE_LABEL_OPEN" translateable="false" desc="Label of the badge in a result that can be opened.">
+        Open
+      </message>
+      <message name="IDS_PICKER_RESULT_BADGE_LABEL_CREATE" translateable="false" desc="Label of the badge in a result that can be created.">
+        Create
       </message>
 
       <!-- WM -->
@@ -7573,6 +7604,10 @@ New install
       <message name="IDS_GLANCEABLES_TASKS_ERROR_EDIT_TASK_FAILED_WHILE_OFFLINE" desc="The error message used in the task glanceable to notify users that the glanceables failed to commit the task that they edited because the device is offline. Also guide the user to try again when the device is connected to the network.">
         Couldn't edit task. Try again when online.
       </message>
+      <message name="IDS_GLANCEABLES_TASKS_ASSIGNED_TASK_NOTICE" desc="The glanceable displays tasks fetched from Google Tasks API. Some of them can be created and assigned by other users (e.g. via Google Docs). This is a privacy notice warning that any changes will be visible to others (e.g. everyone having access to the same origin document).">
+        Others can see changes that you make to this task
+      </message>
+
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
         Do Not Disturb is on
@@ -8126,45 +8161,48 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_PINE_EDUCATION_NUDGE" translateable="false" desc="Text of the Pine education nudge.">
         You can go back to Overview at anytime to get back to suggestions
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_ONGOING_SUBTITLE" translateable="false" desc="Subtitle for the suggestion chip for an ongoing calendar event (e.g. a meeting that is happening right now)">
+      <message name="IDS_ASH_BIRCH_CALENDAR_ONGOING_SUBTITLE" desc="Subtitle for the suggestion chip for an ongoing calendar event (e.g. a meeting that is happening right now)">
         Now · Ends <ph name="END_TIME">$1<ex>11:20 AM</ex></ph>
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_MINUTES" translateable="false" desc="Brief description of the number of minutes until an upcoming calendar event">
+      <message name="IDS_ASH_BIRCH_CALENDAR_MINUTES" desc="Brief description of the number of minutes until an upcoming calendar event">
         {MINUTES, plural,
          =1 {In 1 min}
          other {In # mins}}
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_TOMORROW" translateable="false" desc="Subtitle text for a calendar event that occurs tomorrow">
+      <message name="IDS_ASH_BIRCH_CALENDAR_TOMORROW" desc="Subtitle text for a calendar event that occurs tomorrow">
         Tomorrow
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_ALL_DAY" translateable="false" desc="Subtitle text for a calendar event that occurs all day">
+      <message name="IDS_ASH_BIRCH_CALENDAR_ALL_DAY" desc="Subtitle text for a calendar event that occurs all day">
         All Day
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_UPCOMING_SUBTITLE" translateable="false" desc="Subtitle for a suggestion chip for a file attached to a calendar event in the future">
+      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_UPCOMING_SUBTITLE" desc="Subtitle for a suggestion chip for a file attached to a calendar event in the future">
         From upcoming calendar event
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_NOW_SUBTITLE" translateable="false" desc="Subtitle for a suggestion chip for a file attached to a calendar event happening now">
+      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_NOW_SUBTITLE" desc="Subtitle for a suggestion chip for a file attached to a calendar event happening now">
         From event happening now
       </message>
-      <message name="IDS_ASH_BIRCH_CALENDAR_JOIN_BUTTON" translateable="false" desc="Button label for joining a meeting associated with a calendar event">
+      <message name="IDS_ASH_BIRCH_CALENDAR_JOIN_BUTTON" desc="Button label for joining a meeting associated with a calendar event">
         Join
       </message>
-      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_YESTERDAY" translateable="false" desc="Subtitle for the suggestion chip with recent tabs from other devices shared yesterday">
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_YESTERDAY" desc="Subtitle for the suggestion chip with recent tabs from other devices shared yesterday">
         Yesterday
       </message>
-      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_PREFIX" translateable="false" desc="Start of the subtitle for the suggestion chip with recent tabs from other devices">
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_PREFIX" desc="Start of the subtitle for the suggestion chip with recent tabs from other devices">
         {HOURS, plural,
          =0 {&lt; 1 hour ago}
          =1 {1 hour ago}
          other {# hours ago}}
       </message>
-      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_SUFFIX" translateable="false" desc="End of the subtitle for the suggestion chip with recent tabs from other devices">
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_SUFFIX" desc="End of the subtitle for the suggestion chip with recent tabs from other devices">
         From <ph name="SESSION_NAME">$1<ex>Chromebook</ex></ph>
       </message>
-      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_TITLE" translateable="false" desc="Title for the suggestion chip that links to release notes">
+      <message name="IDS_ASH_BIRCH_MOST_VISITED_SUBTITLE" desc="The subtitle for a suggestion chip for a web site that is frequently visited">
+        Frequently visited
+      </message>
+      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_TITLE" desc="Title for the suggestion chip that links to release notes">
         See what's new
       </message>
-      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_SUBTITLE" translateable="false" desc="Subtitle for the suggestion chip that links to release notes">
+      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_SUBTITLE" desc="Subtitle for the suggestion chip that links to release notes">
         Explore the latest features
       </message>
      </messages>

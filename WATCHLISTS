@@ -1118,6 +1118,7 @@
     },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/downloads/|' \
+                  'chrome/browser/ui/download|' \
                   'chrome/browser/ui/webui/.*downloads|' \
                   'chrome/browser/ui/views/download/|' \
                   'chrome/browser/ui/cocoa/download/'
@@ -1385,6 +1386,9 @@
     'ios_web': {
       'filepath': 'ios/web(_view)?/',
     },
+    'ios_web_view': {
+      'filepath': 'ios/web_view/',
+    },
     'ios_widget_kit': {
       'filepath': 'ios/chrome/common/widget_kit|'\
                   'ios/chrome/browser/widget_kit|'\
@@ -1620,7 +1624,8 @@
                   'chrome/browser/resources/ash/settings/nearby_share_page/|'\
                   'chrome/browser/ui/webui/nearby_internals/|'\
                   'chrome/browser/ui/webui/nearby_share/|'\
-                  'chrome/services/sharing/'
+                  'chrome/services/sharing/|'\
+                  'chromeos/ash/components/nearby/common/'
     },
     'nearby_presence': {
       'filepath': 'chrome/browser/ash/nearby/|'\
@@ -2750,7 +2755,7 @@
                           'jiajunz+watch-bluetooth@google.com',
                           'khorimoto+watch-bluetooth@chromium.org',
                           'nikhilcn+watch-bluetooth@google.com',
-                          'tjohnsonkanu+watch-bluetooth@google.com'],
+                          'tjohnsonkanu@google.com'],
     'chromeos_cellular': ['chadduffin+watch-cellular@chromium.org',
                           'ejcaruso+watch-cellular@chromium.org',
                           'gordonseto+watch-cellular@google.com',
@@ -2758,7 +2763,7 @@
                           'jiajunz+watch-cellular@google.com',
                           'khorimoto+watch-cellular@chromium.org',
                           'nikhilcn@google.com',
-                          'tjohnsonkanu+watch-cellular@google.com'],
+                          'tjohnsonkanu@google.com'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org'],
     'chromeos_login': ['alemate+watch@chromium.org',
@@ -2894,10 +2899,12 @@
     'dom_storage': ['dmurph+watchingdomstorage@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
     'download_bubble': ['xinghuilu+watch@chromium.org',
-                        'drubery+watch@chromium.org'],
+                        'drubery+watch@chromium.org',
+                        'chlily+watch@chromium.org'],
     'download_status_updater_chromeos': ['cros-system-ui-productivity-eng+reviews@google.com'],
     'downloads_ui': ['dtrainor+watch@chromium.org',
-                     'drubery+watch@chromium.org'],
+                     'drubery+watch@chromium.org',
+                     'chlily+watch@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eche': ['ajayramamurthy+watch-eche@google.com',
              'crisrael+watch-eche@google.com',
@@ -2983,6 +2990,7 @@
     'ios_ntp': ['thegreenfrog+watch@chromium.org'],
     'ios_transactions': ['tmartino+transactions-watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org'],
+    'ios_web_view': ['ios-web-view-eng+reviews@google.com'],
     'ios_widget_kit': ['rkgibson+watch@chromium.org'],
     'ip_protection': ['aakallam+watch@chromium.org',
                       'awillia@chromium.org',
@@ -3058,7 +3066,6 @@
                    'creis+watch@chromium.org',
                    'navigation-cc+reviews@chromium.org'],
     'nearby': ['ajayramamurthy+watch-nearby@google.com',
-               'cclem+watch-nearby@google.com',
                'crisrael+watch-nearby@google.com',
                'dclasson+watch-nearby@google.com',
                'hais+watch-nearby@google.com',
@@ -3237,7 +3244,6 @@
                       'alexmos+watch@chromium.org',
                       'creis+watch@chromium.org'],
     'smartlock': ['bhartmire+watch-smartlock@google.com',
-                  'cclem+watch-smartlock@google.com',
                   'ajayramamurthy+watch-smartlock@google.com',
                   'hansberry+watch-smartlock@chromium.org',
                   'jackshira+watch-smartlock@google.com',
@@ -3291,7 +3297,6 @@
     'test_runner': ['einbinder+watch-test-runner@chromium.org'],
     'tests': [],
     'tether': ['bhartmire+watch-tether@google.com',
-               'cclem+watch-tether@google.com',
                'ajayramamurthy+watch-tether@google.com',
                'hansberry+watch-tether@chromium.org',
                'jackshira+watch-tether@google.com',
@@ -3353,7 +3358,6 @@
                          'dmurph+watching-webapps@chromium.org',
                          'dominickn+watch-web_applications@chromium.org',
                          'ericwilligers+watch-bmo@chromium.org',
-                         'glenrob+watch@chromium.org',
                          'kuragin+web-applications-cls@chromium.org',
                          'loyso+watch@chromium.org',
                          'mgiuca+watch@chromium.org',

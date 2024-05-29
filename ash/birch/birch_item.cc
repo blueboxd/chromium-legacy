@@ -506,17 +506,74 @@ std::u16string BirchTabItem::GetSubtitle(const std::string& session_name,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+BirchMostVisitedItem::BirchMostVisitedItem(const std::u16string& title,
+                                           const GURL& url,
+                                           ui::ImageModel icon)
+    : BirchItem(title, GetSubtitle()), url_(url), icon_(icon) {}
+
+BirchMostVisitedItem::BirchMostVisitedItem(BirchMostVisitedItem&&) = default;
+
+BirchMostVisitedItem::BirchMostVisitedItem(const BirchMostVisitedItem&) =
+    default;
+
+BirchMostVisitedItem& BirchMostVisitedItem::operator=(
+    const BirchMostVisitedItem&) = default;
+
+bool BirchMostVisitedItem::operator==(const BirchMostVisitedItem& rhs) const =
+    default;
+
+BirchMostVisitedItem::~BirchMostVisitedItem() = default;
+
+BirchItemType BirchMostVisitedItem::GetType() const {
+  return BirchItemType::kMostVisited;
+}
+
+std::string BirchMostVisitedItem::ToString() const {
+  std::stringstream ss;
+  ss << "Most Visited item: {ranking: " << ranking()
+     << ", Title: " << base::UTF16ToUTF8(title()) << ", URL: " << url_;
+  return ss.str();
+}
+
+void BirchMostVisitedItem::PerformAction() {
+  if (!url_.is_valid()) {
+    LOG(ERROR) << "No valid URL for most visited item";
+    return;
+  }
+  RecordActionMetrics();
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      url_, NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kSwitchToTab);
+}
+
+void BirchMostVisitedItem::PerformSecondaryAction() {
+  NOTREACHED_IN_MIGRATION();
+}
+
+void BirchMostVisitedItem::LoadIcon(LoadIconCallback callback) const {
+  std::move(callback).Run(icon_);
+}
+
+// static
+std::u16string BirchMostVisitedItem::GetSubtitle() {
+  return l10n_util::GetStringUTF16(IDS_ASH_BIRCH_MOST_VISITED_SUBTITLE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 BirchSelfShareItem::BirchSelfShareItem(const std::u16string& guid,
                                        const std::u16string& title,
                                        const GURL& url,
                                        const base::Time& shared_time,
                                        const std::u16string& device_name,
-                                       GURL& favicon_url)
+                                       GURL& favicon_url,
+                                       base::RepeatingClosure callback)
     : BirchItem(title, GetSubtitle(device_name, shared_time)),
       guid_(guid),
       url_(url),
       shared_time_(shared_time),
-      favicon_url_(favicon_url) {}
+      favicon_url_(favicon_url),
+      activation_callback_(std::move(callback)) {}
 
 BirchSelfShareItem::BirchSelfShareItem(BirchSelfShareItem&&) = default;
 
@@ -545,11 +602,13 @@ std::string BirchSelfShareItem::ToString() const {
 }
 
 void BirchSelfShareItem::PerformAction() {
-  // TODO(b/333412417): Scope how to mark entry opened.
   if (!url_.is_valid()) {
     LOG(ERROR) << "No valid URL for self "
                   "share item";
     return;
+  }
+  if (activation_callback_) {
+    activation_callback_.Run();
   }
   RecordActionMetrics();
   NewWindowDelegate::GetPrimary()->OpenUrl(

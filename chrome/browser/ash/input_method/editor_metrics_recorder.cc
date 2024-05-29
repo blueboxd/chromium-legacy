@@ -71,8 +71,10 @@ std::string_view AsString(const EditorOpportunityMode& mode) {
       return "Write";
     case EditorOpportunityMode::kRewrite:
       return "Rewrite";
-    case EditorOpportunityMode::kNone:
-      return "None";
+    case EditorOpportunityMode::kNotAllowedForUse:
+      return "NotAllowed";
+    case EditorOpportunityMode::kInvalidInput:
+      return "InvalidInput";
   }
 }
 
@@ -153,21 +155,21 @@ EditorStates ToEditorStatesMetric(EditorBlockedReason reason) {
 EditorStates ToEditorStatesMetric(orca::mojom::TextQueryErrorCode error_code) {
   switch (error_code) {
     case orca::mojom::TextQueryErrorCode::kUnknown:
-      return EditorStates::ErrorUnknown;
+      return EditorStates::kErrorUnknown;
     case orca::mojom::TextQueryErrorCode::kInvalidArgument:
-      return EditorStates::ErrorInvalidArgument;
+      return EditorStates::kErrorInvalidArgument;
     case orca::mojom::TextQueryErrorCode::kResourceExhausted:
-      return EditorStates::ErrorResourceExhausted;
+      return EditorStates::kErrorResourceExhausted;
     case orca::mojom::TextQueryErrorCode::kBackendFailure:
-      return EditorStates::ErrorBackendFailure;
+      return EditorStates::kErrorBackendFailure;
     case orca::mojom::TextQueryErrorCode::kNoInternetConnection:
-      return EditorStates::ErrorNoInternetConnection;
+      return EditorStates::kErrorNoInternetConnection;
     case orca::mojom::TextQueryErrorCode::kUnsupportedLanguage:
-      return EditorStates::ErrorUnsupportedLanguage;
+      return EditorStates::kErrorUnsupportedLanguage;
     case orca::mojom::TextQueryErrorCode::kBlockedOutputs:
-      return EditorStates::ErrorBlockedOutputs;
+      return EditorStates::kErrorBlockedOutputs;
     case orca::mojom::TextQueryErrorCode::kRestrictedRegion:
-      return EditorStates::ErrorRestrictedRegion;
+      return EditorStates::kErrorRestrictedRegion;
   }
 }
 
@@ -238,10 +240,6 @@ void EditorMetricsRecorder::SetTone(EditorTone tone) {
 }
 
 void EditorMetricsRecorder::LogEditorState(EditorStates state) {
-  if (mode_ == EditorOpportunityMode::kNone) {
-    return;
-  }
-
   base::UmaHistogramEnumeration(
       base::StrCat({"InputMethod.Manta.Orca.States.", AsString(mode_)}), state);
 
@@ -271,7 +269,8 @@ void EditorMetricsRecorder::LogEditorState(EditorStates state) {
 
 void EditorMetricsRecorder::LogNumberOfCharactersInserted(
     int number_of_characters) {
-  if (mode_ == EditorOpportunityMode::kNone) {
+  if (mode_ == EditorOpportunityMode::kInvalidInput ||
+      mode_ == EditorOpportunityMode::kNotAllowedForUse) {
     return;
   }
 
@@ -300,7 +299,8 @@ void EditorMetricsRecorder::LogNumberOfCharactersInserted(
 
 void EditorMetricsRecorder::LogNumberOfCharactersSelectedForInsert(
     int number_of_characters) {
-  if (mode_ == EditorOpportunityMode::kNone) {
+  if (mode_ == EditorOpportunityMode::kInvalidInput ||
+      mode_ == EditorOpportunityMode::kNotAllowedForUse) {
     return;
   }
 
@@ -330,7 +330,8 @@ void EditorMetricsRecorder::LogNumberOfCharactersSelectedForInsert(
 
 void EditorMetricsRecorder::LogNumberOfResponsesFromServer(
     int number_of_responses) {
-  if (mode_ == EditorOpportunityMode::kNone) {
+  if (mode_ == EditorOpportunityMode::kInvalidInput ||
+      mode_ == EditorOpportunityMode::kNotAllowedForUse) {
     return;
   }
 
@@ -359,7 +360,8 @@ void EditorMetricsRecorder::LogNumberOfResponsesFromServer(
 
 void EditorMetricsRecorder::LogLengthOfLongestResponseFromServer(
     int number_of_characters) {
-  if (mode_ == EditorOpportunityMode::kNone) {
+  if (mode_ == EditorOpportunityMode::kInvalidInput ||
+      mode_ == EditorOpportunityMode::kNotAllowedForUse) {
     return;
   }
 

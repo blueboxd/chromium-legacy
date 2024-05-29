@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -21,7 +20,6 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -839,9 +837,10 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, DisabledState) {
   webapps::AppId app2_id;
   {
     const std::u16string description = u"Uninstalled Web App";
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url =
+    GURL start_url =
         embedded_test_server()->GetURL("app.site.com", "/simple.html");
+    auto web_app_info =
+        WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
     web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
     web_app_info->title = description;
     web_app_info->description = description;

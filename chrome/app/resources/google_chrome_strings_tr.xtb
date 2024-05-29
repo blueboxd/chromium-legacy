@@ -58,6 +58,7 @@
 <translation id="1873233029667955273">Google Chrome varsayılan tarayıcınız değil</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome sürümü eski</translation>
+<translation id="1907925560334657849">Pencerenizi paylaşmak için Sistem Tercihleri'nde Chrome'un ekranı kaydetmesine izin verin</translation>
 <translation id="1919130412786645364">Chrome'da oturum açmaya izin ver</translation>
 <translation id="1953553007165777902">İndiriliyor... <ph name="MINUTE" /> dakika kaldı</translation>
 <translation id="1982647487457769627">Chrome, hangi cihazı kullanırsanız kullanın size tanıdık bir deneyim sunmak için farklı platformlarda çalışır.</translation>
@@ -122,6 +123,7 @@
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2775140325783767197">Chrome, şifrelerinizi kontrol edemiyor. İnternet bağlantınızı kontrol etmeyi deneyin.</translation>
 <translation id="2799223571221894425">Yeniden başlat</translation>
+<translation id="2825024317344269723">Tehlikeli site. Chrome, bildirimleri kaldırdı.</translation>
 <translation id="2846251086934905009">Yükleme hatası: Yükleyici tamamlanmadı. Yükleme işlemi iptal edildi.</translation>
 <translation id="2847461019998147611">Google Chrome'u bu dilde görüntüle</translation>
 <translation id="2853415089995957805">Chrome, ziyaret etme olasılığınızın yüksek olduğu sayfaları önceden yükleyerek bu sayfaları ziyaret ettiğinizde daha hızlı yüklenmelerini sağlar.</translation>
@@ -183,6 +185,7 @@
 <translation id="3583751698304738917">Başka bir Chrome profilinde <ph name="USER_EMAIL_ADDRESS" /> olarak zaten oturum açmış durumdasınız.</translation>
 <translation id="3595784445906693824">Chrome'da yeni bir profilde oturum açılsın mı?</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor}=1{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor. Gizli pencereniz yeniden açılmayacak.}other{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor. # Gizli pencereniz yeniden açılmayacak.}}</translation>
+<translation id="3609788354808247807">Son zamanlarda ziyaret etmediniz. Chrome; <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ve <ph name="PERMISSION_3" /> iznini kaldırdı.</translation>
 <translation id="3622797965165704966">Chrome'u Google Hesabınızla ve paylaşılan bilgisayarlarda kullanmak artık daha kolay.</translation>
 <translation id="3635073343384702370">Kaydetmeniz halinde Chrome, şifrelerinizi kontrol edebilir.</translation>
 <translation id="3667616615096815454">Uygulama, sunucu tarafından bilinmediği için yüklenemedi.</translation>
@@ -330,6 +333,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5941711191222866238">Küçült</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="5947104538377036631">Chrome Kısayolu</translation>
+<translation id="5953954252731207958">Son zamanlarda ziyaret etmediniz. Chrome, <ph name="PERMISSION" /> iznini kaldırdı.</translation>
 <translation id="6003112304606738118">İndiriliyor... <ph name="HOURS" /> saat kaldı</translation>
 <translation id="6014316319780893079"><ph name="BEGIN_LINK" />Chrome araçları<ph name="END_LINK" /> ile güvenli bir şekilde göz atabilir ve kontrolü elinizde tutabilirsiniz</translation>
 <translation id="6022659036123304283">Chrome'u kendinize uyarlayın</translation>
@@ -344,6 +348,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="6182736845697986886">Güncelleme sunucusundaki dahili hata nedeniyle yükleme işlemi başarısız oldu.</translation>
+<translation id="6200139057479872438">Son zamanlarda ziyaret etmediniz. Chrome; <ph name="PERMISSION_1" /> ve <ph name="PERMISSION_2" /> iznini kaldırdı.</translation>
 <translation id="6235018212288296708">Google Chrome'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="624230925347970731">Chrome yakında kapanacak</translation>
 <translation id="6247557882553405851">Google Şifre Yöneticisi</translation>
@@ -407,6 +412,7 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="7088681679121566888">Chrome güncel</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7099479769133613710">&amp;ChromeOS'i güncellemek için yeniden başlat</translation>
+<translation id="7100085796996987445">Ekranınızı paylaşmak için Sistem Tercihleri'nde Chrome'un ekranı kaydetmesine izin verin</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır.}=1{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır. Gizli pencereniz yeniden açılmayacak.}other{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır. # Gizli pencereniz yeniden açılmayacak.}}</translation>
 <translation id="7155997830309522122">Değiştirdiyseniz Chrome'da kayıtlı şifrenizi, lütfen yeni şifrenizle aynı olacak şekilde düzenleyin.</translation>
@@ -441,6 +447,7 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="7651907282515937834">Chrome Enterprise logosu</translation>
 <translation id="76531479118467370">Güvenli Tarama'yı devre dışı bıraktığınız ve dosya doğrulanamadığı için Chrome bu indirme işlemini engelledi</translation>
 <translation id="7655455401911432608">Tarama geçmişiniz, bu cihazda Chrome'u kullanarak ziyaret ettiğiniz sitelerin kaydı.</translation>
+<translation id="7661924425853052955">Son zamanlarda ziyaret etmediniz. Chrome; <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ve <ph name="COUNT" /> izni daha kaldırdı.</translation>
 <translation id="7668816516367091728">Doğrudan adres çubuğundan çeviri ve hesaplama gibi işlemler yapabilirsiniz.</translation>
 <translation id="769538538642757151">Chrome, incelemeniz gereken bir konu olursa sizi bilgilendirir</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>

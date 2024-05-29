@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/address_data_manager.h"
@@ -93,9 +94,10 @@ const std::vector<base::FilePath> GetTestFiles() {
 }
 
 // Serializes the |profiles| into a string.
-std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
+std::string SerializeProfiles(
+    const std::vector<const AutofillProfile*>& profiles) {
   std::string result;
-  for (auto* profile : profiles) {
+  for (const AutofillProfile* profile : profiles) {
     result += kProfileSeparator;
     result += "\n";
     for (const FieldType& type : kProfileFieldTypes) {
@@ -144,6 +146,7 @@ class AutofillMergeTest : public testing::DataDrivenTest,
   void MergeProfiles(const std::string& profiles, std::string* merged_profiles);
 
   base::test::TaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestAutofillClient autofill_client_;
   TestPersonalDataManager personal_data_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
@@ -160,6 +163,11 @@ void AutofillMergeTest::SetUp() {
       .set_auto_accept_address_imports(true);
   form_data_importer_ = std::make_unique<FormDataImporter>(
       &autofill_client_, &personal_data_, /*history_service=*/nullptr, "en");
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillConsiderPhoneNumberSeparatorsValidLabels,
+       features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
+       features::kAutofillInferCountryCallingCode},
+      /*disabled_features=*/{});
 }
 
 void AutofillMergeTest::TearDown() {
@@ -174,13 +182,13 @@ void AutofillMergeTest::GenerateResults(const std::string& input,
 void AutofillMergeTest::MergeProfiles(const std::string& profiles,
                                       std::string* merged_profiles) {
   // Start with no saved profiles.
-  personal_data_.ClearAllLocalData();
+  personal_data_.test_address_data_manager().ClearProfiles();
 
   // Create a test form.
   FormData form;
-  form.name = u"MyTestForm";
-  form.url = GURL("https://www.example.com/origin.html");
-  form.action = GURL("https://www.example.com/action.html");
+  form.set_name(u"MyTestForm");
+  form.set_url(GURL("https://www.example.com/origin.html"));
+  form.set_action(GURL("https://www.example.com/action.html"));
 
   // Parse the input line by line.
   std::vector<std::string> lines = base::SplitString(
@@ -240,13 +248,13 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
     }
   }
 
-  std::vector<AutofillProfile*> imported_profiles =
+  std::vector<const AutofillProfile*> imported_profiles =
       personal_data_.address_data_manager().GetProfiles();
   // To ensure a consistent order with the output files, sort the profiles by
   // modification date. This corresponds to the order in which the profiles
   // were imported (or updated).
   base::ranges::sort(imported_profiles,
-                     [](AutofillProfile* a, AutofillProfile* b) {
+                     [](const AutofillProfile* a, const AutofillProfile* b) {
                        return a->modification_date() < b->modification_date();
                      });
   *merged_profiles = SerializeProfiles(imported_profiles);

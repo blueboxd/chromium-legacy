@@ -18,7 +18,6 @@
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/collaboration_group_specifics.pb.h"
-#include "components/sync/protocol/compare_specifics.pb.h"
 #include "components/sync/protocol/contact_info_specifics.pb.h"
 #include "components/sync/protocol/cookie_specifics.pb.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
@@ -34,6 +33,7 @@
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
+#include "components/sync/protocol/product_comparison_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sharing_message_specifics.pb.h"
@@ -67,7 +67,7 @@ using testing::Not;
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(52 == syncer::GetNumModelTypes(),
+static_assert(53 == syncer::GetNumModelTypes(),
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -84,7 +84,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet_credential)
 DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet_usage)
 DEFINE_SPECIFICS_TO_VALUE_TEST(bookmark)
 DEFINE_SPECIFICS_TO_VALUE_TEST(collaboration_group)
-DEFINE_SPECIFICS_TO_VALUE_TEST(compare)
 DEFINE_SPECIFICS_TO_VALUE_TEST(contact_info)
 DEFINE_SPECIFICS_TO_VALUE_TEST(cookie)
 DEFINE_SPECIFICS_TO_VALUE_TEST(device_info)
@@ -101,11 +100,13 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(os_priority_preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(outgoing_password_sharing_invitation)
 DEFINE_SPECIFICS_TO_VALUE_TEST(password)
 DEFINE_SPECIFICS_TO_VALUE_TEST(plus_address)
+DEFINE_SPECIFICS_TO_VALUE_TEST(plus_address_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(power_bookmark)
 DEFINE_SPECIFICS_TO_VALUE_TEST(preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(printer)
 DEFINE_SPECIFICS_TO_VALUE_TEST(printers_authorization_server)
 DEFINE_SPECIFICS_TO_VALUE_TEST(priority_preference)
+DEFINE_SPECIFICS_TO_VALUE_TEST(product_comparison)
 DEFINE_SPECIFICS_TO_VALUE_TEST(reading_list)
 DEFINE_SPECIFICS_TO_VALUE_TEST(saved_tab_group)
 DEFINE_SPECIFICS_TO_VALUE_TEST(search_engine)
@@ -353,7 +354,7 @@ TEST(ProtoValueConversionsTest, ClientToServerResponseToValue) {
 }
 
 TEST(ProtoValueConversionsTest, CompareSpecificsData) {
-  sync_pb::CompareSpecifics specifics;
+  sync_pb::ProductComparisonSpecifics specifics;
   specifics.set_uuid("my_uuid");
   specifics.set_creation_time_unix_epoch_micros(1708532099);
   specifics.set_update_time_unix_epoch_micros(1708642103);
@@ -363,7 +364,8 @@ TEST(ProtoValueConversionsTest, CompareSpecificsData) {
   specifics.add_data();
   specifics.mutable_data(1)->set_url("https://www.bar.com");
 
-  base::Value::Dict value = CompareSpecificsToValue(specifics).TakeDict();
+  base::Value::Dict value =
+      ProductComparisonSpecificsToValue(specifics).TakeDict();
   EXPECT_FALSE(value.empty());
   EXPECT_TRUE(value.FindString("uuid"));
   EXPECT_STREQ("my_uuid", value.FindString("uuid")->c_str());

@@ -330,7 +330,7 @@ bool TextAutosizingMultiplierChanged(const StyleResolverState& state,
 
 PseudoId GetPseudoId(const Element& element, ElementRuleCollector* collector) {
   if (element.IsPseudoElement()) {
-    return element.GetPseudoId();
+    return element.GetPseudoIdForStyling();
   }
 
   return collector ? collector->GetPseudoId() : kPseudoIdNone;
@@ -457,6 +457,22 @@ static CSSPropertyValueSet* UniversalOverlayUserAgentDeclaration() {
   if (decl->IsEmpty()) {
     decl->SetProperty(CSSPropertyID::kOverlay,
                       *CSSIdentifierValue::Create(CSSValueID::kNone),
+                      true /* important */);
+  }
+  return decl;
+}
+
+// UA rule: ::scroll-marker-group { contain: size !important; }
+// The generation of ::scroll-marker pseudo-elements
+// cannot invalidate layout outside of this pseudo-element.
+static CSSPropertyValueSet* ScrollMarkersGroupUserAgentDeclaration() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+
+  if (decl->IsEmpty()) {
+    decl->SetProperty(CSSPropertyID::kContain,
+                      *CSSIdentifierValue::Create(CSSValueID::kSize),
                       true /* important */);
   }
   return decl;
@@ -1177,8 +1193,10 @@ void StyleResolver::InitStyle(Element& element,
     // pseudo itself. They may use var() references but those must be resolved
     // against the originating element. Share the variables from the originating
     // style.
-    state.StyleBuilder().CopyInheritedVariablesFrom(state.OriginatingElementStyle());
-    state.StyleBuilder().CopyNonInheritedVariablesFrom(state.OriginatingElementStyle());
+    state.StyleBuilder().CopyInheritedVariablesFrom(
+        state.OriginatingElementStyle());
+    state.StyleBuilder().CopyNonInheritedVariablesFrom(
+        state.OriginatingElementStyle());
   } else {
     state.CreateNewStyle(
         source_for_noninherited, *parent_style,
@@ -1420,12 +1438,19 @@ void StyleResolver::ApplyBaseStyleNoCache(
     }
 
     // UA rule: * { overlay: none !important }
+    // and
+    // UA rule: ::scroll-marker-group { contain: size !important; }
     // Implemented here because DCHECKs ensures we don't add universal rules to
     // the UA sheets. Note that this is a universal rule in any namespace.
     // Adding this to the html.css would only do the override in the HTML
     // namespace since the sheet has a default namespace.
     cascade.MutableMatchResult().AddMatchedProperties(
         UniversalOverlayUserAgentDeclaration(), CascadeOrigin::kUserAgent);
+
+    if (element->IsScrollMarkerGroupPseudoElement()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          ScrollMarkersGroupUserAgentDeclaration(), CascadeOrigin::kUserAgent);
+    }
 
     // This adds a CSSInitialColorValue to the cascade for the document
     // element. The CSSInitialColorValue will resolve to a color-scheme
@@ -1871,10 +1896,8 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
                                                      : EUserModify::kReadOnly);
   FontBuilder(&GetDocument()).CreateInitialFont(builder);
 
-  scoped_refptr<StyleInitialData> initial_data =
-      engine.MaybeCreateAndGetInitialData();
-  if (initial_data) {
-    builder.SetInitialData(std::move(initial_data));
+  if (StyleInitialData* initial_data = engine.MaybeCreateAndGetInitialData()) {
+    builder.SetInitialData(initial_data);
   }
 
   if (RuntimeEnabledFeatures::PreferDefaultScrollbarStylesEnabled()) {
@@ -2066,6 +2089,9 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
     cascade.AddInterpolations(&animations, CascadeOrigin::kAnimation);
     cascade.AddInterpolations(&transitions, CascadeOrigin::kTransition);
 
+    // Note: this applies the same filter to pseudo elements as its originating
+    // element since state.GetElement() returns the originating element when
+    // resolving style for pseudo elements.
     CascadeFilter filter = state.GetElement().GetCascadeFilter();
     if (state.StyleBuilder().StyleType() == kPseudoIdMarker) {
       filter = filter.Add(CSSProperty::kValidForMarker, false);
@@ -2203,14 +2229,9 @@ bool StyleResolver::CacheSuccess::InheritedVariablesChanged(
   if (!cached_matched_properties) {
     return false;
   }
-  if (RuntimeEnabledFeatures::CSSMPCImprovementsEnabled()) {
-    return !base::ValuesEquivalent(
-        cached_matched_properties->computed_style->InheritedVariables(),
-        builder.InheritedVariables());
-  } else {
-    return cached_matched_properties->computed_style->InheritedVariables() !=
-           builder.InheritedVariables();
-  }
+  return !base::ValuesEquivalent(
+      cached_matched_properties->computed_style->InheritedVariables(),
+      builder.InheritedVariables());
 }
 
 bool StyleResolver::CacheSuccess::LineHeightChanged(
@@ -2250,6 +2271,11 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     //
     // TODO(sesse): Why don't we have this problem when we use
     // a different initial style for <img>?
+    can_use_cache = false;
+  }
+  if (!state.GetElement().GetCascadeFilter().IsEmpty()) {
+    // The result of applying properties with the same matching declarations can
+    // be different if the cascade filter is different.
     can_use_cache = false;
   }
 
@@ -2347,8 +2373,7 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     const MatchResult& match_result) {
   state.LoadPendingResources();
 
-  // NOTE: We replace everything that isn't a full cache hit (unless the
-  // CSSMPCImprovements runtime flag has been disabled). There are cases
+  // NOTE: We replace everything that isn't a full cache hit. There are cases
   // where this would be bad (e.g., every other element we style with the same
   // key has a different parent computed style), but it seems a much more common
   // case, if we don't replace elements giving partial hits, is that a
@@ -2356,9 +2381,7 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
   // from there because it's never replaced. (Or, similarly, a partial
   // hit where we have to reapply the inherited properties, or where we trash
   // the “partner cache” in StyleInheritedVariables.)
-  if ((RuntimeEnabledFeatures::CSSMPCImprovementsEnabled() ||
-       !cache_success.cached_matched_properties) &&
-      cache_success.key.IsValid() &&
+  if (cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
@@ -2583,6 +2606,9 @@ void StyleResolver::ApplyPropertiesFromCascade(StyleResolverState& state,
     old_style = state.StyleBuilder().CloneStyle();
   }
 
+  // Note: this applies the same filter to pseudo elements as its originating
+  // element since state.GetElement() returns the originating element when
+  // resolving style for pseudo elements.
   CascadeFilter filter = state.GetElement().GetCascadeFilter();
 
   // In order to use-count whether or not legacy overlapping properties

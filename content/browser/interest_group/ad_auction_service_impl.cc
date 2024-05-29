@@ -27,7 +27,6 @@
 #include "base/types/expected.h"
 #include "base/uuid.h"
 #include "components/aggregation_service/aggregation_coordinator_utils.h"
-#include "components/aggregation_service/features.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
@@ -200,15 +199,6 @@ void AdAuctionServiceImpl::JoinInterestGroup(
   base::Time max_expiry = base::Time::Now() + kMaxExpiry;
   if (updated_group.expiry > max_expiry) {
     updated_group.expiry = max_expiry;
-  }
-
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kPrivateAggregationApiMultipleCloudProviders) ||
-      !base::FeatureList::IsEnabled(
-          aggregation_service::kAggregationServiceMultipleCloudProviders)) {
-    // Override with the default if a non-default coordinator is specified when
-    // the feature is disabled.
-    updated_group.aggregation_coordinator_origin = std::nullopt;
   }
 
   if (updated_group.aggregation_coordinator_origin &&
@@ -592,17 +582,20 @@ void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
     }
   }
 
-  // If the interest group API is not allowed for this origin do nothing.
-  if (!IsInterestGroupAPIAllowed(
-          ContentBrowserClient::InterestGroupApiOperation::kSell, seller)) {
-    std::move(callback).Run({}, {}, "API not allowed for this origin");
-    return;
-  }
-
   if (!IsPermissionPolicyEnabledAndWarnIfNeeded(
           blink::mojom::PermissionsPolicyFeature::kRunAdAuction,
           "getInterestGroupAdAuctionData")) {
     ReportBadMessageAndDeleteThis("Unexpected request");
+    return;
+  }
+
+  // If the interest group API is not allowed for this origin do nothing.
+  bool api_allowed = IsInterestGroupAPIAllowed(
+      ContentBrowserClient::InterestGroupApiOperation::kSell, seller);
+  base::UmaHistogramBoolean(
+      "Ads.InterestGroup.ServerAuction.Request.APIAllowed", api_allowed);
+  if (!api_allowed) {
+    std::move(callback).Run({}, {}, "API not allowed for this origin");
     return;
   }
 

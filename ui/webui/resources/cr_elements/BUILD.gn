@@ -36,7 +36,8 @@ build_webui("build") {
       "cr_radio_button/cr_radio_button_mixin.ts",
       "cr_radio_button/cr_radio_button_mixin_lit.ts",
       "cr_ripple/cr_ripple_mixin.ts",
-      "cr_scrollable_mixin.ts",
+      "cr_scroll_observer_mixin.ts",
+      "cr_scroll_observer_mixin_lit.ts",
       "cr_search_field/cr_search_field_mixin.ts",
       "cr_search_field/cr_search_field_mixin_lit.ts",
       "find_shortcut_mixin.ts",
@@ -207,6 +208,7 @@ build_webui("build") {
 
   html_to_wrapper_template = "detect"
 
+  ts_tsconfig_base = "//tools/typescript/tsconfig_base_lit.json"
   ts_out_dir = "$root_gen_dir/ui/webui/resources/tsc/cr_elements"
   ts_composite = true
   ts_deps = [ "../js:build_ts" ]

@@ -5,10 +5,14 @@
 // clang-format off
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
+import 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 
+import {CrLitElement, html} from 'chrome://resources/lit/v3_0/lit.rollup.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import type {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
+import type {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 import {keyDownOn, keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertFalse, assertNotEquals, assertNotReached, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
@@ -331,6 +335,67 @@ suite('cr-dialog', function() {
     assertEquals(button, document.activeElement);
   });
 
+  // Test that a cr-input[autofocus] is picked up by the browser when residing
+  // within a <cr-dialog show-on-attach> which itself resides in a conditional
+  // Lit template. Regression test for crbug/341327469.
+  test('FocusesCrLitElementsWithAutofocus', async function() {
+    class TestElement extends CrLitElement {
+      static get is() {
+        return 'test-element';
+      }
+
+      override render() {
+        // clang-format off
+        return html`
+          ${this.showDialog ? html`
+            <cr-dialog show-on-attach>
+              <div slot="title">title</div>
+              <div slot="body">
+                <cr-input ?autofocus="${this.autofocusCrInput}"></cr-input>
+                <cr-textarea ?autofocus="${this.autofocusCrTextarea}">
+                </cr-textarea>
+              </div>
+            </cr-dialog>` : ''}`;
+        // clang-format on
+      }
+
+      static override get properties() {
+        return {
+          showDialog: {type: Boolean},
+          autofocusCrInput: {type: Boolean},
+          autofocusCrTextarea: {type: Boolean},
+        };
+      }
+
+      showDialog: boolean = false;
+      autofocusCrInput: boolean = false;
+      autofocusCrTextarea: boolean = false;
+    }
+
+    customElements.define(TestElement.is, TestElement);
+
+    async function assertAutofocus(useTextarea: boolean) {
+      document.body.innerHTML = window.trustedTypes!.emptyHTML;
+      const element = document.createElement('test-element') as TestElement;
+      useTextarea ? element.autofocusCrTextarea = true :
+                    element.autofocusCrInput = true;
+      const whenOpen = eventToPromise('cr-dialog-open', document.body);
+      document.body.appendChild(element);
+      element.showDialog = true;
+      await whenOpen;
+
+      const child = element.shadowRoot!.querySelector(
+          useTextarea ? 'cr-textarea' : 'cr-input')!;
+      assertEquals(
+          useTextarea ? (child as CrTextareaElement).$.input :
+                        (child as CrInputElement).inputElement,
+          getDeepActiveElement());
+    }
+
+    await assertAutofocus(/*useTextarea=*/ false);
+    await assertAutofocus(/*useTextarea=*/ true);
+  });
+
   // Ensuring that intersectionObserver does not fire any callbacks before the
   // dialog has been opened.
   test('body scrollable border not added before modal shown', function() {
@@ -370,16 +435,22 @@ suite('cr-dialog', function() {
     const bodyContainer =
         dialog.shadowRoot!.querySelector<HTMLElement>('.body-container');
     assertTrue(!!bodyContainer);
-    const topShadow =
-        dialog.shadowRoot!.querySelector('#cr-container-shadow-top');
+    const topShadow = dialog.shadowRoot!.querySelector<HTMLElement>(
+        '#cr-container-shadow-top');
     assertTrue(!!topShadow);
-    const bottomShadow =
-        dialog.shadowRoot!.querySelector('#cr-container-shadow-bottom');
+    const bottomShadow = dialog.shadowRoot!.querySelector<HTMLElement>(
+        '#cr-container-shadow-bottom');
     assertTrue(!!bottomShadow);
 
     dialog.showModal();  // Attach the dialog for the first time here.
 
     let observerCount = 0;
+
+    function hasTransparentBorder(element: HTMLElement): boolean {
+      const style = element.computedStyleMap().get('border-bottom-color') as
+          CSSStyleValue;
+      return style.toString() === 'rgba(0, 0, 0, 0)';
+    }
 
     // Needs to setup the observer before attaching, since InteractionObserver
     // calls callback before MutationObserver does.
@@ -392,25 +463,24 @@ suite('cr-dialog', function() {
       observerCount++;
       switch (observerCount) {
         case 1:  // Triggered when scrolled to bottom.
-          assertFalse(bottomShadow!.classList.contains('has-shadow'));
-          assertTrue(topShadow!.classList.contains('has-shadow'));
+          assertTrue(hasTransparentBorder(bottomShadow!));
+          assertFalse(hasTransparentBorder(topShadow!));
           bodyContainer!.scrollTop = 0;
           break;
         case 2:  // Triggered when scrolled back to top.
-          assertTrue(bottomShadow!.classList.contains('has-shadow'));
-          assertFalse(topShadow!.classList.contains('has-shadow'));
+          assertFalse(hasTransparentBorder(bottomShadow));
+          assertTrue(hasTransparentBorder(topShadow));
           bodyContainer!.scrollTop = 2;
           break;
         case 3:  // Triggered when finally scrolling to middle.
-          assertTrue(bottomShadow!.classList.contains('has-shadow'));
-          assertTrue(topShadow!.classList.contains('has-shadow'));
+          assertFalse(hasTransparentBorder(bottomShadow!));
+          assertFalse(hasTransparentBorder(topShadow!));
           observer.disconnect();
           done();
           break;
       }
     });
-    observer.observe(topShadow!, {attributes: true});
-    observer.observe(bottomShadow!, {attributes: true});
+    observer.observe(bodyContainer!, {attributes: true});
 
     // Height is normally set via CSS, but mixin doesn't work with innerHTML.
     bodyContainer!.style.height = '60px';  // Element has "min-height: 60px".

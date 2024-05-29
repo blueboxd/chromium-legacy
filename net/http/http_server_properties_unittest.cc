@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "net/http/http_server_properties.h"
 
 #include <memory>
@@ -76,7 +81,7 @@ namespace {
 HttpServerProperties::ServerInfoMapKey CreateSimpleKey(
     const url::SchemeHostPort& server) {
   return HttpServerProperties::ServerInfoMapKey(
-      server, net::NetworkAnonymizationKey(),
+      server, NetworkAnonymizationKey(),
       false /* use_network_anonymization_key */);
 }
 
@@ -1263,7 +1268,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
   impl_.SetAlternativeServices(http_server, NetworkAnonymizationKey(),
                                alternative_service_info_vector);
 
-  const net::HttpServerProperties::ServerInfoMap& map =
+  const HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
   auto it = map.begin();
   EXPECT_EQ(http_server, it->first.server);
@@ -1323,7 +1328,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   impl_.SetAlternativeServices(test_server, NetworkAnonymizationKey(),
                                alternative_service_info_vector);
 
-  const net::HttpServerProperties::ServerInfoMap& map =
+  const HttpServerProperties::ServerInfoMap& map =
       impl_.server_info_map_for_testing();
   auto it = map.begin();
   EXPECT_EQ(test_server, it->first.server);

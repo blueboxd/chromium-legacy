@@ -27,7 +27,6 @@
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
@@ -106,8 +105,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
       override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  IbanManager* GetIbanManager() override;
-  IbanAccessManager* GetIbanAccessManager() override;
   AutofillComposeDelegate* GetComposeDelegate() override;
   AutofillPlusAddressDelegate* GetPlusAddressDelegate() override;
   void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
@@ -141,15 +138,9 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::OnceClosure decline_virtual_card_callback) override;
   payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
       override;
-  void ShowMandatoryReauthOptInPrompt(
-      base::OnceClosure accept_mandatory_reauth_callback,
-      base::OnceClosure cancel_mandatory_reauth_callback,
-      base::RepeatingClosure close_mandatory_reauth_callback) override;
   void ShowMandatoryReauthOptInConfirmation() override;
 #if !BUILDFLAG(IS_ANDROID)
   void HideVirtualCardEnrollBubbleAndIconIfVisible() override;
-  void UpdateWebauthnOfferDialogWithError() override;
-  bool CloseWebauthnDialog() override;
 #else  // !BUILDFLAG(IS_ANDROID)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const std::u16string&)> callback) override;
@@ -282,7 +273,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<FormDataImporter> form_data_importer_;
   std::unique_ptr<payments::MandatoryReauthManager>
       payments_mandatory_reauth_manager_;
-  std::unique_ptr<IbanAccessManager> iban_access_manager_;
 
   base::WeakPtr<AutofillSuggestionController> suggestion_controller_;
   FormInteractionsFlowId flow_id_;

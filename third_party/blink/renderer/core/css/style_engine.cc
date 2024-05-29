@@ -812,13 +812,13 @@ void StyleEngine::UpdateCounters(const Element& element,
       ng_list_item->OrdinalValueChanged();
     } else if (auto* inline_list_item =
                    DynamicTo<LayoutInlineListItem>(layout_object)) {
-      ng_list_item->Ordinal().MarkDirty();
+      inline_list_item->Ordinal().MarkDirty();
       inline_list_item->OrdinalValueChanged();
     }
-  }
-  if (element.GetLayoutObject() && element.GetComputedStyle() &&
-      !element.GetComputedStyle()->ContentBehavesAsNormal()) {
-    UpdateLayoutCounters(element, *element.GetLayoutObject(), context);
+    if (element.GetComputedStyle() &&
+        !element.GetComputedStyle()->ContentBehavesAsNormal()) {
+      UpdateLayoutCounters(element, *layout_object, context);
+    }
   }
   for (Node* child = LayoutTreeBuilderTraversal::FirstChild(element); child;
        child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
@@ -1558,9 +1558,8 @@ void StyleEngine::ClassChangedForElement(
 
   if (features.NeedsHasInvalidationForClassChange() &&
       PossiblyAffectingHasState(element)) {
-    unsigned changed_size = changed_classes.size();
-    for (unsigned i = 0; i < changed_size; ++i) {
-      if (features.NeedsHasInvalidationForClass(changed_classes[i])) {
+    for (const AtomicString& changed_class : changed_classes) {
+      if (features.NeedsHasInvalidationForClass(changed_class)) {
         InvalidateChangedElementAffectedByLogicalCombinationsInHas(
             element, /* for_element_affected_by_pseudo_in_has */ false);
         InvalidateAncestorsOrSiblingsAffectedByHas(
@@ -1576,10 +1575,9 @@ void StyleEngine::ClassChangedForElement(
   }
 
   InvalidationLists invalidation_lists;
-  unsigned changed_size = changed_classes.size();
-  for (unsigned i = 0; i < changed_size; ++i) {
+  for (const AtomicString& changed_class : changed_classes) {
     features.CollectInvalidationSetsForClass(invalidation_lists, element,
-                                             changed_classes[i]);
+                                             changed_class);
   }
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
@@ -1614,14 +1612,14 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
   InvalidationLists invalidation_lists;
   bool affecting_has_state = false;
 
-  for (unsigned i = 0; i < new_classes.size(); ++i) {
+  for (const AtomicString& new_class : new_classes) {
     bool found = false;
-    for (unsigned j = 0; j < old_classes.size(); ++j) {
-      if (new_classes[i] == old_classes[j]) {
+    for (unsigned i = 0; i < old_classes.size(); ++i) {
+      if (new_class == old_classes[i]) {
         // Mark each class that is still in the newClasses so we can skip doing
         // an n^2 search below when looking for removals. We can't break from
         // this loop early since a class can appear more than once.
-        remaining_class_bits[j] = true;
+        remaining_class_bits[i] = true;
         found = true;
       }
     }
@@ -1629,10 +1627,10 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
     if (!found) {
       if (LIKELY(needs_schedule_invalidation)) {
         features.CollectInvalidationSetsForClass(invalidation_lists, element,
-                                                 new_classes[i]);
+                                                 new_class);
       }
       if (UNLIKELY(possibly_affecting_has_state)) {
-        if (features.NeedsHasInvalidationForClass(new_classes[i])) {
+        if (features.NeedsHasInvalidationForClass(new_class)) {
           affecting_has_state = true;
           possibly_affecting_has_state = false;  // Clear to skip check
         }
@@ -3253,22 +3251,23 @@ StyleRuleFontPaletteValues* StyleEngine::FontPaletteValuesForNameAndFamily(
 
 DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
   if (!environment_variables_) {
-    environment_variables_ = DocumentStyleEnvironmentVariables::Create(
-        StyleEnvironmentVariables::GetRootInstance(), *document_);
+    environment_variables_ =
+        MakeGarbageCollected<DocumentStyleEnvironmentVariables>(
+            StyleEnvironmentVariables::GetRootInstance(), *document_);
   }
-  return *environment_variables_.get();
+  return *environment_variables_.Get();
 }
 
-scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
-  if (initial_data_) {
-    return initial_data_;
-  }
-  if (const PropertyRegistry* registry = document_->GetPropertyRegistry()) {
-    if (!registry->IsEmpty()) {
-      initial_data_ = StyleInitialData::Create(GetDocument(), *registry);
+StyleInitialData* StyleEngine::MaybeCreateAndGetInitialData() {
+  if (!initial_data_) {
+    if (const PropertyRegistry* registry = document_->GetPropertyRegistry()) {
+      if (!registry->IsEmpty()) {
+        initial_data_ =
+            MakeGarbageCollected<StyleInitialData>(GetDocument(), *registry);
+      }
     }
   }
-  return initial_data_;
+  return initial_data_.Get();
 }
 
 bool StyleEngine::RecalcHighlightStylesForContainer(Element& container) {
@@ -4286,6 +4285,8 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(font_palette_values_rule_map_);
   visitor->Trace(user_counter_style_map_);
   visitor->Trace(user_cascade_layer_map_);
+  visitor->Trace(environment_variables_);
+  visitor->Trace(initial_data_);
   visitor->Trace(inspector_style_sheet_);
   visitor->Trace(document_style_sheet_collection_);
   visitor->Trace(style_sheet_collection_map_);

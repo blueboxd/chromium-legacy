@@ -8325,6 +8325,27 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="EditingTime">
+    <summary>
+      Number of seconds the user spent editing the field. Includes time between
+      key presses, up to 5 seconds each. Bucketed using
+      GetExponentialBucketMinForUserTiming().
+    </summary>
+  </metric>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field. This is the hash identifier used to denote
+      this field. See components/autofill/core/common/signatures_util.cc for
+      more details.
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form. This is the hash identifier used to denote this
+      form. See components/autofill/core/common/signatures_util.cc for more
+      details.
+    </summary>
+  </metric>
   <metric name="IsAutofillFieldType" enum="Boolean">
     <summary>
       Whether the field is detected and supported by Autofill.
@@ -20579,6 +20600,13 @@ be describing additional metrics about the same event.
     <summary>
       Records the outcome of a password form submission.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Submission.SubmittedFormType2" enum="PasswordFormType2">
     <summary>
@@ -22953,6 +22981,20 @@ be describing additional metrics about the same event.
       content::PreloadingPredictor or ChromePreloadingPredictor.
     </summary>
   </metric>
+  <metric name="SamplingAmount">
+    <summary>
+      Indicates whether the number of preloading predictions for the associated
+      page was over a limit and needed to be downsampled. All events for a given
+      page logged at the same time have the same SamplingAmount. The value is
+      the exponentially bucketed value of (1,000,000 - (1,000,000 *
+      sampling_rate)). The multiplication by 1,000,000 is because we cannot log
+      floating point values in UKM, and we have larger values indicate more
+      sampling so that a lack of sampling can be unambiguous by having its own
+      bucket. For example, if the number of predictions was under the limit and
+      no sampling was done, then the value would be 0. If the number of
+      predictions was double the limit, the value would be 500,000.
+    </summary>
+  </metric>
   <metric name="TimeToNextNavigation">
     <summary>
       The amount of time the prediction took to reach the next navigation, in
@@ -22990,6 +23032,20 @@ be describing additional metrics about the same event.
     <summary>
       The type of preloading predictor which made the preloading prediction.
       Values are from content::PreloadingPredictor or ChromePreloadingPredictor.
+    </summary>
+  </metric>
+  <metric name="SamplingAmount">
+    <summary>
+      Indicates whether the number of preloading predictions for the associated
+      page was over a limit and needed to be downsampled. All events for a given
+      page logged at the same time have the same SamplingAmount. The value is
+      the exponentially bucketed value of (1,000,000 - (1,000,000 *
+      sampling_rate)). The multiplication by 1,000,000 is because we cannot log
+      floating point values in UKM, and we have larger values indicate more
+      sampling so that a lack of sampling can be unambiguous by having its own
+      bucket. For example, if the number of predictions was under the limit and
+      no sampling was done, then the value would be 0. If the number of
+      predictions was double the limit, the value would be 500,000.
     </summary>
   </metric>
   <metric name="TimeToNextNavigation">
@@ -24823,6 +24879,14 @@ be describing additional metrics about the same event.
       The result of the router evaluation of the Static Routing API. This
       indicates which source type is specified to get the resource. This will be
       recorded only when the router has matched the incoming resource.
+    </summary>
+  </metric>
+  <metric name="RouterEvaluationTime">
+    <summary>
+      Time spent for the SW static routing API router evaluation to handle a
+      request. Recorded when the service worker has associated routing info, and
+      the browser or renderer is processing requests. Duration in units of micro
+      seconds.
     </summary>
   </metric>
   <metric name="RouterRuleCount">

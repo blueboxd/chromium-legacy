@@ -1450,7 +1450,7 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeInline(void* object) {
   // Almost all calls to FreeNoNooks() will end up writing to |*object|, the
   // only cases where we don't would be delayed free() in PCScan, but |*object|
   // can be cold in cache.
-  PA_PREFETCH(object);
+  PA_PREFETCH_FOR_WRITE(object);
 
   // On Android, malloc() interception is more fragile than on other
   // platforms, as we use wrapped symbols. However, the pools allow us to
@@ -1603,7 +1603,10 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooksImmediate(
         slot_start, slot_span->bucket->slot_size);
     // If there are no more references to the allocation, it can be freed
     // immediately. Otherwise, defer the operation and zap the memory to turn
-    // potential use-after-free issues into unexploitable crashes.
+    // potential use-after-free issues into unexploitable crashes. Zapping must
+    // complete before we clear kMemoryHeldByAllocatorBit in
+    // ReleaseFromAllocator(), otherwise another thread may allocate and start
+    // using the slot in the middle of zapping.
     if (PA_UNLIKELY(!ref_count->IsAliveWithNoKnownRefs())) {
       QuarantineForBrp(slot_span, object);
     }

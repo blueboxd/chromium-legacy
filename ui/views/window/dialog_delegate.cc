@@ -98,7 +98,6 @@ Widget* DialogDelegate::CreateDialogWidget(
     std::unique_ptr<WidgetDelegate> delegate,
     gfx::NativeWindow context,
     gfx::NativeView parent) {
-  DCHECK(delegate->owned_by_widget());
   return CreateDialogWidget(delegate.release(), context, parent);
 }
 
@@ -119,7 +118,8 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
     gfx::NativeWindow context,
     gfx::NativeView parent,
     const gfx::Rect& bounds) {
-  views::Widget::InitParams params;
+  views::Widget::InitParams params(
+      Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
   params.delegate = delegate;
   params.bounds = bounds;
   DialogDelegate* dialog = delegate->AsDialogDelegate();
@@ -543,9 +543,7 @@ std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegateView:
 
-DialogDelegateView::DialogDelegateView() {
-  SetOwnedByWidget(true);
-}
+DialogDelegateView::DialogDelegateView() = default;
 
 DialogDelegateView::~DialogDelegateView() = default;
 

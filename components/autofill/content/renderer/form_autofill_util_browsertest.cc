@@ -198,8 +198,7 @@ class FormAutofillUtilsTest : public content::RenderViewTest {
   FormAutofillUtilsTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {features::kAutofillReplaceCachedWebElementsByRendererIds,
-         features::kAutofillEnableSelectList},
+        {features::kAutofillReplaceCachedWebElementsByRendererIds},
         /*disabled_features=*/{});
   }
   ~FormAutofillUtilsTest() override = default;
@@ -224,9 +223,9 @@ TEST_F(FormAutofillUtilsTest, WebFormElementToFormData_IdAndNames) {
       GetMainFrame()->GetDocument(),
       GetFormElementById(GetMainFrame()->GetDocument(), "form-id"),
       field_data_manager(), {ExtractOption::kOptions});
-  EXPECT_EQ(form_data.name, u"form-name");
-  EXPECT_EQ(form_data.id_attribute, u"form-id");
-  EXPECT_EQ(form_data.name_attribute, u"form-name");
+  EXPECT_EQ(form_data.name(), u"form-name");
+  EXPECT_EQ(form_data.id_attribute(), u"form-id");
+  EXPECT_EQ(form_data.name_attribute(), u"form-name");
   ASSERT_EQ(form_data.fields.size(), 1u);
   EXPECT_EQ(form_data.fields[0].name(), u"input-name");
   EXPECT_EQ(form_data.fields[0].id_attribute(), u"input-id");
@@ -828,7 +827,7 @@ TEST_F(FormAutofillUtilsTest, IsActionEmptyFalse) {
   FormData form_data = *ExtractFormData(doc, web_form, field_data_manager(),
                                         {ExtractOption::kValue});
 
-  EXPECT_FALSE(form_data.is_action_empty);
+  EXPECT_FALSE(form_data.is_action_empty());
 }
 
 TEST_F(FormAutofillUtilsTest, IsActionEmptyTrue) {
@@ -839,7 +838,7 @@ TEST_F(FormAutofillUtilsTest, IsActionEmptyTrue) {
   FormData form_data = *ExtractFormData(doc, web_form, field_data_manager(),
                                         {ExtractOption::kValue});
 
-  EXPECT_TRUE(form_data.is_action_empty);
+  EXPECT_TRUE(form_data.is_action_empty());
 }
 
 TEST_F(FormAutofillUtilsTest, ExtractBounds) {
@@ -1383,7 +1382,7 @@ TEST_P(FieldFramesTest, ExtractFieldsAndFrames) {
   ASSERT_TRUE(form_data);
 
   // Check that all fields and iframes were extracted.
-  EXPECT_EQ(form_data->fields.size() + form_data->child_frames.size(),
+  EXPECT_EQ(form_data->fields.size() + form_data->child_frames().size(),
             test_case.fields_and_frames.size());
 
   // Check that all fields were extracted. Do so by checking for each |field| in
@@ -1421,9 +1420,9 @@ TEST_P(FieldFramesTest, ExtractFieldsAndFrames) {
     SCOPED_TRACE(testing::Message() << "Checking the " << i
                                     << "th frame (id = " << frame.id << ")");
     auto is_empty = [](auto token) { return token.is_empty(); };
-    EXPECT_FALSE(absl::visit(is_empty, form_data->child_frames[i].token));
-    EXPECT_EQ(form_data->child_frames[i].token, GetFrameToken(doc, frame.id));
-    EXPECT_EQ(form_data->child_frames[i].predecessor, preceding_field_index);
+    EXPECT_FALSE(absl::visit(is_empty, form_data->child_frames()[i].token));
+    EXPECT_EQ(form_data->child_frames()[i].token, GetFrameToken(doc, frame.id));
+    EXPECT_EQ(form_data->child_frames()[i].predecessor, preceding_field_index);
     ++i;
   }
 }
@@ -1513,30 +1512,7 @@ INSTANTIATE_TEST_SUITE_P(
       return cases;
     }()));
 
-// FormAutofillUtilsTest subclass for testing with and without
-// features::kAutofillEnableSelectList feature enabled.
-class SelectListAutofillParamTest : public FormAutofillUtilsTest,
-                                    public testing::WithParamInterface<bool> {
- public:
-  SelectListAutofillParamTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kAutofillEnableSelectList, IsAutofillingSelectListEnabled());
-  }
-  ~SelectListAutofillParamTest() override = default;
-
-  bool IsAutofillingSelectListEnabled() const { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(FormAutofillUtilsTest,
-                         SelectListAutofillParamTest,
-                         ::testing::Bool());
-
-// Test that ExtractFormData() ignores <selectlist> if
-// features::kAutofillEnableSelectList is disabled.
-TEST_P(SelectListAutofillParamTest, WebFormElementToFormData) {
+TEST_F(FormAutofillUtilsTest, WebFormElementToFormData) {
   LoadHTML(R"(
     <form id='form'>
       <input id='input'>
@@ -1552,8 +1528,7 @@ TEST_P(SelectListAutofillParamTest, WebFormElementToFormData) {
   auto form_element = GetFormElementById(doc, "form");
   FormData form_data = *ExtractFormData(doc, form_element, field_data_manager(),
                                         /*extract_options=*/{});
-  EXPECT_EQ(form_data.fields.size(),
-            IsAutofillingSelectListEnabled() ? 2u : 1u);
+  EXPECT_EQ(form_data.fields.size(), 2u);
 
   {
     WebElement element = GetElementById(doc, "input");
@@ -1563,13 +1538,11 @@ TEST_P(SelectListAutofillParamTest, WebFormElementToFormData) {
                                       form_data.fields[0]));
   }
 
-  if (IsAutofillingSelectListEnabled()) {
-    WebElement element = GetElementById(doc, "selectlist");
-    ASSERT_FALSE(element.IsNull());
-    ASSERT_TRUE(element.IsFormControlElement());
-    EXPECT_TRUE(HaveSameFormControlId(element.To<WebFormControlElement>(),
-                                      form_data.fields[1]));
-  }
+  WebElement element = GetElementById(doc, "selectlist");
+  ASSERT_FALSE(element.IsNull());
+  ASSERT_TRUE(element.IsFormControlElement());
+  EXPECT_TRUE(HaveSameFormControlId(element.To<WebFormControlElement>(),
+                                    form_data.fields[1]));
 }
 
 // Tests that if the number of iframes exceeds kMaxExtractableChildFrames,
@@ -1598,7 +1571,7 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFramesIfTooManyIframes) {
     FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
                                           /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
-    EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
+    EXPECT_EQ(form_data.child_frames().size(), kMaxExtractableChildFrames);
   }
 
   // There may be multiple checks (e.g., == kMaxExtractableChildFrames, <=
@@ -1609,7 +1582,7 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFramesIfTooManyIframes) {
     FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
                                           /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
-    EXPECT_TRUE(form_data.child_frames.empty());
+    EXPECT_TRUE(form_data.child_frames().empty());
   }
 }
 
@@ -1639,7 +1612,7 @@ TEST_F(FormAutofillUtilsTest, ExtractNoFieldsOrFramesIfTooManyFields) {
     FormData form_data = *ExtractFormData(doc, form, field_data_manager(),
                                           /*extract_options=*/{});
     EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
-    EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
+    EXPECT_EQ(form_data.child_frames().size(), kMaxExtractableChildFrames);
   }
 
   // There may be multiple checks (e.g., == kMaxExtractableFields, <=
@@ -1963,9 +1936,9 @@ TEST_F(FormAutofillUtilsTest, FindFormForContentEditableSuccess) {
   std::optional<FormData> form = FindFormForContentEditable(content_editable);
   ASSERT_EQ(form->fields.size(), 1u);
   const FormFieldData& field = form->fields[0];
-  EXPECT_TRUE(form->renderer_id);
-  EXPECT_EQ(*form->renderer_id, *field.renderer_id());
-  EXPECT_EQ(form->renderer_id, field.host_form_id());
+  EXPECT_TRUE(form->renderer_id());
+  EXPECT_EQ(*form->renderer_id(), *field.renderer_id());
+  EXPECT_EQ(form->renderer_id(), field.host_form_id());
   EXPECT_EQ(field.parsed_autocomplete()->field_type, HtmlFieldType::kGivenName);
   EXPECT_EQ(field.name(), u"my-id");
   EXPECT_EQ(field.id_attribute(), u"my-id");
@@ -1992,9 +1965,9 @@ TEST_F(FormAutofillUtilsTest, FindFormForContentEditableAbridgedSuccess) {
   std::optional<FormData> form = FindFormForContentEditable(content_editable);
   ASSERT_EQ(form->fields.size(), 1u);
   const FormFieldData& field = form->fields[0];
-  EXPECT_TRUE(form->renderer_id);
-  EXPECT_EQ(*form->renderer_id, *field.renderer_id());
-  EXPECT_EQ(form->renderer_id, field.host_form_id());
+  EXPECT_TRUE(form->renderer_id());
+  EXPECT_EQ(*form->renderer_id(), *field.renderer_id());
+  EXPECT_EQ(form->renderer_id(), field.host_form_id());
   EXPECT_EQ(field.parsed_autocomplete()->field_type, HtmlFieldType::kGivenName);
   EXPECT_EQ(field.name(), u"my-id");
   EXPECT_EQ(field.id_attribute(), u"my-id");

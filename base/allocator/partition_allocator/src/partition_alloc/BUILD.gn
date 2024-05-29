@@ -2,15 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/config.gni")
-import("//build/config/cast.gni")
-import("//build/config/chromeos/ui_mode.gni")
-import("//build/config/compiler/compiler.gni")
-import("//build/config/dcheck_always_on.gni")
-import("//build/config/logging.gni")
-
 import("../../partition_alloc.gni")
 import("buildflag_header.gni")
+
+# //build_overrides/partition_alloc.gni should define partition_alloc_{
+# add,remove}_configs. But if not defined (e.g. the embedder misses the config),
+# define them here.
+if (!defined(partition_alloc_add_configs)) {
+  partition_alloc_add_configs = []
+}
+if (!defined(partition_alloc_remove_configs)) {
+  partition_alloc_remove_configs = []
+}
 
 # Add partition_alloc.gni and import it for partition_alloc configs.
 
@@ -87,19 +90,6 @@ config("wexit_time_destructors") {
   }
 }
 
-_remove_configs = []
-_add_configs = []
-if (!is_debug || partition_alloc_optimized_debug) {
-  _remove_configs += [ "//build/config/compiler:default_optimization" ]
-
-  # PartitionAlloc is relatively hot (>1% of cycles for users of CrOS).
-  # Use speed-focused optimizations for it.
-  _add_configs += [ "//build/config/compiler:optimize_speed" ]
-} else {
-  _remove_configs += [ "//build/config/compiler:default_optimization" ]
-  _add_configs += [ "//build/config/compiler:no_optimize" ]
-}
-
 source_set("build_config") {
   sources = [
     "build_config.h",
@@ -151,16 +141,10 @@ component("raw_ptr") {
   # See also: `partition_alloc_base/component_export.h`
   defines = [ "IS_RAW_PTR_IMPL" ]
 
-  configs -= _remove_configs
-  configs += _add_configs
+  configs -= partition_alloc_remove_configs
+  configs += partition_alloc_add_configs
   configs += [ ":dependants_extra_warnings" ]
 }
-
-# Enables compilation of the freelist dispatcher, which we'll use to
-# carry out runtime evaluation of PartitionAlloc's two freelist
-# implementations: the existing encoded-next freelist and the new
-# pool offset freelist. When false, the latter is not built.
-use_freelist_dispatcher = has_64_bit_pointers && false
 
 pa_buildflag_header("partition_alloc_buildflags") {
   header = "partition_alloc_buildflags.h"
@@ -232,6 +216,7 @@ pa_buildflag_header("partition_alloc_buildflags") {
 
     "FORWARD_THROUGH_MALLOC=$forward_through_malloc",
     "ASSERT_CPP_20=$assert_cpp20",
+    "IS_DEBUG=$is_debug",
   ]
 }
 
@@ -598,8 +583,8 @@ if (is_clang_or_gcc) {
       ]
     }
 
-    configs -= _remove_configs
-    configs += _add_configs
+    configs -= partition_alloc_remove_configs
+    configs += partition_alloc_add_configs
     configs += [ ":dependants_extra_warnings" ]
 
     # We want to be able to test pkey mode without access to the default pkey.
@@ -802,8 +787,8 @@ if (is_clang_or_gcc) {
       ]
     }
 
-    configs -= _remove_configs
-    configs += _add_configs
+    configs -= partition_alloc_remove_configs
+    configs += partition_alloc_add_configs
     configs += [ ":dependants_extra_warnings" ]
   }
 
@@ -820,8 +805,8 @@ if (is_clang_or_gcc) {
     ]
     frameworks = []
 
-    configs -= _remove_configs
-    configs += _add_configs
+    configs -= partition_alloc_remove_configs
+    configs += partition_alloc_add_configs
     configs += [ ":dependants_extra_warnings" ]
 
     shim_headers = []
@@ -881,7 +866,7 @@ if (is_clang_or_gcc) {
 
         # Do not compile with ARC because this target has to interface with
         # low-level Objective-C and having ARC would interfere.
-        configs -= [ "//build/config/compiler:enable_arc" ]
+        configs -= [ partition_alloc_enable_arc_config ]
       }
     }
     if (is_chromeos || is_linux) {

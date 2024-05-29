@@ -127,12 +127,14 @@ class SavedTabGroupModel {
                         const base::Uuid& tab_id,
                         int index);
 
-  // Attempts to merge the sync_specific with the local object that holds the
-  // same guid.
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeGroup(
-      const sync_pb::SavedTabGroupSpecifics& sync_specific);
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeTab(
-      const sync_pb::SavedTabGroupSpecifics& sync_specific);
+  // Attempts to merge the remote group metadata or tab with the local object
+  // that holds the same `guid`.
+  const SavedTabGroup* MergeRemoteGroupMetadata(const base::Uuid& guid,
+                                                const std::u16string& title,
+                                                TabGroupColorId color,
+                                                std::optional<size_t> position,
+                                                base::Time update_time);
+  const SavedTabGroupTab* MergeRemoteTab(const SavedTabGroupTab& remote_tab);
 
   // Changes the index of a given tab group by id. The new index provided is the
   // expected index after the group is removed. Notify local observers if the
@@ -141,13 +143,10 @@ class SavedTabGroupModel {
   void ReorderGroupLocally(const base::Uuid& id, int new_index);
   void ReorderGroupFromSync(const base::Uuid& id, int new_index);
 
-  // Loads the entries (a sync_pb::SavedTabGroupSpecifics can be a group or a
-  // tab) saved locally in the model type store (local storage) and attempts to
-  // reconstruct the model by matching groups with their tabs using their
-  // `group_id`'s. Note: Any tabs that do not have a matching group, will be
-  // returned to the bridge to keep track of.
-  std::vector<sync_pb::SavedTabGroupSpecifics> LoadStoredEntries(
-      std::vector<sync_pb::SavedTabGroupSpecifics> entries);
+  // Loads the model from the storage. `tabs` must have a corresponding group in
+  // `groups`.
+  void LoadStoredEntries(std::vector<SavedTabGroup> groups,
+                         std::vector<SavedTabGroupTab> tabs);
 
   // Functions that should be called when a SavedTabGroup's corresponding
   // TabGroup is closed or opened.

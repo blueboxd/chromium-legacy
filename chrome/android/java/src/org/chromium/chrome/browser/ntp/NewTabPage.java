@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
@@ -92,6 +91,7 @@ import org.chromium.chrome.browser.tasks.HomeSurfaceTracker;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.native_page.BasicSmoothTransitionDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
@@ -190,6 +190,7 @@ public class NewTabPage
     @Nullable private final OneshotSupplier<ModuleRegistry> mModuleRegistrySupplier;
 
     @Nullable private SearchResumptionModuleCoordinator mSearchResumptionModuleCoordinator;
+    private SmoothTransitionDelegate mSmoothTransitionDelegate;
 
     @Override
     public void onControlsOffsetChanged(
@@ -512,6 +513,7 @@ public class NewTabPage
         getView()
                 .addOnAttachStateChangeListener(
                         new View.OnAttachStateChangeListener() {
+
                             @Override
                             public void onViewAttachedToWindow(View view) {
                                 updateMargins();
@@ -1170,18 +1172,16 @@ public class NewTabPage
                                         mNewTabPageLayout.findViewById(
                                                 R.id.tab_switcher_module_container_stub))
                                 .inflate();
-        updateSingleTabCardContainerMargins(mSingleTabCardContainer);
         mSingleTabSwitcherCoordinator =
                 new SingleTabSwitcherCoordinator(
                         mActivity,
                         mSingleTabCardContainer,
-                        mActivityLifecycleDispatcher,
                         mTabModelSelector,
                         true,
                         mIsTablet,
-                        isScrollableMvtEnabled(mContext),
                         mostRecentTab,
                         this::onSingleTabCardClicked,
+                        /* seeMoreLinkClickedCallback= */ null,
                         () -> mSnapshotSingleTabCardChanged = true,
                         mTabContentManagerSupplier.get()
                         /* tabContentManager= */ ,
@@ -1202,7 +1202,6 @@ public class NewTabPage
                                         mNewTabPageLayout.findViewById(
                                                 R.id.home_modules_recycler_view_stub))
                                 .inflate();
-        updateSingleTabCardContainerMargins(mHomeModulesContainer);
         ObservableSupplier<Profile> profileSupplier =
                 new ObservableSupplierImpl<>(mTab.getProfile());
         mHomeModulesCoordinator =
@@ -1236,26 +1235,6 @@ public class NewTabPage
             // Updates the mHomeSurfaceTracker since the Tab of the NTP is closed.
             mHomeSurfaceTracker.updateHomeSurfaceAndTrackingTabs(null, null);
         }
-    }
-
-    /** Updates the margins for the single tab card container based on the type of MV tiles. */
-    private void updateSingleTabCardContainerMargins(ViewGroup view) {
-        if (!mIsNtpAsHomeSurfaceEnabled || mIsSurfacePolishEnabled) return;
-
-        MarginLayoutParams marginLayoutParams = (MarginLayoutParams) view.getLayoutParams();
-
-        marginLayoutParams.topMargin =
-                -mNewTabPageLayout
-                        .getResources()
-                        .getDimensionPixelSize(R.dimen.ntp_single_tab_card_top_margin);
-        marginLayoutParams.bottomMargin =
-                mNewTabPageLayout
-                                .getResources()
-                                .getDimensionPixelSize(R.dimen.ntp_single_tab_card_bottom_margin)
-                        - mNewTabPageLayout
-                                .getResources()
-                                .getDimensionPixelSize(
-                                        R.dimen.feed_header_tab_list_view_top_bottom_margin);
     }
 
     static boolean isScrollableMvtEnabled(Context context) {
@@ -1323,11 +1302,6 @@ public class NewTabPage
     }
 
     @Override
-    public boolean showScrollableMvt() {
-        return isScrollableMvtEnabled(mContext);
-    }
-
-    @Override
     public int getStartMargin() {
         boolean isInNarrowWindowOnTablet =
                 mIsTablet
@@ -1335,7 +1309,7 @@ public class NewTabPage
                                 mIsTablet, mFeedSurfaceProvider.getUiConfig());
         int marginResourceId =
                 isInNarrowWindowOnTablet
-                        ? R.dimen.search_box_lateral_margin_polish
+                        ? R.dimen.search_box_lateral_margin
                         : R.dimen.mvt_container_lateral_margin_polish;
         return mContext.getResources().getDimensionPixelSize(marginResourceId);
     }
@@ -1355,5 +1329,17 @@ public class NewTabPage
         // Can only show a local tab to resume if we we have a tracked tab. The presence of the
         // local tab to resume module is effectively what being a home surface is.
         return mMostRecentTabSupplier.hasValue();
+    }
+
+    @Override
+    public SmoothTransitionDelegate enableSmoothTransition() {
+        if (mSmoothTransitionDelegate == null) {
+            mSmoothTransitionDelegate = new BasicSmoothTransitionDelegate(getView());
+        }
+        return mSmoothTransitionDelegate;
+    }
+
+    public SmoothTransitionDelegate getSmoothTransitionDelegateForTesting() {
+        return mSmoothTransitionDelegate;
     }
 }

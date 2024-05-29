@@ -57,13 +57,6 @@
       depends_on: []
     },
     {
-      name: "FontDisplay",
-      document_policy_name: "font-display-late-swap",
-      value_type: "Bool",
-      default_value: "true",
-      depends_on: ["ExperimentalPolicies"],
-    },
-    {
       // The ForceLoadAtTop policy lets pages opt-out of scrolling that
       // automatically happens on page load. This includes fragment scrolls,
       // text fragment scrolls (i.e. this provides an opt-out for the Scroll To
@@ -72,13 +65,6 @@
       document_policy_name: "force-load-at-top",
       value_type: "Bool",
       default_value: "false",
-    },
-    {
-      name: "OversizedImages",
-      document_policy_name: "oversized-images",
-      value_type: "DecDouble",
-      default_value: "max",
-      depends_on: ["ExperimentalPolicies"],
     },
     {
       name: "JSProfiling",

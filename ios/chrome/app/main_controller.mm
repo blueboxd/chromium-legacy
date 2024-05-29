@@ -26,7 +26,6 @@
 #import "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #import "components/component_updater/url_param_filter_remover.h"
 #import "components/content_settings/core/browser/host_content_settings_map.h"
-#import "components/enterprise/idle/idle_features.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/metrics/metrics_pref_names.h"
@@ -256,7 +255,7 @@ class MainControllerAuthenticationServiceDelegate
  public:
   MainControllerAuthenticationServiceDelegate(
       ChromeBrowserState* browser_state,
-      id<BrowsingDataCommands> dispatcher);
+      id<BrowsingDataCommands> browsing_data_handler);
 
   MainControllerAuthenticationServiceDelegate(
       const MainControllerAuthenticationServiceDelegate&) = delete;
@@ -266,29 +265,49 @@ class MainControllerAuthenticationServiceDelegate
   ~MainControllerAuthenticationServiceDelegate() override;
 
   // AuthenticationServiceDelegate implementation.
-  void ClearBrowsingData(ProceduralBlock completion) override;
+  void ClearBrowsingData(base::OnceClosure completion) override;
+  void ClearBrowsingDataForSignedinPeriod(
+      base::OnceClosure completion) override;
 
  private:
   raw_ptr<ChromeBrowserState> browser_state_ = nullptr;
-  __weak id<BrowsingDataCommands> dispatcher_ = nil;
+  __weak id<BrowsingDataCommands> browsing_data_handler_ = nil;
 };
 
 MainControllerAuthenticationServiceDelegate::
     MainControllerAuthenticationServiceDelegate(
         ChromeBrowserState* browser_state,
-        id<BrowsingDataCommands> dispatcher)
-    : browser_state_(browser_state), dispatcher_(dispatcher) {}
+        id<BrowsingDataCommands> browsing_data_handler)
+    : browser_state_(browser_state),
+      browsing_data_handler_(browsing_data_handler) {}
 
 MainControllerAuthenticationServiceDelegate::
     ~MainControllerAuthenticationServiceDelegate() = default;
 
 void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
-    ProceduralBlock completion) {
-  [dispatcher_
+    base::OnceClosure completion) {
+  [browsing_data_handler_
       removeBrowsingDataForBrowserState:browser_state_
                              timePeriod:browsing_data::TimePeriod::ALL_TIME
                              removeMask:BrowsingDataRemoveMask::REMOVE_ALL
-                        completionBlock:completion];
+                        completionBlock:CallbackToBlock(std::move(completion))];
+}
+
+void MainControllerAuthenticationServiceDelegate::
+    ClearBrowsingDataForSignedinPeriod(base::OnceClosure completion) {
+  base::Time last_signin_timestamp =
+      browser_state_->GetPrefs()->GetTime(prefs::kLastSigninTimestamp);
+
+  // If `kLastSigninTimestamp` has the default base::Time() value, data will be
+  // cleared for all time, which is intended to happen in this case.
+  [browsing_data_handler_
+      removeBrowsingDataInRangeForBrowserState:browser_state_
+                                     startTime:last_signin_timestamp
+                                       endTime:base::Time::Now()
+                                    removeMask:BrowsingDataRemoveMask::
+                                                   REMOVE_ALL_FOR_TIME_PERIOD
+                               completionBlock:base::CallbackToBlock(
+                                                   std::move(completion))];
 }
 
 }  // namespace
@@ -650,15 +669,13 @@ SEQUENCE_CHECKER(_sequenceChecker);
   [self scheduleLowPriorityStartupTasks];
 
   // Run after UI created to avoid trying to update UI before it is available.
-  if (base::FeatureList::IsEnabled(enterprise_idle::kIdleTimeout)) {
-    std::vector<ChromeBrowserState*> loadedBrowserStates =
-        GetApplicationContext()
-            ->GetChromeBrowserStateManager()
-            ->GetLoadedBrowserStates();
-    for (ChromeBrowserState* browserState : loadedBrowserStates) {
-      enterprise_idle::IdleServiceFactory::GetForBrowserState(browserState)
-          ->OnApplicationWillEnterForeground();
-    }
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    enterprise_idle::IdleServiceFactory::GetForBrowserState(browserState)
+        ->OnApplicationWillEnterForeground();
   }
 
   // Now that everything is properly set up, run the tests.
@@ -849,7 +866,7 @@ SEQUENCE_CHECKER(_sequenceChecker);
 }
 
 // TODO(crbug.com/325614311): Get rid of this method/property completely.
-- (id<BrowserProviderInterface>)browserProviderInterface {
+- (id<BrowserProviderInterface>)browserProviderInterfaceDoNotUse {
   if (self.appState.foregroundActiveScene) {
     return self.appState.foregroundActiveScene.browserProviderInterface;
   }

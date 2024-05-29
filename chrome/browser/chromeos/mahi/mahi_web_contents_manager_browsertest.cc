@@ -10,6 +10,7 @@
 
 #include "base/callback_list.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -33,8 +34,10 @@
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -63,6 +66,8 @@ constexpr char16_t kQuestion[] = u"dump question";
 // Fake web content.
 constexpr char kUrl[] = "data:text/html,<p>kittens!</p>";
 
+constexpr char kPDFFilename[] = "paragraphs-and-heading-untagged.pdf";
+
 }  // namespace
 
 class MahiWebContentsManagerBrowserTest : public InProcessBrowserTest {
@@ -75,7 +80,15 @@ class MahiWebContentsManagerBrowserTest : public InProcessBrowserTest {
   ~MahiWebContentsManagerBrowserTest() override = default;
 
   // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+  }
+
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
+
     InProcessBrowserTest::SetUpOnMainThread();
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -134,6 +147,16 @@ class MahiWebContentsManagerBrowserTest : public InProcessBrowserTest {
         ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/")));
     // Then navigates to the target page.
     EXPECT_TRUE(AddTabAtIndex(0, GURL(kUrl), ui::PAGE_TRANSITION_TYPED));
+  }
+
+  void CreateWebContentWithPDF() {
+    GURL pdf_url = embedded_test_server()->GetURL(
+        base::StrCat({"/pdf/accessibility/", kPDFFilename}));
+
+    // Simulates chrome open.
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/")));
+    EXPECT_TRUE(AddTabAtIndex(0, pdf_url, ui::PAGE_TRANSITION_TYPED));
   }
 
   void ExpectOnContextMenuClicked(bool success, ButtonType button_type) {
@@ -205,6 +228,47 @@ IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest,
             fake_mahi_web_contents_manager_->focused_web_content_state().url);
   EXPECT_EQ(u"",
             fake_mahi_web_contents_manager_->focused_web_content_state().title);
+}
+
+IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest,
+                       PDFContentIsDetectedCorrectly) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If `MahiBrowserDelegate` interface is not available on ash-chrome, this
+  // test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  base::HistogramTester histogram;
+
+  base::RunLoop run_loop;
+  // Expects that `MahiBrowserDelegate` should receive the focused page change.
+  EXPECT_CALL(browser_delegate_, OnFocusedPageChanged)
+      // When browser opens with `chrome://newtab`, we should be notified to
+      // clear the previous focus info.
+      .WillOnce([](crosapi::mojom::MahiPageInfoPtr page_info,
+                   base::OnceCallback<void(bool)> callback) {
+        EXPECT_EQ(GURL(), page_info->url);
+        EXPECT_FALSE(page_info->IsDistillable.has_value());
+        std::move(callback).Run(/*success=*/true);
+      })
+      // When a PDF is opened, the `MahiBrowserDelegate` should be
+      // notified without the distillability check.
+      .WillOnce([&run_loop, &histogram](
+                    crosapi::mojom::MahiPageInfoPtr page_info,
+                    base::OnceCallback<void(bool)> callback) {
+        EXPECT_TRUE(page_info->IsDistillable.has_value());
+        EXPECT_EQ(page_info->url.ExtractFileName(), kPDFFilename);
+        std::move(callback).Run(/*success=*/true);
+        run_loop.Quit();
+        // Since there is no distillability check for PDFs, triggering metric is
+        // not logged.
+        histogram.ExpectTotalCount(kMahiContentExtractionTriggeringLatency, 0);
+      });
+
+  CreateWebContentWithPDF();
+  run_loop.Run();
+  EXPECT_TRUE(fake_mahi_web_contents_manager_->is_pdf_focused_web_contents());
 }
 
 IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest,
@@ -318,6 +382,54 @@ IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest, GetPageContents) {
             fake_mahi_web_contents_manager_->focused_web_content_state().url);
   EXPECT_EQ(u"data:text/html,<p>kittens!</p>",
             fake_mahi_web_contents_manager_->focused_web_content_state().title);
+}
+
+IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest,
+                       DISABLED_GetPDFContents) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // If `MahiBrowserDelegate` interface is not available on ash-chrome, this
+  // test suite will no-op.
+  if (!IsServiceAvailable()) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Initially, the focused state and the requested state should be different.
+  base::UnguessableToken focused_page_id =
+      fake_mahi_web_contents_manager_->focused_web_content_state().page_id;
+
+  // First create a web page so there is a place to extract the contents from.
+  base::RunLoop run_loop;
+  EXPECT_CALL(browser_delegate_, OnFocusedPageChanged)
+      .WillOnce([](crosapi::mojom::MahiPageInfoPtr page_info,
+                   base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(/*success=*/true);
+      })
+      .WillOnce([&run_loop, &focused_page_id, this](
+                    crosapi::mojom::MahiPageInfoPtr page_info,
+                    base::OnceCallback<void(bool)> callback) {
+        EXPECT_TRUE(page_info->IsDistillable.has_value());
+        EXPECT_TRUE(page_info->IsDistillable.value());
+        EXPECT_EQ(page_info->url.ExtractFileName(), kPDFFilename);
+        std::move(callback).Run(/*success=*/true);
+
+        focused_page_id = page_info->page_id;
+        // Simulate a request to extract content from client.
+        fake_mahi_web_contents_manager_->RequestContentFromPage(
+            focused_page_id,
+            base::BindLambdaForTesting(
+                [&](crosapi::mojom::MahiPageContentPtr page_content) {
+                  run_loop.Quit();
+                }));
+      });
+  CreateWebContentWithPDF();
+
+  EXPECT_EQ(
+      focused_page_id,
+      fake_mahi_web_contents_manager_->focused_web_content_state().page_id);
+  EXPECT_EQ(fake_mahi_web_contents_manager_->focused_web_content_state()
+                .url.ExtractFileName(),
+            kPDFFilename);
 }
 
 IN_PROC_BROWSER_TEST_F(MahiWebContentsManagerBrowserTest, ContextMenuMetrics) {

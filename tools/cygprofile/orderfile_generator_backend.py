@@ -227,6 +227,8 @@ class ClankCompiler:
     self._webview_target, webview_apk = self._GetWebViewTargetAndApk(
         native_library_build_variant, options.public, options.arch)
     self.webview_apk_path = str(out_dir / 'apks' / webview_apk)
+    self.webview_installer_path = str(self._out_dir / 'bin' /
+                                      self._webview_target)
 
     # Chrome targets
     self._chrome_target, chrome_apk = self._GetChromeTargetAndApk(
@@ -247,6 +249,7 @@ class ClankCompiler:
         'symbol_level=1',  # to fit 30 GiB RAM on the bot when LLD is running
         'target_os="android"',
         'enable_proguard_obfuscation=false',  # More debuggable stacktraces.
+        'use_siso=' + str(self._options.use_siso).lower(),
         'use_remoteexec=' + str(self._options.use_remoteexec).lower(),
         'use_order_profiling=' + str(instrumented).lower(),
         'devtools_instrumentation_dumping=' + str(instrumented).lower()
@@ -414,18 +417,17 @@ class OrderfileUpdater:
     bucket = (self._CLOUD_STORAGE_BUCKET_FOR_DEBUG if use_debug_location
               else self._CLOUD_STORAGE_BUCKET)
     extension = _GetFileExtension(filename)
-    if use_new_cloud:
-      cmd = [self._UPLOAD_TO_NEW_CLOUD_COMMAND]
-    else:
-      cmd = [self._UPLOAD_TO_CLOUD_COMMAND]
-    cmd += ['--bucket', bucket]
+    cmd = [self._UPLOAD_TO_CLOUD_COMMAND, '--bucket', bucket]
     if extension:
       cmd.extend(['-z', extension])
     cmd.append(filename)
-    stdout: str = self._step_recorder.RunCommand(cmd,
-                                                 capture_output=True).stdout
+    # Keep both upload paths working as the upload script updates .sha1 files.
+    self._step_recorder.RunCommand(cmd)
     if use_new_cloud:
       logging.info('Uploading using the new cloud:')
+      new_cmd = [self._UPLOAD_TO_NEW_CLOUD_COMMAND] + cmd[1:]
+      stdout: str = self._step_recorder.RunCommand(new_cmd,
+                                                   capture_output=True).stdout
       # The first line is "Uploading ... ", the rest of the lines is valid json.
       json_string = stdout.split('\n', 1)[1]
       logging.info(json_string)
@@ -454,24 +456,6 @@ class OrderfileUpdater:
       self._step_recorder.RunCommand(setdep_cmd, cwd=self._repository_root)
     print('Download: https://sandbox.google.com/storage/%s/%s' %
           (bucket, _GenerateHash(filename)))
-
-  def _GetHashFilePathAndContents(self, filename):
-    """Gets the name and content of the hash file created from uploading the
-    given file.
-
-    Args:
-      filename: (str) The file that was uploaded to cloud storage.
-
-    Returns:
-      A tuple of the hash file name, relative to the reository root, and the
-      content, which should be the sha1 hash of the file
-      ('base_file.sha1', hash)
-    """
-    abs_hash_filename = filename + '.sha1'
-    rel_hash_filename = os.path.relpath(
-        abs_hash_filename, self._repository_root)
-    with open(abs_hash_filename, 'r') as f:
-      return (rel_hash_filename, f.read())
 
   def _GitStash(self):
     """Git stash the current clank tree.
@@ -527,7 +511,7 @@ class OrderfileGenerator:
   def _GetUnpatchedOrderfileFilename(self):
     """Gets the path to the architecture-specific unpatched orderfile."""
     arch = self._options.arch
-    return str(self._orderfiles_dir / f'unpatched_orderfile.{arch}.out')
+    return str(self._orderfiles_dir / f'unpatched_orderfile.{arch}')
 
   def _SetDevice(self):
     """ Selects the device to be used by the script.
@@ -657,6 +641,8 @@ class OrderfileGenerator:
     files = self._profiler.CollectSystemHealthProfile(
         self._compiler.chrome_apk_path)
     if self._options.profile_webview_startup:
+      self._profiler.InstallAndSetWebViewProvider(
+          self._compiler.webview_installer_path)
       files += self._profiler.CollectWebViewStartupProfile(
           self._compiler.webview_apk_path)
     self._MaybeSaveProfile()
@@ -739,8 +725,8 @@ class OrderfileGenerator:
 
   def _SaveForDebugging(self, filename: str):
     """Uploads the file to cloud storage or saves to a temporary location."""
-    file_sha1 = _GenerateHash(filename)
     if not self._options.buildbot:
+      file_sha1 = _GenerateHash(filename)
       self._SaveFileLocally(filename, file_sha1)
     else:
       print('Uploading file for debugging: ' + filename)
@@ -964,6 +950,8 @@ class OrderfileGenerator:
       if self._options.profile_webview_startup:
         self._compiler.CompileWebViewApk(instrumented=False,
                                          force_relink=True)
+        self._profiler.InstallAndSetWebViewProvider(
+            self._compiler.webview_installer_path)
         benchmark_results[
             'system_health.webview_startup'] = self._WebViewStartupBenchmark(
                 self._compiler.webview_apk_path)
@@ -1211,6 +1199,10 @@ def CreateArgumentParser():
                       help='Set this to clear the entire out/ directory prior '
                       'to running any builds. This helps to clear the build '
                       'cache and restart with empty build dirs.')
+  parser.add_argument('--use-siso',
+                      action='store_true',
+                      default=False,
+                      help='Set this to turn on using siso.')
   parser.add_argument('-v',
                       '--verbose',
                       dest='verbosity',

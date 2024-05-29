@@ -34,8 +34,8 @@
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/model/ios_most_visited_sites_factory.h"
+#import "ios/chrome/browser/parcel_tracking/features.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
-#import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/promos_manager/model/promos_manager_factory.h"
@@ -450,6 +450,7 @@
 }
 
 - (void)didTapMagicStackEditButton {
+  base::RecordAction(base::UserMetricsAction("IOSMagicStackSettingsOpened"));
   _magicStackHalfSheetTableViewController =
       [[MagicStackHalfSheetTableViewController alloc] init];
 
@@ -505,6 +506,13 @@
   [self didSelectSetUpListItem:view.type];
 }
 
+- (void)showMagicStackRecentTabs {
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<BrowserCoordinatorCommands> browserCoordinatorCommands =
+      HandlerForProtocol(dispatcher, BrowserCoordinatorCommands);
+  [browserCoordinatorCommands showRecentTabs];
+}
+
 #pragma mark - MagicStackModuleContainerDelegate
 
 - (void)seeMoreWasTappedForModuleType:(ContentSuggestionsModuleType)type {
@@ -517,6 +525,9 @@
       break;
     case ContentSuggestionsModuleType::kParcelTracking:
       [self showMagicStackParcelList];
+      break;
+    case ContentSuggestionsModuleType::kTabResumption:
+      [self showMagicStackRecentTabs];
       break;
     default:
       break;

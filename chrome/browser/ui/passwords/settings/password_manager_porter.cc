@@ -31,20 +31,7 @@
 
 namespace {
 
-// The following are not used on Android due to the |SelectFileDialog| being
-// unused.
 #if !BUILDFLAG(IS_ANDROID)
-const base::FilePath::CharType kFileExtension[] = FILE_PATH_LITERAL("csv");
-
-// Returns the file extensions corresponding to supported formats.
-// Inner vector indicates equivalent extensions. For example:
-//   { { "html", "htm" }, { "csv" } }
-std::vector<std::vector<base::FilePath::StringType>>
-GetSupportedFileExtensions() {
-  return std::vector<std::vector<base::FilePath::StringType>>(
-      1, std::vector<base::FilePath::StringType>(1, kFileExtension));
-}
-
 // The default directory and filename when importing and exporting passwords.
 base::FilePath GetDefaultFilepathForPasswordFile(
     const base::FilePath::StringType& default_extension) {
@@ -59,7 +46,7 @@ base::FilePath GetDefaultFilepathForPasswordFile(
 #endif
   return default_path.Append(file_name).AddExtension(default_extension);
 }
-#endif
+#endif  // !IS_ANDROID
 
 }  // namespace
 
@@ -103,8 +90,9 @@ bool PasswordManagerPorter::Export(
 }
 
 void PasswordManagerPorter::CancelExport() {
-  if (exporter_)
+  if (exporter_) {
     exporter_->Cancel();
+  }
 }
 
 password_manager::ExportProgressStatus
@@ -203,16 +191,16 @@ void PasswordManagerPorter::PresentFileSelector(
 // and the relevant IDS constants are not present for Android.
 #if !BUILDFLAG(IS_ANDROID)
   // Early return if the select file dialog is already active.
-  if (select_file_dialog_)
+  if (select_file_dialog_) {
     return;
+  }
 
   CHECK(web_contents);
 
   // Get the default file extension for password files.
-  ui::SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions = GetSupportedFileExtensions();
-  DCHECK(!file_type_info.extensions.empty());
-  DCHECK(!file_type_info.extensions[0].empty());
+  ui::SelectFileDialog::FileTypeInfo file_type_info{
+      {FILE_PATH_LITERAL("csv")},
+  };
   file_type_info.include_all_files = true;
 
   // Present the file selector dialogue.

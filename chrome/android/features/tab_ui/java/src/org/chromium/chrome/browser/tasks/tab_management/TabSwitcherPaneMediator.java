@@ -55,9 +55,9 @@ public class TabSwitcherPaneMediator
     private final TabActionListener mTabGridDialogOpener = this::onTabGroupClicked;
     private final ValueChangedCallback<TabModelFilter> mOnTabModelFilterChanged =
             new ValueChangedCallback<>(this::onTabModelFilterChanged);
-    // TODO(crbug.com/40946413): this might not be required if we leverage the back press handling
-    // at the
-    // Hub level. Need to check with UX/PM.
+    private final Callback<Boolean> mOnDialogShowingOrAnimatingCallback =
+            this::onDialogShowingOrAnimatingChanged;
+
     private final TabModelObserver mTabModelObserver =
             new TabModelObserver() {
                 @Override
@@ -89,12 +89,13 @@ public class TabSwitcherPaneMediator
 
                 @Override
                 public void restoreCompleted() {
-                    if (Boolean.TRUE.equals(mIsVisibleSupplier.get())) {
-                        mResetHandler.resetWithTabList(mTabModelFilterSupplier.get(), false);
-                        setInitialScrollIndexOffset();
-                    }
+                    // The tab model just finished restoring. If this pane is visible we should try
+                    // to show tabs. `resetWithTabList` will handle any necessary state complexity
+                    // such as incognito reauth.
+                    showTabsIfVisible();
                 }
             };
+
     private final Callback<Boolean> mOnAnimatingChanged = this::onAnimatingChanged;
     private final Callback<Boolean> mOnVisibilityChanged = this::onVisibilityChanged;
     private final Callback<Boolean> mNotifyBackPressedCallback =
@@ -117,6 +118,8 @@ public class TabSwitcherPaneMediator
             mCurrentTabListEditorControllerBackSupplier;
     private @Nullable View mCustomView;
     private @Nullable Runnable mCustomViewBackPressRunnable;
+
+    private boolean mTryToShowOnFilterChanged;
 
     /**
      * @param resetHandler The reset handler for updating the {@link TabListCoordinator}.
@@ -143,7 +146,8 @@ public class TabSwitcherPaneMediator
         mResetHandler = resetHandler;
         mOnTabClickCallback = onTabClickCallback;
         mTabModelFilterSupplier = tabModelFilterSupplier;
-        mTabModelFilterSupplier.addObserver(mOnTabModelFilterChanged);
+        var filter = mTabModelFilterSupplier.addObserver(mOnTabModelFilterChanged);
+        mTryToShowOnFilterChanged = filter == null || !filter.isTabModelRestored();
 
         mTabGridDialogControllerSupplier = tabGridDialogControllerSupplier;
         tabGridDialogControllerSupplier.onAvailable(
@@ -151,6 +155,9 @@ public class TabSwitcherPaneMediator
                     tabGridDialogController
                             .getHandleBackPressChangedSupplier()
                             .addObserver(mNotifyBackPressedCallback);
+                    tabGridDialogController
+                            .getShowingOrAnimationSupplier()
+                            .addObserver(mOnDialogShowingOrAnimatingCallback);
                 });
 
         mContainerViewModel = containerViewModel;
@@ -181,6 +188,9 @@ public class TabSwitcherPaneMediator
             controller
                     .getHandleBackPressChangedSupplier()
                     .removeObserver(mNotifyBackPressedCallback);
+            controller
+                    .getShowingOrAnimationSupplier()
+                    .removeObserver(mOnDialogShowingOrAnimatingCallback);
         }
         if (mCurrentTabListEditorControllerBackSupplier != null) {
             mCurrentTabListEditorControllerBackSupplier.removeObserver(mNotifyBackPressedCallback);
@@ -406,16 +416,54 @@ public class TabSwitcherPaneMediator
         if (newFilter != null) {
             mContainerViewModel.set(IS_INCOGNITO, newFilter.isIncognito());
             newFilter.addObserver(mTabModelObserver);
+            // The tab model may already be restored and `restoreCompleted` will be skipped, but
+            // this pane is visible. To avoid an empty state, try to show tabs now.
+            // `resetWithTabList` will skip in the case the tab model is not initialized so this
+            // will no-op if it is racing with `restoreCompleted`. Only do this if in the
+            // constructor there was no TabModelFilter or it wasn't initialized.
+            if (mTryToShowOnFilterChanged) {
+                showTabsIfVisible();
+                mTryToShowOnFilterChanged = false;
+            }
         }
     }
 
     private void onAnimatingChanged(boolean animating) {
-        mContainerViewModel.set(BLOCK_TOUCH_INPUT, animating);
+        updateBlockTouchInput();
+        DialogController controller = getTabGridDialogController();
+        if (controller != null) {
+            controller.hideDialog(true);
+        }
         notifyBackPressStateChangedInternal();
     }
 
     private void onVisibilityChanged(boolean visible) {
         if (visible) mOnTabSwitcherShown.run();
         notifyBackPressStateChangedInternal();
+    }
+
+    private void onDialogShowingOrAnimatingChanged(boolean showingOrAnimation) {
+        updateBlockTouchInput();
+    }
+
+    private void updateBlockTouchInput() {
+        boolean blockTouchInput = mIsAnimatingSupplier.get() || isDialogShowingOrAnimating();
+        mContainerViewModel.set(BLOCK_TOUCH_INPUT, blockTouchInput);
+    }
+
+    private boolean isDialogShowingOrAnimating() {
+        @Nullable DialogController dialogController = getTabGridDialogController();
+        if (dialogController == null) {
+            return false;
+        }
+
+        return dialogController.getShowingOrAnimationSupplier().get();
+    }
+
+    private void showTabsIfVisible() {
+        if (Boolean.TRUE.equals(mIsVisibleSupplier.get())) {
+            mResetHandler.resetWithTabList(mTabModelFilterSupplier.get(), false);
+            setInitialScrollIndexOffset();
+        }
     }
 }

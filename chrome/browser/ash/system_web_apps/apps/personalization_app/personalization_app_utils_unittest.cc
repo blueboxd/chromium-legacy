@@ -5,17 +5,23 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
+#include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -132,6 +138,85 @@ TEST_F(PersonalizationAppUtilsTest, IsEligibleForSeaPen_Managed) {
   ASSERT_FALSE(IsEligibleForSeaPen(managed_profile));
 }
 
+TEST_F(PersonalizationAppUtilsTest,
+       IsEligibleForSeaPen_Managed_SeaPenEnterpriseEnabled_capabilityIsTrue) {
+  base::test::ScopedFeatureList features(features::kSeaPenEnterprise);
+  const std::string email = "managed@example.com";
+  auto* managed_profile = profile_manager().CreateTestingProfile(email);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(managed_profile);
+  managed_profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
+      true);
+  // Set up gaia id.
+  ash::FakeChromeUserManager* user_manager =
+      static_cast<ash::FakeChromeUserManager*>(
+          user_manager::UserManager::Get());
+  AccountInfo primary_account = signin::MakePrimaryAccountAvailable(
+      identity_manager, email, signin::ConsentLevel::kSignin);
+  const AccountId account_id =
+      AccountId::FromUserEmailGaiaId(email, primary_account.gaia);
+  user_manager->AddUser(account_id);
+  user_manager->LoginUser(account_id);
+  // Set up capability.
+  AccountCapabilitiesTestMutator mutator(&primary_account.capabilities);
+  mutator.set_can_use_manta_service(true);
+  signin::UpdateAccountInfoForAccount(identity_manager, primary_account);
+
+  ASSERT_TRUE(IsEligibleForSeaPen(managed_profile));
+}
+
+TEST_F(PersonalizationAppUtilsTest,
+       IsEligibleForSeaPen_Managed_SeaPenEnterpriseEnabled_CapabilityIsFalse) {
+  base::test::ScopedFeatureList features(features::kSeaPenEnterprise);
+  const std::string email = "managed@example.com";
+  auto* managed_profile = profile_manager().CreateTestingProfile(email);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(managed_profile);
+  managed_profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
+      true);
+  // Set up gaia id.
+  ash::FakeChromeUserManager* user_manager =
+      static_cast<ash::FakeChromeUserManager*>(
+          user_manager::UserManager::Get());
+  AccountInfo primary_account = signin::MakePrimaryAccountAvailable(
+      identity_manager, email, signin::ConsentLevel::kSignin);
+  const AccountId account_id =
+      AccountId::FromUserEmailGaiaId(email, primary_account.gaia);
+  user_manager->AddUser(account_id);
+  user_manager->LoginUser(account_id);
+  // Set up capability.
+  AccountCapabilitiesTestMutator mutator(&primary_account.capabilities);
+  mutator.set_can_use_manta_service(false);
+  signin::UpdateAccountInfoForAccount(identity_manager, primary_account);
+
+  ASSERT_FALSE(IsEligibleForSeaPen(managed_profile));
+}
+
+TEST_F(
+    PersonalizationAppUtilsTest,
+    IsEligibleForSeaPen_Managed_SeaPenEnterpriseEnabled_CapabilityIsUnknown) {
+  base::test::ScopedFeatureList features(features::kSeaPenEnterprise);
+  const std::string email = "managed@example.com";
+  auto* managed_profile = profile_manager().CreateTestingProfile(email);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(managed_profile);
+  managed_profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
+      true);
+  // Set up gaia id.
+  ash::FakeChromeUserManager* user_manager =
+      static_cast<ash::FakeChromeUserManager*>(
+          user_manager::UserManager::Get());
+  AccountInfo primary_account = signin::MakePrimaryAccountAvailable(
+      identity_manager, email, signin::ConsentLevel::kSignin);
+  const AccountId account_id =
+      AccountId::FromUserEmailGaiaId(email, primary_account.gaia);
+  user_manager->AddUser(account_id);
+  user_manager->LoginUser(account_id);
+  // No capability is set.
+
+  ASSERT_FALSE(IsEligibleForSeaPen(managed_profile));
+}
+
 TEST_F(PersonalizationAppUtilsTest, IsEligibleForSeaPen_Regular) {
   const std::string email = "user@example.com";
   auto* regular_profile = profile_manager().CreateTestingProfile(email);
@@ -174,6 +259,27 @@ TEST_F(PersonalizationAppUtilsTest, IsEligibleForSeaPen_PublicAccountDemoMode) {
 
   ASSERT_TRUE(IsEligibleForSeaPen(managed_profile))
       << "Demo mode should force enable SeaPen for managed profile";
+}
+
+TEST_F(PersonalizationAppUtilsTest, IsManagedSeaPenWallpaperEnabled_Googler) {
+  const std::string email = "user@google.com";
+  auto* googler_profile = profile_manager().CreateTestingProfile(email);
+  googler_profile->GetPrefs()->SetInteger(ash::prefs::kGenAIWallpaperSettings,
+                                          0);
+  AddAndLoginUser(AccountId::FromUserEmail(email),
+                  user_manager::UserType::kRegular);
+  ASSERT_TRUE(IsManagedSeaPenWallpaperEnabled(googler_profile));
+}
+
+TEST_F(PersonalizationAppUtilsTest,
+       IsManagedSeaPenVcBackgroundEnabled_Googler) {
+  const std::string email = "user@google.com";
+  auto* googler_profile = profile_manager().CreateTestingProfile(email);
+  googler_profile->GetPrefs()->SetInteger(
+      ash::prefs::kGenAIVcBackgroundSettings, 0);
+  AddAndLoginUser(AccountId::FromUserEmail(email),
+                  user_manager::UserType::kRegular);
+  ASSERT_TRUE(IsManagedSeaPenVcBackgroundEnabled(googler_profile));
 }
 
 }  // namespace

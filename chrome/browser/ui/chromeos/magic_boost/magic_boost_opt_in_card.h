@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_CHROMEOS_MAGIC_BOOST_MAGIC_BOOST_OPT_IN_CARD_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
@@ -22,7 +23,7 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
                   chromeos::editor_menu::PreTargetHandlerView)
 
  public:
-  MagicBoostOptInCard();
+  explicit MagicBoostOptInCard(const bool include_orca);
   MagicBoostOptInCard(const MagicBoostOptInCard&) = delete;
   MagicBoostOptInCard& operator=(const MagicBoostOptInCard&) = delete;
   ~MagicBoostOptInCard() override;
@@ -30,7 +31,8 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
   // Creates a widget that contains a `MagicBoostOptInCard`, configured with the
   // given `anchor_view_bounds`.
   static views::UniqueWidgetPtr CreateWidget(
-      const gfx::Rect& anchor_view_bounds);
+      const gfx::Rect& anchor_view_bounds,
+      const bool include_orca);
 
   // Returns the host widget's name.
   static const char* GetWidgetName();
@@ -42,7 +44,13 @@ class MagicBoostOptInCard : public chromeos::editor_menu::PreTargetHandlerView {
   void RequestFocus() override;
 
  private:
+  // Button callbacks.
+  void OnPrimaryButtonPressed();
+  void OnSecondaryButtonPressed();
+
   raw_ptr<views::MdTextButton> secondary_button_ = nullptr;
+
+  base::WeakPtrFactory<MagicBoostOptInCard> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

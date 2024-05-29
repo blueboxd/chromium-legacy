@@ -376,11 +376,19 @@ ScriptPromise<IDLAny> SharedStorage::set(
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise<IDLAny>();
+    return EmptyPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
+
+  if (execution_context->IsWindow() &&
+      execution_context->GetSecurityOrigin()->IsOpaque()) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+        kOpaqueOriginCheckErrorMessage));
+    return promise;
+  }
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -433,11 +441,19 @@ ScriptPromise<IDLAny> SharedStorage::append(ScriptState* script_state,
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise<IDLAny>();
+    return EmptyPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
+
+  if (execution_context->IsWindow() &&
+      execution_context->GetSecurityOrigin()->IsOpaque()) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+        kOpaqueOriginCheckErrorMessage));
+    return promise;
+  }
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -488,11 +504,19 @@ ScriptPromise<IDLAny> SharedStorage::Delete(ScriptState* script_state,
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise<IDLAny>();
+    return EmptyPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
+
+  if (execution_context->IsWindow() &&
+      execution_context->GetSecurityOrigin()->IsOpaque()) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+        kOpaqueOriginCheckErrorMessage));
+    return promise;
+  }
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -533,11 +557,19 @@ ScriptPromise<IDLAny> SharedStorage::clear(ScriptState* script_state,
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state))
-    return ScriptPromise<IDLAny>();
+    return EmptyPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
+
+  if (execution_context->IsWindow() &&
+      execution_context->GetSecurityOrigin()->IsOpaque()) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+        kOpaqueOriginCheckErrorMessage));
+    return promise;
+  }
 
   if (!CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
                                            *resolver)) {
@@ -570,7 +602,7 @@ ScriptPromise<IDLString> SharedStorage::get(ScriptState* script_state,
         execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state)) {
-    return ScriptPromise<IDLString>();
+    return EmptyPromise();
   }
 
   ScriptPromiseResolver<IDLString>* resolver =
@@ -578,11 +610,20 @@ ScriptPromise<IDLString> SharedStorage::get(ScriptState* script_state,
           script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
 
-  if (execution_context->IsWindow() && !CanGetOutsideWorklet(script_state)) {
-    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
-        "Cannot call get() outside of a fenced frame."));
-    return promise;
+  if (execution_context->IsWindow()) {
+    if (execution_context->GetSecurityOrigin()->IsOpaque()) {
+      resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+          script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+          kOpaqueOriginCheckErrorMessage));
+      return promise;
+    }
+
+    if (!CanGetOutsideWorklet(script_state)) {
+      resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+          script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+          "Cannot call get() outside of a fenced frame."));
+      return promise;
+    }
   }
 
   CHECK(CheckSharedStoragePermissionsPolicy(*script_state, *execution_context,
@@ -651,7 +692,7 @@ ScriptPromise<IDLUnsignedLong> SharedStorage::length(
   CHECK(execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state)) {
-    return ScriptPromise<IDLUnsignedLong>();
+    return EmptyPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUnsignedLong>>(
@@ -699,7 +740,7 @@ ScriptPromise<IDLDouble> SharedStorage::remainingBudget(
   CHECK(execution_context->IsSharedStorageWorkletGlobalScope());
 
   if (!CheckBrowsingContextIsValid(*script_state, exception_state)) {
-    return ScriptPromise<IDLDouble>();
+    return EmptyPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLDouble>>(

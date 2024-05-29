@@ -18,6 +18,7 @@
 <translation id="1080365971383768617">آپ کے تمام آلات پر پاس ورڈز</translation>
 <translation id="1082920045291562218">خلاصہ پر تاثرات فراہم کرنے کے لیے استعمال ہونے والی شیٹ کے ساتھ اشتراک کی سہولت بند ہے</translation>
 <translation id="1089606299949659462">جائزہ مکمل ہو گیا!</translation>
+<translation id="1094555143448724771">اپنے دیگر آلات سے ٹیبز کو دیکھنے کے لیے، اپنے ٹیبز اور سرگزشت کو مطابقت پذیر بنائیں۔</translation>
 <translation id="1095761715416917775">یقینی بنائیں کہ آپ ہمیشہ اپنے مطابقت پذیر ڈیٹا تک رسائی حاصل کر سکتے ہیں</translation>
 <translation id="1100066534610197918">گروپ میں نئے ٹیب میں کھولیں</translation>
 <translation id="1103142993930332957">‏Chrome کو بہتر بنانے میں مدد کریں؟</translation>
@@ -33,6 +34,7 @@
 <translation id="115483310321669804">پاس ورڈ <ph name="PASSWORD" /> استعمال کریں</translation>
 <translation id="1173894706177603556">نام بدلیں</translation>
 <translation id="1174479719160874822">‏اسکرین تنگ ہونے پر Chrome موبائل سائٹ سے درخواست کرے گا۔</translation>
+<translation id="1175241315203286684">‏آپ کا منتظم آپ کی پروفائل اور براؤزر میں دور سے تبدیلیاں کر سکتا ہے، رپورٹنگ کے ذریعے براؤزر کے بارے میں معلومات کا تجزیہ کر سکتا ہے اور دیگر ضروری ٹاسکس انجام دے سکتا ہے۔ اس آلے پر ہونے والی سرگرمی کا نظم Chrome سے باہر بھی کیا جا سکتا ہے۔</translation>
 <translation id="1177863135347784049">حسب ضرورت</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
 <translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /> کو</translation>
@@ -121,6 +123,7 @@
 <translation id="1592864538817356322">معیاری تحفظ:</translation>
 <translation id="1594635596540195766">مندرجہ ذیل کی فہرست میں تجویز کردہ <ph name="SUGGESTIONS_COUNT" /> آئٹمز۔</translation>
 <translation id="1598163867407640634"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> کے ساتھ <ph name="SITE_ETLD_PLUS_ONE" /> کا استعمال کریں</translation>
+<translation id="160275202205869636">‏آن ہونے پر، اپنے Google اکاؤنٹ میں ڈیٹا کا استعمال اور اسے محفوظ کریں۔ آف ہونے پر، ڈیٹا صرف اس آلے میں محفوظ ہوتا ہے۔</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 منتخب آئٹم کو ہٹائیں}other{# منتخب آئٹمز کو ہٹائیں}}</translation>
 <translation id="1641113438599504367">محفوظ براؤزنگ</translation>
 <translation id="164269334534774161">آپ <ph name="CREATION_TIME" /> سے اس صفحہ کی ایک آف لائن کاپی دیکھ رہے ہیں</translation>
@@ -164,6 +167,7 @@
 <translation id="185383612275551373">‏Google سے انتہائی متعلقہ مواد حاصل کرنے کے لیے مطابقت پذیری کریں</translation>
 <translation id="1871098866036088250">‏Chrome براؤزر میں کھولیں</translation>
 <translation id="1877026089748256423">‏Chrome پرانا ہے</translation>
+<translation id="1877073879466606884">آپ جس پروفائل میں سائن ان ہیں وہ ایک منظم پروفائل ہے۔ آپ کا منتظم آپ کی پروفائل کی ترتیبات میں دور سے تبدیلیاں کر سکتا ہے، رپورٹنگ کے ذریعے براؤزر کے بارے میں معلومات کا تجزیہ کر سکتا ہے اور دیگر ضروری ٹاسکس انجام دے سکتا ہے۔</translation>
 <translation id="1883903952484604915">میری فائلز</translation>
 <translation id="189358972401248634">دوسری زبانیں</translation>
 <translation id="1900260903084164610">جاری رکھ کر آپ <ph name="BEGIN_TOS_LINK" />سروس کی شرائط<ph name="END_TOS_LINK" /> سے اتفاق کرتے ہیں۔</translation>
@@ -245,7 +249,9 @@
 <translation id="2318045970523081853">کال کرنے کے لیے تھپتھپائیں</translation>
 <translation id="2321086116217818302">پاس ورڈز تیار کیے جا رہے ہيں…</translation>
 <translation id="2323763861024343754">سائٹ اسٹوریج</translation>
+<translation id="2328739396024849021">غیر فعال کردہ 'محفوظ کریں' بٹن</translation>
 <translation id="2328985652426384049">سائن نہیں کیا جا سکتا ہے</translation>
+<translation id="233375395665273385">حذف کریں اور سائن آؤٹ کریں</translation>
 <translation id="2341410551640223969"><ph name="WEBAPK_NAME" /> انسٹال نہیں کی جا سکی۔</translation>
 <translation id="2349710944427398404">‏اکاؤنٹس، بُک مارکس اور محفوظ کردہ ترتیبات سمیت، Chrome کے ذریعے استعمال کردہ کُل ڈیٹا</translation>
 <translation id="235789365079050412">‏Google کی رازداری کی پالیسی</translation>
@@ -292,12 +298,14 @@
 <translation id="2571834852878229351">میرا ذاتی تخلیق کریں</translation>
 <translation id="2574249610672786438">‏اپنے ٹیبز کو دیکھنے کے لئے جہاں بھی آپ Chrome استعمال کرتے ہیں، اپنے تمام آلات پر سائن ان کریں</translation>
 <translation id="2578337197553672982">‏نوجوان ذہنوں کے لیے Google کا مواد</translation>
+<translation id="2579297619530305344">'آپ کے تمام آلات پر پاس ورڈز' کی شیٹ پوری طرح کھلتی ہے</translation>
 <translation id="2581165646603367611">‏یہ سائٹس کی کوکیز، کیش اور اس دیگر ڈیٹا کو صاف کر دے گی جسے Chrome اہم نہیں خیال کرتا ہے۔</translation>
 <translation id="2587052924345400782">جدید تر ورژن دستیاب ہے</translation>
 <translation id="2593272815202181319">مونو اسپیس</translation>
 <translation id="2603212228005142861">اپنی ترجیحات کا نظم کرنے کے لیے سائن ان کریں</translation>
 <translation id="260403163289591229">پیروی ہو رہی ہے</translation>
 <translation id="2604446170045642109">آپ اپنی ترتیبات میں سائٹس کے لیے گہری تھیم کو آف کر سکتے ہیں۔</translation>
+<translation id="2607441479295509868">سائن آؤٹ ہو گئے۔ اپنے اکاؤنٹ میں بُک مارکس اور پاس ورڈز وغیرہ کا استعمال کرنے کیلئے دوبارہ سائن ان کریں۔</translation>
 <translation id="2612676031748830579">کارڈ نمبر</translation>
 <translation id="2620314865574742210"><ph name="NAME" /> نے آپ کو مشترکہ آئٹم تک رسائی کے لیے مدعو کیا۔</translation>
 <translation id="2625189173221582860">پاس ورڈ کاپی ہو گیا</translation>
@@ -351,6 +359,7 @@
 <translation id="2869430948265924908">کار میں اپنے حساس مواد کی حفاظت کے لیے، آپ کو کار پروفائل لاک بنانا ہوگا۔  آپ یہ پن، کوڈ، یا پاس ورڈ کے ساتھ کر سکتے ہیں۔</translation>
 <translation id="2870560284913253234">سائٹ</translation>
 <translation id="2871733351037274014">پیشگی لوڈ والے صفحات</translation>
+<translation id="2871941920508945325">'صفحے کی بصیرتیں' بٹن</translation>
 <translation id="2876136027428473467"><ph name="CHILD_NAME" /> آپ سے اس ویب سائٹ کی منظوری چاہتی ہے:</translation>
 <translation id="2876628302275096482">‏اس بارے میں مزید جانیں کہ <ph name="BEGIN_LINK" />Chrome آپ کے ڈیٹا کو کس طرح نجی رکھتا ہے<ph name="END_LINK" /></translation>
 <translation id="2888126860611144412">‏Chrome کے بارے میں</translation>
@@ -376,6 +385,7 @@
 <translation id="2951071800649516099">بعد کیلئے اپنی پڑھنے کی فہرست میں صفحات شامل کریں</translation>
 <translation id="2956070106555335453">خلاصہ</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> نہ پڑھا ہوا صفحہ}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> نہ پڑھے ہوئے صفحات}}</translation>
+<translation id="2976550651269220761">‏آپ کا کچھ Chrome ڈیٹا ابھی تک آپ کے Google اکاؤنٹ میں محفوظ نہیں ہوا ہے۔\nسائن آؤٹ کرنے سے پہلے کچھ منٹ انتظار کر کے دیکھیں۔ اگر آپ ابھی سائن آؤٹ کرتے ہیں تو یہ ڈیٹا حذف ہو جائے گا۔</translation>
 <translation id="2977350910003566746">آخری بار کھولا گیا کے لحاظ سے ترتیب دیا جا رہا ہے</translation>
 <translation id="297771753501244313">بلحاظ آخری بار کھولا گیا سے ترتیب دیں</translation>
 <translation id="2979025552038692506">منتخب پوشیدگی ٹیب</translation>
@@ -513,10 +523,13 @@
 <translation id="3692944402865947621">اسٹوریج کا مقام ناقابل رسائی ہونے کے سبب <ph name="FILE_NAME" /> ڈاؤن لوڈ کرنا ناکام ہو گیا۔</translation>
 <translation id="3697705478071004188">سائٹ کے لحاظ سے ترتیب دیں</translation>
 <translation id="3699022356773522638">فائل ڈاؤن لوڈ کریں؟</translation>
+<translation id="3700759344784597882">آن ہونے پر، پاس ورڈز آپ کے اکاؤنٹ میں محفوظ ہوتے ہیں۔ آف ہونے پر، پاس ورڈز صرف اس آلے پر محفوظ ہوتے ہیں۔</translation>
 <translation id="3701515417135397388">ڈیٹا کی خلاف ورزی میں پاس ورڈ کے ساتھ چھیڑ چھاڑ کیے جانے پر آپ کو متنبہ کرتا ہے</translation>
+<translation id="3711001040440486668">'اشتراک کریں' بٹن</translation>
 <translation id="371230970611282515">خطرناک ایونٹس ہونے سے پہلے ان کی پیشین گوئی کرتا ہے اور آپ کو ان کے بارے میں متنبہ کرتا ہے۔</translation>
 <translation id="3714981814255182093">تلاش کریں بار کھولیں</translation>
 <translation id="3716182511346448902">‏یہ صفحہ بہت زیادہ میموری استعمال کرتا ہے، لہذا Chrome نے اسے موقوف کر دیا۔</translation>
+<translation id="3718765429352682176">‏آپ Chrome میں لنکس کو کھولنے والی دیگر ایپس کی سرگزشت دیکھ سکتے ہیں۔</translation>
 <translation id="3720422586473670527">نہیں شکریہ</translation>
 <translation id="3721119614952978349">‏آپ اور Google</translation>
 <translation id="3737319253362202215">ترجمہ کی ترتیبات</translation>
@@ -524,6 +537,7 @@
 <translation id="3738139272394829648">تلاش کرنے کیلئے ٹچ کریں</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> میں بُک مارک کر دیا گیا</translation>
 <translation id="3740525748616366977">اس آلہ پر صوتی تلاش دستیاب نہیں ہے</translation>
+<translation id="376561056759077985">کچھ ڈیٹا ابھی تک محفوظ نہیں ہوا ہے</translation>
 <translation id="3771033907050503522">پوشیدگی ٹیبز</translation>
 <translation id="3771290962915251154">یہ ترتیب غیر فعال ہے کیونکہ پیرنٹل کنٹرولز آن ہیں</translation>
 <translation id="3771694256347217732">‏Google کی سروس کی شرائط</translation>
@@ -704,6 +718,7 @@
 <translation id="4684427112815847243">ہر چیز کی مطابقت پذیری کریں</translation>
 <translation id="4685741273709472646">ڈراپ ڈاؤن فہرست سے منتخب کریں</translation>
 <translation id="4687718960473379118">سائٹ کے تجویز کردہ اشتہارات</translation>
+<translation id="469286762610133730">بہتر مواد حاصل کریں</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> مزید}}</translation>
 <translation id="4699172675775169585">کیش کردہ تصاویر اور فائلیں</translation>
 <translation id="4710167854527459075">جدید ترین کے لحاظ سے ترتیب دیں</translation>
@@ -794,6 +809,7 @@
 <translation id="506254248375231072">کوئی ٹیب نہیں ہے</translation>
 <translation id="5062960805900435602">پاس ورڈ ضم کرنے کے بارے میں اپ ڈیٹ بند ہے</translation>
 <translation id="5081960376148623587">منتخب کریں کہ آیا صفحات کو پیشگی لوڈ کیا جائے</translation>
+<translation id="5085038751173179818">‏اپنے تمام آلات پر اپنے بُک مارکس وغیرہ حاصل کرنے کے لیے اس سائٹ اور Chrome میں سائن ان کریں</translation>
 <translation id="5091199029769593641">‏جلد ہی، نیا ٹیب کھولنے پر آپ کو <ph name="SITE_NAME" /> سے کہانیاں دکھائی دیں گی۔ آپ جن سائٹس کی پیروی کرتے ہیں انہیں آپ کے Google اکاؤنٹ میں محفوظ کیا جاتا ہے۔ آپ Discover کی ترتیبات میں ان کا نظم کر سکتے ہیں۔</translation>
 <translation id="509429900233858213">ایک خرابی پیش آگئی۔</translation>
 <translation id="5097349930204431044">آپ جو سائٹ ملاحظہ جاتے ہیں وہ اس بات کا تعین کر سکتی ہیں کہ آپ کیا پسند کرتے ہیں اور پھر جب آپ براؤز کرنا جاری رکھتے ہیں تو اشتہارات تجویز کر سکتی ہیں۔</translation>
@@ -822,6 +838,7 @@
 <translation id="5206168361184759344">{FILE_COUNT,plural, =1{فائل ڈاؤن لوڈ ہو رہی ہے…}other{# فائلز ڈاؤن لوڈ ہو رہی ہیں…}}</translation>
 <translation id="5210286577605176222">پچھلے ٹیب پر جائیں</translation>
 <translation id="5210365745912300556">ٹیب بند کریں</translation>
+<translation id="5215957675041756913">اپنے ڈیٹا اور اکاؤنٹ کو کنٹرول کریں</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
 <translation id="5226378907213531272">جب بھی آپ کار استعمال کریں گے آپ اپنی اسکرین کو غیر مقفل کر دیں گے</translation>
 <translation id="5227554086496586518">تلاش کے نتائج دیکھنے کیلئے تھپتھپائیں</translation>
@@ -866,6 +883,7 @@
 <translation id="548278423535722844">نقشہ کی ایپ میں کھولیں</translation>
 <translation id="5486841595534124508">صفحے کی بصیرتوں کے ہب کیلئے رازداری کے نوٹس کا لوگو جو 'میری سرگرمی' صفحے پر ری ڈائریکٹ کرتا ہے۔</translation>
 <translation id="5492637351392383067">آلے پر مرموزکاری</translation>
+<translation id="5503125329065007089">'آپ کے تمام آلات پر پاس ورڈز' کی شیٹ نصف اونچائی تک کھلتی ہے</translation>
 <translation id="5514904542973294328">اس آلہ کے منتظم نے غیر فعال کر دیا</translation>
 <translation id="5515439363601853141">اپنا پاس ورڈ دیکھنے کیلئے غیر مقفل کریں</translation>
 <translation id="5517095782334947753">آپ کے پاس <ph name="FROM_ACCOUNT" /> کی جانب سے بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات ہیں۔</translation>
@@ -892,7 +910,6 @@
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5628604359369369630">نہ پڑھا ہوا - آف لائن دستیاب ہے</translation>
 <translation id="5641456720590409793">‏<ph name="BEGIN_LINK1" />تلاش کی سرگزشت<ph name="END_LINK1" /> اور<ph name="BEGIN_LINK2" /> سرگرمی کی دیگر اقسام<ph name="END_LINK2" /> آپ کے Google اکاؤنٹ میں محفوظ کی جا سکتی ہیں</translation>
-<translation id="564667659802381754">رازداری کی گائیڈ <ph name="BEGIN_NEW" />نئی<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">آخری 7 دن</translation>
 <translation id="5655963694829536461">اپنے ڈاؤن لوڈز تلاش کریں</translation>
 <translation id="5657871969392618475">پروفائل لاک آپ کی معلومات کو محفوظ رکھتا ہے</translation>
@@ -971,6 +988,7 @@
 <translation id="6002122790816966947">آپ کے آلات</translation>
 <translation id="6011308810877101166">تلاش کی تجاویز کو بہتر بنائیں</translation>
 <translation id="6013305291643746595">قدیم ترین کے لحاظ سے ترتیب دیا جا رہا ہے</translation>
+<translation id="6022659036123304283">‏Chrome کو اپنا ڈیفالٹ براؤزر بنائيں</translation>
 <translation id="6026538407078977628">مکمل اسکرین پر پھیلائیں</translation>
 <translation id="6030719887161080597">اشتہار کی کارکردگی کی پیمائش کرنے کے لیے سائٹس کے ذریعے استعمال ہونے والی معلومات کا نظم کریں</translation>
 <translation id="6039379616847168523">اگلے ٹیب پر جائیں</translation>
@@ -1020,6 +1038,7 @@
 <translation id="6277522088822131679">صفحہ کو پرنٹ کرنے میں ایک مسئلہ تھا۔ براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="6277722725779679269">قیمت ٹریک کریں کو اپ ڈیٹ نہیں کیا جا سکا</translation>
 <translation id="6278428485366576908">تھیم</translation>
+<translation id="6284472661216707937">'آپ کے تمام آلات پر پاس ورڈز' کی شیٹ بند ہو گئی ہے</translation>
 <translation id="6295158916970320988">سبھی سائٹس</translation>
 <translation id="6303969859164067831">سائن آؤٹ کریں اور مطابقت پذیری آف کریں</translation>
 <translation id="6312687380483398334">ویب ایپس (خاموش)</translation>
@@ -1095,6 +1114,7 @@
 <translation id="6593061639179217415">ڈیسک ٹاپ سائٹ</translation>
 <translation id="6594347733515723558">ترتیب دیں و اختیارات دیکھیں</translation>
 <translation id="6595046016124923392">‏آپ کے لئے تفصیلات میں بہتری لانے کیلئے Google کو تصاویر بھیجی جاتی ہیں۔</translation>
+<translation id="6604931690954120417">‏اپنے Chrome میں سائن ان رہتے ہوئے آپ جو پاس ورڈز محفوظ کریں گے، وہ آپ کے Google اکاؤنٹ میں چلے جائیں گے۔ اسے آف کرنے کیلئے، <ph name="BEGIN_LINK" />ترتیبات پر جائیں<ph name="END_LINK" />۔</translation>
 <translation id="661266467055912436">آپ کے لیے اور ویب پر ہر کسی کے لیے سیکیورٹی کو بہتر بناتا ہے۔</translation>
 <translation id="6621391692573306628">‏اس ٹیب کو کسی اور آلے میں بھیجنے کے لیے دونوں آلات پر Chrome میں سائن ان کریں</translation>
 <translation id="6625890511281718257">خلاصہ پر تاثرات فراہم کرنے کے لیے استعمال ہونے والی شیٹ کے ساتھ اشتراک کی سہولت</translation>
@@ -1108,7 +1128,6 @@
 <translation id="6645629752388991326">کنٹرول کریں کہ کون سے آلات اس آلے کو سیکیورٹی کلید کے بطور استعمال کر کے سائن ان کر سکتے ہیں۔</translation>
 <translation id="6646696210740573446">‏رازداری کے سرور کے ذریعے URL کا ایک مبہم حصہ Google کو بھیجتا ہے جو آپ کا IP پتہ چھپاتا ہے۔ اگر کوئی سائٹ آپ کا پاس ورڈ چرانے کی کوشش کرتی ہے یا جب آپ نقصان دہ فائل ڈاؤن لوڈ کرتے ہیں تو Chrome، ‏Google پر صفحہ کے مواد کے بِٹس سمیت URLs بھی بھیج سکتا ہے۔</translation>
 <translation id="6647441008198474441">‏آپ کے ملاحظہ کردہ URLs اس بات کی پیشنگوئی کرنے کے لیے Google کو بھیجے جاتے ہیں کہ آپ اگلی بار کون سی سائٹس ملاحظہ کر سکتے ہیں</translation>
-<translation id="6648459603387803038">‏آپ کا منتظم دور سے آپ کے براؤزر کا سیٹ اپ تبدیل کر سکتا ہے۔ اس آلے پر ہونے والی سرگرمی کا نظم Chrome سے باہر بھی کیا جا سکتا ہے۔</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مزید}other{‏<ph name="CONTACT_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مزید}}</translation>
 <translation id="6649642165559792194">تصویر کا پیش منظر دیکھیں <ph name="BEGIN_NEW" />نیا<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
@@ -1129,9 +1148,11 @@
 <translation id="6734310707649923383">آپ ان صفحات کو دیکھ سکتے ہیں جن کا آپ نے ملاحظہ کیا ہے یا انہیں اپنی سرگزشت سے حذف بھی کر سکتے ہیں</translation>
 <translation id="6738867403308150051">ڈاؤن لوڈ ہو رہے ہیں…</translation>
 <translation id="674388916582496364">‏جن سائٹس کو آپ ملاحظہ کرتے ہیں ان میں آپ کی دلچسپیوں کو یاد رکھنا سائٹس کے لئے عام بات ہے تاکہ وہ آپ کے تجربے کو ذاتی نوعیت کا بنا سکیں۔ سائٹس Chrome کے ساتھ آپ کی دلچسپیوں کے بارے میں معلومات بھی اسٹور کر سکتی ہیں۔</translation>
+<translation id="6746338529702829275">اپنے اکاؤنٹ کے ڈیٹا کا جائزہ لیں</translation>
 <translation id="6751521182688001123">فوری طور پر ایک نیا ٹیب کھولیں۔ اس شارٹ کٹ میں ترمیم کرنے کے لیے، ٹچ کریں اور دبائے رکھیں۔</translation>
 <translation id="6756507620369789050">تاثرات کا اشتراک کریں</translation>
 <translation id="6762511428368667596"><ph name="NAME" />، <ph name="EMAIL" />۔</translation>
+<translation id="676305334223455055">اپنی دلچسپیوں پر مبنی مواد حاصل کرنے کیلئے سائن ان کریں</translation>
 <translation id="6767294960381293877">ان آلات کی فہرست جن کے ساتھ ٹیب کا اشتراک کرنا ہے نصف اونچائی پر کھلی ہوئی ہے۔</translation>
 <translation id="6770602306803890733">آپ کے لیے اور ویب پر سبھی کے لیے سیکیورٹی کو بہتر بناتی ہے</translation>
 <translation id="6775840696761158817">جب آپ ایڈریس بار یا سرچ باکس پر تھپتھپاتے ہیں یا اس میں ٹائپ کرتے ہیں تو آپ کو اپنے ڈیفالٹ سرچ انجن سے تجاویز نظر آئیں گی۔ یہ پوشیدگی میں آف ہے۔</translation>
@@ -1160,6 +1181,7 @@
 <translation id="686490460830618322">ایپ فلٹر شیٹ</translation>
 <translation id="6865313869410766144">آٹو فل فارم ڈیٹا</translation>
 <translation id="6867400383614725881">نیا پوشیدگی ٹیب</translation>
+<translation id="686899695320434745">‏پتے آپ کے پاس فریز کے ساتھ مرموز نہیں ہیں۔ یہ آپ کو انہیں Google کی دیگر سروسز میں استعمال کرنے دیتا ہے۔</translation>
 <translation id="6869056123412990582">کمپیوٹر</translation>
 <translation id="6882836635272038266">خطرناک مانی جانے والی ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے معیاری حفاظت۔</translation>
 <translation id="6883204995689174413">اشتراک کریں</translation>
@@ -1315,6 +1337,7 @@
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> فائل ڈاؤن لوڈ ہو گئی}other{<ph name="FILES_DOWNLOADED_MANY" /> فائلز ڈاؤن لوڈ ہو گئیں}}</translation>
 <translation id="7581273696622423628">سروے مکمل کریں</translation>
 <translation id="7583262514280211622">آپ کو اپنی پڑھنے کی فہرست یہاں ملے گی</translation>
+<translation id="758603037873046260">یہ صفحہ محفوظ کرنے کیلئے سائن ان کریں</translation>
 <translation id="7588219262685291874">اپنے آلہ کے بیٹری سیور کے آن ہونے کے وقت گہری تھیم آن کریں</translation>
 <translation id="7594687499944811403"><ph name="TOP_ORIGIN" /> کیلئے <ph name="EMBEDDED_ORIGIN" /> کو آپ کی شناخت کی توثیق کرنے دیں</translation>
 <translation id="7596558890252710462">آپریٹنگ سسٹم</translation>
@@ -1355,6 +1378,7 @@
 <translation id="777637629667389858">‏آپ کے سائن ان ہونے پر، تمام Google سروسز پر آپ کی حفاظت کرتا ہے۔</translation>
 <translation id="7778840695157240389">نئی کہانیوں کے لئے بعد میں دوبارہ چیک کریں</translation>
 <translation id="7780645209293383778">‏Google ایپس پر آپ کی حفاظت کرنے کے لیے آپ کے سائن ان ہونے پر آپ کے Google اکاؤنٹ سے اس ڈیٹا کو عارضی طور پر لنک کرتا ہے</translation>
+<translation id="7786562169000598736">اپنے تمام بُک مارکس حاصل کریں</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="7798392620021911922"><ph name="TAB_COUNT" /> ٹیبز کو بحال کیا گیا</translation>
 <translation id="780287761701992588">اپنے تمام آلات پر اپنے بُک مارکس، پاس ورڈز وغیرہ حاصل کریں</translation>
@@ -1425,6 +1449,7 @@
 <translation id="8078096376109663956">صرف ٹیکسٹ کا اشتراک کریں</translation>
 <translation id="8084114998886531721">محفوظ کیا گیا پاس ورڈ</translation>
 <translation id="8084285576995584326">‏اپنے Google اکاؤنٹ کے ڈیٹا کو کنٹرول کریں</translation>
+<translation id="8084864785646838999">‏ہو سکتا ہے آپ کی کچھ سرگزشت یہاں ظاہر نہ ہو۔ اپنی تمام Chrome کی سرگزشت دیکھنے کیلئے، Chrome کی مکمل سرگزشت کھولیں۔ نیز، ممکن ہے کہ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> پر آپ کے Google اکاؤنٹ میں براؤزنگ کی سرگزشت کی دیگر شکلیں موجود ہوں۔</translation>
 <translation id="808747664143081553">آلے سے منسلک ہو گیا</translation>
 <translation id="8088176524274673045">‏قریبی لوگوں سے اشتراک کرنے کیلئے انہیں یہ QR کوڈ اسکین کرنے دیں</translation>
 <translation id="8090732854597034573">اگر آپ کو مدد کی ضرورت ہو تو اپنے والدین سے پوچھیں</translation>
@@ -1534,6 +1559,7 @@
 <translation id="8562452229998620586">محفوظ کردہ پاس ورڈز یہاں نمودار ہوں گے۔</translation>
 <translation id="8570677896027847510">فائل کو محفوظ طریقے سے ڈاؤن لوڈ نہیں کیا جا سکتا</translation>
 <translation id="8571213806525832805">گزشتہ 4 ہفتے</translation>
+<translation id="8582529315803410153">آپ کو دوسرے آلات سے اپنے ٹیبز یہاں ملیں گے</translation>
 <translation id="859046281437143747">مزید اختیارات والے بٹن سے قیمت ٹریک کریں</translation>
 <translation id="860043288473659153">کارڈ کے حامل کا نام</translation>
 <translation id="8602358303461588329">‏بند کیے گئے Chrome میں سائن ان کریں۔</translation>
@@ -1581,6 +1607,7 @@
 <translation id="885480114717186641">آپ <ph name="HOST_NAME" /> کے لیے ڈیسک ٹاپ سائٹ کی درخواست کر سکتے ہیں</translation>
 <translation id="8856607253650333758">تفصیلات حاصل کریں</translation>
 <translation id="8856931513242997049">اطلاع کی اجازت کا فلو بند ہے</translation>
+<translation id="8865415417596392024">‏آپ کے اکاؤنٹ میں Chrome کا ڈیٹا</translation>
 <translation id="8898822736010347272">‏آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد Google کو بھیجتا ہے تاکہ نئے خطرات کا پتا لگانے اور ویب پر موجود سبھی کی حفاظت میں مدد مل سکے۔</translation>
 <translation id="8909135823018751308">اشتراک کریں…</translation>
 <translation id="8921980840204105660">اپنے دیگر آلات سے اپنے بُک مارکس حاصل کرنے کے لیے مطابقت پذیری کریں</translation>

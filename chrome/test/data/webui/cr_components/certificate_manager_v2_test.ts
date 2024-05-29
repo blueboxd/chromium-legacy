@@ -10,7 +10,7 @@ import 'chrome://settings/strings.m.js';
 import type {CertificateEntryV2Element} from 'chrome://resources/cr_components/certificate_manager/certificate_entry_v2.js';
 import type {CertificateListV2Element} from 'chrome://resources/cr_components/certificate_manager/certificate_list_v2.js';
 import type {CertificateManagerV2Element} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_v2.js';
-import type {CertificateManagerPageHandlerInterface, CertificateManagerPageRemote, SummaryCertInfo} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_v2.mojom-webui.js';
+import type {CertificateManagerPageHandlerInterface, CertificateManagerPageRemote, CertPolicyInfo, SummaryCertInfo} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_v2.mojom-webui.js';
 import {CertificateManagerPageCallbackRouter, CertificateSource} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_v2.mojom-webui.js';
 import {CertificatesV2BrowserProxy} from 'chrome://resources/cr_components/certificate_manager/certificates_v2_browser_proxy.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
@@ -28,11 +28,18 @@ class FakePageHandler extends TestBrowserProxy implements
     return {certs: []};
   };
 
+  private policyInfo_: CertPolicyInfo = {
+    includeSystemTrustStore: true,
+    isIncludeSystemTrustStoreManaged: false,
+  };
+
   constructor() {
     super([
       'getCertificates',
+      'getPolicyInformation',
       'viewCertificate',
       'exportCertificates',
+      'showNativeManageCertificates',
     ]);
   }
 
@@ -40,6 +47,11 @@ class FakePageHandler extends TestBrowserProxy implements
       Promise<{certs: SummaryCertInfo[]}> {
     this.methodCalled('getCertificates', source);
     return Promise.resolve(this.getCertificatesCallback_(source));
+  }
+
+  getPolicyInformation(): Promise<{policyInfo: CertPolicyInfo}> {
+    this.methodCalled('getPolicyInformation');
+    return Promise.resolve({policyInfo: this.policyInfo_});
   }
 
   viewCertificate(source: CertificateSource, sha256hashHex: string) {
@@ -55,6 +67,15 @@ class FakePageHandler extends TestBrowserProxy implements
   }) {
     this.getCertificatesCallback_ = callbackFn;
   }
+
+  setPolicyInformation(policyInfo: CertPolicyInfo) {
+    this.policyInfo_ = policyInfo;
+  }
+  // <if expr="is_win or is_macosx">
+  showNativeManageCertificates() {
+    this.methodCalled('showNativeManageCertificates');
+  }
+  // </if>
 }
 
 class TestCertificateManagerProxy {
@@ -307,6 +328,128 @@ suite('CertificateManagerV2Test', () => {
     assertFalse(
         !!parentElement,
         'provisionedClientCerts element was unexpectedly found');
+  });
+  // </if>
+
+  test('Policy - OS certs imported and managed', async () => {
+    const policyInfo: CertPolicyInfo = {
+      includeSystemTrustStore: true,
+      isIncludeSystemTrustStoreManaged: true,
+    };
+    testProxy.handler.setPolicyInformation(policyInfo);
+    initializeElement();
+
+    await testProxy.handler.whenCalled('getPolicyInformation');
+    await microtasksFinished();
+
+    assertTrue(certManager.$.importOsCerts.checked, 'os toggle state wrong');
+    assertFalse(
+        certManager.$.importOsCertsManagedIcon.hidden,
+        'enterprise managed icon visibility wrong');
+    assertFalse(
+        certManager.$.viewOsImportedCerts.hidden,
+        'view imported os certs link visibility wrong');
+    // <if expr="is_win or is_macosx">
+    assertFalse(
+        certManager.$.manageOsImportedCerts.hidden,
+        'imported os certs external link visibility wrong');
+    // </if>
+  });
+
+  test('Policy - OS certs imported but not managed', async () => {
+    const policyInfo: CertPolicyInfo = {
+      includeSystemTrustStore: true,
+      isIncludeSystemTrustStoreManaged: false,
+    };
+    testProxy.handler.setPolicyInformation(policyInfo);
+    initializeElement();
+
+    await testProxy.handler.whenCalled('getPolicyInformation');
+    await microtasksFinished();
+
+    assertTrue(
+        certManager.$.importOsCerts.checked, 'os import toggle state wrong');
+    assertTrue(
+        certManager.$.importOsCertsManagedIcon.hidden,
+        'enterprise managed icon visibility wrong');
+    assertFalse(
+        certManager.$.viewOsImportedCerts.hidden,
+        'view imported os certs link visibility wrong');
+    // <if expr="is_win or is_macosx">
+    assertFalse(
+        certManager.$.manageOsImportedCerts.hidden,
+        'imported os certs external link visibility wrong');
+    // </if>
+  });
+
+  test('Policy - OS certs not imported but managed', async () => {
+    const policyInfo: CertPolicyInfo = {
+      includeSystemTrustStore: false,
+      isIncludeSystemTrustStoreManaged: true,
+    };
+    testProxy.handler.setPolicyInformation(policyInfo);
+    initializeElement();
+
+    await testProxy.handler.whenCalled('getPolicyInformation');
+    await microtasksFinished();
+
+    assertFalse(
+        certManager.$.importOsCerts.checked, 'os import toggle state wrong');
+    assertFalse(
+        certManager.$.importOsCertsManagedIcon.hidden,
+        'enterprise managed icon visibility wrong');
+    assertTrue(
+        certManager.$.viewOsImportedCerts.hidden,
+        'view imported os certs link visibility wrong');
+    // <if expr="is_win or is_macosx">
+    assertTrue(
+        certManager.$.manageOsImportedCerts.hidden,
+        'imported os certs external link visibility wrong');
+    // </if>
+  });
+
+  test('Policy - OS certs not imported and not managed', async () => {
+    const policyInfo: CertPolicyInfo = {
+      includeSystemTrustStore: false,
+      isIncludeSystemTrustStoreManaged: false,
+    };
+    testProxy.handler.setPolicyInformation(policyInfo);
+    initializeElement();
+
+    await testProxy.handler.whenCalled('getPolicyInformation');
+    await microtasksFinished();
+
+    assertFalse(
+        certManager.$.importOsCerts.checked, 'os import toggle state wrong');
+    assertTrue(
+        certManager.$.importOsCertsManagedIcon.hidden,
+        'enterprise managed icon visibility wrong');
+    assertTrue(
+        certManager.$.viewOsImportedCerts.hidden,
+        'view imported os certs link visibility wrong');
+    // <if expr="is_win or is_macosx">
+    assertTrue(
+        certManager.$.manageOsImportedCerts.hidden,
+        'imported os certs external link visibility wrong');
+    // </if>
+  });
+
+  // <if expr="is_win or is_macosx">
+  test('Open native certificate management', async () => {
+    const policyInfo: CertPolicyInfo = {
+      includeSystemTrustStore: true,
+      isIncludeSystemTrustStoreManaged: true,
+    };
+    testProxy.handler.setPolicyInformation(policyInfo);
+    initializeElement();
+
+    await testProxy.handler.whenCalled('getPolicyInformation');
+    await microtasksFinished();
+    assertFalse(
+        certManager.$.manageOsImportedCerts.hidden,
+        'imported os certs external link visibility wrong');
+    certManager.$.manageOsImportedCerts.click();
+    await testProxy.handler.whenCalled('showNativeManageCertificates');
   });
   // </if>
 });

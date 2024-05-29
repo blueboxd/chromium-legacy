@@ -179,7 +179,7 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
   target.Set("submission_event", ToString(form.submission_event));
   target.Set("only_for_fallback", form.only_for_fallback);
   target.Set("is_gaia_with_skip_save_password_form",
-             form.form_data.is_gaia_with_skip_save_password_form);
+             form.form_data.is_gaia_with_skip_save_password_form());
   target.Set("is_new_password_reliable", form.is_new_password_reliable);
   target.Set("in_store", ToString(form.in_store));
 
@@ -229,9 +229,10 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
 
 }  // namespace
 
-AlternativeElement::AlternativeElement(const AlternativeElement::Value& value,
-                           autofill::FieldRendererId field_renderer_id,
-                           const AlternativeElement::Name& name)
+AlternativeElement::AlternativeElement(
+    const AlternativeElement::Value& value,
+    autofill::FieldRendererId field_renderer_id,
+    const AlternativeElement::Name& name)
     : value(value), field_renderer_id(field_renderer_id), name(name) {}
 
 AlternativeElement::AlternativeElement(const AlternativeElement::Value& value)

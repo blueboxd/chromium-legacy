@@ -299,6 +299,11 @@ the generic promo launch. -->
   <int value="21" label="More Than Ten"/>
 </enum>
 
+<enum name="IOSEnhancedSafeBrowseringInfobarInteraction">
+  <int value="0" label="Viewed"/>
+  <int value="1" label="Tapped"/>
+</enum>
+
 <enum name="IOSErrorPagePresentationFailed">
   <int value="0" label="Unknown"/>
   <int value="1" label="Web View Released Error"/>
@@ -564,6 +569,13 @@ the generic promo launch. -->
   <int value="3" label="SwipeToDismiss"/>
 </enum>
 
+<enum name="IOSParcelTrackingOptInStatus">
+  <int value="0" label="Never Track"/>
+  <int value="1" label="Always Track"/>
+  <int value="2" label="Ask To Track"/>
+  <int value="3" label="Status Not Set"/>
+</enum>
+
 <enum name="IOSPermissionEvent">
   <int value="0" label="Camera permission disabled"/>
   <int value="1" label="Camera permission enabled"/>
@@ -633,13 +645,6 @@ the generic promo launch. -->
   <int value="13" label="All Tabs default browser promo"/>
   <int value="14" label="Made for iOS default browser promo"/>
   <int value="15" label="Stay Safe default browser promo"/>
-</enum>
-
-<enum name="IOSPromosManagerPromoImpressionLimitEvaluationType">
-  <int value="0" label="Valid"/>
-  <int value="1" label="Invalid (Promo-specific limit triggered)"/>
-  <int value="2" label="Invalid (Promo-agnostic limit triggered)"/>
-  <int value="3" label="Invalid (Global limit triggered)"/>
 </enum>
 
 <enum name="IOSPromosManagerPromoType">
@@ -874,6 +879,12 @@ the generic promo launch. -->
   <int value="1" label="What's New"/>
   <int value="2" label="Sign In"/>
   <int value="3" label="Error"/>
+  <int value="4" label="SetUpList Continuation"/>
+</enum>
+
+<enum name="IOSUpgradeCenterFailureReason">
+  <int value="0" label="Invalid URL"/>
+  <int value="1" label="Invalid Version"/>
 </enum>
 
 <enum name="IOSWebFileInputAttributes">

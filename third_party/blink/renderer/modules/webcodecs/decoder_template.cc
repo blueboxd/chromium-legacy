@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -208,10 +207,10 @@ ScriptPromise<IDLUndefined> DecoderTemplate<Traits>::flush(
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (ThrowIfCodecStateClosed(state_, "flush", exception_state))
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
 
   if (ThrowIfCodecStateUnconfigured(state_, "flush", exception_state))
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
 
   MarkCodecActive();
 

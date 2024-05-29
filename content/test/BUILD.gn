@@ -229,6 +229,7 @@ static_library("test_support") {
     "../public/test/frame_test_utils.h",
     "../public/test/hit_test_region_observer.cc",
     "../public/test/hit_test_region_observer.h",
+    "../public/test/ipc_interfaces_dumper.h",
     "../public/test/javascript_test_observer.cc",
     "../public/test/javascript_test_observer.h",
     "../public/test/keep_alive_url_loader_utils.cc",
@@ -407,6 +408,7 @@ static_library("test_support") {
     "gpu_browsertest_helpers.h",
     "io_thread_shared_url_loader_factory_owner.cc",
     "io_thread_shared_url_loader_factory_owner.h",
+    "ipc_interfaces_dumper.cc",
     "mock_agent_scheduling_group_host.cc",
     "mock_agent_scheduling_group_host.h",
     "mock_background_sync_controller.cc",
@@ -541,6 +543,7 @@ static_library("test_support") {
     "//components/breadcrumbs/core",
     "//components/browsing_topics/common:common",
     "//components/cbor",
+    "//components/input",
     "//components/network_session_configurator/common:common",
     "//components/services/storage",
     "//components/startup_metric_utils",
@@ -583,8 +586,10 @@ static_library("test_support") {
     "//services/cert_verifier:lib",
     "//services/data_decoder/public/cpp:test_support",
     "//services/data_decoder/public/mojom",
+    "//services/device:lib",
     "//services/device/public/mojom",
     "//services/device/public/mojom:usb",
+    "//services/device/time_zone_monitor:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
     "//storage/browser/quota:mojo_bindings",
 
@@ -1051,6 +1056,7 @@ static_library("browsertest_support") {
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//cc/slim",
+    "//components/input",
     "//components/network_session_configurator/common:common",
     "//components/services/storage:storage",
     "//content/app:for_content_tests",
@@ -1504,6 +1510,7 @@ test("content_browsertests") {
     "../browser/power_monitor_browsertest.cc",
     "../browser/preloading/anchor_element_interaction_browsertest.cc",
     "../browser/preloading/prefetch/contamination_delay_browsertest.cc",
+    "../browser/preloading/prefetch/nav_prefetch_browsertest.cc",
     "../browser/preloading/preloading_decider_browsertest.cc",
     "../browser/preloading/prerender/prerender_browsertest.cc",
     "../browser/private_aggregation/private_aggregation_internals_browsertest.cc",
@@ -1519,7 +1526,6 @@ test("content_browsertests") {
     "../browser/renderer_host/document_service_browsertest.cc",
     "../browser/renderer_host/document_token_browsertest.cc",
     "../browser/renderer_host/document_user_data_browsertest.cc",
-    "../browser/renderer_host/early_swap_navigation_browsertest.cc",
     "../browser/renderer_host/embedding_token_browsertest.cc",
     "../browser/renderer_host/frame_tree_browsertest.cc",
     "../browser/renderer_host/input/autoscroll_browsertest.cc",
@@ -1735,6 +1741,7 @@ test("content_browsertests") {
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
     "//components/favicon/content",
+    "//components/input",
     "//components/network_session_configurator/common",
     "//components/os_crypt/async/browser:key_provider_interface",
     "//components/os_crypt/async/browser:test_support",
@@ -2423,8 +2430,6 @@ test("content_unittests") {
     "../browser/client_hints/client_hints_unittest.cc",
     "../browser/code_cache/generated_code_cache_unittest.cc",
     "../browser/code_cache/simple_lru_cache_unittest.cc",
-    "../browser/compute_pressure/pressure_service_for_frame_unittest.cc",
-    "../browser/compute_pressure/pressure_service_for_worker_unittest.cc",
     "../browser/content_index/content_index_database_unittest.cc",
     "../browser/content_index/content_index_service_impl_unittest.cc",
     "../browser/cookie_deprecation_label/cookie_deprecation_label_manager_impl_unittest.cc",
@@ -2626,7 +2631,7 @@ test("content_unittests") {
     "../browser/renderer_host/input/motion_event_web_unittest.cc",
     "../browser/renderer_host/input/render_widget_host_latency_tracker_unittest.cc",
     "../browser/renderer_host/input/stylus_text_selector_unittest.cc",
-    "../browser/renderer_host/input/touch_emulator_unittest.cc",
+    "../browser/renderer_host/input/touch_emulator_impl_unittest.cc",
     "../browser/renderer_host/input/web_input_event_util_unittest.cc",
     "../browser/renderer_host/isolated_web_app_throttle_unittest.cc",
     "../browser/renderer_host/media/audio_input_device_manager_unittest.cc",
@@ -2871,9 +2876,7 @@ test("content_unittests") {
       "../browser/web_contents/web_contents_view_mac_unittest.mm",
       "../browser/web_contents/web_drag_dest_mac_unittest.mm",
       "../browser/web_contents/web_drag_source_mac_unittest.mm",
-      "../common/input/web_input_event_builders_mac_unittest.mm",
       "../common/mac/attributed_string_type_converters_unittest.mm",
-      "../common/native_web_keyboard_event_mac_unittest.mm",
       "../renderer/sandbox_mac_v2_unittest.mm",
     ]
   }
@@ -2924,7 +2927,13 @@ test("content_unittests") {
       "../browser/web_contents/color_chooser_unittest.cc",
       "../common/android/cpu_time_metrics_unittest.cc",
       "../common/android/gin_java_bridge_value_unittest.cc",
-      "../common/input/web_input_event_builders_android_unittest.cc",
+    ]
+  }
+
+  if (!is_android) {
+    sources += [
+      "../browser/compute_pressure/pressure_service_for_frame_unittest.cc",
+      "../browser/compute_pressure/pressure_service_for_worker_unittest.cc",
     ]
   }
 
@@ -2968,6 +2977,7 @@ test("content_unittests") {
     "//base/allocator:buildflags",
     "//base/test:proto_test_support",
     "//base/test:test_support",
+    "//build:buildflag_header_h",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
     "//cc",
@@ -2975,6 +2985,7 @@ test("content_unittests") {
     "//cc/mojom",
     "//components/attribution_reporting:mojom",
     "//components/cbor",
+    "//components/input",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
     "//components/offline_pages/buildflags",

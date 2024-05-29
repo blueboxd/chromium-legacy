@@ -7,6 +7,7 @@ package org.chromium.chrome.test.transit;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 
@@ -30,7 +31,6 @@ import org.chromium.base.test.transit.ScrollableFacility;
 import org.chromium.base.test.transit.Station;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 
@@ -125,12 +125,8 @@ public abstract class AppMenuFacility<HostStationT extends Station>
     public static final @IdRes int SETTINGS_ID = R.id.preferences_id;
     public static final @IdRes int HELP_AND_FEEDBACK_ID = R.id.help_id;
 
-    protected final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
-
-    protected AppMenuFacility(
-            HostStationT station, ChromeTabbedActivityTestRule chromeTabbedActivityTestRule) {
+    protected AppMenuFacility(HostStationT station) {
         super(station);
-        mChromeTabbedActivityTestRule = chromeTabbedActivityTestRule;
     }
 
     @CallSuper
@@ -150,17 +146,12 @@ public abstract class AppMenuFacility<HostStationT extends Station>
 
     /** Default behavior for "Open new tab". */
     protected NewTabPageStation createNewTabPageStation() {
-        return NewTabPageStation.newBuilder()
-                .withActivityTestRule(mChromeTabbedActivityTestRule)
-                .withIsOpeningTabs(1)
-                .withIsSelectingTabs(1)
-                .build();
+        return NewTabPageStation.newBuilder().withIsOpeningTabs(1).withIsSelectingTabs(1).build();
     }
 
     /** Default behavior for "Open new Incognito tab". */
     protected IncognitoNewTabPageStation createIncognitoNewTabPageStation() {
         return IncognitoNewTabPageStation.newBuilder()
-                .withActivityTestRule(mChromeTabbedActivityTestRule)
                 .withIsOpeningTabs(1)
                 .withIsSelectingTabs(1)
                 .build();
@@ -171,15 +162,19 @@ public abstract class AppMenuFacility<HostStationT extends Station>
         return new SettingsStation();
     }
 
-    private static Matcher<View> itemViewMatcher(@IdRes int id) {
+    protected static Matcher<View> itemViewMatcher(@IdRes int id) {
         return allOf(withId(id), isDescendantOfA(MENU_LIST));
     }
 
-    private static Matcher<ListItem> itemDataMatcher(@IdRes int id) {
+    protected static Matcher<View> itemViewMatcher(String text) {
+        return allOf(withText(text), isDescendantOfA(MENU_LIST));
+    }
+
+    protected static Matcher<ListItem> itemDataMatcher(@IdRes int id) {
         return withMenuItemId(id);
     }
 
-    private static Matcher<MVCListAdapter.ListItem> withMenuItemId(@IdRes int id) {
+    protected static Matcher<MVCListAdapter.ListItem> withMenuItemId(@IdRes int id) {
         return new TypeSafeMatcher<>() {
             @Override
             public void describeTo(Description description) {

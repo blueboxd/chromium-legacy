@@ -2976,9 +2976,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.CommittedSize"
       label="Committed memory size for malloc(). Recorded only when
              PartitionAlloc is used as malloc()."/>
-  <suffix name="Malloc.ExtremeLUD"
-      label="Memory stats of the Extreme LUD. Recorded only when the Extreme
-             LUD is enabled."/>
+  <suffix name="Malloc.ExtremeLUD.CumulativeSizeInBytes"
+      label="Total size of quarantined allocations in the ELUD quarantine
+             since process start, including already dequarantined
+             allocations."/>
   <suffix name="Malloc.Fragmentation" label="Fragmentation of PartitionAlloc."/>
   <suffix name="Malloc.Fragmentation.After1H"
       label="Fragmentation of PartitionAlloc for processes that have existed
@@ -3349,10 +3350,17 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.BRPQuarantinedBytesPerMinute"
       label="Total size of BRP quarantined bytes per minute, averaged during
              the last memory dump interval."/>
-  <suffix name="Malloc.ExtremeLUD.CumulativeSizeInBytes"
-      label="Total size of quarantined allocations in the ELUD quarantine
+  <suffix name="Malloc.ExtremeLUD.BytesPerMinute"
+      label="Size of ELUD quarantined bytes per minute, averaged during the
+             last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.CumulativeCount"
+      label="Total count of quarantined allocations in the ELUD quarantine
              since process start, including already dequarantined
              allocations."/>
+  <suffix name="Malloc.ExtremeLUD.QuarantinedTime"
+      label="Time to use up the capacity of the ELUD quarantine in
+             milliseconds, estimated from BytesPerMinute. Very rough
+             approximation to how long time allocations are quarantined."/>
   <suffix name="Malloc.ExtremeLUD.SizeInBytes"
       label="Size of quarantined allocations in the ELUD quarantine at dump
              time."/>
@@ -3449,26 +3457,15 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.BRPQuarantinedCountPerMinute"
       label="Number of BRP quarantined allocations per minute, averaged
              during the last memory dump interval."/>
-  <suffix name="Malloc.ExtremeLUD.BytesPerMinute"
-      label="Size of ELUD quarantined bytes per minute, averaged during the
-             last memory dump interval."/>
   <suffix name="Malloc.ExtremeLUD.Count"
       label="Count of all quarantined allocations in the ELUD quarantine at
              dump time."/>
   <suffix name="Malloc.ExtremeLUD.CountPerMinute"
       label="Number of ELUD quarantined allocations per minute, averaged
              during the last memory dump interval."/>
-  <suffix name="Malloc.ExtremeLUD.CumulativeCount"
-      label="Total count of quarantined allocations in the ELUD quarantine
-             since process start, including already dequarantined
-             allocations."/>
   <suffix name="Malloc.ExtremeLUD.MissCountPerMinute"
       label="Number of ELUD quarantine requests that were not satisfied per
              minute, averaged during the last memory dump interval."/>
-  <suffix name="Malloc.ExtremeLUD.QuarantinedTime"
-      label="Time to use up the capacity of the ELUD quarantine in
-             milliseconds, estimated from BytesPerMinute. Very rough
-             approximation to how long time allocations are quarantined."/>
   <suffix name="Malloc.ExtremeLUD.QuarantineMissCount"
       label="Monotonically increasing count of quarantine requests that were
              not satisfied due to the configured size limit of the ELUD
@@ -3879,20 +3876,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Security.TimeOnPage2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SB2RequestDestinations" separator=".">
-  <suffix name="Checked"
-      label="Resources that were checked. Logged before the resource starts
-             loading and again for each redirect."/>
-  <suffix name="Skipped"
-      label="Resources that were not checked because they are not active-ish
-             content types. Only used on mobile. Logged before the resource
-             request starts."/>
-  <suffix name="Unsafe"
-      label="Resources that were checked and classified as unsafe. Logged
-             when the URL check is completed."/>
-  <affected-histogram name="SB2.RequestDestination"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ScrollSourceDevice" separator=".">
   <suffix name="Touch" label="Touch"/>
   <suffix name="Wheel" label="Wheel"/>
@@ -4190,8 +4173,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Signin.InterceptResult.EnterpriseForced"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SigninInterceptSyncState" separator=".">
+<histogram_suffixes name="SigninInterceptState" separator=".">
   <suffix name="NoSync" label="User has not opted in to Sync."/>
+  <suffix name="SigninPending" label="User is in Signin Pending state."/>
   <suffix name="Sync" label="User has opted in to Sync."/>
   <affected-histogram name="Signin.InterceptResult.Enterprise"/>
   <affected-histogram name="Signin.InterceptResult.EnterpriseForced"/>
@@ -4313,24 +4297,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="WebRTC.Stun.SuccessPercent.NonSymNAT"/>
   <affected-histogram name="WebRTC.Stun.SuccessPercent.SymNAT"/>
   <affected-histogram name="WebRTC.Stun.SuccessPercent.UnknownNAT"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SweeperCompletionTypes" separator=".">
-  <suffix name="Complete" label="All indexes are scanned."/>
-  <suffix name="ConnectionOpened"
-      label="Scanning is interrupted by an new connection to the database."/>
-  <suffix name="ForceClose" label="Scanning is stopped by force closing."/>
-  <suffix name="MaxIterations"
-      label="Scanning is stopped because the maximum record iteration count
-             was hit."/>
-  <suffix name="SweepError"
-      label="Scanning is stopped because a leveldb error was encountered
-             during sweeping."/>
-  <suffix name="TimeoutReached" label="Scanning is stopped by the timeout."/>
-  <affected-histogram
-      name="WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize"/>
-  <affected-histogram
-      name="WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SystemNotificationAgeType" separator=".">
@@ -4551,6 +4517,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="FaceML" label="Face ML (Deprecated)"/>
   <suffix name="FirmwareUpdate" label="FirmwareUpdate"/>
   <suffix name="Help" label="Help"/>
+  <suffix name="Mall" label="App Mall"/>
   <suffix name="Media" label="Media"/>
   <suffix name="OSFeedback" label="OSFeedback"/>
   <suffix name="OsFlags" label="OsFlags"/>
@@ -4561,6 +4528,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="PrintPreviewCrOS" label="Print Preview CrOS"/>
   <suffix name="Projector" label="Projector"/>
   <suffix name="Sample" label="Sample"/>
+  <suffix name="Sanitize" label="Sanitize"/>
   <suffix name="Scanning" label="Scanning"/>
   <suffix name="ShimlessRMA" label="Shimless RMA"/>
   <suffix name="ShortcutCustomization" label="ShortcutCustomization"/>

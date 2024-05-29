@@ -33,8 +33,7 @@ class PasswordFormManagerForUI {
 
   // Returns the federated saved matches for the observed form.
   // TODO(crbug.com/40570965): merge with GetBestMatches.
-  virtual std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetFederatedMatches() const = 0;
+  virtual base::span<const PasswordForm> GetFederatedMatches() const = 0;
 
   // Returns credentials that are ready to be written (saved or updated) to a
   // password store.
@@ -53,8 +52,7 @@ class PasswordFormManagerForUI {
   virtual base::span<const InteractionsStats> GetInteractionsStats() const = 0;
 
   // List of insecure passwords for the current site.
-  virtual std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetInsecureCredentials() const = 0;
+  virtual base::span<const PasswordForm> GetInsecureCredentials() const = 0;
 
   // Determines if the user opted to 'never remember' passwords for this form.
   virtual bool IsBlocklisted() const = 0;

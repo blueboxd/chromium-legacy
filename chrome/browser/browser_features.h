@@ -75,8 +75,6 @@ BASE_DECLARE_FEATURE(kFedCmWithoutThirdPartyCookies);
 BASE_DECLARE_FEATURE(kFlexOrgManagementDisclosure);
 BASE_DECLARE_FEATURE(kIncomingCallNotifications);
 BASE_DECLARE_FEATURE(kKeyPinningComponentUpdater);
-BASE_DECLARE_FEATURE(kLargeFaviconFromGoogle);
-extern const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip;
 
 #if BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kLockProfileCookieDatabase);
@@ -155,6 +153,9 @@ BASE_DECLARE_FEATURE(kTabCaptureBlueBorderCrOS);
 BASE_DECLARE_FEATURE(kUseOsCryptAsyncForCookieEncryption);
 BASE_DECLARE_FEATURE(kWebUsbDeviceDetection);
 
+#if BUILDFLAG(IS_WIN)
+BASE_DECLARE_FEATURE(kBrowserDynamicCodeDisabled);
+#endif
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

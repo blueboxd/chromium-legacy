@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/standalone_browser/migration_progress_tracker.h"
 #include "chromeos/ash/components/standalone_browser/migrator_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -78,7 +79,7 @@ bool BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
     PrefService* local_state,
     const AccountId& account_id,
     const std::string& user_id_hash,
-    crosapi::browser_util::PolicyInitState policy_init_state) {
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state) {
   if (!MoveMigrator::ResumeRequired(local_state, user_id_hash)) {
     return false;
   }
@@ -102,7 +103,7 @@ void BrowserDataMigratorImpl::AttemptRestart() {
 bool BrowserDataMigratorImpl::MaybeRestartToMigrate(
     const AccountId& account_id,
     const std::string& user_id_hash,
-    crosapi::browser_util::PolicyInitState policy_init_state) {
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state) {
   if (!MaybeRestartToMigrateInternal(account_id, user_id_hash,
                                      policy_init_state)) {
     return false;
@@ -116,9 +117,9 @@ void BrowserDataMigratorImpl::MaybeRestartToMigrateWithDiskCheck(
     const AccountId& account_id,
     const std::string& user_id_hash,
     base::OnceCallback<void(bool, const std::optional<uint64_t>&)> callback) {
-  if (!MaybeRestartToMigrateInternal(
-          account_id, user_id_hash,
-          crosapi::browser_util::PolicyInitState::kAfterInit)) {
+  if (!MaybeRestartToMigrateInternal(account_id, user_id_hash,
+                                     ash::standalone_browser::migrator_util::
+                                         PolicyInitState::kAfterInit)) {
     std::move(callback).Run(false, std::nullopt);
     return;
   }
@@ -153,17 +154,17 @@ void BrowserDataMigratorImpl::MaybeRestartToMigrateWithDiskCheckAfterDiskCheck(
     return;
   }
 
-  bool result =
-      RestartToMigrate(account_id, user_id_hash,
-                       user_manager::UserManager::Get()->GetLocalState(),
-                       crosapi::browser_util::PolicyInitState::kAfterInit);
+  bool result = RestartToMigrate(
+      account_id, user_id_hash,
+      user_manager::UserManager::Get()->GetLocalState(),
+      ash::standalone_browser::migrator_util::PolicyInitState::kAfterInit);
   std::move(callback).Run(result, std::nullopt);
 }
 
 bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
     const AccountId& account_id,
     const std::string& user_id_hash,
-    crosapi::browser_util::PolicyInitState policy_init_state) {
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state) {
   auto* user_manager = user_manager::UserManager::Get();
   auto* local_state = user_manager->GetLocalState();
 
@@ -302,7 +303,7 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
     const AccountId& account_id,
     const std::string& user_id_hash,
     PrefService* local_state,
-    crosapi::browser_util::PolicyInitState policy_init_state) {
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state) {
   SetMigrationStep(local_state, MigrationStep::kRestartCalled);
 
   ash::standalone_browser::migrator_util::UpdateMigrationAttemptCountForUser(
@@ -343,12 +344,13 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
 BrowserDataMigratorImpl::BrowserDataMigratorImpl(
     const base::FilePath& original_profile_dir,
     const std::string& user_id_hash,
-    const ProgressCallback& progress_callback,
+    const standalone_browser::ProgressCallback& progress_callback,
     PrefService* local_state)
     : original_profile_dir_(original_profile_dir),
       user_id_hash_(user_id_hash),
       progress_tracker_(
-          std::make_unique<MigrationProgressTrackerImpl>(progress_callback)),
+          std::make_unique<standalone_browser::MigrationProgressTrackerImpl>(
+              progress_callback)),
       cancel_flag_(
           base::MakeRefCounted<browser_data_migrator_util::CancelFlag>()),
       local_state_(local_state) {

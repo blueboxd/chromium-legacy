@@ -35,6 +35,7 @@ class SearchProvider;
 }
 
 namespace ash {
+class ThumbnailLoader;
 class PickerController;
 }
 
@@ -73,10 +74,15 @@ class PickerClientImpl
   ShowEditorCallback CacheEditorContext() override;
   void GetSuggestedEditorResults(
       SuggestedEditorResultsCallback callback) override;
-  void GetRecentLocalFileResults(RecentFilesCallback callback) override;
-  void GetRecentDriveFileResults(RecentFilesCallback callback) override;
+  void GetRecentLocalFileResults(size_t max_files,
+                                 RecentFilesCallback callback) override;
+  void GetRecentDriveFileResults(size_t max_files,
+                                 RecentFilesCallback callback) override;
   void GetSuggestedLinkResults(SuggestedLinksCallback callback) override;
   bool IsFeatureAllowedForDogfood() override;
+  void FetchFileThumbnail(const base::FilePath& path,
+                          const gfx::Size& size,
+                          FetchFileThumbnailCallback callback) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
@@ -148,6 +154,8 @@ class PickerClientImpl
   ash::GifTenorApiFetcher gif_tenor_api_fetcher_;
   std::optional<std::string> current_gif_search_query_;
   std::unique_ptr<EndpointFetcher> current_gif_fetcher_;
+
+  std::unique_ptr<ash::ThumbnailLoader> thumbnail_loader_;
 
   base::ScopedObservation<user_manager::UserManager,
                           user_manager::UserManager::UserSessionStateObserver>

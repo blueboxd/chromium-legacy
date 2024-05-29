@@ -436,7 +436,11 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
   // Two valid phone numbers are imported, two invalid ones are removed.
   EXPECT_THAT(
       actual_phone_numbers,
-      UnorderedElementsAreArray({u"4088714567", u"+4940808179000", u"", u""}));
+      UnorderedElementsAreArray({base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"14088714567"
+                                     : u"4088714567",
+                                 u"+4940808179000", u"", u""}));
 }
 
 // Prepend country codes when formatting phone numbers if:
@@ -539,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternationalNumber) {
   for (size_t i = 0;
        i < personal_data_manager()->address_data_manager().GetProfiles().size();
        ++i) {
-    AutofillProfile* profile =
+    const AutofillProfile* profile =
         personal_data_manager()->address_data_manager().GetProfiles()[i];
     std::string expectation;
     std::string name = UTF16ToASCII(profile->GetRawInfo(NAME_FIRST));

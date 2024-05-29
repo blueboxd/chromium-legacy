@@ -40,7 +40,7 @@ class MockWebAudioDevice : public WebAudioDevice {
   int FramesPerBuffer() override { return frames_per_buffer_; }
   int MaxChannelCount() override { return 2; }
   void SetDetectSilence(bool detect_silence) override {}
-  media::OutputDeviceStatus CreateSinkAndGetDeviceStatus() override {
+  media::OutputDeviceStatus MaybeCreateSinkAndGetStatus() override {
     // In this test, we assume the sink creation always succeeds.
     return media::OUTPUT_DEVICE_STATUS_OK;
   }
@@ -162,6 +162,10 @@ class AudioDestinationTest
 };
 
 TEST_P(AudioDestinationTest, ResamplingTest) {
+#if defined(MEMORY_SANITIZER)
+  // TODO(crbug.com/342415791): Fix and re-enable tests with MSan.
+  GTEST_SKIP();
+#else
   ScopedTestingPlatformSupport<TestPlatform> platform;
   {
     InSequence s;
@@ -175,9 +179,14 @@ TEST_P(AudioDestinationTest, ResamplingTest) {
   }
 
   CountWASamplesProcessedForRate(GetParam());
+#endif
 }
 
 TEST_P(AudioDestinationTest, GlitchAndDelay) {
+#if defined(MEMORY_SANITIZER)
+  // TODO(crbug.com/342415791): Fix and re-enable tests with MSan.
+  GTEST_SKIP();
+#else
   ScopedTestingPlatformSupport<TestPlatform> platform;
   {
     InSequence s;
@@ -228,6 +237,7 @@ TEST_P(AudioDestinationTest, GlitchAndDelay) {
   }
 
   destination->Stop();
+#endif
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no label */,

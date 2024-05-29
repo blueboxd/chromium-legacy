@@ -594,8 +594,9 @@ const AXObject* FindAncestorWithAriaHidden(const AXObject* start) {
   for (const AXObject* object = start;
        object && !IsA<Document>(object->GetNode());
        object = object->ParentObject()) {
-    if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
+    if (object->IsAriaHiddenRoot()) {
       return object;
+    }
   }
 
   return nullptr;
@@ -1350,11 +1351,10 @@ void AXObject::Serialize(ui::AXNodeData* node_data,
     }
   }
 
-  if (accessibility_mode.has_mode(ui::AXMode::kHTML))
-    SerializeHTMLTagAndClass(node_data);  // Used for test readability.
-
-  if (accessibility_mode.has_mode(ui::AXMode::kScreenReader))
+  if (accessibility_mode.has_mode(ui::AXMode::kScreenReader)) {
     SerializeColorAttributes(node_data);  // Blends using all nodes' values.
+    SerializeHTMLIdTagAndClass(node_data);
+  }
 
   if (accessibility_mode.has_mode(ui::AXMode::kScreenReader) ||
       accessibility_mode.has_mode(ui::AXMode::kPDFPrinting)) {
@@ -1566,7 +1566,7 @@ void AXObject::SerializeElementAttributes(ui::AXNodeData* node_data) const {
       node_data, ax::mojom::blink::StringAttribute::kRole, role_str);
 }
 
-void AXObject::SerializeHTMLTagAndClass(ui::AXNodeData* node_data) const {
+void AXObject::SerializeHTMLIdTagAndClass(ui::AXNodeData* node_data) const {
   Element* element = GetElement();
   if (!element) {
     if (IsA<Document>(GetNode())) {
@@ -1575,6 +1575,10 @@ void AXObject::SerializeHTMLTagAndClass(ui::AXNodeData* node_data) const {
     }
     return;
   }
+
+  TruncateAndAddStringAttribute(node_data,
+                                ax::mojom::blink::StringAttribute::kHtmlId,
+                                element->GetIdAttribute());
 
   TruncateAndAddStringAttribute(node_data,
                                 ax::mojom::blink::StringAttribute::kHtmlTag,
@@ -1591,7 +1595,8 @@ void AXObject::SerializeHTMLAttributes(ui::AXNodeData* node_data) const {
   DCHECK(element);
   for (const Attribute& attr : element->Attributes()) {
     std::string name = attr.LocalName().LowerASCII().Utf8();
-    if (name == "class") {  // class already in kClassName
+    if (name == "id" || name == "class") {
+      // Attribute already in kHtmlId or kClassName.
       continue;
     }
     std::string value = attr.Value().Utf8();
@@ -1700,19 +1705,24 @@ void AXObject::SerializeLiveRegionAttributes(ui::AXNodeData* node_data) const {
 void AXObject::SerializeNameAndDescriptionAttributes(
     ui::AXMode accessibility_mode,
     ui::AXNodeData* node_data) const {
-  if (::features::IsAccessibilityPruneRedundantInlineTextEnabled()) {
-    if (node_data->role == ax::mojom::blink::Role::kInlineTextBox &&
-        IsOnlyChild()) {
-      // The text of an only-child inline text box can be inferred directly
-      // from the parent. No need to serialize redundant data.
-      node_data->SetNameFrom(ax::mojom::blink::NameFrom::kContents);
-      return;
-    }
-  }
-
   ax::mojom::blink::NameFrom name_from;
   AXObjectVector name_objects;
   String name = GetName(name_from, &name_objects);
+
+  if (::features::IsAccessibilityPruneRedundantInlineTextEnabled()) {
+    if (node_data->role == ax::mojom::blink::Role::kInlineTextBox &&
+        IsOnlyChild() && parent_ && parent_->GetLayoutObject()->IsText()) {
+      auto* layout_text = To<LayoutText>(parent_->GetLayoutObject());
+      String visible_text = layout_text->PlainText();
+      if (name == visible_text) {
+        // The text of an only-child inline text box can be inferred directly
+        // from the parent. No need to serialize redundant data.
+        node_data->SetNameFrom(ax::mojom::blink::NameFrom::kContents);
+        return;
+      }
+    }
+  }
+
   if (name_from == ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty) {
     node_data->AddStringAttribute(ax::mojom::blink::StringAttribute::kName,
                                   std::string());
@@ -3352,13 +3362,10 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
   }
 
   if (cached_is_aria_hidden_) {
-    // Keep keyboard focusable elements that are aria-hidden in tree, so that
-    // they can still fire events such as focus and value changes.
-    if (!IsKeyboardFocusable()) {
-      if (ignored_reasons)
-        ComputeIsAriaHidden(ignored_reasons);
-      return true;
+    if (ignored_reasons) {
+      ComputeIsAriaHidden(ignored_reasons);
     }
+    return true;
   }
 
   if (cached_is_inert_) {
@@ -3495,6 +3502,17 @@ bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
   return ComputeIsInertViaStyle(GetComputedStyle(), ignored_reasons);
 }
 
+bool AXObject::IsAriaHiddenRoot() const {
+  if (AXObjectCache().HasBadAriaHidden(*this)) {
+    return false;
+  }
+
+  // aria-hidden:true works a bit like display:none.
+  // * aria-hidden=true affects entire subtree.
+  // * aria-hidden=false is a noop.
+  return AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden);
+}
+
 bool AXObject::IsAriaHidden() {
   CheckCanAccessCachedValues();
 
@@ -3512,10 +3530,8 @@ bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
   if (IsA<Document>(GetNode())) {
     return false;
   }
-  // aria-hidden:true works a bit like display:none.
-  // * aria-hidden=true affects entire subtree.
-  // * aria-hidden=false is a noop.
-  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden)) {
+
+  if (IsAriaHiddenRoot()) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXAriaHiddenElement));
     return true;
@@ -3894,15 +3910,17 @@ bool AXObject::ComputeIsIgnoredButIncludedInTree() {
     return true;
   }
 
-  // Include all parents of ::before/::after/::marker pseudo elements to help
-  // ClearChildren() find all children, and assist naming computation.
-  // It is unnecessary to include a rule for other types of pseudo elements:
-  // Specifically, ::first-letter/::backdrop are not visited by
+  // Include all parents of ::before/::after/::marker/::scroll-marker-group
+  // pseudo elements to help ClearChildren() find all children, and assist
+  // naming computation. It is unnecessary to include a rule for other types of
+  // pseudo elements: Specifically, ::first-letter/::backdrop are not visited by
   // LayoutTreeBuilderTraversal, and cannot be in the tree, therefore do not add
   // a special rule to include their parents.
   if (element && (element->GetPseudoElement(kPseudoIdBefore) ||
                   element->GetPseudoElement(kPseudoIdAfter) ||
-                  element->GetPseudoElement(kPseudoIdMarker))) {
+                  element->GetPseudoElement(kPseudoIdMarker) ||
+                  element->GetPseudoElement(kPseudoIdScrollMarkerGroupBefore) ||
+                  element->GetPseudoElement(kPseudoIdScrollMarkerGroupAfter))) {
     return true;
   }
 
@@ -4511,13 +4529,10 @@ bool AXObject::IsHiddenForTextAlternativeCalculation(
   // when computing name/description through an aria-labelledby/describedby
   // relation, if the target of the relation is hidden it will expose the entire
   // subtree, including aria-hidden=true nodes. The exception was accounted in
-  // the previous if block, so we are safe to hide any node with
+  // the previous if block, so we are safe to hide any node with a valid
   // aria-hidden=true at this point.
-  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden)) {
-    // We only hide aria-hidden text if the node does not support focus as a
-    // bad authoring correction.
-    if (!CanSetFocusAttribute())
-      return true;
+  if (IsAriaHiddenRoot()) {
+    return true;
   }
 
   return IsHiddenViaStyle();
@@ -4980,7 +4995,6 @@ bool AXObject::SupportsARIAExpanded() const {
     case ax::mojom::blink::Role::kComboBoxSelect:
     case ax::mojom::blink::Role::kDisclosureTriangle:
     case ax::mojom::blink::Role::kDisclosureTriangleGrouped:
-    case ax::mojom::blink::Role::kListBox:
     case ax::mojom::blink::Role::kLink:
     case ax::mojom::blink::Role::kPopUpButton:
     case ax::mojom::blink::Role::kMenuItem:

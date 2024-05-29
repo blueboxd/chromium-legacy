@@ -28,7 +28,10 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.supplier.DestroyableObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.chrome.browser.fakepdf.PdfDocumentRequest;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -48,6 +51,7 @@ public class PdfPageUnitTest {
     @Mock private DestroyableObservableSupplier<Rect> mMarginSupplier;
     @Mock private Context mContext;
     @Mock private LoadUrlParams mLoadUrlParams;
+    @Mock private NativePage mNativePage;
     private Activity mActivity;
     private AutoCloseable mCloseableMocks;
     private PdfInfo mPdfInfo;
@@ -58,6 +62,8 @@ public class PdfPageUnitTest {
     private static final String PDF_LINK = "https://www.foo.com/testfiles/pdf/sample.pdf";
     private static final String EXAMPLE_URL = "https://www.example.com/";
     private static final String FILE_PATH = "/media/external/downloads/sample.pdf";
+    private static final String FILE_PATH_INCOGNITO = "/proc/5202/fd/344";
+    private static final String FILE_PATH_INCOGNITO_INVALID = "/proc/5202/fd/one";
     private static final String FILE_NAME = "sample.pdf";
     private static final String IMAGE_FILE_URL = "file:///media/external/downloads/sample.jpg";
 
@@ -193,6 +199,53 @@ public class PdfPageUnitTest {
     }
 
     @Test
+    public void testGetPdfDocumentRequest_WithPdfLink() {
+        PdfDocumentRequest request = PdfUtils.getPdfDocumentRequest(FILE_PATH, false);
+        Assert.assertNotNull("PdfDocumentRequest should not be null.", request);
+        Assert.assertNotNull("Uri should not be null.", request.getUri());
+        Assert.assertNull("File should be null.", request.getFile());
+        Assert.assertNull(
+                "ParcelFileDescriptor should be null.", request.getParcelFileDescriptor());
+    }
+
+    @Test
+    public void testGetPdfDocumentRequest_WithPdfLink_Incognito() {
+        PdfDocumentRequest request = PdfUtils.getPdfDocumentRequest(FILE_PATH_INCOGNITO, true);
+        Assert.assertNotNull("PdfDocumentRequest should not be null.", request);
+        Assert.assertNull("Uri should be null.", request.getUri());
+        Assert.assertNull("File should be null.", request.getFile());
+        Assert.assertNotNull(
+                "ParcelFileDescriptor should not be null.", request.getParcelFileDescriptor());
+    }
+
+    @Test
+    public void testGetPdfDocumentRequest_WithPdfLink_Incognito_InvalidFd() {
+        PdfDocumentRequest request =
+                PdfUtils.getPdfDocumentRequest(FILE_PATH_INCOGNITO_INVALID, true);
+        Assert.assertNull("PdfDocumentRequest should be null when filepath is invalid.", request);
+    }
+
+    @Test
+    public void testGetPdfDocumentRequest_WithContentUri() {
+        PdfDocumentRequest request = PdfUtils.getPdfDocumentRequest(CONTENT_URL, false);
+        Assert.assertNotNull("PdfDocumentRequest should not be null.", request);
+        Assert.assertNotNull("Uri should not be null.", request.getUri());
+        Assert.assertNull("File should be null.", request.getFile());
+        Assert.assertNull(
+                "ParcelFileDescriptor should be null.", request.getParcelFileDescriptor());
+    }
+
+    @Test
+    public void testGetPdfDocumentRequest_WithFileUri() {
+        PdfDocumentRequest request = PdfUtils.getPdfDocumentRequest(FILE_URL, false);
+        Assert.assertNotNull("PdfDocumentRequest should not be null.", request);
+        Assert.assertNull("Uri should be null.", request.getUri());
+        Assert.assertNotNull("File should not be null.", request.getFile());
+        Assert.assertNull(
+                "ParcelFileDescriptor should be null.", request.getParcelFileDescriptor());
+    }
+
+    @Test
     public void testGetFileNameFromUrl() {
         String filename = PdfUtils.getFileNameFromUrl(FILE_URL, DEFAULT_TAB_TITLE);
         Assert.assertEquals("Filename does not match for file url.", FILE_NAME, filename);
@@ -231,5 +284,54 @@ public class PdfPageUnitTest {
         Assert.assertFalse(
                 "It is not pdf navigation when the scheme is not one of content/file/http/https.",
                 result);
+    }
+
+    @Test
+    public void testRecordIsPdfFrozen_NativePageNull() {
+        HistogramWatcher histogramExpectation =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Android.Pdf.IsFrozenWhenDisplayed")
+                        .build();
+        PdfUtils.recordIsPdfFrozen(null);
+        histogramExpectation.assertExpected(
+                "The histogram should not be recorded when the native page is null.");
+    }
+
+    @Test
+    public void testRecordIsPdfFrozen_NativePageIsNotPdf() {
+        doReturn(false).when(mNativePage).isPdf();
+        HistogramWatcher histogramExpectation =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Android.Pdf.IsFrozenWhenDisplayed")
+                        .build();
+        PdfUtils.recordIsPdfFrozen(mNativePage);
+        histogramExpectation.assertExpected(
+                "The histogram should not be recorded when the native page is not pdf page.");
+    }
+
+    @Test
+    public void testRecordIsPdfFrozen_PdfIsFrozen() {
+        doReturn(true).when(mNativePage).isPdf();
+        doReturn(true).when(mNativePage).isFrozen();
+        HistogramWatcher histogramExpectation =
+                HistogramWatcher.newBuilder()
+                        .expectBooleanRecord("Android.Pdf.IsFrozenWhenDisplayed", true)
+                        .build();
+        PdfUtils.recordIsPdfFrozen(mNativePage);
+        histogramExpectation.assertExpected(
+                "The recorded value should be true when the pdf page is frozen.");
+    }
+
+    @Test
+    public void testRecordIsPdfFrozen_PdfIsNotFrozen() {
+        doReturn(true).when(mNativePage).isPdf();
+        doReturn(false).when(mNativePage).isFrozen();
+        HistogramWatcher histogramExpectation =
+                HistogramWatcher.newBuilder()
+                        .expectBooleanRecord("Android.Pdf.IsFrozenWhenDisplayed", false)
+                        .build();
+        PdfUtils.recordIsPdfFrozen(mNativePage);
+        histogramExpectation.assertExpected(
+                "The recorded value should be false when the pdf page is not frozen.");
     }
 }

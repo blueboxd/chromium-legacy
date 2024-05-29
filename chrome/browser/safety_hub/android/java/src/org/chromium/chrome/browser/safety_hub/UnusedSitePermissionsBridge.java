@@ -10,6 +10,15 @@ import org.jni_zero.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 
 public class UnusedSitePermissionsBridge {
+
+    static PermissionsData[] getRevokedPermissions(Profile profile) {
+        return UnusedSitePermissionsBridgeJni.get().getRevokedPermissions(profile);
+    }
+
+    static void regrantPermissions(Profile profile, String primaryPattern) {
+        UnusedSitePermissionsBridgeJni.get().regrantPermissions(profile, primaryPattern);
+    }
+
     @NativeMethods
     interface Natives {
         @JniType("std::vector<PermissionsData>")

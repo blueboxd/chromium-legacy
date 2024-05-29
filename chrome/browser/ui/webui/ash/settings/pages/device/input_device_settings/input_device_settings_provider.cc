@@ -246,6 +246,14 @@ void InputDeviceSettingsProvider::KeyboardBrightnessChanged(
   }
 }
 
+void InputDeviceSettingsProvider::KeyboardAmbientLightSensorEnabledChanged(
+    const power_manager::AmbientLightSensorChange& change) {
+  if (keyboard_ambient_light_sensor_observer_.is_bound()) {
+    keyboard_ambient_light_sensor_observer_
+        ->OnKeyboardAmbientLightSensorEnabledChanged(change.sensor_enabled());
+  }
+}
+
 void InputDeviceSettingsProvider::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
@@ -388,6 +396,13 @@ void InputDeviceSettingsProvider::OnReceiveKeyboardBrightness(
       brightness_percent.value_or(kDefaultKeyboardBrightness));
 }
 
+void InputDeviceSettingsProvider::OnReceiveKeyboardAmbientLightSensorEnabled(
+    std::optional<bool> keyboard_ambient_light_sensor_enabled) {
+  keyboard_ambient_light_sensor_observer_
+      ->OnKeyboardAmbientLightSensorEnabledChanged(
+          keyboard_ambient_light_sensor_enabled.value_or(true));
+}
+
 void InputDeviceSettingsProvider::ObserveKeyboardSettings(
     mojo::PendingRemote<mojom::KeyboardSettingsObserver> observer) {
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
@@ -460,6 +475,21 @@ void InputDeviceSettingsProvider::ObserveKeyboardBrightness(
   keyboard_brightness_control_delegate_->HandleGetKeyboardBrightness(
       base::BindOnce(&InputDeviceSettingsProvider::OnReceiveKeyboardBrightness,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InputDeviceSettingsProvider::ObserveKeyboardAmbientLightSensor(
+    mojo::PendingRemote<mojom::KeyboardAmbientLightSensorObserver> observer) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  keyboard_ambient_light_sensor_observer_.reset();
+  keyboard_ambient_light_sensor_observer_.Bind(std::move(observer));
+
+  // Get the initial keyboard ambient light sensor enabled status when first
+  // register the observer.
+  keyboard_brightness_control_delegate_
+      ->HandleGetKeyboardAmbientLightSensorEnabled(
+          base::BindOnce(&InputDeviceSettingsProvider::
+                             OnReceiveKeyboardAmbientLightSensorEnabled,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InputDeviceSettingsProvider::OnCustomizableMouseButtonPressed(

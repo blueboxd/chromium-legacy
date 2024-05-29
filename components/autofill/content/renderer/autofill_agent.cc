@@ -121,13 +121,13 @@ gfx::Rect GetCaretBounds(content::RenderFrame& frame) {
   if (!base::FeatureList::IsEnabled(features::kAutofillCaretExtraction)) {
     return gfx::Rect();
   }
-  gfx::Rect anchor;
-  gfx::Rect focus;
   if (auto* frame_widget = frame.GetWebFrame()->LocalRoot()->FrameWidget()) {
+    gfx::Rect anchor;
+    gfx::Rect focus;
     frame_widget->CalculateSelectionBounds(anchor, focus);
-    frame.ConvertViewportToWindow(&focus);
+    return frame.ConvertViewportToWindow(focus);
   }
-  return focus;
+  return gfx::Rect();
 }
 
 }  // namespace
@@ -567,15 +567,13 @@ void AutofillAgent::FocusedElementChanged(
 }
 
 void AutofillAgent::ObserveCaret(WebElement element) {
-  if (auto control = element.DynamicTo<WebFormControlElement>();
-      !element.IsContentEditable() && !form_util::IsTextAreaElement(control)) {
-    return;
-  }
   if (!base::FeatureList::IsEnabled(features::kAutofillCaretExtraction)) {
     return;
   }
 
-  if (!element.IsNull()) {
+  if (element && (element.IsContentEditable() ||
+                  form_util::IsTextAreaElement(
+                      element.DynamicTo<WebFormControlElement>()))) {
     caret_state_.remove_listener = element.GetDocument().AddEventListener(
         WebNode::EventType::kSelectionchange,
         base::BindRepeating(&AutofillAgent::HandleCaretMovedInFormField,
@@ -610,7 +608,7 @@ void AutofillAgent::HandleCaretMovedInFormField(WebElement element,
         }
       }
     }
-    if (element.IsContentEditable()) {
+    if (element && element.IsContentEditable()) {
       if (std::optional<FormData> form =
               form_util::FindFormForContentEditable(element)) {
         CHECK_EQ(form->fields.size(), 1u);
@@ -654,11 +652,11 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
                                          mojom::SubmissionSource source) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillUnifyAndFixFormTracking)) {
-    password_autofill_agent_->FireHostSubmitEvent(form_data.renderer_id,
+    password_autofill_agent_->FireHostSubmitEvent(form_data.renderer_id(),
                                                   source);
   }
   // We don't want to fire duplicate submission event.
-  if (!submitted_forms_.insert(form_data.renderer_id).second) {
+  if (!submitted_forms_.insert(form_data.renderer_id()).second) {
     return;
   }
   base::UmaHistogramEnumeration(kSubmissionSourceHistogram, source);
@@ -826,11 +824,15 @@ void AutofillAgent::ApplyFieldsAction(
   // In these cases, we set `last_queried_element_` to some form field as if
   // Autofill had been triggered from that field. This is necessary because
   // currently AutofillAgent relies on `last_queried_element_` in many places.
-  if (!last_queried_element || !last_queried_element.Focused() ||
+  const bool last_queried_element_needs_update =
+      !last_queried_element || !last_queried_element.Focused() ||
       !base::Contains(fields,
                       form_util::GetFormRendererId(
                           form_util::GetOwningForm(last_queried_element)),
-                      &FormFieldData::FillData::host_form_id)) {
+                      &FormFieldData::FillData::host_form_id);
+  if (last_queried_element_needs_update &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillDontUpdateLastQueriedElementOnFill)) {
     for (const FormFieldData::FillData& field : fields) {
       last_queried_element =
           form_util::GetFormControlByRendererId(field.renderer_id);
@@ -840,7 +842,9 @@ void AutofillAgent::ApplyFieldsAction(
       }
     }
   }
-  if (!last_queried_element) {
+  if (!last_queried_element &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillDontUpdateLastQueriedElementOnFill)) {
     return;
   }
   if (!unsafe_render_frame()) {
@@ -934,7 +938,9 @@ void AutofillAgent::ClearPreviewedForm() {
   // TODO(crbug.com/40564702): It is very rare, but it looks like the |element_|
   // can be null if a provisional load was committed immediately prior to
   // clearing the previewed form.
-  if (!last_queried_element) {
+  if (!last_queried_element &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillDontUpdateLastQueriedElementOnFill)) {
     return;
   }
   // `password_generation_agent_` can be null in WebView.
@@ -955,7 +961,7 @@ void AutofillAgent::ClearPreviewedForm() {
       previewed_elements.emplace_back(field, prior_autofill_state);
     }
   }
-  form_util::ClearPreviewedElements(previewed_elements, last_queried_element);
+  form_util::ClearPreviewedElements(previewed_elements);
   previewed_elements_ = {};
 }
 
@@ -1001,7 +1007,7 @@ void AutofillAgent::ApplyFieldAction(
                 << "Previewing replacement of selection is not implemented";
             break;
           case mojom::FieldActionType::kReplaceAll:
-            previewed_elements_.emplace_back(last_queried_element_,
+            previewed_elements_.emplace_back(form_control,
                                              form_control.GetAutofillState());
             form_control.SetSuggestedValue(WebString::FromUTF16(value));
             break;
@@ -1502,10 +1508,16 @@ void AutofillAgent::DidCompleteFocusChangeInFrame() {
 void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
     const WebNode& node) {
   DCHECK(node);
+  WebElement contenteditable;
+  const bool is_focused =
+      node.Focused() || ((contenteditable = node.RootEditableElement()) &&
+                         contenteditable.Focused() &&
+                         base::FeatureList::IsEnabled(
+                             features::kAutofillContentEditableLeftClickFix));
 #if defined(ANDROID)
-  HandleFocusChangeComplete(/*focused_node_was_last_clicked=*/node.Focused());
+  HandleFocusChangeComplete(/*focused_node_was_last_clicked=*/is_focused);
 #else
-  last_left_mouse_down_or_gesture_tap_in_node_caused_focus_ = node.Focused();
+  last_left_mouse_down_or_gesture_tap_in_node_caused_focus_ = is_focused;
 #endif
 }
 

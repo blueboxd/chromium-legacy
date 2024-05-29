@@ -783,10 +783,9 @@ TEST_F(ServiceWorkerContainerHostTest, AllowServiceWorker) {
           helper_->context()->AsWeakPtr());
   registration1_->SetActiveVersion(version);
 
-  ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerHost> worker_host = CreateServiceWorkerHost(
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
-      *version, helper_->context()->AsWeakPtr(), &remote_endpoint);
+      *version, helper_->context()->AsWeakPtr());
   ServiceWorkerContainerHost* container_host = worker_host->container_host();
 
   ServiceWorkerTestContentBrowserClient test_browser_client;
@@ -1177,22 +1176,10 @@ void ServiceWorkerContainerHostTest::TestReservedClientsAreNotExposed(
     ServiceWorkerClientInfo client_info,
     const GURL& url) {
   {
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        client_remote;
-    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-        host_receiver;
-    auto container_info =
-        blink::mojom::ServiceWorkerContainerInfoForClient::New();
-    container_info->client_receiver =
-        client_remote.InitWithNewEndpointAndPassReceiver();
-    host_receiver =
-        container_info->host_remote.InitWithNewEndpointAndPassReceiver();
-
     ASSERT_TRUE(context_);
-    base::WeakPtr<ServiceWorkerClient> service_worker_client =
+    auto [service_worker_client, container_info] =
         context_->CreateServiceWorkerClientForWorker(
-            std::move(host_receiver), helper_->mock_render_process_id(),
-            std::move(client_remote), client_info);
+            helper_->mock_render_process_id(), client_info);
     service_worker_client->UpdateUrls(
         url, url::Origin::Create(url),
         blink::StorageKey::CreateFirstParty(url::Origin::Create(url)));
@@ -1200,6 +1187,7 @@ void ServiceWorkerContainerHostTest::TestReservedClientsAreNotExposed(
     service_worker_client->CommitResponse(
         /*rfh_id=*/std::nullopt, PolicyContainerPolicies(),
         /*coep_reporter=*/{}, ukm::UkmRecorder::GetNewSourceID());
+    service_worker_client->SetContainerReady();
     service_worker_client->SetExecutionReady();
     EXPECT_TRUE(CanFindServiceWorkerClient(service_worker_client.get()));
   }
@@ -1269,21 +1257,9 @@ TEST_F(ServiceWorkerContainerHostTest, ClientPhaseForWindow) {
 void ServiceWorkerContainerHostTest::TestClientPhaseTransition(
     ServiceWorkerClientInfo client_info,
     const GURL& url) {
-  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-      client_remote;
-  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-      host_receiver;
-  auto container_info =
-      blink::mojom::ServiceWorkerContainerInfoForClient::New();
-  container_info->client_receiver =
-      client_remote.InitWithNewEndpointAndPassReceiver();
-  host_receiver =
-      container_info->host_remote.InitWithNewEndpointAndPassReceiver();
-
-  base::WeakPtr<ServiceWorkerClient> service_worker_client =
+  auto [service_worker_client, container_info] =
       helper_->context()->CreateServiceWorkerClientForWorker(
-          std::move(host_receiver), helper_->mock_render_process_id(),
-          std::move(client_remote), client_info);
+          helper_->mock_render_process_id(), client_info);
   EXPECT_FALSE(service_worker_client->is_response_committed());
   EXPECT_FALSE(service_worker_client->is_execution_ready());
 
@@ -1293,6 +1269,7 @@ void ServiceWorkerContainerHostTest::TestClientPhaseTransition(
   service_worker_client->CommitResponse(
       /*rfh_id=*/std::nullopt, PolicyContainerPolicies(), /*coep_reporter=*/{},
       ukm::UkmRecorder::GetNewSourceID());
+  service_worker_client->SetContainerReady();
   service_worker_client->SetExecutionReady();
 
   EXPECT_TRUE(service_worker_client->is_response_committed());
@@ -1344,10 +1321,9 @@ void ServiceWorkerContainerHostTest::TestBackForwardCachedClientsAreNotExposed(
             helper_->context()->AsWeakPtr());
     registration1_->SetActiveVersion(version);
 
-    ServiceWorkerRemoteContainerEndpoint remote_endpoint;
     worker_host = CreateServiceWorkerHost(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
-        *version, helper_->context()->AsWeakPtr(), &remote_endpoint);
+        *version, helper_->context()->AsWeakPtr());
     ASSERT_TRUE(worker_host);
   }
   {

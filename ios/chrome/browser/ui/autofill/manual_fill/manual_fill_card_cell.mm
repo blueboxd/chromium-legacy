@@ -49,6 +49,11 @@ using base::SysNSStringToUTF8;
 // The UIActions that should be available from the cell's overflow menu button.
 @property(nonatomic, strong) NSArray<UIAction*>* menuActions;
 
+// The part of the cell's accessibility label that is used to indicate the index
+// at which the payment method represented by this item is positioned in the
+// list of payment methods to show.
+@property(nonatomic, strong) NSString* cellIndexAccessibilityLabel;
+
 @end
 
 @implementation ManualFillCardItem
@@ -57,13 +62,15 @@ using base::SysNSStringToUTF8;
                    contentInjector:
                        (id<ManualFillContentInjector>)contentInjector
                 navigationDelegate:(id<CardListDelegate>)navigationDelegate
-                       menuActions:(NSArray<UIAction*>*)menuActions {
+                       menuActions:(NSArray<UIAction*>*)menuActions
+       cellIndexAccessibilityLabel:(NSString*)cellIndexAccessibilityLabel {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
     _contentInjector = contentInjector;
     _navigationDelegate = navigationDelegate;
     _card = card;
     _menuActions = menuActions;
+    _cellIndexAccessibilityLabel = cellIndexAccessibilityLabel;
     self.cellClass = [ManualFillCardCell class];
   }
   return self;
@@ -73,12 +80,20 @@ using base::SysNSStringToUTF8;
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   [cell setUpWithCreditCard:self.card
-            contentInjector:self.contentInjector
-         navigationDelegate:self.navigationDelegate
-                menuActions:self.menuActions];
+                  contentInjector:self.contentInjector
+               navigationDelegate:self.navigationDelegate
+                      menuActions:self.menuActions
+      cellIndexAccessibilityLabel:self.cellIndexAccessibilityLabel];
 }
 
 @end
+
+namespace {
+
+// Width of the card icon.
+constexpr CGFloat kCardIconWidth = 40;
+
+}  // namespace
 
 @interface ManualFillCardCell () <UITextViewDelegate>
 
@@ -186,9 +201,10 @@ using base::SysNSStringToUTF8;
 }
 
 - (void)setUpWithCreditCard:(ManualFillCreditCard*)card
-            contentInjector:(id<ManualFillContentInjector>)contentInjector
-         navigationDelegate:(id<CardListDelegate>)navigationDelegate
-                menuActions:(NSArray<UIAction*>*)menuActions {
+                contentInjector:(id<ManualFillContentInjector>)contentInjector
+             navigationDelegate:(id<CardListDelegate>)navigationDelegate
+                    menuActions:(NSArray<UIAction*>*)menuActions
+    cellIndexAccessibilityLabel:(NSString*)cellIndexAccessibilityLabel {
   if (!self.dynamicConstraints) {
     self.dynamicConstraints = [[NSMutableArray alloc] init];
   }
@@ -203,6 +219,12 @@ using base::SysNSStringToUTF8;
 
   [self populateViewsWithCardData:card menuActions:menuActions];
   [self verticallyArrangeViews:card];
+
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    self.accessibilityLabel =
+        [NSString stringWithFormat:@"%@, %@", cellIndexAccessibilityLabel,
+                                   self.cardLabel.attributedText.string];
+  }
 }
 
 #pragma mark - Private
@@ -216,10 +238,7 @@ using base::SysNSStringToUTF8;
 
   // Create the UIViews, add them to the contentView.
   self.cardLabel = CreateLabel();
-  self.cardIcon = [[UIImageView alloc] init];
-  self.cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.cardIcon setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                   forAxis:UILayoutConstraintAxisHorizontal];
+  self.cardIcon = [self createCardIcon];
   self.overflowMenuButton = CreateOverflowMenuButton();
   self.headerView =
       CreateHeaderView(self.cardIcon, self.cardLabel, self.overflowMenuButton);
@@ -301,9 +320,9 @@ using base::SysNSStringToUTF8;
   // regular buttons.
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableVirtualCards)) {
-      AppendHorizontalConstraintsForViews(
-          staticConstraints, @[ self.virtualCardInstructionTextView ],
-          self.layoutGuide);
+    AppendHorizontalConstraintsForViews(
+        staticConstraints, @[ self.virtualCardInstructionTextView ],
+        self.layoutGuide);
     AppendHorizontalConstraintsForViews(
         staticConstraints, @[ self.cardNumberLabeledChip ], self.layoutGuide,
         kChipsHorizontalMargin,
@@ -353,7 +372,7 @@ using base::SysNSStringToUTF8;
 // Adds the data from the ManualFillCreditCard to the corresponding UIViews.
 - (void)populateViewsWithCardData:(ManualFillCreditCard*)card
                       menuActions:(NSArray<UIAction*>*)menuActions {
-  self.cardIcon.image = NativeImage(card.issuerNetworkIconID);
+  self.cardIcon.image = card.icon;
 
   if (menuActions && menuActions.count) {
     self.overflowMenuButton.menu = [UIMenu menuWithChildren:menuActions];
@@ -587,8 +606,8 @@ using base::SysNSStringToUTF8;
   }
 }
 
-// Called the "Autofill Form" button is tapped. Fills the current form with the
-// card's data.
+// Called when the "Autofill Form" button is tapped. Fills the current form with
+// the card's data.
 - (void)onAutofillFormButtonTapped {
   autofill::SuggestionType popupItemId =
       autofill::VirtualCardFeatureEnabled() &&
@@ -710,6 +729,22 @@ using base::SysNSStringToUTF8;
   [expirationSeparatorLabel setTextColor:[UIColor colorNamed:kSeparatorColor]];
   expirationSeparatorLabel.text = @"/";
   return expirationSeparatorLabel;
+}
+
+// Creates and configures the card icon image view.
+- (UIImageView*)createCardIcon {
+  UIImageView* cardIcon = [[UIImageView alloc] init];
+  cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
+  [cardIcon setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                              forAxis:UILayoutConstraintAxisHorizontal];
+
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    cardIcon.contentMode = UIViewContentModeScaleAspectFill;
+    [cardIcon.widthAnchor constraintEqualToConstant:kCardIconWidth].active =
+        YES;
+  }
+
+  return cardIcon;
 }
 
 // Adds or hides ChipButton depending on the 'test' boolean.

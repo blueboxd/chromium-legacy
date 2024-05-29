@@ -703,7 +703,6 @@ bool CaptureModeController::CanShowUserNudge() const {
     case user_manager::UserType::kGuest:
     case user_manager::UserType::kPublicAccount:
     case user_manager::UserType::kKioskApp:
-    case user_manager::UserType::kArcKioskApp:
     case user_manager::UserType::kWebKioskApp:
       return false;
   }
@@ -986,13 +985,14 @@ void CaptureModeController::MaybeUpdateVcPanel() {
 
   const bool is_camera_used = IsShowingCameraPreview();
   const bool is_recording_audio = IsAudioRecordingInProgress();
+  const bool has_media_app = is_camera_used || is_recording_audio;
 
   delegate_->UpdateVideoConferenceManager(
       crosapi::mojom::VideoConferenceMediaUsageStatus::New(
           /*client_id=*/vc_client_id_,
-          /*has_media_app=*/is_camera_used || is_recording_audio,
-          /*has_camera_permission=*/is_camera_used,
-          /*has_microphone_permission=*/is_recording_audio,
+          /*has_media_app=*/has_media_app,
+          /*has_camera_permission=*/has_media_app,
+          /*has_microphone_permission=*/has_media_app,
           /*is_capturing_camera=*/is_camera_used,
           /*is_capturing_microphone=*/is_recording_audio,
           /*is_capturing_screen=*/false));

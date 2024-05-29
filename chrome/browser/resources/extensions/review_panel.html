@@ -1,18 +1,14 @@
 <style include="cr-shared-style shared-style">
+  .panel-header {
+    /* label in panel-header's cr-expand-button adds its own vertical padding.
+       Thus, we need to substract it from the panel-header padding */
+    padding: calc(var(--cr-section-padding) -
+        var(--cr-section-vertical-padding)) 0px;
+  }
+
   .header-group-wrapper {
     flex: 1;
     margin-inline-start: 15px;
-  }
-
-  .header-with-icon {
-    align-items: center;
-    display: flex;
-  }
-
-  #safetyHubTitleContainer {
-    font-size: 15px;
-    font-weight: 400;
-    margin: 0 0 16px 5px;
   }
 
   cr-icon[icon='cr:check'] {
@@ -26,19 +22,10 @@
     }
   }
 
-  .header-group-wrapper {
-    flex: 1;
-    margin-inline-start: 15px;
-  }
-
   .completion-container {
     font-weight: 500;
     font-size: 14px;
     min-height: 42px;
-  }
-
-  .panel-extensions {
-    padding-bottom: 15px;
   }
 
   .panel-extension-info {
@@ -51,43 +38,22 @@
     margin-inline-start: auto;
   }
 
-  .cr-row{
+  .cr-row {
     padding: 0;
   }
-
-  .cr-row.first {
-    padding-top: 5px;
-  }
-
-  /* When the panel is the width of one extension card, it will reformat
-     itself. */
-  /* clean-css ignore:start */
-  @container (max-width:450px) {
-    .header-with-icon {
-      display: grid;
-      grid-template-columns: auto auto;
-    }
-
-    #removeAllButton {
-      grid-column: 2;
-      margin-inline-start: 20px;
-      margin-inline-end: auto;
-      margin-top: 10px;
-    }
-  }
-  /* clean-css ignore:end */
-
 </style>
-<h2 id="safetyHubTitleContainer"
+
+<h2 id="safetyHubTitleContainer" class="panel-title"
     hidden$="[[!shouldShowSafetyHubHeader_]]">
   $i18n{safetyHubHeader}
 </h2>
-<div class="panel-background" hidden$="[[shouldHideUnsafePanel_]]">
-  <cr-expand-button class="cr-row first" no-hover
+
+<div class="panel-background">
+  <cr-expand-button no-hover
       id="expandButton"
       expanded="{{unsafeExtensionsReviewListExpanded_}}"
       hidden$="[[!shouldShowUnsafeExtensions_]]">
-    <div class="header-with-icon" id="reviewPanelContainer">
+    <div class="panel-header" id="reviewPanelContainer">
       <cr-icon aria-hidden="true" icon="extensions-icons:my_extensions"
           class="panel-header-icon">
       </cr-icon>
@@ -110,7 +76,7 @@
   <cr-collapse class="panel-extensions"
       opened="[[unsafeExtensionsReviewListExpanded_]]"
       hidden$="[[!shouldShowUnsafeExtensions_]]">
-    <template is="dom-repeat" items="[[unsafeExtensions_]]">
+    <template is="dom-repeat" items="[[extensions]]">
       <div class="panel-extension-row cr-row">
         <img class="panel-extension-icon" src="[[item.iconUrl]]"
             role="presentation">

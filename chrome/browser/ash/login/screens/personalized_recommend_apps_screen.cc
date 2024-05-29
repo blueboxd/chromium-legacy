@@ -5,12 +5,14 @@
 #include "chrome/browser/ash/login/screens/personalized_recommend_apps_screen.h"
 
 #include <algorithm>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_switches.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_service.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_types.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -38,7 +40,22 @@ namespace {
 constexpr const char kUserActionNext[] = "next";
 constexpr const char kUserActionSkip[] = "skip";
 constexpr const char kUserActionBack[] = "back";
+constexpr const char kUserActionLoaded[] = "loaded";
 constexpr const char kNoUseCasesSelectedIDName[] = "oobe_other";
+
+constexpr const base::TimeDelta kDelaySetCategoriesAppsMapTime =
+    base::Seconds(2);
+constexpr const base::TimeDelta kDelayOverviewStepTime = base::Seconds(3);
+
+void WebAppInstallCallback(const std::string& package_id, bool success) {
+  if (success) {
+    LOG(WARNING) << "Web application '" << package_id
+                 << "' installed successfully";
+  } else {
+    LOG(WARNING) << "Web application '" << package_id
+                 << "' installation failed";
+  }
+}
 
 }  // namespace
 
@@ -109,14 +126,14 @@ void PersonalizedRecommendAppsScreen::ShowImpl() {
     return;
   }
 
+  view_->Show();
+
   raw_ptr<OobeAppsDiscoveryService> oobe_apps_discovery_service_ =
       OobeAppsDiscoveryServiceFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile());
   oobe_apps_discovery_service_->GetAppsAndUseCases(
       base::BindOnce(&PersonalizedRecommendAppsScreen::OnResponseReceived,
                      weak_factory_.GetWeakPtr()));
-
-  view_->Show();
 }
 
 void PersonalizedRecommendAppsScreen::OnResponseReceived(
@@ -127,16 +144,19 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
     LOG(ERROR)
         << "Got an error when fetched cached data from the OOBE Apps Service";
     exit_callback_.Run(Result::kNotApplicable);
+    return;
   }
 
   if (app_infos.empty()) {
     LOG(ERROR) << "Empty set of apps received from the server";
     exit_callback_.Run(Result::kNotApplicable);
+    return;
   }
 
   if (use_cases.empty()) {
     LOG(ERROR) << "Empty set of use-cases received from the server";
     exit_callback_.Run(Result::kNotApplicable);
+    return;
   }
 
   // This code performs the following steps to prepare recommended app data for
@@ -261,9 +281,19 @@ void PersonalizedRecommendAppsScreen::OnResponseReceived(
     }
   }
 
-  if (view_) {
-    view_->SetCategoriesAppsMapData(std::move(apps_dict));
+  if (apps_dict.empty()) {
+    LOG(ERROR) << "No apps found after filtering, skipping the screen";
+    exit_callback_.Run(Result::kNotApplicable);
+    return;
   }
+
+  apps_category_map_ = std::move(apps_dict);
+
+  delay_set_apps_timer_ = std::make_unique<base::OneShotTimer>();
+
+  delay_set_apps_timer_->Start(
+      FROM_HERE, kDelaySetCategoriesAppsMapTime, this,
+      &PersonalizedRecommendAppsScreen::SetCategoriesAppsMapData);
 }
 
 void PersonalizedRecommendAppsScreen::HideImpl() {}
@@ -318,16 +348,34 @@ void PersonalizedRecommendAppsScreen::OnInstall(
     for (const auto& selected_web_app : selected_web_apps) {
       install_service.InstallAppHeadless(
           apps::AppInstallSurface::kOobeAppRecommendations, selected_web_app,
-          // TODO(b/341305093): Implement callback that will log whether
-          // installation successful or not.
-          base::DoNothing());
+          base::BindOnce(&WebAppInstallCallback, selected_web_app.ToString()));
     }
+  }
+}
+
+void PersonalizedRecommendAppsScreen::ShowOverviewStep() {
+  if (view_) {
+    view_->SetOverviewStep();
+  }
+}
+
+void PersonalizedRecommendAppsScreen::SetCategoriesAppsMapData() {
+  if (view_) {
+    view_->SetCategoriesAppsMapData(std::move(apps_category_map_));
   }
 }
 
 void PersonalizedRecommendAppsScreen::OnUserAction(
     const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
+
+  if (action_id == kUserActionLoaded) {
+    delay_overview_timer_ = std::make_unique<base::OneShotTimer>();
+    delay_overview_timer_->Start(
+        FROM_HERE, kDelayOverviewStepTime, this,
+        &PersonalizedRecommendAppsScreen::ShowOverviewStep);
+    return;
+  }
 
   if (action_id == kUserActionSkip) {
     exit_callback_.Run(Result::kSkip);
@@ -336,7 +384,6 @@ void PersonalizedRecommendAppsScreen::OnUserAction(
 
   if (action_id == kUserActionNext) {
     CHECK_EQ(args.size(), 2u);
-    // TODO(b/339789465) : the install logic of the apps.
     OnInstall(args[1].GetList().Clone());
     exit_callback_.Run(Result::kNext);
     return;

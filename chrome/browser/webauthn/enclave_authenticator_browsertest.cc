@@ -56,6 +56,7 @@
 #include "components/trusted_vault/proto/vault.pb.h"
 #include "components/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/trusted_vault/securebox.h"
+#include "components/trusted_vault/test/mock_trusted_vault_connection.h"
 #include "components/trusted_vault/trusted_vault_connection.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -94,6 +95,8 @@
 #if !defined(MEMORY_SANITIZER)
 
 namespace {
+
+using trusted_vault::MockTrustedVaultConnection;
 
 constexpr int32_t kSecretVersion = 417;
 constexpr uint8_t kSecurityDomainSecret[32] = {0};
@@ -338,6 +341,21 @@ static constexpr char kGetAssertionUvRequired[] = R"((() => {
            e => window.domAutomationController.send('error ' + e));
 })())";
 
+#if BUILDFLAG(IS_MAC)
+static constexpr char kGetAssertionUvPreferred[] = R"((() => {
+  return navigator.credentials.get({ publicKey: {
+    challenge: new Uint8Array([0]),
+    timeout: 10000,
+    userVerification: 'preferred',
+    allowCredentials: [],
+  }}).then(c => window.domAutomationController.send(
+              'webauthn: uv=' +
+              // This gets the UV bit from the response.
+              ((new Uint8Array(c.response.authenticatorData)[32]&4) != 0)),
+           e => window.domAutomationController.send('error ' + e));
+})())";
+#endif
+
 bool IsReady(GPMEnclaveController::AccountState state) {
   switch (state) {
     case GPMEnclaveController::AccountState::kReady:
@@ -371,58 +389,6 @@ struct TempDir {
 
  private:
   base::ScopedTempDir dir_;
-};
-
-class MockTrustedVaultConnection
-    : public trusted_vault::TrustedVaultConnection {
- public:
-  MockTrustedVaultConnection() = default;
-  ~MockTrustedVaultConnection() override = default;
-  MOCK_METHOD(
-      std::unique_ptr<Request>,
-      RegisterAuthenticationFactor,
-      (const CoreAccountInfo& account_info,
-       const trusted_vault::MemberKeysSource& member_key_source,
-       const trusted_vault::SecureBoxPublicKey&
-           authentication_factor_public_key,
-       trusted_vault::AuthenticationFactorType authentication_factor_type,
-       base::OnceCallback<
-           void(const trusted_vault::TrustedVaultRegistrationStatus,
-                /*key_version=*/int)> callback),
-      (override));
-  MOCK_METHOD(std::unique_ptr<Request>,
-              RegisterDeviceWithoutKeys,
-              (const CoreAccountInfo& account_info,
-               const trusted_vault::SecureBoxPublicKey& device_public_key,
-               base::OnceCallback<
-                   void(const trusted_vault::TrustedVaultRegistrationStatus,
-                        /*key_version=*/int)> callback),
-              (override));
-  MOCK_METHOD(std::unique_ptr<Request>,
-              DownloadNewKeys,
-              (const CoreAccountInfo& account_info,
-               const trusted_vault::TrustedVaultKeyAndVersion&
-                   last_trusted_vault_key_and_version,
-               std::unique_ptr<trusted_vault::SecureBoxKeyPair> device_key_pair,
-               base::OnceCallback<
-                   void(trusted_vault::TrustedVaultDownloadKeysStatus,
-                        const std::vector<std::vector<uint8_t>>& /*keys*/,
-                        int /*last_key_version*/)> callback),
-              (override));
-  MOCK_METHOD(std::unique_ptr<Request>,
-              DownloadIsRecoverabilityDegraded,
-              (const CoreAccountInfo& account_info,
-               base::OnceCallback<
-                   void(trusted_vault::TrustedVaultRecoverabilityStatus)>),
-              (override));
-  MOCK_METHOD(
-      std::unique_ptr<Request>,
-      DownloadAuthenticationFactorsRegistrationState,
-      (const CoreAccountInfo& account_info,
-       base::OnceCallback<void(
-           trusted_vault::DownloadAuthenticationFactorsRegistrationStateResult)>
-           callback),
-      (override));
 };
 
 class EnclaveAuthenticatorBrowserTest : public SyncTest {
@@ -2305,6 +2271,77 @@ IN_PROC_BROWSER_TEST_F(EnclaveAuthenticatorWithPinBrowserTest,
 }
 
 #if BUILDFLAG(IS_MAC)
+
+bool MacBiometricApisAvailable() {
+  if (__builtin_available(macOS 12, *)) {
+    return true;
+  }
+  return false;
+}
+
+IN_PROC_BROWSER_TEST_F(EnclaveAuthenticatorWithPinBrowserTest,
+                       BiometricsDisabledDuringRequest) {
+  if (!MacBiometricApisAvailable()) {
+    GTEST_SKIP() << "Need macOS >= 12";
+  }
+
+  // If Touch ID is disabled during the course of a request, the UV disposition
+  // shouldn't also change. I.e. if we started with the expectation of doing
+  // UV=true, the UI expects that to continue, even if we need macOS to prompt
+  // for the system password.
+  trusted_vault::DownloadAuthenticationFactorsRegistrationStateResult
+      registration_state_result;
+  registration_state_result.state = trusted_vault::
+      DownloadAuthenticationFactorsRegistrationStateResult::State::kRecoverable;
+  SetMockVaultConnectionOnRequestDelegate(std::move(registration_state_result));
+  security_domain_service_->pretend_there_are_members();
+  AddTestPasskeyToModel();
+  EnableUVKeySupport();
+
+  biometrics_override_.reset();
+  biometrics_override_ =
+      std::make_unique<device::fido::mac::ScopedBiometricsOverride>(true);
+
+  // The first get() request is satisfied implicitly because recovery was done.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::DOMMessageQueue message_queue(web_contents);
+  content::ExecuteScriptAsync(web_contents, kGetAssertionUvPreferred);
+  delegate_observer()->WaitForUI();
+
+  EXPECT_EQ(dialog_model()->step(),
+            AuthenticatorRequestDialogModel::Step::kRecoverSecurityDomain);
+
+  EnclaveManagerFactory::GetAsEnclaveManagerForProfile(browser()->profile())
+      ->StoreKeys(kGaiaId,
+                  {std::vector<uint8_t>(std::begin(kSecurityDomainSecret),
+                                        std::end(kSecurityDomainSecret))},
+                  kSecretVersion);
+
+  std::string script_result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&script_result));
+  EXPECT_EQ(script_result, "\"webauthn: uv=true\"");
+
+  // During this second get() request, Touch ID will be disabled.
+  content::ExecuteScriptAsync(web_contents, kGetAssertionUvPreferred);
+  delegate_observer()->WaitForUI();
+  EXPECT_EQ(dialog_model()->step(),
+            AuthenticatorRequestDialogModel::Step::kGPMTouchID);
+  biometrics_override_.reset();
+  biometrics_override_ =
+      std::make_unique<device::fido::mac::ScopedBiometricsOverride>(false);
+  // Disable Touch ID. The request should still resolve with uv=true.
+  request_delegate()->dialog_model()->OnTouchIDComplete(false);
+
+  EnclaveManagerFactory::GetAsEnclaveManagerForProfile(browser()->profile())
+      ->StoreKeys(kGaiaId,
+                  {std::vector<uint8_t>(std::begin(kSecurityDomainSecret),
+                                        std::end(kSecurityDomainSecret))},
+                  kSecretVersion);
+
+  ASSERT_TRUE(message_queue.WaitForMessage(&script_result));
+  EXPECT_EQ(script_result, "\"webauthn: uv=true\"");
+}
 
 constexpr char kICloudKeychainRecoveryKeyAccessGroup[] =
     MAC_TEAM_IDENTIFIER_STRING ".com.google.common.folsom";

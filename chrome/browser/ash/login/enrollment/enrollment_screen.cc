@@ -174,8 +174,8 @@ EnrollmentScreen::~EnrollmentScreen() {
 
 void EnrollmentScreen::SetEnrollmentConfig(
     const policy::EnrollmentConfig& enrollment_config) {
-  enrollment_config_ = enrollment_config;
-  switch (enrollment_config_.auth_mechanism) {
+  prescribed_config_ = enrollment_config;
+  switch (prescribed_config_.auth_mechanism) {
     case EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE:
       current_auth_ = AUTH_OAUTH;
       next_auth_ = AUTH_OAUTH;
@@ -191,7 +191,7 @@ void EnrollmentScreen::SetEnrollmentConfig(
         break;
       }
       current_auth_ = AUTH_ATTESTATION;
-      next_auth_ = enrollment_config_.should_enroll_interactively()
+      next_auth_ = prescribed_config_.should_enroll_interactively()
                        ? AUTH_OAUTH
                        : AUTH_ATTESTATION;
       break;
@@ -207,21 +207,23 @@ void EnrollmentScreen::SetEnrollmentConfig(
 }
 
 void EnrollmentScreen::SetConfig() {
-  config_ = enrollment_config_;
-  if (current_auth_ == AUTH_OAUTH && config_.is_mode_with_manual_fallback()) {
-    config_.mode =
-        policy::EnrollmentConfig::GetManualFallbackMode(config_.mode);
+  effective_config_ = prescribed_config_;
+  if (current_auth_ == AUTH_OAUTH &&
+      effective_config_.is_mode_with_manual_fallback()) {
+    effective_config_.mode =
+        policy::EnrollmentConfig::GetManualFallbackMode(effective_config_.mode);
   } else if (current_auth_ == AUTH_ATTESTATION &&
-             !enrollment_config_.is_mode_attestation()) {
-    config_.mode = config_.is_attestation_auth_forced()
-                       ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
-                       : policy::EnrollmentConfig::MODE_ATTESTATION;
+             !prescribed_config_.is_mode_attestation()) {
+    effective_config_.mode =
+        effective_config_.is_attestation_auth_forced()
+            ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
+            : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
   // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
-  LOG(WARNING) << "EnrollmentScreen::SetConfig() == " << config_;
+  LOG(WARNING) << "EnrollmentScreen::SetConfig() == " << effective_config_;
   if (view_) {
-    view_->SetEnrollmentConfig(config_);
+    view_->SetEnrollmentConfig(effective_config_);
   }
   enrollment_launcher_ = nullptr;
 }
@@ -240,8 +242,8 @@ bool EnrollmentScreen::AdvanceToNextAuth() {
 
 void EnrollmentScreen::CreateEnrollmentLauncher() {
   if (!enrollment_launcher_) {
-    enrollment_launcher_ = EnrollmentLauncher::Create(
-        this, config_, enrolling_user_domain_, license_type_to_use_);
+    enrollment_launcher_ = EnrollmentLauncher::Create(this, effective_config_,
+                                                      enrolling_user_domain_);
   }
 }
 
@@ -265,7 +267,7 @@ void EnrollmentScreen::OnAuthCleared(base::OnceClosure callback) {
 }
 
 void EnrollmentScreen::ShowSkipEnrollmentDialogue() {
-  DCHECK(config_.is_license_packaged_with_device);
+  DCHECK(effective_config_.is_license_packaged_with_device);
   if (view_) {
     view_->ShowSkipConfirmationDialog();
   }
@@ -275,10 +277,10 @@ bool EnrollmentScreen::MaybeSkip(WizardContext& context) {
   // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "EnrollmentScreen::MaybeSkip("
-               << "config_.is_forced = " << config_.is_forced()
+               << "config_.is_forced = " << effective_config_.is_forced()
                << ", skip_to_login_for_tests = "
                << context.skip_to_login_for_tests << ").";
-  if (context.skip_to_login_for_tests && !config_.is_forced()) {
+  if (context.skip_to_login_for_tests && !effective_config_.is_forced()) {
     exit_callback_.Run(Result::SKIPPED_FOR_TESTS);
     return true;
   }
@@ -289,14 +291,14 @@ void EnrollmentScreen::UpdateFlowType() {
   if (!view_) {
     return;
   }
-  if (config_.license_type == policy::LicenseType::kEnterprise &&
-      config_.is_license_packaged_with_device) {
+  if (effective_config_.license_type == policy::LicenseType::kEnterprise &&
+      effective_config_.is_license_packaged_with_device) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterpriseLicense);
     view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
     return;
   }
-  if (config_.license_type == policy::LicenseType::kEducation &&
-      config_.is_license_packaged_with_device) {
+  if (effective_config_.license_type == policy::LicenseType::kEducation &&
+      effective_config_.is_license_packaged_with_device) {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kEducationLicense);
     view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
     return;
@@ -331,7 +333,6 @@ void EnrollmentScreen::ShowImpl() {
   if (!scoped_network_observation_.IsObserving()) {
     scoped_network_observation_.Observe(network_state_informer_.get());
   }
-  is_rollback_flow_ = IsRollbackFlow(*context());
   if (view_) {
     // Reset the view when the screen is shown for the first time or after a
     // retry. Notably, the ShowImpl is not invoked after network error overlay
@@ -479,7 +480,6 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
   // in the logs.
   LOG(WARNING) << "Authenticating using attestation.";
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
-  license_type_to_use_ = config_.license_type;
 
   if (view_) {
     view_->Show();
@@ -491,10 +491,6 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
 void EnrollmentScreen::AuthenticateUsingEnrollmentToken() {
   LOG(WARNING) << "Authenticating using enrollment token.";
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
-  // Although license type is copied over blindly here, later in
-  // enrollment_handler it's only propagated if the type is terminal (i.e.
-  // kiosk), as unset license type is treated as enterprise.
-  license_type_to_use_ = config_.license_type;
 
   if (view_) {
     view_->Show();
@@ -510,7 +506,8 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
   scoped_network_observation_.Reset();
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
   enrolling_user_domain_ = gaia::ExtractDomainName(user);
-  license_type_to_use_ = static_cast<policy::LicenseType>(license_type);
+  effective_config_.license_type =
+      static_cast<policy::LicenseType>(license_type);
   UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
                               : policy::kMetricEnrollmentStarted);
 
@@ -548,7 +545,8 @@ void EnrollmentScreen::ProcessRetry() {
 
 bool EnrollmentScreen::HandleAccelerator(LoginAcceleratorAction action) {
   if (action == LoginAcceleratorAction::kCancelScreenAction) {
-    if (config_.is_license_packaged_with_device && !config_.is_forced() &&
+    if (effective_config_.is_license_packaged_with_device &&
+        !effective_config_.is_forced() &&
         (!(enrollment_launcher_ && enrollment_launcher_->InProgress()))) {
       ShowSkipEnrollmentDialogue();
       return true;
@@ -575,7 +573,7 @@ void EnrollmentScreen::OnCancel() {
   // Record cancellation here only if the enrollment is not forced.
   // If enrollment is forced, pressing <esc> has no effect and should therefore
   // not be logged.
-  if (!config_.is_forced()) {
+  if (!effective_config_.is_forced()) {
     UMA(policy::kMetricEnrollmentCancelled);
   }
 
@@ -593,7 +591,7 @@ void EnrollmentScreen::OnCancel() {
   // wrapped in a callback bound to a weak pointer from `weak_ptr_factory_` - in
   // either case, passing exit_callback_ directly should be safe.
   ClearAuth(base::BindRepeating(exit_callback_,
-                                config_.is_forced()
+                                effective_config_.is_forced()
                                     ? Result::BACK_TO_AUTO_ENROLLMENT_CHECK
                                     : Result::BACK));
 }
@@ -816,7 +814,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
 }
 
 void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
-  EnrollmentUMA(sample, config_.mode);
+  EnrollmentUMA(sample, effective_config_.mode);
 }
 
 void EnrollmentScreen::ShowSigninScreen() {
@@ -862,7 +860,8 @@ bool EnrollmentScreen::ShouldAutoRetryOnError() const {
 }
 
 bool EnrollmentScreen::AutoCloseEnrollmentConfirmationOnSuccess() const {
-  return is_rollback_flow_;
+  return prescribed_config_.mode ==
+         policy::EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_FORCED;
 }
 
 bool EnrollmentScreen::IsEnrollmentScreenHiddenByError() {

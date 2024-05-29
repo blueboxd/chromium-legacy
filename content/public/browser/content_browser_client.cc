@@ -22,7 +22,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "content/browser/model_execution/mock_model_manager.h"
+#include "content/browser/ai/mock_ai_manager_impl.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -634,6 +634,7 @@ bool ContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
 
 bool ContentBrowserClient::IsFullCookieAccessAllowed(
     content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
     const GURL& url,
     const blink::StorageKey& storage_key) {
   return true;
@@ -980,6 +981,10 @@ bool ContentBrowserClient::ShouldEnableAudioProcessHighPriority() {
   return false;
 }
 
+bool ContentBrowserClient::ShouldUseSkiaFontManager(const GURL& site_url) {
+  return false;
+}
+
 #endif  // BUILDFLAG(IS_WIN)
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
@@ -1206,11 +1211,6 @@ bool ContentBrowserClient::ShowPaymentHandlerWindow(
     base::OnceCallback<void(bool, int, int)> callback) {
   DCHECK(browser_context);
   return false;
-}
-
-bool ContentBrowserClient::CreateThreadPool(std::string_view name) {
-  base::ThreadPoolInstance::Create(name);
-  return true;
 }
 
 bool ContentBrowserClient::IsSecurityLevelAcceptableForWebAuthn(
@@ -1528,13 +1528,15 @@ ContentBrowserClient::CreateIdentityRequestDialogController(
   return std::make_unique<IdentityRequestDialogController>();
 }
 
-void ContentBrowserClient::ShowDigitalIdentityInterstitialIfNeeded(
+ContentBrowserClient::DigitalIdentityInterstitialAbortCallback
+ContentBrowserClient::ShowDigitalIdentityInterstitialIfNeeded(
     WebContents& web_contents,
     const url::Origin& origin,
     bool is_only_requesting_age,
     DigitalIdentityInterstitialCallback callback) {
   std::move(callback).Run(
       DigitalIdentityProvider::RequestStatusForMetrics::kErrorOther);
+  return base::OnceClosure();
 }
 
 std::unique_ptr<DigitalIdentityProvider>
@@ -1741,10 +1743,10 @@ bool ContentBrowserClient::ShouldSuppressAXLoadComplete(RenderFrameHost* rfh) {
   return false;
 }
 
-void ContentBrowserClient::BindModelManager(
+void ContentBrowserClient::BindAIManager(
     RenderFrameHost* rfh,
-    mojo::PendingReceiver<blink::mojom::ModelManager> receiver) {
-  MockModelManager::Create(rfh, std::move(receiver));
+    mojo::PendingReceiver<blink::mojom::AIManager> receiver) {
+  MockAIManagerImpl::Create(rfh, std::move(receiver));
 }
 
 #if !BUILDFLAG(IS_ANDROID)

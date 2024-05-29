@@ -1752,8 +1752,6 @@ void ServiceWorkerVersion::PostMessageToClient(
     receiver_.reset();
     return;
   }
-  base::UmaHistogramBoolean("ServiceWorker.PostMessage.IsExecutionReady",
-                            service_worker_client->is_execution_ready());
   if (!service_worker_client->is_execution_ready()) {
     // It's subtle why this ReportBadMessage is correct. Consider the
     // sequence:
@@ -1785,7 +1783,7 @@ void ServiceWorkerVersion::PostMessageToClient(
   // As we don't track tasks between workers and renderers, we can nullify the
   // message's parent task ID.
   message.parent_task_id = std::nullopt;
-  service_worker_client->PostMessageToClient(this, std::move(message));
+  service_worker_client->PostMessageToClient(*this, std::move(message));
 }
 
 void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,

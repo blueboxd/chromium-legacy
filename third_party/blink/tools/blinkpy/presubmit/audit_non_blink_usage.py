@@ -11,7 +11,7 @@ script can be run in standalone mode to check for existing violations.
 Example command:
 
 $ git ls-files third_party/blink \
-    | python third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py
+    | python3 third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py
 """
 
 from __future__ import print_function
@@ -43,7 +43,6 @@ _CONFIG = [
             'gfx::HDRMetadata',
             'gfx::HdrMetadataExtendedRange',
             'gfx::ICCProfile',
-            'gfx::RadToDeg',
 
             # For fast cos/sin functions
             'gfx::SinCosDegrees',
@@ -111,6 +110,7 @@ _CONFIG = [
             'base::PersistentHash',
             'base::PlatformThread',
             'base::PlatformThreadId',
+            'base::RadToDeg',
             'base::RefCountedData',
             'base::RunLoop',
             'base::HashingLRUCache',
@@ -280,6 +280,7 @@ _CONFIG = [
             # //base/numerics/clamped_math.h.
             'base::ClampAdd',
             'base::ClampedNumeric',
+            'base::ClampMin',
             'base::ClampMax',
             'base::ClampSub',
             'base::MakeClampedNum',
@@ -649,6 +650,7 @@ _CONFIG = [
 
             # HTTP status codes
             'net::HTTP_.+',
+            'net::ERR_.*',
 
             # For ConnectionInfo enumeration
             'net::HttpConnectionInfo',
@@ -770,6 +772,10 @@ _CONFIG = [
             # Protected memory
             'base::ProtectedMemory',
             'base::AutoWritableMemory',
+
+            # Allow Highway SIMD Library and the possible namespace aliases.
+            'hwy::HWY_NAMESPACE.*',
+            'hw::.+',
         ],
         'disallowed': [
             ('base::Bind(Once|Repeating)',
@@ -1099,18 +1105,32 @@ _CONFIG = [
             'third_party/blink/public',
         ],
         'allowed': [
+            'base::OnceCallback',
+            'base::OnceClosure',
+            'base::RepeatingCallback',
+            'base::RepeatingClosure',
+
             'gfx::Point',
             'gfx::PointF',
             'gfx::Rect',
             'gfx::RectF',
+
+            # The Blink public API is shared between non-Blink and Blink code
+            # and must use the regular variants.
+            'mojom::.+',
+
+            # Prefer WebString over std::string in the public API. Other STL
+            # types are generally allowed for interop with non-Blink code, as
+            # containers like WTF::Vector are not exposed outside Blink.
+            'std::.+',
         ],
     },
     {
         'paths': [
-            'third_party/blink/public/web/web_frame_widget.h',
+            'third_party/blink/public/platform/web_audio_device.h',
         ],
         'allowed': [
-            'base::OnceCallback',
+            'media::OutputDeviceStatus',
         ],
     },
     {
@@ -2341,7 +2361,7 @@ def main():
                     print('%s uses disallowed identifiers:' % path)
                     for i in disallowed_identifiers:
                         print(i.line, i.identifier, i.advice)
-        except IOError as e:
+        except (IOError, UnicodeDecodeError) as e:
             print('could not open %s: %s' % (path, e))
 
 

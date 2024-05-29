@@ -42,12 +42,12 @@
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/video_picture_in_picture_window_controller.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -361,9 +361,24 @@ TEST_F(AutofillSuggestionControllerTest, DontHideWhenWaitingForData) {
 
 TEST_F(AutofillSuggestionControllerTest, ShouldReportHidingPopupReason) {
   base::HistogramTester histogram_tester;
+  ShowSuggestions(manager(), {Suggestion(u"Autocomplete entry",
+                                         SuggestionType::kAutocompleteEntry)});
   client().popup_controller(manager()).DoHide(SuggestionHidingReason::kTabGone);
-  histogram_tester.ExpectTotalCount("Autofill.PopupHidingReason", 1);
+  ShowSuggestions(
+      manager(), {Suggestion(u"Address entry", SuggestionType::kAddressEntry)});
+  client().popup_controller(manager()).DoHide(SuggestionHidingReason::kTabGone);
+  ShowSuggestions(manager(), {Suggestion(u"Credit Card entry",
+                                         SuggestionType::kCreditCardEntry)});
+  client().popup_controller(manager()).DoHide(SuggestionHidingReason::kTabGone);
+
+  histogram_tester.ExpectTotalCount("Autofill.PopupHidingReason", 3);
   histogram_tester.ExpectBucketCount("Autofill.PopupHidingReason",
+                                     SuggestionHidingReason::kTabGone, 3);
+  histogram_tester.ExpectBucketCount("Autofill.PopupHidingReason.Autocomplete",
+                                     SuggestionHidingReason::kTabGone, 1);
+  histogram_tester.ExpectBucketCount("Autofill.PopupHidingReason.Address",
+                                     SuggestionHidingReason::kTabGone, 1);
+  histogram_tester.ExpectBucketCount("Autofill.PopupHidingReason.CreditCard",
                                      SuggestionHidingReason::kTabGone, 1);
 }
 

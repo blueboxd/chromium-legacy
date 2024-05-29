@@ -198,6 +198,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       buttonWithAccessibilityLabel:l10n_util::GetNSStringWithFixup(messageID)];
 }
 
++ (id<GREYMatcher>)buttonWithAccessibilityLabelID:(int)messageID
+                                  numberForPlural:(int)number {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabel:l10n_util::GetPluralNSStringF(messageID,
+                                                                 number)];
+}
+
 + (id<GREYMatcher>)buttonWithForegroundColor:(NSString*)colorName {
   GREYMatchesBlock matches = ^BOOL(id element) {
     if (![element isKindOfClass:UIButton.class]) {
@@ -1194,6 +1201,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_ancestor(grey_accessibilityID(IdentifierForGridCellAtIndex(index))),
       grey_accessibilityID(kGridCellCloseButtonIdentifier),
       grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridCloseButtonForGroupCellAtIndex:(unsigned int)index {
+  return grey_allOf(grey_ancestor(grey_accessibilityID(
+                        IdentifierForGridGroupCellAtIndex(index))),
+                    grey_accessibilityID(kGridCellCloseButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)settingsPasswordMatcher {

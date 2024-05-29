@@ -781,9 +781,11 @@ TEST_F(ChromeComposeClientTest, TestProactiveNudgeEngagementIsRecorded) {
   config.proactive_nudge_show_probability = 1.0;
   config.proactive_nudge_delay = base::Microseconds(1);
   config.proactive_nudge_segmentation = true;
+  config.proactive_nudge_always_collect_training_data = true;
 
   autofill::FormData form_data;
-  form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+  form_data.set_url(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -793,7 +795,8 @@ TEST_F(ChromeComposeClientTest, TestProactiveNudgeEngagementIsRecorded) {
   const autofill::AutofillSuggestionTriggerSource trigger_source =
       autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
 
-  while (!client().ShouldTriggerPopup(selected_field_data, trigger_source)) {
+  while (!client().ShouldTriggerPopup(form_data, selected_field_data,
+                                      trigger_source)) {
     task_environment()->RunUntilIdle();
   }
 
@@ -825,7 +828,8 @@ TEST_F(ChromeComposeClientTest, TestProactiveNudgeEngagementIsRecorded) {
 
 TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeDisabledUKM) {
   autofill::FormData form_data;
-  form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+  form_data.set_url(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -836,8 +840,8 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeDisabledUKM) {
       autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
 
   // By default the proactive nudge is disabled.
-  EXPECT_FALSE(
-      client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_FALSE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                           trigger_source));
 
   // Commit metrics on page navigation.
   NavigateAndCommitActiveTab(GURL("about:blank"));
@@ -875,7 +879,8 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeEnabled) {
   config.proactive_nudge_segmentation = false;
 
   autofill::FormData form_data;
-  form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+  form_data.set_url(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -885,7 +890,8 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeEnabled) {
   const autofill::AutofillSuggestionTriggerSource trigger_source =
       autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
 
-  EXPECT_TRUE(client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_TRUE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                          trigger_source));
 
   // Commit metrics on page navigation.
   NavigateAndCommitActiveTab(GURL("about:blank"));
@@ -923,7 +929,7 @@ TEST_F(ChromeComposeClientTest, TestShouldTriggerProactiveNudgeEnabled) {
 TEST_F(ChromeComposeClientTest,
        TestShouldTriggerProactiveNudgePageChecksFailUKM) {
   autofill::FormData form_data;
-  form_data.url = GURL("www.example.com");
+  form_data.set_url(GURL("www.example.com"));
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -932,8 +938,8 @@ TEST_F(ChromeComposeClientTest,
       autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
 
   // Will fail because field origin does not match page origin.
-  EXPECT_FALSE(
-      client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_FALSE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                           trigger_source));
 
   // Commit metrics on page navigation.
   NavigateAndCommitActiveTab(GURL("about:blank"));
@@ -949,7 +955,8 @@ TEST_F(ChromeComposeClientTest,
 TEST_F(ChromeComposeClientTest, TestProactiveNudgeMSBBDisabled) {
   SetPrefsForComposeMSBBState(false);
   autofill::FormData form_data;
-  form_data.url = web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL();
+  form_data.set_url(
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -960,8 +967,8 @@ TEST_F(ChromeComposeClientTest, TestProactiveNudgeMSBBDisabled) {
       autofill::AutofillSuggestionTriggerSource::kTextFieldDidChange;
 
   // Will fail because MSBB is not set
-  EXPECT_FALSE(
-      client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_FALSE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                           trigger_source));
 
   histograms().ExpectBucketCount(
       compose::kComposeProactiveNudgeShowStatus,
@@ -970,7 +977,7 @@ TEST_F(ChromeComposeClientTest, TestProactiveNudgeMSBBDisabled) {
 
 TEST_F(ChromeComposeClientTest, TestComposeShouldTriggerSavedStateNudgeUKM) {
   autofill::FormData form_data;
-  form_data.url = GetPageUrl();
+  form_data.set_url(GetPageUrl());
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -982,7 +989,8 @@ TEST_F(ChromeComposeClientTest, TestComposeShouldTriggerSavedStateNudgeUKM) {
   ShowDialogAndBindMojoWithFieldData(selected_field_data);
 
   // By default the saved state nudge is shown.
-  EXPECT_TRUE(client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_TRUE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                          trigger_source));
 
   // Commit metrics on page navigation.
   NavigateAndCommitActiveTab(GURL("about:blank"));
@@ -2453,7 +2461,7 @@ TEST_F(ChromeComposeClientTest,
   auto test_origin = url::Origin::Create(test_url);
 
   autofill::FormData form_data;
-  form_data.url = test_url;
+  form_data.set_url(test_url);
   form_data.fields = {autofill::test::CreateTestFormField(
       "label0", "name0", "value0", autofill::FormControlType::kTextArea)};
 
@@ -2464,14 +2472,15 @@ TEST_F(ChromeComposeClientTest,
 
   EXPECT_FALSE(prefs->GetDict(prefs::kProactiveNudgeDisabledSitesWithTime)
                    .Find(test_origin.Serialize()));
-  EXPECT_TRUE(client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_TRUE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                          trigger_source));
 
   client().AddSiteToNeverPromptList(test_origin);
 
   EXPECT_TRUE(prefs->GetDict(prefs::kProactiveNudgeDisabledSitesWithTime)
                   .Find(test_origin.Serialize()));
-  EXPECT_FALSE(
-      client().ShouldTriggerPopup(selected_field_data, trigger_source));
+  EXPECT_FALSE(client().ShouldTriggerPopup(form_data, selected_field_data,
+                                           trigger_source));
 }
 
 TEST_F(ChromeComposeClientTest, AcceptSuggestionHistogramTest) {

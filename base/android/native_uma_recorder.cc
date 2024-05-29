@@ -16,10 +16,11 @@
 #include "base/time/time.h"
 #include "build/robolectric_buildflags.h"
 
+// Must come after all headers that specialize FromJniType() / ToJniType().
 #if BUILDFLAG(IS_ROBOLECTRIC)
 #include "base/base_robolectric_jni/NativeUmaRecorder_jni.h"  // nogncheck
 #else
-#include "base/base_jni/NativeUmaRecorder_jni.h"
+#include "base/metrics_jni/NativeUmaRecorder_jni.h"
 #endif
 
 namespace base {

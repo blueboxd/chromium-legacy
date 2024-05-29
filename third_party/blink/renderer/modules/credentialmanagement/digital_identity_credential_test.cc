@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/webid/digital_identity_request.mojom.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_object_string.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_request_options.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -68,6 +68,8 @@ CredentialRequestOptions* CreateOptionsWithProviders(
 CredentialRequestOptions* CreateValidOptions() {
   IdentityRequestProvider* identity_provider =
       IdentityRequestProvider::Create();
+  identity_provider->setRequest(
+      MakeGarbageCollected<V8UnionObjectOrString>(String()));
   HeapVector<Member<IdentityRequestProvider>> identity_providers;
   identity_providers.push_back(identity_provider);
   return CreateOptionsWithProviders(identity_providers);
@@ -114,7 +116,7 @@ TEST_F(DigitalIdentityCredentialTest, IdentityDigitalCredentialUseCounter) {
       MakeGarbageCollected<ScriptPromiseResolver<IDLNullable<Credential>>>(
           script_state);
   auto promise = DiscoverDigitalIdentityCredentialFromExternalSource(
-      resolver, *CreateValidOptions());
+      resolver, context.GetExceptionState(), *CreateValidOptions());
 
   test::RunPendingTasks();
 

@@ -8,11 +8,12 @@
 #include <array>
 #include <bitset>
 #include <memory>
+#include <ostream>
 #include <vector>
 
-#include "ash/components/arc/mojom/storage_manager.mojom.h"
+#include "ash/components/arc/disk_space/arc_disk_space_bridge.h"
+#include "ash/components/arc/mojom/disk_space.mojom.h"
 #include "ash/components/arc/session/connection_observer.h"
-#include "ash/components/arc/storage_manager/arc_storage_manager.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -57,7 +58,7 @@ class SizeCalculator {
   static constexpr int kCalculationTypeCount =
       static_cast<int>(CalculationType::kLastCalculationItem) + 1;
 
-  explicit SizeCalculator(const CalculationType& calculation_type);
+  explicit SizeCalculator(CalculationType calculation_type);
   virtual ~SizeCalculator();
 
   // Starts the size calculation of a given storage item.
@@ -74,16 +75,19 @@ class SizeCalculator {
   virtual void PerformCalculation() = 0;
 
   // Notify the StorageHandler about the calculated storage item size
-  void NotifySizeCalculated(int64_t total_bytes);
+  void NotifySizeCalculated(int64_t size);
 
   // Item id.
   const CalculationType calculation_type_;
 
   // Flag indicating that fetch operations for storage size are ongoing.
   bool calculating_ = false;
+
   // Observers being notified about storage items size changes.
-  base::ObserverList<SizeCalculator::Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
+
+std::ostream& operator<<(std::ostream& out, SizeCalculator::CalculationType t);
 
 // Class handling the calculation of the total disk space on the system.
 class TotalDiskSpaceCalculator : public SizeCalculator {
@@ -106,8 +110,6 @@ class TotalDiskSpaceCalculator : public SizeCalculator {
   void OnGetRootDeviceSize(std::optional<int64_t> reply);
 
   void GetTotalDiskSpace();
-
-  void OnGetTotalDiskSpace(int64_t* total_bytes);
 
   raw_ptr<Profile> profile_;
   base::WeakPtrFactory<TotalDiskSpaceCalculator> weak_ptr_factory_{this};
@@ -135,8 +137,6 @@ class FreeDiskSpaceCalculator : public SizeCalculator {
 
   void GetFreeDiskSpace();
 
-  void OnGetFreeDiskSpace(int64_t* available_bytes);
-
   raw_ptr<Profile> profile_;
   base::WeakPtrFactory<FreeDiskSpaceCalculator> weak_ptr_factory_{this};
 };
@@ -155,8 +155,6 @@ class DriveOfflineSizeCalculator : public SizeCalculator {
   friend class DriveOfflineSizeTestAPI;
 
   void PerformCalculation() override;
-
-  void OnGetOfflineItemsSize(int64_t offline_bytes);
 
   raw_ptr<Profile> profile_;
   base::WeakPtrFactory<DriveOfflineSizeCalculator> weak_ptr_factory_{this};
@@ -178,9 +176,6 @@ class MyFilesSizeCalculator : public SizeCalculator {
 
   // SizeCalculator:
   void PerformCalculation() override;
-
-  // Updates the size of MyFiles and Play files.
-  void OnGetMyFilesSize(int64_t total_bytes);
 
   raw_ptr<Profile> profile_;
   base::WeakPtrFactory<MyFilesSizeCalculator> weak_ptr_factory_{this};
@@ -231,7 +226,7 @@ class BrowsingDataSizeCalculator : public SizeCalculator {
 // Class handling the calculation of the size of the user's apps and extensions.
 class AppsSizeCalculator
     : public SizeCalculator,
-      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance> {
+      public arc::ConnectionObserver<arc::mojom::DiskSpaceInstance> {
  public:
   explicit AppsSizeCalculator(Profile* profile);
 
@@ -240,7 +235,7 @@ class AppsSizeCalculator
 
   ~AppsSizeCalculator() override;
 
-  // arc::ConnectionObserver<arc::mojom::StorageManagerInstance>:
+  // arc::ConnectionObserver<arc::mojom::DiskSpaceInstance>:
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
@@ -326,9 +321,6 @@ class CrostiniSizeCalculator : public SizeCalculator {
   // Callback to update the size of Crostini VMs.
   void OnGetCrostiniSize(
       std::optional<vm_tools::concierge::ListVmDisksResponse>);
-
-  // Helper function to simplify updating the reported size of Crostini.
-  void UpdateSize(int64_t total_bytes);
 
   raw_ptr<Profile> profile_;
   base::WeakPtrFactory<CrostiniSizeCalculator> weak_ptr_factory_{this};

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -113,7 +112,7 @@ void ScrollbarThemeMac::PaintTickmarks(GraphicsContext& context,
 }
 
 bool ScrollbarThemeMac::ShouldCenterOnThumb(const Scrollbar& scrollbar,
-                                            const WebMouseEvent& event) {
+                                            const WebMouseEvent& event) const {
   bool alt_key_pressed = event.GetModifiers() & WebInputEvent::kAltKey;
   return (event.button == WebPointerProperties::Button::kLeft) &&
          (s_jump_on_track_click != alt_key_pressed);
@@ -121,17 +120,17 @@ bool ScrollbarThemeMac::ShouldCenterOnThumb(const Scrollbar& scrollbar,
 
 ScrollbarThemeMac::~ScrollbarThemeMac() {}
 
-base::TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
+base::TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() const {
   return base::Seconds(s_initial_button_delay);
 }
 
-base::TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
+base::TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() const {
   return base::Seconds(s_autoscroll_button_delay);
 }
 
 bool ScrollbarThemeMac::ShouldDragDocumentInsteadOfThumb(
     const Scrollbar&,
-    const WebMouseEvent& event) {
+    const WebMouseEvent& event) const {
   return (event.GetModifiers() & WebInputEvent::Modifiers::kAltKey) != 0;
 }
 
@@ -336,7 +335,7 @@ bool ScrollbarThemeMac::UsesOverlayScrollbars() const {
   return PreferOverlayScrollerStyle();
 }
 
-bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
+bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) const {
   const auto& painter_values = GetScrollbarPainterValues(scrollbar);
   int min_length_for_thumb =
       painter_values.knob_min_length + painter_values.track_overlap_end_inset +
@@ -348,19 +347,20 @@ bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
               : scrollbar.Height()) >= min_length_for_thumb;
 }
 
-gfx::Rect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar) {
+gfx::Rect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar) const {
   return gfx::Rect();
 }
 
-gfx::Rect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar) {
+gfx::Rect ScrollbarThemeMac::ForwardButtonRect(
+    const Scrollbar& scrollbar) const {
   return gfx::Rect();
 }
 
-gfx::Rect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar) {
+gfx::Rect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar) const {
   return scrollbar.FrameRect();
 }
 
-int ScrollbarThemeMac::MinimumThumbLength(const Scrollbar& scrollbar) {
+int ScrollbarThemeMac::MinimumThumbLength(const Scrollbar& scrollbar) const {
   const auto& painter_values = GetScrollbarPainterValues(scrollbar);
   return painter_values.knob_min_length;
 }

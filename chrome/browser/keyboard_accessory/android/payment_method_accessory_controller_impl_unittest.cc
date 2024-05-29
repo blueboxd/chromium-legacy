@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
@@ -61,14 +62,7 @@ AccessorySheetData::Builder PaymentMethodAccessorySheetDataBuilder() {
 
 class TestAccessManager : public CreditCardAccessManager {
  public:
-  TestAccessManager(AutofillDriver* driver,
-                    AutofillClient* client,
-                    PersonalDataManager* personal_data)
-      : CreditCardAccessManager(driver,
-                                client,
-                                personal_data,
-                                /*credit_card_form_event_logger=*/nullptr) {}
-
+  using CreditCardAccessManager::CreditCardAccessManager;
   void FetchCreditCard(
       const CreditCard* card,
       OnCreditCardFetchedCallback on_credit_card_fetched) override {
@@ -99,8 +93,8 @@ class PaymentMethodAccessoryControllerTest
     FocusWebContentsOnMainFrame();
 
     test_api(autofill_manager())
-        .set_credit_card_access_manager(std::make_unique<TestAccessManager>(
-            &autofill_driver(), &autofill_client(), &data_manager_));
+        .set_credit_card_access_manager(
+            std::make_unique<TestAccessManager>(&autofill_manager(), nullptr));
     PaymentMethodAccessoryControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_mf_controller_.AsWeakPtr(), &data_manager_,
         &autofill_manager(), &autofill_driver());
@@ -122,9 +116,9 @@ class PaymentMethodAccessoryControllerTest
 
   void SetFormOrigin(GURL origin) {
     FormData form;
-    form.renderer_id = FormRendererId(1);
-    form.action = origin;
-    form.main_frame_origin = url::Origin::Create(origin);
+    form.set_renderer_id(FormRendererId(1));
+    form.set_action(origin);
+    form.set_main_frame_origin(url::Origin::Create(origin));
     autofill_client().set_form_origin(origin);
     // Promo codes are filtered by the last_committed_primary_main_frame_url.
     autofill_client().set_last_committed_primary_main_frame_url(
@@ -145,8 +139,9 @@ class PaymentMethodAccessoryControllerTest
   }
 
   MockIbanAccessManager& iban_access_manager() {
-    return *static_cast<MockIbanAccessManager*>(
-        autofill_client().GetIbanAccessManager());
+    return *autofill_client()
+                .GetPaymentsAutofillClient()
+                ->GetIbanAccessManager();
   }
 
   syncer::TestSyncService sync_service_;

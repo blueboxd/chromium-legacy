@@ -138,7 +138,6 @@ using AttributionReportingOsRegistrar =
 
 namespace android_webview {
 namespace {
-static bool g_should_create_thread_pool = true;
 #if DCHECK_IS_ON()
 // A boolean value to determine if the NetworkContext has been created yet. This
 // exists only to check correctness: g_check_cleartext_permitted may only be set
@@ -698,9 +697,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
         static_cast<ui::PageTransition>(request.transition_type),
         ui::PAGE_TRANSITION_RELOAD);
     if (is_load_url || is_go_back_forward || is_reload) {
-      result.push_back(
-          std::make_unique<AwURLLoaderThrottle>(static_cast<AwBrowserContext*>(
-              browser_context)));
+      result.push_back(std::make_unique<AwURLLoaderThrottle>(
+          static_cast<AwBrowserContext*>(browser_context)));
     }
   }
 
@@ -841,14 +839,6 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   return client_bridge->ShouldOverrideUrlLoading(
       url, has_user_gesture, is_redirect, is_outermost_main_frame,
       request_headers, ignore_navigation);
-}
-
-bool AwContentBrowserClient::CreateThreadPool(std::string_view name) {
-  if (g_should_create_thread_pool) {
-    base::ThreadPoolInstance::Create(name);
-    return true;
-  }
-  return false;
 }
 
 std::unique_ptr<content::LoginDelegate>
@@ -1237,11 +1227,6 @@ void AwContentBrowserClient::OnDisplayInsecureContent(
   }
 }
 
-// static
-void AwContentBrowserClient::DisableCreatingThreadPool() {
-  g_should_create_thread_pool = false;
-}
-
 blink::mojom::OriginTrialsSettingsPtr
 AwContentBrowserClient::GetOriginTrialsSettings() {
   return AwBrowserProcess::GetInstance()
@@ -1370,4 +1355,21 @@ bool AwContentBrowserClient::WillProvidePublicFirstPartySets() {
       switches::kWebViewFpsComponent);
 }
 
+bool AwContentBrowserClient::IsFullCookieAccessAllowed(
+    content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
+    const GURL& url,
+    const blink::StorageKey& storage_key) {
+  if (!rfh) {
+    // We do not allow third-party cookie access from service workers.
+    return false;
+  }
+  WebContents* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
+  if (!aw_settings) {
+    return false;
+  }
+
+  return aw_settings->GetAllowThirdPartyCookies();
+}
 }  // namespace android_webview

@@ -11,12 +11,12 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/strings/grit/services_strings.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
-#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -339,6 +339,9 @@ void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
     return;
   }
 
+  // Clear the map to store new expanded states.
+  aria_expanded_node_states_.clear();
+
   // Display nodes are the nodes which will be displayed by the rendering
   // algorithm of Read Anything app.ts. We wish to create a subtree which
   // stretches down from tree root to every content node and includes the
@@ -354,6 +357,21 @@ void ReadAnythingAppModel::ComputeDisplayNodeIdsForDistilledTree() {
     // GetDeepestLastUnignoredDescendant() that works on ignored nodes?
     if (!content_node || content_node->IsInvisibleOrIgnored()) {
       continue;
+    }
+
+    // Ignore aria-expanded for editables.
+    if (content_node->HasHtmlAttribute("aria-expanded") &&
+        !content_node->HasState(ax::mojom::State::kRichlyEditable)) {
+      // Capture the expanded state. ARIA expanded is not supported by all
+      // element types, but gmail for example uses it anyways. Check the
+      // attribute directly for that reason.
+      auto aria_expanded_state =
+          base::UTF16ToUTF8(content_node->GetHtmlAttribute("aria-expanded"));
+      aria_expanded_node_states_[content_node_id] = aria_expanded_state;
+      // Don't include collapsed aria-expanded items.
+      if (aria_expanded_state != "true") {
+        continue;
+      }
     }
 
     // Add all ancestor ids, including the content node itself, which is the
@@ -475,7 +493,7 @@ bool ReadAnythingAppModel::IsDocs() const {
 
 void ReadAnythingAppModel::AddPendingUpdates(
     const ui::AXTreeID& tree_id,
-    std::vector<ui::AXTreeUpdate> updates) {
+    std::vector<ui::AXTreeUpdate>& updates) {
   std::vector<ui::AXTreeUpdate>& update = pending_updates_map_[tree_id];
   for (auto& item : updates) {
     update.emplace_back(std::move(item));
@@ -494,13 +512,14 @@ void ReadAnythingAppModel::UnserializePendingUpdates(
   // TODO(b/1266555): Ensure there are no crashes / unexpected behavior if
   //  an accessibility event is received on the same tree after unserialization
   //  has begun.
-  auto node_handle = pending_updates_map_.extract(tree_id);
-  DCHECK(node_handle.empty() || tree_id == active_tree_id_);
-  UnserializeUpdates(std::move(node_handle.mapped()), tree_id);
+  std::vector<ui::AXTreeUpdate> update =
+      pending_updates_map_.extract(tree_id).mapped();
+  DCHECK(update.empty() || tree_id == active_tree_id_);
+  UnserializeUpdates(update, tree_id);
 }
 
 void ReadAnythingAppModel::UnserializeUpdates(
-    std::vector<ui::AXTreeUpdate> updates,
+    std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXTreeID& tree_id) {
   if (updates.empty()) {
     return;
@@ -531,9 +550,10 @@ void ReadAnythingAppModel::UnserializeUpdates(
   ProcessGeneratedEvents(event_generator, prev_tree_size, tree->size());
 }
 
-void ReadAnythingAppModel::ProcessAccessibilityUpdatesAndEvents(
+void ReadAnythingAppModel::AccessibilityEventReceived(
     const ui::AXTreeID& tree_id,
-    ui::AXUpdatesAndEvents updates_and_events) {
+    std::vector<ui::AXTreeUpdate>& updates,
+    std::vector<ui::AXEvent>& events) {
   DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
   // Create a new tree if an event is received for a tree that is not yet in
   // the tree list.
@@ -542,6 +562,7 @@ void ReadAnythingAppModel::ProcessAccessibilityUpdatesAndEvents(
         std::make_unique<ui::AXSerializableTree>();
     AddTree(tree_id, std::move(new_tree));
   }
+
   // If a tree update on the active tree is received while distillation is in
   // progress, cache updates that are received but do not yet unserialize them.
   // Drawing must be done on the same tree that was sent to the distiller,
@@ -549,18 +570,18 @@ void ReadAnythingAppModel::ProcessAccessibilityUpdatesAndEvents(
   // complete.
   if (tree_id == active_tree_id_) {
     if (distillation_in_progress_ || speech_playing_) {
-      AddPendingUpdates(tree_id, std::move(updates_and_events.updates));
-      ProcessNonGeneratedEvents(std::move(updates_and_events.events));
+      AddPendingUpdates(tree_id, updates);
+      ProcessNonGeneratedEvents(events);
       return;
     } else {
       // We need to unserialize old updates before we can unserialize the new
       // ones.
       UnserializePendingUpdates(tree_id);
     }
-    UnserializeUpdates(std::move(updates_and_events.updates), tree_id);
-    ProcessNonGeneratedEvents(std::move(updates_and_events.events));
+    UnserializeUpdates(updates, tree_id);
+    ProcessNonGeneratedEvents(events);
   } else {
-    UnserializeUpdates(std::move(updates_and_events.updates), tree_id);
+    UnserializeUpdates(updates, tree_id);
   }
 }
 
@@ -866,7 +887,9 @@ void ReadAnythingAppModel::ProcessNonGeneratedEvents(
       case ax::mojom::Event::kTooltipClosed:
       case ax::mojom::Event::kTooltipOpened:
       case ax::mojom::Event::kTreeChanged:
+        break;
       case ax::mojom::Event::kValueChanged:
+        reset_draw_timer_ = true;
         break;
       case ax::mojom::Event::kAriaAttributeChangedDeprecated:
       case ax::mojom::Event::kMenuListValueChangedDeprecated:
@@ -956,7 +979,16 @@ void ReadAnythingAppModel::ProcessGeneratedEvents(
       case ui::AXEventGenerator::Event::MENU_POPUP_START:
       case ui::AXEventGenerator::Event::MULTILINE_STATE_CHANGED:
       case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
+        break;
       case ui::AXEventGenerator::Event::NAME_CHANGED:
+        // TODO(francisjp): Determine if this logic should be specific to gmail.
+        if (last_expanded_node_id_ == event.node_id) {
+          ResetSelection();
+          requires_post_process_selection_ = false;
+          reset_last_expanded_node_id();
+          redraw_required_ = true;
+        }
+        break;
       case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
       case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
       case ui::AXEventGenerator::Event::PARENT_CHANGED:
@@ -1058,7 +1090,7 @@ std::string ReadAnythingAppModel::GetHtmlTag(
     int32_t hierarchical_level =
         ax_node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
     if (hierarchical_level) {
-      return std::format("h{}", hierarchical_level);
+      return base::StringPrintf("h%" PRId32, hierarchical_level);
     }
   }
 
@@ -1158,7 +1190,7 @@ std::string ReadAnythingAppModel::GetHeadingHtmlTagForPDF(
   int32_t hierarchical_level =
       ax_node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
   if (hierarchical_level) {
-    return std::format("h{}", hierarchical_level);
+    return base::StringPrintf("h%" PRId32, hierarchical_level);
   }
   return html_tag;
 }

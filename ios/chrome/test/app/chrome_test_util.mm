@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/public/commands/country_code_picker_commands.h"
 #import "ios/chrome/browser/shared/public/commands/unit_conversion_commands.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -110,6 +111,11 @@ Browser* GetMainBrowser() {
       .browserProviderInterface.mainBrowserProvider.browser;
 }
 
+Browser* GetCurrentBrowser() {
+  return GetForegroundActiveScene()
+      .browserProviderInterface.currentBrowserProvider.browser;
+}
+
 UIViewController* GetActiveViewController() {
   UIWindow* main_window = GetAnyKeyWindow();
   DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
@@ -135,10 +141,12 @@ UIViewController* GetActiveViewController() {
 id<ApplicationCommands,
    BrowserCommands,
    BrowserCoordinatorCommands,
+   CountryCodePickerCommands,
    UnitConversionCommands>
 HandlerForActiveBrowser() {
-  return static_cast<id<ApplicationCommands, BrowserCommands,
-                        BrowserCoordinatorCommands, UnitConversionCommands>>(
+  return static_cast<
+      id<ApplicationCommands, BrowserCommands, BrowserCoordinatorCommands,
+         UnitConversionCommands, CountryCodePickerCommands>>(
       GetMainBrowser()->GetCommandDispatcher());
 }
 

@@ -29,7 +29,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="WebCore.DistillabilityUs" units="microseconds"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>wychen@chromium.org</owner>
   <owner>gilmanmh@google.com</owner>
   <summary>
@@ -175,7 +175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.BackingStore.OpenFailureTime" units="ms"
-    expires_after="2024-05-24">
+    expires_after="2024-09-29">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -238,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.BackingStore.OpenSuccessTime" units="ms"
-    expires_after="2024-05-24">
+    expires_after="2024-09-29">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -249,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength"
-    units="characters" expires_after="2024-05-24">
+    units="characters" expires_after="2024-09-29">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -274,19 +274,6 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Methods that encountered leveldb errors while trying to write to disk.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.FoundBlobFileForValue" enum="Boolean"
-    expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Recorded when a blob is attempted to be read from an IndexedDB value. This
-    is triggered for both implicit blob-wrapped large values and explicit blob
-    values. Its value is false iff there was a file not found value when reading
-    the file. This metric is to help track down the rate of missing files for
-    http://crbug.com/1131151.
   </summary>
 </histogram>
 
@@ -328,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.LevelDBOpenErrors.BFE"
-    enum="PlatformFileError" expires_after="2024-05-24">
+    enum="PlatformFileError" expires_after="2024-09-24">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -365,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.LevelDBReadErrors.BFE"
-    enum="PlatformFileError" expires_after="2024-05-24">
+    enum="PlatformFileError" expires_after="2024-09-24">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -402,7 +389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.LevelDBWriteErrors.BFE"
-    enum="PlatformFileError" expires_after="2024-05-24">
+    enum="PlatformFileError" expires_after="2024-09-24">
   <owner>estade@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -459,37 +446,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebCore.IndexedDB.PutBlobsCount" units="blobs"
-    expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    The number of blobs being saved in an IndexedDB object store 'put'
-    operation. Recorded for every 'put' operation.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.PutBlobsTotalSize" units="KB"
-    expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    The total size of the blobs being saved in an IndexedDB object store 'put'
-    operation. Recorded for every 'put' operation, except when there are no
-    attached blobs or a blob has an unknown size.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.PutKeySize" units="KB"
-    expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    The size of the IndexedDB key used in an IndexedDB object store 'put'
-    operation. Recorded for every 'put' operation.
-  </summary>
-</histogram>
-
 <histogram name="WebCore.IndexedDB.PutValueSize2" units="KB"
     expires_after="2024-07-28">
   <owner>estade@chromium.org</owner>
@@ -511,88 +467,6 @@ chromium-metrics-reviews@google.com.
     <variant name="ObjectStorePut"/>
     <variant name="Open"/>
   </token>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize"
-    units="bytes" expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records the total size of tombstones deleted by the IndexedDB Tombstone
-    Sweeper. Recorded on the browser side (back end) when the sweeper has
-    completed scanning and it is in the 'deletion' mode. See
-    https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram
-    name="WebCore.IndexedDB.TombstoneSweeper.DeletionCommitTime.Complete"
-    units="ms" expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records the time it takes for the IndexedDB Tombstone Sweeper to commit
-    tombstone deletions. Recorded on the browser side (back end) when the
-    sweeper has completed a round of sweeping and, it's in 'deletion' mode, and
-    it has tombstones to delete. See https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete"
-    units="ms" expires_after="2024-07-28">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records the time it takes for the IndexedDB Tombstone Sweeper to fully sweep
-    the indexes. Recorded on the browser side (back end) when the sweeper has
-    completed sweeping all indexes (so partial sweeps are not recorded) and it
-    is in 'deletion' mode. See https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletionWriteError"
-    enum="LevelDBStatus" expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records when an error occurs during deletion of index tombstones by the
-    IndexedDB Tombstone Sweeper. Recorded on the browser side (back end) when
-    the sweeper has completed a round of sweeping and, it's in 'deletion' mode,
-    and it has tombstones to delete. See https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent"
-    units="%/5" expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Recorded on the browser side (back end) when the IndexedDB Tombstone Sweeper
-    has completed scanning. Records the percentage of the indexes the scanner
-    fully scanned before it was stopped. To reduce the number of buckets, the
-    recorded value is the percentage divided by 5. See https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones"
-    units="Index Tombstones" expires_after="2024-07-28">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records the number of tombstones deleted by the IndexedDB Tombstone Sweeper.
-    Recorded on the browser side (back end) when the sweeper has completed
-    scanning and it is in 'deletion' mode. See https://goo.gl/coKwA7.
-  </summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.TombstoneSweeper.SweepError"
-    enum="LevelDBStatus" expires_after="2024-05-24">
-  <owner>estade@chromium.org</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Recorded on the browser side (back end) when the IndexedDB Tombstone Sweeper
-    encounters an error while sweeping. See https://goo.gl/coKwA7.
-  </summary>
 </histogram>
 
 <histogram name="WebCore.IndexedDB.Transaction.{TransactionType}.SizeOnCommit2"

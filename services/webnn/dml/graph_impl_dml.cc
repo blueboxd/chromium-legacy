@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <numeric>
 
 #include "base/bits.h"
 #include "base/check.h"
@@ -169,7 +170,6 @@ DML_RECURRENT_NETWORK_DIRECTION MojoRecurrentNetworkDirectionToDml(
 base::expected<void, mojom::ErrorPtr> CreateUnexpectedError(
     mojom::Error::Code error_code,
     const std::string& error_message) {
-  DLOG(ERROR) << error_message;
   return base::unexpected(CreateError(error_code, error_message));
 }
 
@@ -597,6 +597,18 @@ std::optional<const Operation*> GetFusibleActivationFromOperation(
     return activation_iterator->second;
   }
   return std::optional<const Operation*>();
+}
+
+std::optional<uint64_t> GetFusibleTransposeInputId(
+    const std::map<uint64_t, const Operation*>&
+        output_id_to_fusible_transpose_map,
+    uint64_t input_id) {
+  const auto transpose_iterator =
+      output_id_to_fusible_transpose_map.find(input_id);
+  if (transpose_iterator != output_id_to_fusible_transpose_map.end()) {
+    return transpose_iterator->second->get_transpose()->input_operand_id;
+  }
+  return std::optional<uint64_t>();
 }
 
 // According to the DirectML documentations:
@@ -1048,9 +1060,15 @@ struct GraphFusionInfo {
   // the standalone activation which can be fused into the preceding operation.
   std::map<const Operation*, const Operation*>
       operation_to_fusible_standalone_activation_map;
-  // A set of all standalone activations in `mojom::GraphInfo` which can be
-  // fused into preceding operations.
-  std::unordered_set<const Operation*> fusible_standalone_activations_set;
+
+  // A map of all transposes that can be fused into the following matmul using
+  // transpose's output operand id as the key.
+  std::map<uint64_t, const Operation*> output_id_to_fusible_transpose_map;
+
+  // A set of all operations in `mojom::GraphInfo` which can be fused into
+  // another operation. No DirectML operator node will be created for operations
+  // in this set.
+  std::unordered_set<const Operation*> fusible_operations_set;
 };
 
 // The method gets the graph fusion information from `mojom::GraphInfo`, based
@@ -1066,10 +1084,9 @@ GraphFusionInfo GetGraphFusionInfo(const mojom::GraphInfoPtr& graph_info) {
     return GraphFusionInfo();
   }
 
-  // A map of all operations in `mojom::GraphInfo`.
-  // The key is the output operand id provided by any operation. The value is a
-  // fusible activation which uses the key as its input.
-  std::map<uint64_t, const Operation*> output_id_to_activation_map;
+  // A map of all fusible activations in `mojom::GraphInfo` using activation's
+  // input operand id as the key.
+  std::map<uint64_t, const Operation*> input_id_to_activation_map;
 
   // The case we're interested in includes a fusible base operation with exactly
   // one output edge, followed by a fusible activation operation:
@@ -1124,6 +1141,32 @@ GraphFusionInfo GetGraphFusionInfo(const mojom::GraphInfoPtr& graph_info) {
   //        |
   //     [output]
 
+  // A map of all matmul operations in `mojom::GraphInfo` using matmul's input
+  // operand id as the key.
+  std::map<uint64_t, const Operation*> input_id_to_matmul_map;
+
+  // This is a scenario where transpose can be fused into the following matmul.
+  // The transpose output solely feeds matmul. The transposed input can be
+  // either on the input a, input b or both. The transpose should only swap
+  // the last two axes (the row and column of the inner matrix), so it can be
+  // fused into `TransA()` or `TransB()` of the following calculation that
+  // DirectML `GEMM` operator performs:
+  //
+  // Output = FusedActivation(Alpha * TransA(A) x TransB(B) + Beta * C)
+  //
+  // See more details at:
+  // https://learn.microsoft.com/en-us/windows/win32/api/directml/ns-directml-dml_gemm_operator_desc
+  //
+  //     [input a]    [input b]
+  //         |          /
+  //     transpose     /
+  //          \       /
+  //           \     /
+  //            matmul
+  //
+  // TODO(crbug.com/340729469): Remove the complex operator fusions when the
+  // underlying DirectML runtime can handle.
+
   GraphFusionInfo graph_fusion_info;
   // Based on that all the operand ids are contiguous, it's used to record how
   // many times each operand id is used as an output edge from one operation.
@@ -1149,6 +1192,8 @@ GraphFusionInfo GetGraphFusionInfo(const mojom::GraphInfoPtr& graph_info) {
       ++node_output_edge_counts[input_id];
     }
 
+    // Try to find standalone activations that can be fused into preceding
+    // operations.
     if (GetFusibleActivationOutputId(operation.get())) {
       // We found a standalone activation operation that may need to be fused
       // with a predecessor. So record its input edge to later check
@@ -1157,7 +1202,7 @@ GraphFusionInfo GetGraphFusionInfo(const mojom::GraphInfoPtr& graph_info) {
       // We needn't check the result of `try_emplace` here, because if the key
       // `output_id` is already in container, there must be more than 1 output
       // edges from a predecessor in which case the fusion must be skipped.
-      output_id_to_activation_map.try_emplace(
+      input_id_to_activation_map.try_emplace(
           operation_connectivity.input_ids[0], operation.get());
     } else if (CanFuseStandaloneActivation(operation.get(),
                                            graph_info->id_to_operand_map)) {
@@ -1166,21 +1211,73 @@ GraphFusionInfo GetGraphFusionInfo(const mojom::GraphInfoPtr& graph_info) {
       // Add this operation to the fusion info if there's exactly one output
       // edge to a fusible standalone activation.
       const auto activation_iterator =
-          output_id_to_activation_map.find(output_id);
+          input_id_to_activation_map.find(output_id);
       if (node_output_edge_counts[output_id] == 1 &&
-          activation_iterator != output_id_to_activation_map.end()) {
+          activation_iterator != input_id_to_activation_map.end()) {
         const auto* activation = activation_iterator->second;
-        graph_fusion_info.fusible_standalone_activations_set.insert(activation);
+        graph_fusion_info.fusible_operations_set.insert(activation);
         graph_fusion_info
             .operation_to_fusible_standalone_activation_map[operation.get()] =
             activation;
       }
     }
+
+    // Try to find transposes that can be fused into following matmul
+    // operations.
+    switch (operation->which()) {
+      case Operation::Tag::kMatmul: {
+        // Map matmul's inputs to operation, so the following algorithm can find
+        // a transpose whose output is consumed by a matmul.
+        CHECK_EQ(operation_connectivity.input_ids.size(), 2U);
+        // We needn't check the result of `try_emplace` here, because if the key
+        // `input_id` is already in container, there must be more than 1 output
+        // edges from a predecessor in which case the transpose fusion won't
+        // happen.
+        input_id_to_matmul_map.try_emplace(operation_connectivity.input_ids[0],
+                                           operation.get());
+        input_id_to_matmul_map.try_emplace(operation_connectivity.input_ids[1],
+                                           operation.get());
+        break;
+      }
+      case Operation::Tag::kTranspose: {
+        // If a transpose's output is solely used by a matmul and it only swaps
+        // the last two axes, it can be fused into DirectML GEMM operator by
+        // setting corresponding input tensor transformation attribute.
+        CHECK_EQ(operation_connectivity.output_ids.size(), 1U);
+        uint64_t output_id = operation_connectivity.output_ids[0];
+        if (!input_id_to_matmul_map.contains(output_id) ||
+            node_output_edge_counts[output_id] != 1) {
+          break;
+        }
+        const mojom::TransposePtr& transpose = operation->get_transpose();
+        const mojom::OperandPtr& input_operand =
+            graph_info->id_to_operand_map.at(transpose->input_operand_id);
+        uint32_t input_rank = input_operand->dimensions.size();
+        if (input_rank < 2) {
+          break;
+        }
+        std::vector<uint32_t> swap_last_two_axes(input_rank);
+        std::iota(swap_last_two_axes.begin(), swap_last_two_axes.end(), 0);
+        std::swap(swap_last_two_axes[input_rank - 2],
+                  swap_last_two_axes[input_rank - 1]);
+        if (swap_last_two_axes == transpose->permutation) {
+          graph_fusion_info.fusible_operations_set.insert(operation.get());
+          graph_fusion_info.output_id_to_fusible_transpose_map[output_id] =
+              operation.get();
+        }
+        break;
+      }
+      default: {
+        // Skip other operations.
+        break;
+      }
+    }
   }
 
   CHECK_EQ(
-      graph_fusion_info.operation_to_fusible_standalone_activation_map.size(),
-      graph_fusion_info.fusible_standalone_activations_set.size());
+      graph_fusion_info.operation_to_fusible_standalone_activation_map.size() +
+          graph_fusion_info.output_id_to_fusible_transpose_map.size(),
+      graph_fusion_info.fusible_operations_set.size());
 
   return graph_fusion_info;
 }
@@ -1913,8 +2010,6 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForPool2d(
       // Spec issue tracked on
       // https://github.com/webmachinelearning/webnn/issues/180.
       if (dilations[0] != 1 || dilations[1] != 1) {
-        DLOG(ERROR)
-            << "Dilations are not supported for average pooling operator.";
         return base::unexpected(CreateError(
             mojom::Error::Code::kNotSupportedError,
             "Dilations are not supported for average pooling operator."));
@@ -2599,6 +2694,9 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForGather(
   const NodeOutput* indices = GetNodeOutputForOperand(
       id_to_node_output_map, gather->indices_operand_id);
   auto indices_tensor_desc = indices->GetTensorDesc();
+  CHECK(indices_tensor_desc.GetDataType() == DML_TENSOR_DATA_TYPE_INT32 ||
+        indices_tensor_desc.GetDataType() == DML_TENSOR_DATA_TYPE_UINT32 ||
+        indices_tensor_desc.GetDataType() == DML_TENSOR_DATA_TYPE_INT64);
   size_t indices_rank = indices_tensor_desc.GetDimensions().size();
   if (!base::MakeCheckedNum(indices_rank).IsValid<uint32_t>()) {
     return base::unexpected(
@@ -3834,16 +3932,40 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForMatmul(
     const Operation* operation,
     const std::map<const Operation*, const Operation*>&
         operation_to_fusible_standalone_activation_map,
+    const std::map<uint64_t, const Operation*>&
+        output_id_to_fusible_transpose_map,
     GraphBuilderDml& graph_builder,
     IdToNodeOutputMap& id_to_node_output_map) {
   const auto& matmul = operation->get_matmul();
+
+  // If the transpose operation that produces input a (or b) is fusible, use the
+  // the input operand of that transpose operation instead and set the `TransA`
+  // (or `TransB`) of DirectML GEMM operator to
+  // `DML_MATRIX_TRANSFORM_TRANSPOSE`.
+  bool transpose_a = false;
+  uint64_t a_operand_id = matmul->a_operand_id;
+  std::optional<uint64_t> fusible_transpose_input_id =
+      GetFusibleTransposeInputId(output_id_to_fusible_transpose_map,
+                                 a_operand_id);
+  if (fusible_transpose_input_id) {
+    a_operand_id = fusible_transpose_input_id.value();
+    transpose_a = true;
+  }
   const NodeOutput* input_a_node_output =
-      GetNodeOutputForOperand(id_to_node_output_map, matmul->a_operand_id);
+      GetNodeOutputForOperand(id_to_node_output_map, a_operand_id);
   auto input_a_tensor_desc = input_a_node_output->GetTensorDesc();
   CHECK(kDmlFloatDataTypes.contains(input_a_tensor_desc.GetDataType()));
 
+  bool transpose_b = false;
+  uint64_t b_operand_id = matmul->b_operand_id;
+  fusible_transpose_input_id = GetFusibleTransposeInputId(
+      output_id_to_fusible_transpose_map, b_operand_id);
+  if (fusible_transpose_input_id) {
+    b_operand_id = fusible_transpose_input_id.value();
+    transpose_b = true;
+  }
   const NodeOutput* input_b_node_output =
-      GetNodeOutputForOperand(id_to_node_output_map, matmul->b_operand_id);
+      GetNodeOutputForOperand(id_to_node_output_map, b_operand_id);
   auto input_b_tensor_desc = input_b_node_output->GetTensorDesc();
 
   uint64_t output_id = matmul->output_operand_id;
@@ -3896,8 +4018,10 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForMatmul(
       .BTensor = &input_b_tensor_desc.GetDMLTensorDesc(),
       .CTensor = nullptr,
       .OutputTensor = &expanded_output_tensor_desc.GetDMLTensorDesc(),
-      .TransA = DML_MATRIX_TRANSFORM_NONE,
-      .TransB = DML_MATRIX_TRANSFORM_NONE,
+      .TransA = transpose_a ? DML_MATRIX_TRANSFORM_TRANSPOSE
+                            : DML_MATRIX_TRANSFORM_NONE,
+      .TransB = transpose_b ? DML_MATRIX_TRANSFORM_TRANSPOSE
+                            : DML_MATRIX_TRANSFORM_NONE,
       .Alpha = 1.0f,
       .Beta = 0.0f,
       .FusedActivation =
@@ -4488,7 +4612,6 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForWhere(
 void HandleGraphCreationFailure(
     const std::string& error_message,
     mojom::WebNNContext::CreateGraphCallback callback) {
-  DLOG(ERROR) << error_message;
   std::move(callback).Run(CreateGraphResult::NewError(
       CreateError(mojom::Error::Code::kUnknownError, error_message)));
 }
@@ -4502,7 +4625,6 @@ void HandleGraphCreationFailure(
     mojom::WebNNContext::CreateGraphCallback callback) {
   DLOG(ERROR) << error_message << " " << logging::SystemErrorCodeToString(hr);
   if (hr == E_OUTOFMEMORY) {
-    DLOG(ERROR) << "No enough memory resources are available.";
     std::move(callback).Run(CreateGraphResult::NewError(CreateError(
         mojom::Error::Code::kUnknownError,
         error_message + " No enough memory resources are available.")));
@@ -4510,6 +4632,19 @@ void HandleGraphCreationFailure(
     std::move(callback).Run(CreateGraphResult::NewError(
         CreateError(mojom::Error::Code::kUnknownError, error_message)));
   }
+}
+
+bool IsDispatchBindingValid(
+    const base::flat_map<std::string_view, WebNNBufferImpl*>& named_buffers,
+    const base::flat_map<std::string, base::WeakPtr<const WebNNBufferImpl>>&
+        prev_named_buffers) {
+  return base::ranges::equal(
+      named_buffers, prev_named_buffers,
+      [](const auto& pair, const auto& previous_pair) {
+        const auto& [name, buffer] = pair;
+        const auto& [prev_name, prev_buffer] = previous_pair;
+        return name == prev_name && buffer == prev_buffer.get();
+      });
 }
 
 }  // namespace
@@ -4741,6 +4876,7 @@ HRESULT GraphImplDml::RecordGraphExecution(
     const ComputeResources* compute_resources,
     const PersistentResource* persistent_resource,
     const GraphBufferBindingInfo& graph_buffer_binding_info) {
+  TRACE_EVENT0("gpu", "dml::GraphImpl::RecordGraphExecution");
   // Open the command recorder for recording the graph execution commands.
   RETURN_IF_FAILED(compute_resources->command_recorder->Open());
 
@@ -5172,22 +5308,22 @@ void GraphImplDml::CreateAndBuild(
   //
   // 1. Go through all operations from the last one to the first one, record the
   // output edges count from each operation.
-  // 2. If the input of a fusible activation (such as relu/sigmoid) is the
-  // output of a base operation that can support fused activation (such as
-  // conv2d/batch_norm), and it has only one output edge to the activation, then
-  // they can be fused.
-  // 3. Go through all operations again to add each operation into the final
-  // graph. If the operation and a following standalone activation should be
-  // fused, we should reset the operation's original output as the activation's
-  // output, and set the activation into the operation. Thus the fused
-  // standalone activations should be skipped later.
+  // 2. Find the fusible operations and record them in `GraphFusionInfo`. For
+  // example, activations (such as relu/sigmoid) that can be fused into
+  // preceding operations that can support activation fusion (such as
+  // conv2d/batch_norm), or transposes that can be fused into following matmul
+  // operation.
+  // 3. Go through all operations again, create corresponding DirectML operators
+  // and add them into the final DirectML graph. During the process, the
+  // `GraphFusionInfo` will be passed to DirectML operator creation methods to
+  // configure the operator fusion and re-wire the input/output edges. The fused
+  // operations will be skipped and no DirectML operators will be created for
+  // them.
   GraphFusionInfo graph_fusion_info = GetGraphFusionInfo(graph_info);
   // Add operations.
   for (auto& operation : graph_info->operations) {
-    // Skip the standalone activation which should has been fused into a
-    // preceding operation.
-    if (graph_fusion_info.fusible_standalone_activations_set.contains(
-            operation.get())) {
+    // Skip the operations which are fused into another operation.
+    if (graph_fusion_info.fusible_operations_set.contains(operation.get())) {
       continue;
     }
 
@@ -5381,7 +5517,8 @@ void GraphImplDml::CreateAndBuild(
         create_operator_result = CreateOperatorNodeForMatmul(
             id_to_operand_map, operation.get(),
             graph_fusion_info.operation_to_fusible_standalone_activation_map,
-            graph_builder, id_to_node_output_map);
+            graph_fusion_info.output_id_to_fusible_transpose_map, graph_builder,
+            id_to_node_output_map);
         break;
       }
       case Operation::Tag::kPad: {
@@ -5499,7 +5636,6 @@ void GraphImplDml::CreateAndBuild(
       }
       default: {
         std::string error_message = NotSupportedOperatorError(*operation);
-        DLOG(ERROR) << error_message;
         create_operator_result = base::unexpected(CreateError(
             mojom::Error::Code::kNotSupportedError, std::move(error_message)));
       }
@@ -5562,7 +5698,6 @@ void GraphImplDml::CreateAndBuild(
 void GraphImplDml::HandleComputationFailure(
     const std::string& error_message,
     mojom::WebNNGraph::ComputeCallback callback) {
-  DLOG(ERROR) << error_message;
   compute_resources_.reset();
   std::move(callback).Run(ComputeResult::NewError(
       CreateError(mojom::Error::Code::kUnknownError, error_message)));
@@ -5575,7 +5710,6 @@ void GraphImplDml::HandleComputationFailure(
   DLOG(ERROR) << error_message << " " << logging::SystemErrorCodeToString(hr);
   compute_resources_.reset();
   if (hr == E_OUTOFMEMORY) {
-    DLOG(ERROR) << "No enough memory resources are available.";
     std::move(callback).Run(ComputeResult::NewError(CreateError(
         mojom::Error::Code::kUnknownError,
         error_message + " No enough memory resources are available.")));
@@ -5590,6 +5724,11 @@ void GraphImplDml::HandleDispatchFailure(std::string_view error_message,
                                          HRESULT hr) {
   DLOG(ERROR) << error_message << " " << logging::SystemErrorCodeToString(hr);
   command_recorder_.reset();
+
+  // Clear out previous buffers recorded for dispatch() so we don't mistakenly
+  // skip recording on failure.
+  previous_input_buffers_.clear();
+  previous_output_buffers_.clear();
 }
 
 void GraphImplDml::ComputeImpl(
@@ -5722,6 +5861,20 @@ void GraphImplDml::DispatchImpl(
     const base::flat_map<std::string_view, WebNNBufferImpl*>& named_outputs) {
   TRACE_EVENT0("gpu", "dml::GraphImplDml::DispatchImpl");
 
+  // It indicates whether we need to record commands and bind resources again.
+  // If either the I/O buffers change or `graph_resources_` is not available
+  // during the graph execution, it must be set to true.
+  bool is_command_recording_needed = false;
+
+  // TODO(crbug.com/40278771): avoid re-bindings for all buffers
+  if (!IsDispatchBindingValid(named_inputs, previous_input_buffers_)) {
+    is_command_recording_needed = true;
+  }
+
+  if (!IsDispatchBindingValid(named_outputs, previous_output_buffers_)) {
+    is_command_recording_needed = true;
+  }
+
   if (!command_recorder_) {
     command_recorder_ = CommandRecorder::Create(adapter_->command_queue(),
                                                 adapter_->dml_device());
@@ -5729,6 +5882,7 @@ void GraphImplDml::DispatchImpl(
       LOG(ERROR) << "Failed to create the command recorder.";
       return;
     }
+    is_command_recording_needed = true;
   }
 
   // Use the existing graph resource if it is available, otherwise allocate
@@ -5745,95 +5899,114 @@ void GraphImplDml::DispatchImpl(
       return;
     }
     graph_resources = std::move(result.value());
+    is_command_recording_needed = true;
   }
   CHECK(graph_resources);
 
-  // TODO(crbug.com/40278771): avoid re-recording commands between dispatches.
-  HRESULT hr = command_recorder_->Open();
-  if (FAILED(hr)) {
-    HandleDispatchFailure("Failed to open the command recorder.", hr);
-    return;
-  }
+  HRESULT hr = S_OK;
 
-  // Create the MLBuffer input bindings needed for graph execution.
-  std::vector<DML_BUFFER_BINDING> graph_input_buffer_bindings(
-      graph_buffer_binding_info_.input_buffer_binding_count,
-      DML_BUFFER_BINDING{.Buffer = nullptr, .Offset = 0, .SizeInBytes = 0});
+  if (is_command_recording_needed) {
+    hr = command_recorder_->Open();
+    if (FAILED(hr)) {
+      HandleDispatchFailure("Failed to open the command recorder.", hr);
+      return;
+    }
 
-  // The graph input tensors must be bound to the binding table during the
-  // graph execution.
-  std::vector<DML_BINDING_DESC> input_buffer_binding_desc(
-      graph_buffer_binding_info_.input_buffer_binding_count,
-      DML_BINDING_DESC{.Type = DML_BINDING_TYPE_NONE, .Desc = nullptr});
+    // Create the MLBuffer input bindings needed for graph execution.
+    std::vector<DML_BUFFER_BINDING> graph_input_buffer_bindings(
+        graph_buffer_binding_info_.input_buffer_binding_count,
+        DML_BUFFER_BINDING{.Buffer = nullptr, .Offset = 0, .SizeInBytes = 0});
 
-  for (auto& [name, input_buffer] : named_inputs) {
-    BufferImplDml* input_buffer_impl =
-        static_cast<BufferImplDml*>(input_buffer);
-    // Get the graph input index for the name.
-    const size_t graph_input_index =
-        graph_buffer_binding_info_.graph_input_name_to_index_map.at(
-            std::string(name));
-    graph_input_buffer_bindings[graph_input_index] =
-        DML_BUFFER_BINDING{.Buffer = input_buffer_impl->buffer(),
-                           .Offset = 0,
-                           .SizeInBytes = input_buffer_impl->size()};
-    input_buffer_binding_desc[graph_input_index] = {
-        DML_BINDING_TYPE_BUFFER,
-        &graph_input_buffer_bindings[graph_input_index]};
-  }
+    previous_input_buffers_.reserve(named_inputs.size());
 
-  // TODO(crbug.com/40278771): consider pre-computing the output binding count.
-  const size_t output_buffer_binding_count =
-      graph_buffer_binding_info_.graph_output_name_to_index_map.size();
+    // The graph input tensors must be bound to the binding table during the
+    // graph execution.
+    std::vector<DML_BINDING_DESC> input_buffer_binding_desc(
+        graph_buffer_binding_info_.input_buffer_binding_count,
+        DML_BINDING_DESC{.Type = DML_BINDING_TYPE_NONE, .Desc = nullptr});
 
-  // Create the MLBuffer output bindings needed for graph execution.
-  std::vector<DML_BUFFER_BINDING> graph_output_buffer_bindings(
-      output_buffer_binding_count,
-      DML_BUFFER_BINDING{.Buffer = nullptr, .Offset = 0, .SizeInBytes = 0});
+    for (auto& [name, input_buffer] : named_inputs) {
+      BufferImplDml* input_buffer_impl =
+          static_cast<BufferImplDml*>(input_buffer);
+      // Get the graph input index for the name.
+      const size_t graph_input_index =
+          graph_buffer_binding_info_.graph_input_name_to_index_map.at(
+              std::string(name));
+      graph_input_buffer_bindings[graph_input_index] =
+          DML_BUFFER_BINDING{.Buffer = input_buffer_impl->buffer(),
+                             .Offset = 0,
+                             .SizeInBytes = input_buffer_impl->size()};
+      input_buffer_binding_desc[graph_input_index] = {
+          DML_BINDING_TYPE_BUFFER,
+          &graph_input_buffer_bindings[graph_input_index]};
+      previous_input_buffers_[std::string(name)] =
+          input_buffer_impl->GetWeakPtr();
+    }
 
-  // The graph output tensors must be bound to the binding table during the
-  // graph execution.
-  std::vector<DML_BINDING_DESC> output_buffer_binding_desc(
-      output_buffer_binding_count,
-      DML_BINDING_DESC{.Type = DML_BINDING_TYPE_NONE, .Desc = nullptr});
+    // TODO(crbug.com/40278771): consider pre-computing the output binding
+    // count.
+    const size_t output_buffer_binding_count =
+        graph_buffer_binding_info_.graph_output_name_to_index_map.size();
 
-  for (auto& [name, output_buffer] : named_outputs) {
-    BufferImplDml* output_buffer_impl =
-        static_cast<BufferImplDml*>(output_buffer);
-    // Get the graph output index with the name.
-    const size_t graph_output_index =
-        graph_buffer_binding_info_.graph_output_name_to_index_map.at(
-            std::string(name));
-    graph_output_buffer_bindings[graph_output_index] =
-        DML_BUFFER_BINDING{.Buffer = output_buffer_impl->buffer(),
-                           .Offset = 0,
-                           .SizeInBytes = output_buffer_impl->size()};
-    output_buffer_binding_desc[graph_output_index] = {
-        DML_BINDING_TYPE_BUFFER,
-        &graph_output_buffer_bindings[graph_output_index]};
-  }
+    // Create the MLBuffer output bindings needed for graph execution.
+    std::vector<DML_BUFFER_BINDING> graph_output_buffer_bindings(
+        output_buffer_binding_count,
+        DML_BUFFER_BINDING{.Buffer = nullptr, .Offset = 0, .SizeInBytes = 0});
 
-  std::optional<DML_BINDING_DESC> persistent_buffer_binding_desc;
-  if (persistent_resource_) {
-    persistent_buffer_binding_desc =
-        persistent_resource_->persistent_buffer_binding_desc;
-  }
+    // The graph output tensors must be bound to the binding table during the
+    // graph execution.
+    std::vector<DML_BINDING_DESC> output_buffer_binding_desc(
+        output_buffer_binding_count,
+        DML_BINDING_DESC{.Type = DML_BINDING_TYPE_NONE, .Desc = nullptr});
 
-  // Execute the graph with input, output, temporary, and persistent bindings.
-  hr = command_recorder_->ExecuteOperator(
-      compiled_operator_.Get(), graph_resources->descriptor_heap,
-      input_buffer_binding_desc, output_buffer_binding_desc,
-      persistent_buffer_binding_desc,
-      graph_resources->temporary_buffer_binding_desc);
-  if (FAILED(hr)) {
-    HandleDispatchFailure("Failed to record execute operator.", hr);
-    return;
+    previous_output_buffers_.reserve(named_outputs.size());
+
+    for (auto& [name, output_buffer] : named_outputs) {
+      BufferImplDml* output_buffer_impl =
+          static_cast<BufferImplDml*>(output_buffer);
+      // Get the graph output index with the name.
+      const size_t graph_output_index =
+          graph_buffer_binding_info_.graph_output_name_to_index_map.at(
+              std::string(name));
+      graph_output_buffer_bindings[graph_output_index] =
+          DML_BUFFER_BINDING{.Buffer = output_buffer_impl->buffer(),
+                             .Offset = 0,
+                             .SizeInBytes = output_buffer_impl->size()};
+      output_buffer_binding_desc[graph_output_index] = {
+          DML_BINDING_TYPE_BUFFER,
+          &graph_output_buffer_bindings[graph_output_index]};
+      previous_output_buffers_[std::string(name)] =
+          output_buffer_impl->GetWeakPtr();
+    }
+
+    std::optional<DML_BINDING_DESC> persistent_buffer_binding_desc;
+    if (persistent_resource_) {
+      persistent_buffer_binding_desc =
+          persistent_resource_->persistent_buffer_binding_desc;
+    }
+
+    // Execute the graph with input, output, temporary, and persistent bindings.
+    hr = command_recorder_->ExecuteOperator(
+        compiled_operator_.Get(), graph_resources->descriptor_heap,
+        input_buffer_binding_desc, output_buffer_binding_desc,
+        persistent_buffer_binding_desc,
+        graph_resources->temporary_buffer_binding_desc);
+    if (FAILED(hr)) {
+      HandleDispatchFailure("Failed to record execute operator.", hr);
+      return;
+    }
+
+    hr = command_recorder_->Close();
+    if (FAILED(hr)) {
+      HandleDispatchFailure("Failed to close the command recorder.", hr);
+      return;
+    }
   }
 
   // Submit the command list for execution.
-  hr = command_recorder_->CloseAndExecute();
+  hr = command_recorder_->Execute();
   if (FAILED(hr)) {
-    HandleDispatchFailure("Failed to open the command recorder.", hr);
+    HandleDispatchFailure("Failed to execute the command recorder.", hr);
     return;
   }
 

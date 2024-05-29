@@ -271,6 +271,12 @@ const char kEnableViewportIntentsDescription[] =
     "When enabled the intents are detected live as the viewport is moved "
     "around.";
 
+const char kEnableNewParcelTrackingNumberDetectionName[] =
+    "Improve Tracking Number Detection";
+const char kEnableNewParcelTrackingNumberDetectionDescription[] =
+    "When enabled carrier names are parsed out and must match tracking "
+    "numbers.";
+
 const char kEnableExpKitTextClassifierDateName[] =
     "Date with Text Classifier in Experience Kit";
 const char kEnableExpKitTextClassifierDateDescription[] =
@@ -677,6 +683,11 @@ const char kLensCircleToSearchEnabledName[] = "Lens Circle to Search";
 const char kLensCircleToSearchEnabledDescription[] =
     "When enabled, circle to search is available in Lens.";
 
+const char kLensWebPageEarlyTransitionEnabledName[] =
+    "Lens web page early transition";
+const char kLensWebPageEarlyTransitionEnabledDescription[] =
+    "Enables earlier transitions from Lens UI to web page.";
+
 const char kLinkedServicesSettingIosName[] = "Linked Services Setting";
 const char kLinkedServicesSettingIosDescription[] =
     "Add Linked Services Setting to the Sync Settings page.";
@@ -824,6 +835,12 @@ const char kOmniboxRichAutocompletionName[] =
 const char kOmniboxRichAutocompletionDescription[] =
     "Enables omnibox rich inline autocompletion. Expands inline autocomplete "
     "to any type of input that users repeatedly use to get to specific URLs.";
+
+const char kOmniboxSuggestionAnswerMigrationName[] =
+    "Omnibox suggestion answer migration";
+const char kOmniboxSuggestionAnswerMigrationDescription[] =
+    "Enables omnibox Suggestion answer migration, when enabled the omnibox "
+    "will use the migrated Answer_template instead of answer.";
 
 extern const char kOmniboxSuggestionsRTLImprovementsName[] =
     "Omnibox Improved RTL Suggestion Layout";
@@ -1076,12 +1093,6 @@ const char kTabGridAlwaysBounceDescription[] =
     "When enabled, the Tab Grid bounces (aka overscrolls) even if all tabs are "
     "fully visible on screen.";
 
-const char kTabGridCompositionalLayoutName[] =
-    "Enable tab grid with the new compositional layout";
-const char kTabGridCompositionalLayoutDescription[] =
-    "When enabled, the Tab Grid uses the new compositional layout. Items sizes "
-    "are different and more dynamic than before.";
-
 const char kTabGridRefactoringName[] = "Enable tab grid refactoring";
 const char kTabGridRefactoringDescription[] =
     "When enabled, the Tab Grid uses the refactored version, it should not "
@@ -1123,6 +1134,11 @@ const char kTabResumptionName[] = "Enable Tab Resumption";
 const char kTabResumptionDescription[] =
     "When enabled, offer users with a quick shortcut to resume the last synced "
     "tab from another device.";
+
+const char kTabResumption1_5Name[] = "Enable Tab Resumption Enhancements";
+const char kTabResumption1_5Description[] =
+    "When enabled, add some improvements to Tab Resumption UI: Add a See more "
+    "button to the cards and show better thumbnails. Requires #tab-resumption.";
 
 const char kUndoMigrationOfSyncingUserToSignedInName[] =
     "Undo the migration of syncing users to signed-in";

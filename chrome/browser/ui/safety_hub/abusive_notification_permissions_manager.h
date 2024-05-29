@@ -42,32 +42,44 @@ class AbusiveNotificationPermissionsManager {
 
   ~AbusiveNotificationPermissionsManager();
 
-  // Returns the list of all permissions that have been revoked.
-  ContentSettingsForOneType GetRevokedPermissions() const;
-
   // Calls `PerformSafeBrowsingChecks` on URLs which have notifications
   // enabled and haven't been marked as a URL to be ignored.
   void CheckNotificationPermissionOrigins();
 
-  // The user regrants permission for an origin, so we should allow notification
-  // permissions again and add a constraint so that this permission is not
-  // auto-revoked during future Safety Hub checks.
-  void RegrantPermissionForOrigin(const GURL& url);
+  // If the url has a revoked abusive notification permission, this method
+  // allows notification permissions again and adds a constraint so that this
+  // permission is not auto-revoked during future Safety Hub checks.
+  void RegrantPermissionForOriginIfNecessary(const GURL& url);
 
-  // Undo the actions from `RegrantPermissionForOrigin` by changing the
-  // `NOTIFICATIONS` setting back to `CONTENT_SETTING_BLOCK` and the
+  // If `permission_types` includes notifications, undo the actions from
+  // `RegrantPermissionForOrigin` by changing the `NOTIFICATIONS` setting back
+  // to `CONTENT_SETTING_ASK` and the
   // `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` setting back to a dictionary
   // with `safety_hub::kRevokedStatusDictKeyStr` set to
   // `safety_hub::kRevokeStr`.
-  void UndoRegrantPermissionForOrigin(const GURL url);
+  void UndoRegrantPermissionForOriginIfNecessary(
+      const GURL& url,
+      std::set<ContentSettingsType> permission_types,
+      content_settings::ContentSettingConstraints constraints);
 
   // Clear the list of abusive notification permissions so they will no longer
   // be shown to the user. Does not change permissions themselves.
   void ClearRevokedPermissionsList();
 
-  // Add `origin` back into the list of abusive notification permissions we show
-  // to the user in Safety Hub. Does not change permissions themselves.
-  void UndoRemoveOriginFromRevokedPermissionsList(const GURL url);
+  // Remove the `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` setting for the given
+  // pattern pairs.
+  void DeletePatternFromRevokedAbusiveNotificationList(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern);
+
+  // If there's a clock for testing, return that. Otherwise, return an instance
+  // of a default clock.
+  const base::Clock* GetClock();
+
+  // Test support:
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+    clock_for_testing_ = std::move(clock);
+  }
 
  private:
   friend class AbusiveNotificationPermissionsManagerTest;
@@ -88,9 +100,9 @@ class AbusiveNotificationPermissionsManager {
   FRIEND_TEST_ALL_PREFIXES(AbusiveNotificationPermissionsManagerTest,
                            ClearRevokedPermissionsList);
   FRIEND_TEST_ALL_PREFIXES(AbusiveNotificationPermissionsManagerTest,
-                           UndoRemoveOriginFromRevokedPermissionsList);
+                           SetRevokedAbusiveNotificationPermission);
   FRIEND_TEST_ALL_PREFIXES(AbusiveNotificationPermissionsManagerTest,
-                           UndoRegrantPermissionForOrigin);
+                           UndoRegrantPermissionForOriginIfNecessary);
 
   // On object creation, checks the Safe Browsing blocklist for `url_`
   // and revokes notification permissions if blocklisted.
@@ -107,7 +119,8 @@ class AbusiveNotificationPermissionsManager {
             safe_browsing_request_clients,
         raw_ptr<HostContentSettingsMap> hcsm,
         GURL url,
-        int safe_browsing_check_delay);
+        int safe_browsing_check_delay,
+        const base::Clock* clock);
 
     ~SafeBrowsingCheckClient() override;
 
@@ -121,8 +134,8 @@ class AbusiveNotificationPermissionsManager {
         safe_browsing::SBThreatType threat_type,
         const safe_browsing::ThreatMetadata& metadata) override;
 
-    // Callback to be run if we make a Safe Browsing blocklist request and have
-    // not received a response within `kCheckUrlTimeoutMs` time.
+    // Callback to be run if a Safe Browsing blocklist request does not return
+    // a response within `kCheckUrlTimeoutMs` time.
     void OnCheckBlocklistTimeout();
 
     // A pointer to the `database_manager_` of the
@@ -148,6 +161,11 @@ class AbusiveNotificationPermissionsManager {
     // time has passed, run `OnCheckBlocklistTimeout`.
     base::OneShotTimer timer_;
 
+    // To enable automatic cleanup after the threshold has passed, this is used
+    // to set the lifetime of the `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS`
+    // value.
+    const raw_ptr<const base::Clock> clock_;
+
     base::WeakPtrFactory<
         AbusiveNotificationPermissionsManager::SafeBrowsingCheckClient>
         weak_factory_{this};
@@ -160,26 +178,12 @@ class AbusiveNotificationPermissionsManager {
   // and add it to `safe_browsing_request_clients_`.
   void PerformSafeBrowsingChecks(GURL url);
 
-  // Get the dictionary setting value of the
-  // `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` setting. Returns `Type::NONE` if
-  // there is no `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` setting value.
-  base::Value GetRevokedAbusiveNotificationPermissionsSettingValue(
-      ContentSettingPatternSource content_setting) const;
-
-  // Returns true if there is a `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS`
-  // setting value for the setting URL with the
-  // `safety_hub::kRevokedStatusDictKeyStr` key set to `safety_hub::kIgnoreStr`.
-  // Note that the method expects a non-empty
-  // `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` setting as input.
-  bool IsAbusiveNotificationRevocationIgnored(
-      ContentSettingPatternSource content_setting) const;
-
   // Returns true if the notification permission is allowed and the setting
   // does not indicate "ignore".
   bool ShouldCheckOrigin(const ContentSettingPatternSource& setting) const;
 
   // Clears any helper members that stored state from the previous safety check.
-  // Called each time we check a set of URLs with Safe Browsing.
+  // Called each time Safe Browsing checks are performed on a set of URLs.
   void ResetSafeBrowsingCheckHelpers();
 
   // Used for interactions with the local database, when checking the blocklist.
@@ -197,6 +201,11 @@ class AbusiveNotificationPermissionsManager {
   // Length of time allowed for Safe Browsing check before timeout. This allows
   // us to test timeout behavior.
   int safe_browsing_check_delay_;
+
+  // To enable automatic cleanup after the threshold has passed, this is used to
+  // set the lifetime of the `REVOKED_ABUSIVE_NOTIFICATION_PERMISSIONS` value.
+  // Pass this into each instance of the SafeBrowsingCheckClient class.
+  std::unique_ptr<base::Clock> clock_for_testing_;
 };
 
 #endif  // CHROME_BROWSER_UI_SAFETY_HUB_ABUSIVE_NOTIFICATION_PERMISSIONS_MANAGER_H_

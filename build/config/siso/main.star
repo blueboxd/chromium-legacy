@@ -5,6 +5,7 @@
 """Siso configuration main entry."""
 
 load("@builtin//encoding.star", "json")
+load("@builtin//lib/gn.star", "gn")
 load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
 load("./blink_all.star", "blink_all")
@@ -51,6 +52,7 @@ def __use_large_b289968566(ctx, step_config):
         "./obj/chrome/browser/ash/unit_tests/wizard_controller_unittest.o",
         "./obj/chrome/browser/browser/browser_prefs.o",
         "./obj/chrome/browser/browser/chrome_browser_interface_binders.o",
+        "./obj/chrome/browser/browser/chrome_browser_main_extra_parts_profiles.o",
         "./obj/chrome/browser/browser/chrome_content_browser_client.o",
         "./obj/chrome/browser/browser/render_view_context_menu.o",
         "./obj/chrome/browser/ui/ash/holding_space/browser_tests/holding_space_ui_browsertest.o",
@@ -67,6 +69,7 @@ def __use_large_b289968566(ctx, step_config):
         "./obj/chrome/test/interactive_ui_tests/tab_drag_controller_interactive_uitest.o",
         "./obj/chrome/test/test_support_ui/web_app_integration_test_driver.o",
         "./obj/chrome/test/unit_tests/chrome_browsing_data_remover_delegate_unittest.o",
+        "./obj/chrome/test/unit_tests/chrome_compose_client_unittest.o",
         "./obj/chrome/test/unit_tests/chrome_shelf_controller_unittest.o",
         "./obj/chrome/test/unit_tests/render_view_context_menu_unittest.o",
         "./obj/content/browser/browser/browser_interface_binders.o",
@@ -312,6 +315,13 @@ def __use_large_b289968566(ctx, step_config):
     step_config["rules"] = new_rules
     return step_config
 
+def __disable_remote(ctx, step_config):
+    if gn.args(ctx).get("use_remoteexec") == "true":
+        return step_config
+    for rule in step_config["rules"]:
+        rule["remote"] = False
+    return step_config
+
 def init(ctx):
     print("runtime: os:%s arch:%s run:%d" % (
         runtime.os,
@@ -373,6 +383,7 @@ def init(ctx):
         rule["remote_command"] = arg0
 
     step_config = __use_large_b289968566(ctx, step_config)
+    step_config = __disable_remote(ctx, step_config)
 
     filegroups = {}
     filegroups.update(blink_all.filegroups(ctx))

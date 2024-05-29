@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/test_payments_data_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_api_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_client.h"
 #include "components/facilitated_payments/core/browser/facilitated_payments_driver.h"
@@ -316,6 +317,7 @@ class FacilitatedPaymentsManagerTest : public testing::Test {
   std::unique_ptr<MockFacilitatedPaymentsDriver> driver_;
   std::unique_ptr<MockFacilitatedPaymentsClient> client_;
   std::unique_ptr<FacilitatedPaymentsManager> manager_;
+  std::unique_ptr<PrefService> pref_service_;
   std::unique_ptr<autofill::TestPaymentsDataManager> payments_data_manager_;
   MockFacilitatedPaymentsNetworkInterface payments_network_interface_;
 
@@ -327,7 +329,6 @@ class FacilitatedPaymentsManagerTest : public testing::Test {
   int check_allowlist_attempt_count_;
   base::OneShotTimer allowlist_decision_timer_;
   base::OneShotTimer page_load_timer_;
-  std::unique_ptr<PrefService> pref_service_;
   syncer::TestSyncService sync_service_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
@@ -1114,10 +1115,11 @@ TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       mojom::PixCodeDetectionResult::kInvalidPixCodeFound, std::string());
 }
 
-// If the PIX code has been validated, then the manager checks for API
-// availability.
+// The manager checks for API availability after validating the PIX code.
 TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-       PixCodeValidated_ApiClientTriggered) {
+       ApiClientTriggeredAfterPixCodeValidation) {
+  payments_data_manager_->AddMaskedBankAccountForTest(CreatePixBankAccount(1));
+
   EXPECT_CALL(*api_client_, IsAvailable(testing::_));
 
   manager_->OnPixCodeValidated(/*pix_code=*/std::string(),
@@ -1128,6 +1130,8 @@ TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
 // the manager does not check the API for availability.
 TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
        PixCodeValidationFailed_NoApiClientTriggered) {
+  payments_data_manager_->AddMaskedBankAccountForTest(CreatePixBankAccount(1));
+
   EXPECT_CALL(*api_client_, IsAvailable(testing::_)).Times(0);
 
   manager_->OnPixCodeValidated(/*pix_code=*/std::string(),
@@ -1153,6 +1157,8 @@ TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
 // availability.
 TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
        PixCodeValidatorTerminatedUnexpectedly_NoApiClientTriggered) {
+  payments_data_manager_->AddMaskedBankAccountForTest(CreatePixBankAccount(1));
+
   EXPECT_CALL(*api_client_, IsAvailable(testing::_)).Times(0);
 
   manager_->OnPixCodeValidated(
@@ -1178,28 +1184,42 @@ TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
       /*expected_bucket_count=*/1);
 }
 
+// If the PIX payment user pref is turned off, the manager does not check
+// whether the facilitated payment API is available.
+TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
+       PixPrefTurnedOff_NoApiClientTriggered) {
+  payments_data_manager_->AddMaskedBankAccountForTest(CreatePixBankAccount(1));
+  // Turn off PIX pref.
+  autofill::prefs::SetFacilitatedPaymentsPix(pref_service_.get(), false);
+
+  EXPECT_CALL(*api_client_, IsAvailable(testing::_)).Times(0);
+
+  manager_->OnPixCodeValidated(/*pix_code=*/std::string(),
+                               /*is_pix_code_valid=*/true);
+}
+
 // If the user doesn't have any linked PIX accounts, the manager does not check
 // whether the facilitated payment API is available.
 TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-       AbsenceOfPixAccountsDoesNotTriggerApiClient) {
+       NoPixAccounts_NoApiClientTriggered) {
   EXPECT_CALL(*api_client_, IsAvailable(testing::_)).Times(0);
 
-  manager_->ProcessPixCodeDetectionResult(
-      mojom::PixCodeDetectionResult::kValidPixCodeFound, std::string());
+  manager_->OnPixCodeValidated(/*pix_code=*/std::string(),
+                               /*is_pix_code_valid=*/true);
 }
 
 // If payments data manager is unavailable, the manager does not check
 // whether the facilitated payment API is available.
 TEST_F(FacilitatedPaymentsManagerWithPixPaymentsEnabledTest,
-       UnavailabilityOfPdmDoesNotTriggerApiClient) {
+       NoPaymentsDataManager_NoApiClientTriggered) {
   payments_data_manager_->AddMaskedBankAccountForTest(CreatePixBankAccount(1));
   ON_CALL(*client_, GetPaymentsDataManager)
       .WillByDefault(testing::Return(nullptr));
 
   EXPECT_CALL(*api_client_, IsAvailable(testing::_)).Times(0);
 
-  manager_->ProcessPixCodeDetectionResult(
-      mojom::PixCodeDetectionResult::kValidPixCodeFound, std::string());
+  manager_->OnPixCodeValidated(/*pix_code=*/std::string(),
+                               /*is_pix_code_valid=*/true);
 }
 
 // If a valid PIX code is detected, and the user has PIX accounts, and API

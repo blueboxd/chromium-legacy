@@ -44,7 +44,7 @@ dictionary CheckVisibilityOptions {
 
     [Affects=Nothing] boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
-    [Affects=Nothing] sequence<DOMString> getAttributeNames();
+    [Affects=Nothing, ImplementedAs=getAttributeNamesForBindings] sequence<DOMString> getAttributeNames();
     [Affects=Nothing] DOMString? getAttribute(DOMString name);
     [Affects=Nothing] DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CEReactions] void setAttribute(DOMString name, DOMString value);
@@ -109,7 +109,7 @@ dictionary CheckVisibilityOptions {
     [Affects=Nothing, MeasureAs=ElementGetInnerHTML, RuntimeEnabled=ElementGetInnerHTML] DOMString getInnerHTML(optional GetInnerHTMLOptions options = {});
 
     // Declarative Shadow DOM getHTML() function.
-    [Affects=Nothing, MeasureAs=ElementGetHTML, RaisesException, RuntimeEnabled=ElementGetHTML] DOMString getHTML(optional GetHTMLOptions options = {});
+    [Affects=Nothing, MeasureAs=ElementGetHTML, RaisesException] DOMString getHTML(optional GetHTMLOptions options = {});
 
     // Pointer Lock
     // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface

@@ -280,9 +280,9 @@ void OverviewSession::Init(const aura::Window::Windows& windows,
   // accessibility purposes. Make its role a button as the contents so that
   // `UpdateAccessibilityFocus` can put it on the accessibility focus
   // cycler.
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.accept_events = false;
   params.bounds = gfx::Rect(0, 0, 2, 2);
@@ -293,7 +293,10 @@ void OverviewSession::Init(const aura::Window::Windows& windows,
   overview_focus_widget_ = std::make_unique<views::Widget>(std::move(params));
   overview_focus_widget_->SetContentsView(
       views::Builder<views::View>()
+          .SetAccessibleName(std::u16string(),
+                             ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
           .SetAccessibleRole(ax::mojom::Role::kButton)
+          .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
           .Build());
 
   num_start_windows_ = GetNumWindows();
@@ -1244,6 +1247,11 @@ bool OverviewSession::ShouldEnterWithoutAnimations() const {
 void OverviewSession::UpdateAccessibilityFocus() {
   if (is_shutting_down())
     return;
+
+  if (focus_cycler_) {
+    focus_cycler_->UpdateAccessibilityFocus();
+    return;
+  }
 
   // Construct the list of accessible widgets, these are the overview focus
   // widget, desk bar widget, all the item widgets and the no window indicator

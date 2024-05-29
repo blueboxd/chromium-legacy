@@ -13,6 +13,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/untrusted_web_ui_controller.h"
@@ -34,6 +35,7 @@ class MediaAppGuestUIDelegate {
   virtual std::unique_ptr<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
   CreateAndBindOcrHandler(
       content::BrowserContext& context,
+      gfx::NativeWindow native_window,
       mojo::PendingReceiver<ash::media_app_ui::mojom::OcrUntrustedPageHandler>
           receiver,
       mojo::PendingRemote<ash::media_app_ui::mojom::OcrUntrustedPage> page) = 0;
@@ -42,7 +44,8 @@ class MediaAppGuestUIDelegate {
       mojo::PendingReceiver<ash::media_app_ui::mojom::MahiUntrustedPageHandler>
           receiver,
       mojo::PendingRemote<ash::media_app_ui::mojom::MahiUntrustedPage> page,
-      const std::string& file_name) = 0;
+      const std::string& file_name,
+      gfx::NativeWindow window) = 0;
 };
 
 // The webui for chrome-untrusted://media-app.
@@ -104,7 +107,6 @@ class MediaAppGuestUI
   std::unique_ptr<ui::ColorChangeHandler> color_provider_handler_;
   mojo::Receiver<media_app_ui::mojom::UntrustedPageHandlerFactory>
       untrusted_page_handler_factory_{this};
-  std::unique_ptr<media_app_ui::mojom::OcrUntrustedPageHandler> ocr_handler_;
   std::unique_ptr<MediaAppGuestUIDelegate> delegate_;
 
   base::WeakPtrFactory<MediaAppGuestUI> weak_factory_{this};

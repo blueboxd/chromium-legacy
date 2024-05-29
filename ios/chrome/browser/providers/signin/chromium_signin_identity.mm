@@ -35,17 +35,11 @@ class ChromiumSystemIdentityManager final : public SystemIdentityManager {
       NSSet<UISceneSession*>* scene_sessions) final;
   void DismissDialogs() final;
   DismissViewCallback PresentAccountDetailsController(
-      id<SystemIdentity> identity,
-      UIViewController* view_controller,
-      bool animated) final;
+      PresentDialogConfiguration configuration) final;
   DismissViewCallback PresentWebAndAppSettingDetailsController(
-      id<SystemIdentity> identity,
-      UIViewController* view_controller,
-      bool animated) final;
+      PresentDialogConfiguration configuration) final;
   DismissViewCallback PresentLinkedServicesSettingsDetailsController(
-      id<SystemIdentity> identity,
-      UIViewController* view_controller,
-      bool animated) final;
+      PresentDialogConfiguration configuration) final;
   id<SystemIdentityInteractionManager> CreateInteractionManager() final;
   void IterateOverIdentities(IdentityIteratorCallback callback) final;
   void ForgetIdentity(id<SystemIdentity> identity,
@@ -66,6 +60,7 @@ class ChromiumSystemIdentityManager final : public SystemIdentityManager {
                          const std::set<std::string>& names,
                          FetchCapabilitiesCallback callback) final;
   bool HandleMDMNotification(id<SystemIdentity> identity,
+                             NSArray<id<SystemIdentity>>* active_identities,
                              id<RefreshAccessTokenError> error,
                              HandleMDMCallback callback) final;
   bool IsMDMError(id<SystemIdentity> identity, NSError* error) final;
@@ -101,27 +96,21 @@ void ChromiumSystemIdentityManager::DismissDialogs() {
 
 SystemIdentityManager::DismissViewCallback
 ChromiumSystemIdentityManager::PresentAccountDetailsController(
-    id<SystemIdentity> identity,
-    UIViewController* view_controller,
-    bool animated) {
+    PresentDialogConfiguration configuration) {
   NOTREACHED_IN_MIGRATION();
   return {};
 }
 
 SystemIdentityManager::DismissViewCallback
 ChromiumSystemIdentityManager::PresentWebAndAppSettingDetailsController(
-    id<SystemIdentity> identity,
-    UIViewController* view_controller,
-    bool animated) {
+    PresentDialogConfiguration configuration) {
   NOTREACHED_IN_MIGRATION();
   return {};
 }
 
 SystemIdentityManager::DismissViewCallback
 ChromiumSystemIdentityManager::PresentLinkedServicesSettingsDetailsController(
-    id<SystemIdentity> identity,
-    UIViewController* view_controller,
-    bool animated) {
+    PresentDialogConfiguration configuration) {
   NOTREACHED_IN_MIGRATION();
   return {};
 }
@@ -191,6 +180,7 @@ void ChromiumSystemIdentityManager::FetchCapabilities(
 
 bool ChromiumSystemIdentityManager::HandleMDMNotification(
     id<SystemIdentity> identity,
+    NSArray<id<SystemIdentity>>* active_identities,
     id<RefreshAccessTokenError> error,
     HandleMDMCallback callback) {
   NOTREACHED_IN_MIGRATION();

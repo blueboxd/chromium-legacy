@@ -38,12 +38,12 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/compose/core/browser/compose_features.h"
 #include "components/compose/core/browser/config.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -139,6 +139,10 @@ void AutofillPopupControllerImpl::Show(
     std::vector<Suggestion> suggestions,
     AutofillSuggestionTriggerSource trigger_source,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
+  suggestions_filling_product_ =
+      !suggestions.empty() && IsStandaloneSuggestionType(suggestions[0].type)
+          ? GetFillingProductFromSuggestionType(suggestions[0].type)
+          : FillingProduct::kNone;
   // Autofill popups should only be shown in focused windows because on Windows
   // the popup may overlap the focused window (see crbug.com/1239760).
   if (auto* rwhv = web_contents_->GetRenderWidgetHostView();
@@ -302,7 +306,10 @@ void AutofillPopupControllerImpl::Hide(SuggestionHidingReason reason) {
   }
   key_press_observer_.Reset();
   popup_hide_helper_.reset();
-  AutofillMetrics::LogAutofillSuggestionHidingReason(reason);
+  // TODO(b/341916065): Consider only emitting this metric if the popup has been opened
+  // before. Today the show method can call `Hide()` before properly opening the popup.
+  AutofillMetrics::LogAutofillSuggestionHidingReason(
+      suggestions_filling_product_, reason);
   HideViewAndDie();
 }
 
@@ -374,7 +381,6 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   if (suggestion.acceptance_a11y_announcement && view_) {
     view_->AxAnnounce(*suggestion.acceptance_a11y_announcement);
   }
-
   delegate_->DidAcceptSuggestion(
       suggestion, AutofillSuggestionDelegate::SuggestionPosition{
                       .row = index, .sub_popup_level = GetPopupLevel()});
@@ -390,6 +396,10 @@ content::WebContents* AutofillPopupControllerImpl::GetWebContents() const {
 
 const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
   return controller_common_.element_bounds;
+}
+
+PopupAnchorType AutofillPopupControllerImpl::anchor_type() const {
+  return controller_common_.anchor_type;
 }
 
 base::i18n::TextDirection AutofillPopupControllerImpl::GetElementTextDirection()

@@ -73,7 +73,9 @@ export {pageVisibility, PrivacyPageVisibility, resetPageVisibilityForTesting} fr
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './people_page/account_manager_browser_proxy.js';
 // </if>
 export {SettingsPeoplePageElement} from './people_page/people_page.js';
+// <if expr="not chromeos_ash">
 export {MAX_SIGNIN_PROMO_IMPRESSION, SettingsSyncAccountControlElement} from './people_page/sync_account_control.js';
+// </if>
 export {BATTERY_SAVER_MODE_PREF, SettingsBatteryPageElement} from './performance_page/battery_page.js';
 export {PerformanceBrowserProxy, PerformanceBrowserProxyImpl} from './performance_page/performance_browser_proxy.js';
 export {BatterySaverModeState, MemorySaverModeAggressiveness, MemorySaverModeExceptionListAction, MemorySaverModeState, PerformanceMetricsProxy, PerformanceMetricsProxyImpl} from './performance_page/performance_metrics_proxy.js';
@@ -103,6 +105,7 @@ export {SettingsSafetyCheckPasswordsChildElement} from './safety_check_page/safe
 export {SettingsSafetyCheckSafeBrowsingChildElement} from './safety_check_page/safety_check_safe_browsing_child.js';
 export {SettingsSafetyCheckUnusedSitePermissionsElement} from './safety_check_page/safety_check_unused_site_permissions.js';
 export {SettingsSafetyCheckUpdatesChildElement} from './safety_check_page/safety_check_updates_child.js';
+export {ScrollableMixin} from './scrollable_mixin.js';
 export {ChoiceMadeLocation, SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from './search_engines_page/search_engines_browser_proxy.js';
 export {SettingsSearchEngineListDialogElement} from './search_page/search_engine_list_dialog.js';
 export {SettingsSearchPageElement} from './search_page/search_page.js';

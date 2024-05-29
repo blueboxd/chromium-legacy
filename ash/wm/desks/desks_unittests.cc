@@ -339,12 +339,13 @@ bool TabUntil(bool reverse, Predicate&& predicate) {
 auto OverviewItemFocused(DeskBarViewBase::Type type,
                          OverviewFocusableView* view) {
   return [type, view] {
-    if (type == DeskBarViewBase::Type::kOverview) {
+    if (type == DeskBarViewBase::Type::kOverview &&
+        !features::IsOverviewNewFocusEnabled()) {
       return view->is_focused();
-    } else {
-      CHECK(view->GetView());
-      return view->GetView()->HasFocus();
     }
+
+    CHECK(view->GetView());
+    return view->GetView()->HasFocus();
   };
 }
 
@@ -476,6 +477,7 @@ struct DesksTestParams {
   bool use_touch_gestures = false;
   bool use_16_desks = false;
   bool per_desk_shelf = false;
+  bool overview_new_focus = false;
 };
 
 // Defines a parameterized test fixture to test Virtual Desks behavior.
@@ -499,6 +501,7 @@ class DesksTest : public AshTestBase,
     scoped_feature_list_.InitWithFeatureStates(
         {{features::kFeatureManagement16Desks, GetParam().use_16_desks},
          {features::kPerDeskShelf, GetParam().per_desk_shelf},
+         {features::kOverviewNewFocus, GetParam().overview_new_focus},
          {features::kFasterSplitScreenSetup, true},
          {features::kOsSettingsRevampWayfinding, true}});
 
@@ -7380,8 +7383,12 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "1", "2"));
 
   // Focus the second desk.
-  overview_controller->overview_session()->focus_cycler_old()->MoveFocusToView(
-      mini_view_1->desk_preview());
+  if (auto* focus_cycler_old =
+          overview_controller->overview_session()->focus_cycler_old()) {
+    focus_cycler_old->MoveFocusToView(mini_view_1->desk_preview());
+  } else {
+    mini_view_1->desk_preview()->RequestFocus();
+  }
 
   // Swap the positions of the second desk and the third desk by pressing Ctrl +
   // ->.
@@ -7501,8 +7508,13 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   event_generator->ReleaseTouch();
 
   // Swap the positions of `desk_0` and `desk_2` by keyboard. Focus `desk_0`.
-  overview_controller->overview_session()->focus_cycler_old()->MoveFocusToView(
-      mini_view_0->desk_preview());
+  // Focus the second desk.
+  if (auto* focus_cycler_old =
+          overview_controller->overview_session()->focus_cycler_old()) {
+    focus_cycler_old->MoveFocusToView(mini_view_0->desk_preview());
+  } else {
+    mini_view_0->desk_preview()->RequestFocus();
+  }
 
   // Swap the positions of the |desk_0| and the |desk_2| by pressing Ctrl + ->.
   event_generator->PressKey(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
@@ -9318,7 +9330,7 @@ TEST_P(DesksCloseAllTest, InteractingWithShelfClosesToast) {
 class DeskBarTest
     : public AshTestBase,
       public ::testing::WithParamInterface<
-          testing::tuple<bool, bool, bool, DeskBarViewBase::Type>> {
+          testing::tuple<bool, bool, bool, bool, DeskBarViewBase::Type>> {
  public:
   DeskBarTest() = default;
   DeskBarTest(const DeskBarTest&) = delete;
@@ -9326,11 +9338,12 @@ class DeskBarTest
   ~DeskBarTest() override = default;
 
   void SetUp() override {
-    std::tie(use_touch_gestures_, use_16_desks_, use_desk_profiles_,
-             bar_type_) = GetParam();
+    std::tie(use_touch_gestures_, use_16_desks_, use_overview_new_focus_,
+             use_desk_profiles_, bar_type_) = GetParam();
 
     scoped_feature_list_.InitWithFeatureStates(
         {{features::kFeatureManagement16Desks, use_16_desks_},
+         {features::kOverviewNewFocus, use_overview_new_focus_},
          {chromeos::features::kDeskProfiles, use_desk_profiles_}});
 
     AshTestBase::SetUp();
@@ -9366,11 +9379,10 @@ class DeskBarTest
     loop.Run();
   }
 
-  void ClickOrPressOnPoint(gfx::Point p) {
+  void ClickOrPressOnPoint(const gfx::Point& p) {
     auto* event_generator = GetEventGenerator();
     if (use_touch_gestures_) {
-      event_generator->set_current_screen_location(p);
-      event_generator->PressTouch();
+      event_generator->PressTouch(p);
       event_generator->ReleaseTouch();
     } else {
       event_generator->MoveMouseTo(p);
@@ -9538,6 +9550,7 @@ class DeskBarTest
 
   bool use_touch_gestures_;
   bool use_16_desks_;
+  bool use_overview_new_focus_;
   bool use_desk_profiles_;
   DeskBarViewBase::Type bar_type_;
 
@@ -10306,7 +10319,8 @@ TEST_P(DeskBarTest, ForwardTabbing) {
   ASSERT_TRUE(desk_bar_view);
 
   // Tab through the first window if we are in overview.
-  if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+  if (bar_type_ == DeskBarViewBase::Type::kOverview &&
+      !use_overview_new_focus_) {
     PressAndReleaseKey(ui::VKEY_TAB);
   }
 
@@ -10380,8 +10394,14 @@ TEST_P(DeskBarTest, ReverseTabbing) {
   ASSERT_TRUE(desk_bar_view);
 
   // If in overview, tab through the save desk for later button; if it's bento
-  // button desk bar, tab one more time since it starts at the active desk.
-  PressAndReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  // button desk bar, tab one more time since it starts at the active desk. The
+  // saved for later button is actually disabled because windows created with
+  // `CreateAppWindow()` are not savable. Old focus allows focusing through
+  // anyway, but new focus does not.
+  if (!use_overview_new_focus_ ||
+      bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+    PressAndReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  }
 
   // Tab through library button.
   PressAndReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
@@ -10816,6 +10836,12 @@ TEST_P(DeskBarTest, BottomLockedShelf) {
 // Tests that we can undo close-all solely via keyboard navigation (tabbing to
 // the undo toast and pressing enter).
 TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
+  // TODO(http://b/325335020): Support tabbing to the undo toast. We may want
+  // this applied for non chromevox as well.
+  if (use_overview_new_focus_) {
+    return;
+  }
+
   // Scenarios in which we can try to undo desk closure. If the active desk is
   // removed, we close the desk bar and immediately focus the undo button.
   enum class DeskRemovalMethod {
@@ -10869,16 +10895,8 @@ TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
 
       PressAndReleaseKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
     } else if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-        ASSERT_EQ(mini_views[0]->desk_preview(),
-                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
-      } else {
-        ASSERT_EQ(mini_views[0]->desk_preview(), Shell::Get()
-                                                     ->overview_controller()
-                                                     ->overview_session()
-                                                     ->focus_cycler_old()
-                                                     ->focused_view());
-      }
+      ASSERT_EQ(mini_views[0]->desk_preview(),
+                desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
 
       // In the desk button desk bar, we run the desk switch animation when
       // removing the active desk.
@@ -10886,16 +10904,12 @@ TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
       PressAndReleaseKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
       waiter.Wait();
     } else {
-      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
-        ASSERT_EQ(mini_views[0]->desk_preview(),
-                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
-      } else {
-        ASSERT_EQ(mini_views[0]->desk_preview(), Shell::Get()
-                                                     ->overview_controller()
-                                                     ->overview_session()
-                                                     ->focus_cycler_old()
-                                                     ->focused_view());
-      }
+      ASSERT_EQ(DeskBarViewBase::Type::kOverview, bar_type_);
+      ASSERT_EQ(mini_views[0]->desk_preview(), Shell::Get()
+                                                   ->overview_controller()
+                                                   ->overview_session()
+                                                   ->focus_cycler_old()
+                                                   ->focused_view());
 
       PressAndReleaseKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
     }
@@ -11968,6 +11982,7 @@ constexpr DesksTestParams kTestCombinations[] = {
     {.use_touch_gestures = true, .use_16_desks = true},
     // Per-desk shelf enabled combinations.
     {.per_desk_shelf = true},
+    {.overview_new_focus = true},
 };
 
 // This is used for tests that only want to test 8/16 desks.
@@ -11985,8 +12000,11 @@ std::string GetTestSuffix(const DesksTestParams& params) {
   std::string use_16 = GetDeskCountSuffix(params.use_16_desks);
   std::string use_per_desk_shelf =
       params.per_desk_shelf ? "PerDeskShelf" : "NoPerDeskShelf";
-  return base::StringPrintf("%s_%s_%s", use_touch.c_str(), use_16.c_str(),
-                            use_per_desk_shelf.c_str());
+  std::string overview_new_focus =
+      params.overview_new_focus ? "OverviewNewFocus" : "OverviewOldFocus";
+  return base::StringPrintf("%s_%s_%s_%s", use_touch.c_str(), use_16.c_str(),
+                            use_per_desk_shelf.c_str(),
+                            overview_new_focus.c_str());
 }
 
 std::string GetDeskCountOnlyTestSuffix(
@@ -12039,15 +12057,17 @@ INSTANTIATE_TEST_SUITE_P(
     DeskBarTest,
     testing::Combine(testing::Bool(),  // use touch gestures
                      testing::Bool(),  // use 16 desks
+                     testing::Bool(),  // use overview new focus
                      testing::Bool(),  // use desk profiles
                      testing::Values(DeskBarViewBase::Type::kDeskButton,
                                      DeskBarViewBase::Type::kOverview)),
     [](const testing::TestParamInfo<DeskBarTest::ParamType>& info) {
       DesksTestParams params;
-      DeskBarViewBase::Type bar_type;
       bool use_desk_profiles;
+      DeskBarViewBase::Type bar_type;
       std::tie(params.use_touch_gestures, params.use_16_desks,
-               use_desk_profiles, bar_type) = info.param;
+               params.overview_new_focus, use_desk_profiles, bar_type) =
+          info.param;
       std::string result = GetTestSuffix(params);
       std::string bar_type_str;
       switch (bar_type) {

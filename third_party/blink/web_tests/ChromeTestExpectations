@@ -10,7 +10,6 @@
 external/wpt/webdriver/tests/bidi/network/response_completed/response_completed.py [ Failure Timeout ]  # Flaky output
 external/wpt/webdriver/tests/classic/element_send_keys/interactability.py [ Failure ]  # Flaky output
 external/wpt/webdriver/tests/classic/perform_actions/wheel.py [ Failure ]  # Flaky output
-external/wpt/webdriver/tests/bidi/input/perform_actions/invalid.py [ Failure Timeout ]  # Flaky output
 external/wpt/webdriver/tests/classic/element_click/navigate.py [ Failure ]  # Flaky output
 external/wpt/webdriver/tests/bidi/input/perform_actions/wheel.py [ Failure ]  # Flaky output
 external/wpt/webdriver/tests/bidi/network/add_intercept/invalid.py [ Timeout ]
@@ -86,6 +85,7 @@ crbug.com/626703 external/wpt/webdriver/tests/bidi/script/evaluate/target.py [ F
 crbug.com/626703 external/wpt/webdriver/tests/bidi/network/provide_response/request.py [ Timeout ]
 crbug.com/626703 external/wpt/webdriver/tests/bidi/network/continue_response/credentials.py [ Timeout ]
 crbug.com/626703 external/wpt/webdriver/tests/bidi/network/continue_response/request.py [ Timeout ]
+crbug.com/343338108 external/wpt/webdriver/tests/bidi/input/perform_actions/invalid.py [ Failure Timeout ]
 crbug.com/626703 external/wpt/webdriver/tests/classic/element_clear/clear.py [ Failure Timeout ]
 crbug.com/626703 external/wpt/webdriver/tests/bidi/network/fail_request/request.py [ Timeout ]
 crbug.com/626703 external/wpt/webdriver/tests/classic/perform_actions/invalid.py [ Timeout ]

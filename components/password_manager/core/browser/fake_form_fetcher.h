@@ -44,12 +44,9 @@ class FakeFormFetcher : public FormFetcher {
   State GetState() const override;
 
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetInsecureCredentials() const override;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetNonFederatedMatches() const override;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-  GetFederatedMatches() const override;
+  base::span<const PasswordForm> GetInsecureCredentials() const override;
+  base::span<const PasswordForm> GetNonFederatedMatches() const override;
+  base::span<const PasswordForm> GetFederatedMatches() const override;
   bool IsBlocklisted() const override;
   bool IsMovingBlocked(const signin::GaiaIdHash& destination,
                        const std::u16string& username) const override;
@@ -72,22 +69,16 @@ class FakeFormFetcher : public FormFetcher {
 
   void set_scheme(PasswordForm::Scheme scheme) { scheme_ = scheme; }
 
-  void set_federated(
-      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-          federated) {
+  void set_federated(std::vector<PasswordForm> federated) {
     state_ = State::NOT_WAITING;
-    federated_ = federated;
+    federated_ = std::move(federated);
   }
 
-  void set_insecure_credentials(
-      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-          credentials) {
+  void set_insecure_credentials(const std::vector<PasswordForm>& credentials) {
     insecure_credentials_ = credentials;
   }
 
-  void SetNonFederated(
-      const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
-          non_federated);
+  void SetNonFederated(const std::vector<PasswordForm>& non_federated);
 
   void SetBlocklisted(bool is_blocklisted);
 
@@ -104,13 +95,12 @@ class FakeFormFetcher : public FormFetcher {
   State state_ = State::NOT_WAITING;
   PasswordForm::Scheme scheme_ = PasswordForm::Scheme::kHtml;
   std::vector<InteractionsStats> stats_;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> non_federated_;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>> federated_;
+  std::vector<PasswordForm> non_federated_;
+  std::vector<PasswordForm> federated_;
   std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
       non_federated_same_scheme_;
   std::vector<PasswordForm> best_matches_;
-  std::vector<raw_ptr<const PasswordForm, VectorExperimental>>
-      insecure_credentials_;
+  std::vector<PasswordForm> insecure_credentials_;
   bool is_blocklisted_ = false;
   std::optional<PasswordStoreBackendError> profile_store_backend_error_;
   std::optional<PasswordStoreBackendError> account_store_backend_error_;

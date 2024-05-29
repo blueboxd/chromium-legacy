@@ -90,6 +90,7 @@
 <translation id="143681031165817424">הכתובת נשמרה רק במכשיר הזה</translation>
 <translation id="1449835205994625556">הסתרת סיסמה</translation>
 <translation id="1450170672351507823">מופעלת הגנה רגילה. כדי להוסיף שכבת אבטחה, ניתן להשתמש בהגנה המשופרת.</translation>
+<translation id="1455492980583160269">שליחת הודעה</translation>
 <translation id="1469381646033328562">החשבון מנוהל על ידי ההורה שלך.
 <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="1491277525950327607">יש ללחוץ פעמיים כדי להחליף את מצב ההגדרה</translation>
@@ -99,6 +100,7 @@
 <translation id="1506063256525392513">‏כך תהיה לך אפשרות לצלם ולהעלות תמונות, וגם לסרוק קודי QR</translation>
 <translation id="1509486075633541495">כניסה לאתר</translation>
 <translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
+<translation id="1520027731907768768">קבלת התראות על ירידות במחיר של המוצרים שבמעקב.</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1523341279170789507">‏הפעלת כל קובצי ה-Cookie</translation>
 <translation id="1524563461097350801">לא, תודה</translation>
@@ -860,6 +862,7 @@
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
 <translation id="5443952882982198570">כרטיסי אשראי</translation>
 <translation id="5444892875087332195">סימניות</translation>
+<translation id="5453738961176844111">קוד המדינה</translation>
 <translation id="5454211924362324495">כדי למנוע מאנשים אחרים להשתמש בסיסמה שלך, <ph name="BEGIN_LINK" />עליך לשנות אותה באתר <ph name="WEBSITE" /><ph name="END_LINK" /></translation>
 <translation id="5457226814769348910">פתיחה של גרסת אופליין</translation>
 <translation id="5459548306731933777">הצגת הפרטים</translation>
@@ -1188,6 +1191,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6983306615164277634">אפשר גם ללחוץ לחיצה ארוכה על סרגל הכתובות כדי לשנות את המיקום.</translation>
 <translation id="6988572888918530647">‏ניהול חשבון Google שלך</translation>
+<translation id="6990519590575500580">Facetime</translation>
 <translation id="6998989275928107238">אל</translation>
 <translation id="699954956411469731">התראות בנייד</translation>
 <translation id="699985840472413751">סגירת חלונית ההורדה</translation>
@@ -1224,6 +1228,7 @@
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
 <translation id="7210568419880432164">להפעלת ההתראות</translation>
+<translation id="7211038039686180558">קבוצות הכרטיסיות נשמרות באופן אוטומטי ומתעדכנות בכל המכשירים שמחוברים לחשבון</translation>
 <translation id="721597782417389033">כינוי הכרטיס לא חוקי</translation>
 <translation id="7221173315674413369">בתכונה 'מה חדש' אפשר לגלות תכונות וטיפים חדשים</translation>
 <translation id="7223102419539744003">סגירת הכרטיסייה</translation>
@@ -1354,6 +1359,7 @@
 <translation id="7866872729285243843">כדי שרשימת הקריאה תופיע בכל המכשירים שלך, עליך להפעיל את האפשרות 'רשימת קריאה' בהגדרות.</translation>
 <translation id="7866993391592926595">הסתרת הכרטיס הזה תוביל להשבתת המעקב אחר חבילות ולהסרת כל הנתונים שלך</translation>
 <translation id="7870750252270996949">‏תמונה שהועתקה מ-Lens</translation>
+<translation id="7877056713163921063">הוספה לאנשי הקשר</translation>
 <translation id="7879275349003161544">הצגת ההורדות</translation>
 <translation id="7883882164760409935">יש לך סיסמאות בשימוש חוזר.</translation>
 <translation id="7884694604461143138">חיפוש בהיסטוריה (התקבלו <ph name="COUNT" /> תוצאות)</translation>
@@ -1591,7 +1597,6 @@
 <translation id="9000089900434778519">מנוע החיפוש שלך הוא <ph name="DSE_NAME" />. ניתן לעיין בהוראות שלו לגבי מחיקת היסטוריית החיפושים, אם רלוונטי.</translation>
 <translation id="9008201768610948239">סגירה</translation>
 <translation id="9012585441087414258">‏הגנה מפני אתרים, הורדות ותוספים שידועים כמסוכנים. אם בדף כלשהו מתבצעת פעולה חשודה, כתובות URL וקטעים מהתוכן בדף נשלחים אל הגלישה הבטוחה של Google.</translation>
-<translation id="9025203546212508704">אפשר להחליק לקבלת הנחיות להתאמה אישית של התפריט</translation>
 <translation id="9029650858822697271">המערכת הוציאה אותך מהחשבון</translation>
 <translation id="9034759925968272072">‏לא תבוצע יציאה מחשבון Google שלך. ייתכן שיהיה באפשרותך לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9037965129289936994">הצגת מקור</translation>

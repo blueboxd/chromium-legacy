@@ -20,7 +20,6 @@
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
-#include "ui/accessibility/ax_updates_and_events.h"
 
 namespace ui {
 class AXNode;
@@ -132,6 +131,22 @@ class ReadAnythingAppModel {
   void set_requires_post_process_selection(bool value) {
     requires_post_process_selection_ = value;
   }
+  bool reset_draw_timer() { return reset_draw_timer_; }
+  void set_reset_draw_timer(bool value) { reset_draw_timer_ = value; }
+
+  const ui::AXNodeID& last_expanded_node_id() { return last_expanded_node_id_; }
+
+  void set_last_expanded_node_id(const ui::AXNodeID& node_id) {
+    last_expanded_node_id_ = node_id;
+  }
+
+  void reset_last_expanded_node_id() {
+    set_last_expanded_node_id(ui::kInvalidAXNodeID);
+  }
+
+  bool redraw_required() { return redraw_required_; }
+  void reset_redraw_required() { redraw_required_ = false; }
+
   const ui::AXNodeID& image_to_update_node_id() {
     return image_to_update_node_id_;
   }
@@ -276,9 +291,9 @@ class ReadAnythingAppModel {
 
   void ClearPendingUpdates();
 
-  void ProcessAccessibilityUpdatesAndEvents(
-      const ui::AXTreeID& tree_id,
-      ui::AXUpdatesAndEvents updates_and_events);
+  void AccessibilityEventReceived(const ui::AXTreeID& tree_id,
+                                  std::vector<ui::AXTreeUpdate>& updates,
+                                  std::vector<ui::AXEvent>& events);
 
   void OnAXTreeDestroyed(const ui::AXTreeID& tree_id);
 
@@ -384,6 +399,8 @@ class ReadAnythingAppModel {
   // node isn't in the current segment.
   int GetCurrentTextEndIndex(const ui::AXNodeID& node_id);
 
+  void ResetReadAloudState();
+
   void IncrementMetric(const std::string& metric_name);
 
   // Log speech count events.
@@ -402,9 +419,9 @@ class ReadAnythingAppModel {
   bool ContentNodesOnlyContainHeadings();
 
   void AddPendingUpdates(const ui::AXTreeID& tree_id,
-                         std::vector<ui::AXTreeUpdate> updates);
+                         std::vector<ui::AXTreeUpdate>& updates);
 
-  void UnserializeUpdates(std::vector<ui::AXTreeUpdate> updates,
+  void UnserializeUpdates(std::vector<ui::AXTreeUpdate>& updates,
                           const ui::AXTreeID& tree_id);
 
   void ProcessNonGeneratedEvents(const std::vector<ui::AXEvent>& events);
@@ -424,8 +441,6 @@ class ReadAnythingAppModel {
   // Uses the current AXNodePosition to return the next node that should be
   // spoken by Read Aloud.
   ui::AXNode* GetNodeFromCurrentPosition() const;
-
-  void ResetReadAloudState();
 
   bool IsTextForReadAnything(const ui::AXNodeID& ax_node_id) const;
 
@@ -528,6 +543,12 @@ class ReadAnythingAppModel {
 
   // The current base language code used for fonts or reading aloud.
   std::string base_language_code_ = "en";
+  // The current language code used for fonts or reading aloud.
+  std::string language_code_ = "en-US";
+  std::map<ui::AXNodeID, std::string> aria_expanded_node_states_;
+
+  bool redraw_required_ = false;
+  ui::AXNodeID last_expanded_node_id_ = ui::kInvalidAXNodeID;
 
   // The default language code, used as a fallback in case base_language_code_
   // is invalid. It's not guaranteed that default_language_code_ will always
@@ -559,6 +580,7 @@ class ReadAnythingAppModel {
   int32_t start_offset_ = -1;
   int32_t end_offset_ = -1;
   bool requires_distillation_ = false;
+  bool reset_draw_timer_ = false;
   bool requires_post_process_selection_ = false;
   ui::AXNodeID image_to_update_node_id_ = ui::kInvalidAXNodeID;
   bool selection_from_action_ = false;

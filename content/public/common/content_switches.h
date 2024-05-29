@@ -206,7 +206,6 @@ extern const char kSkiaFontCacheLimitMb[];
 extern const char kSkiaResourceCacheLimitMb[];
 CONTENT_EXPORT extern const char kTestType[];
 CONTENT_EXPORT extern const char kTimeTicksAtUnixEpoch[];
-CONTENT_EXPORT extern const char kTimeZoneForTesting[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetection[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionAuto[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionEnabled[];
@@ -216,6 +215,9 @@ CONTENT_EXPORT extern const char kUseFakeUIForDigitalIdentity[];
 CONTENT_EXPORT extern const char kUseFakeUIForFedCM[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kVideoImageTextureTarget[];
+#if BUILDFLAG(IS_WIN)
+CONTENT_EXPORT extern const char kUseSkiaFontManager[];
+#endif
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(INCLUDE_BOTH_V8_SNAPSHOTS)
 CONTENT_EXPORT extern const char kUseContextSnapshotSwitch[];
 #endif

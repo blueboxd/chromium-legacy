@@ -455,6 +455,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.DlcService.TotalUsedMBytes" units="MiB"
+    expires_after="2024-11-01">
+  <owner>yuanpengni@chromium.org</owner>
+  <owner>chromeos-core-services@google.com</owner>
+  <summary>
+    The storage space used by DLC packages on the device. This metric is
+    reported daily by the dlcservice. DLCs are ChromiumOS software packages that
+    are installed in the stateful partition.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DlcService.UninstallResult"
     enum="DlcService.UninstallResult" expires_after="2025-02-01">
   <owner>kimjae@chromium.org</owner>
@@ -926,39 +937,6 @@ chromium-metrics-reviews@google.com.
         summary="KeyManagement::WrapECCKey"/>
     <variant name=".KeyManagement.WrapRSAKey"
         summary="KeyManagement::WrapRSAKey"/>
-<!-- TODO(b/304710017): Remove .PinWeaver* histograms after we
-    fully migrated pinweaver_manager to libhwsec (target: M120)-->
-
-    <variant name=".PinWeaver" summary="PinWeaver"/>
-    <variant name=".PinWeaver.BlockGeneratePk"
-        summary="PinWeaver::BlockGeneratePk"/>
-    <variant name=".PinWeaver.CheckCredential"
-        summary="PinWeaver::CheckCredential"/>
-    <variant name=".PinWeaver.GeneratePk" summary="PinWeaver::GeneratePk"/>
-    <variant name=".PinWeaver.GetDelayInSeconds"
-        summary="PinWeaver::GetDelayInSeconds"/>
-    <variant name=".PinWeaver.GetDelaySchedule"
-        summary="PinWeaver::GetDelaySchedule"/>
-    <variant name=".PinWeaver.GetExpirationInSeconds"
-        summary="PinWeaver::GetExpirationInSeconds"/>
-    <variant name=".PinWeaver.GetLog" summary="PinWeaver::GetLog"/>
-    <variant name=".PinWeaver.GetVersion" summary="PinWeaver::GetVersion"/>
-    <variant name=".PinWeaver.GetWrongAuthAttempts"
-        summary="PinWeaver::GetWrongAuthAttempts"/>
-    <variant name=".PinWeaver.InsertCredential"
-        summary="PinWeaver::InsertCredential"/>
-    <variant name=".PinWeaver.InsertRateLimiter"
-        summary="PinWeaver::InsertRateLimiter"/>
-    <variant name=".PinWeaver.IsEnabled" summary="PinWeaver::IsEnabled"/>
-    <variant name=".PinWeaver.RemoveCredential"
-        summary="PinWeaver::RemoveCredential"/>
-    <variant name=".PinWeaver.ReplayLogOperation"
-        summary="PinWeaver::ReplayLogOperation"/>
-    <variant name=".PinWeaver.Reset" summary="PinWeaver::Reset"/>
-    <variant name=".PinWeaver.ResetCredential"
-        summary="PinWeaver::ResetCredential"/>
-    <variant name=".PinWeaver.StartBiometricsAuth"
-        summary="PinWeaver::StartBiometricsAuth"/>
     <variant name=".PinWeaverManager" summary="PinWeaverManager"/>
     <variant name=".PinWeaverManager.BlockGeneratePk"
         summary="PinWeaverManager::BlockGeneratePk"/>
@@ -976,6 +954,10 @@ chromium-metrics-reviews@google.com.
         summary="PinWeaverManager::GetVersion"/>
     <variant name=".PinWeaverManager.GetWrongAuthAttempts"
         summary="PinWeaverManager::GetWrongAuthAttempts"/>
+    <variant name=".PinWeaverManager.HasAnyCredential"
+        summary="PinWeaverManager::HasAnyCredential"/>
+    <variant name=".PinWeaverManager.Initialize"
+        summary="PinWeaverManager::Initialize"/>
     <variant name=".PinWeaverManager.InsertCredential"
         summary="PinWeaverManager::InsertCredential"/>
     <variant name=".PinWeaverManager.InsertRateLimiter"
@@ -990,6 +972,8 @@ chromium-metrics-reviews@google.com.
         summary="PinWeaverManager::StartBiometricsAuth"/>
     <variant name=".PinWeaverManager.StateIsReady"
         summary="PinWeaverManager::StateIsReady"/>
+    <variant name=".PinWeaverManager.SyncHashTree"
+        summary="PinWeaverManager::SyncHashTree"/>
     <variant name=".Random" summary="Random"/>
     <variant name=".Random.RandomBlob" summary="Random::RandomBlob"/>
     <variant name=".Random.RandomSecureBlob"
@@ -1330,6 +1314,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Missive.DataLossErrorReason"
+    enum="DataLossErrorReason" expires_after="2025-06-01">
+  <owner>jrhilke@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded once each time reporting::error::DATA_LOSS is returned in
+    src/platform2/missive/. There is a 1:1 relationship between the UMA values
+    and error messages used with reporting::error::DATA_LOSS so that we can
+    understand exactly which parts of the code are failing.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Missive.DeleteEmptyMultigenerationQueueDirectories"
     enum="Boolean" expires_after="2024-12-01">
   <owner>jrhilke@chromium.org</owner>
@@ -1543,7 +1539,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.EncryptionKeyStatus"
-    enum="MountEncryptedEncryptionKeyStatus" expires_after="2024-09-22">
+    enum="MountEncryptedEncryptionKeyStatus" expires_after="2024-11-24">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -1554,7 +1550,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.SystemKeyStatus"
-    enum="MountEncryptedSystemKeyStatus" expires_after="2024-09-22">
+    enum="MountEncryptedSystemKeyStatus" expires_after="2024-11-24">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -1978,7 +1974,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.AuthErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2029,7 +2025,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackCounter" units="units"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2058,7 +2054,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.ErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>

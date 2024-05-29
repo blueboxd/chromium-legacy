@@ -45,17 +45,23 @@ class ASH_PUBLIC_EXPORT MockPickerClient : public PickerClient {
               (override));
   MOCK_METHOD(void,
               GetRecentLocalFileResults,
-              (RecentFilesCallback),
+              (size_t, RecentFilesCallback),
               (override));
   MOCK_METHOD(void,
               GetRecentDriveFileResults,
-              (RecentFilesCallback),
+              (size_t, RecentFilesCallback),
               (override));
   MOCK_METHOD(void,
               GetSuggestedLinkResults,
               (SuggestedLinksCallback),
               (override));
   MOCK_METHOD(bool, IsFeatureAllowedForDogfood, (), (override));
+  MOCK_METHOD(void,
+              FetchFileThumbnail,
+              (const base::FilePath& path,
+               const gfx::Size& size,
+               FetchFileThumbnailCallback callback),
+              (override));
 };
 
 }  // namespace ash

@@ -179,6 +179,15 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Was deferred"/>
 </enum>
 
+<enum name="BoundSessionCredentialsCookieRotationGenerateAssertionResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to load the key"/>
+  <int value="2" label="Failed to create an unsigned assertion token"/>
+  <int value="3" label="Failed to sign an assertion token"/>
+  <int value="4" label="Assertion token signature verification failed"/>
+  <int value="5" label="Failed to attach the signature to an assertion token"/>
+</enum>
+
 <enum name="BoundSessionCredentialsCookieRotationResult">
   <int value="0" label="Success"/>
   <int value="1" label="Connection error"/>
@@ -851,7 +860,7 @@ chromium-metrics-reviews@google.com.
 </enum>
 
 <enum name="SyncButtonsType">
-  <int value="0" label="Equal weighted buttons on sync screen (deprecated)"/>
+  <int value="0" label="Equal weighted buttons on sync screen (Android)"/>
   <int value="1"
       label="Not-Equal weighted buttons on sync screen (Android, Windows, Mac
              and Linux)"/>
@@ -859,11 +868,11 @@ chromium-metrics-reviews@google.com.
   <int value="3"
       label="Not-Equal weighted buttons on history sync screen (iOS)"/>
   <int value="4"
-      label="Equal weighted buttons on sync screen from deadline (Android,
-             Windows, Mac and Linux)"/>
+      label="Equal weighted buttons on sync screen from deadline (Windows,
+             Mac and Linux)"/>
   <int value="5"
-      label="Equal weighted buttons on sync screen from capability (Android,
-             Windows, Mac and Linux)"/>
+      label="Equal weighted buttons on sync screen from capability (Windows,
+             Mac and Linux)"/>
 </enum>
 
 <enum name="SyncErrorPromptUIAction">

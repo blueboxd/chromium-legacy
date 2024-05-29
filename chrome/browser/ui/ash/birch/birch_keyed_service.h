@@ -18,9 +18,11 @@ namespace ash {
 
 class BirchCalendarProvider;
 class BirchFileSuggestProvider;
+class BirchMostVisitedProvider;
 class BirchRecentTabsProvider;
 class BirchReleaseNotesProvider;
 class BirchSelfShareProvider;
+class BirchWeatherV2Provider;
 class RefreshTokenWaiter;
 class Shell;
 
@@ -50,11 +52,20 @@ class BirchKeyedService : public KeyedService,
   BirchDataProvider* GetCalendarProvider() override;
   BirchDataProvider* GetFileSuggestProvider() override;
   BirchDataProvider* GetRecentTabsProvider() override;
+  BirchDataProvider* GetMostVisitedProvider() override;
   BirchDataProvider* GetReleaseNotesProvider() override;
   BirchDataProvider* GetSelfShareProvider() override;
+  BirchDataProvider* GetWeatherV2Provider() override;
 
   void WaitForRefreshTokens(base::OnceClosure callback) override;
   base::FilePath GetRemovedItemsFilePath() override;
+
+  void set_calendar_provider_for_test(BirchDataProvider* provider) {
+    calendar_provider_for_test_ = provider;
+  }
+  void set_file_suggest_provider_for_test(BirchDataProvider* provider) {
+    file_suggest_provider_for_test_ = provider;
+  }
 
  private:
   void ShutdownBirch();
@@ -70,13 +81,25 @@ class BirchKeyedService : public KeyedService,
 
   std::unique_ptr<BirchRecentTabsProvider> recent_tabs_provider_;
 
+  std::unique_ptr<BirchMostVisitedProvider> most_visited_provider_;
+
   std::unique_ptr<BirchReleaseNotesProvider> release_notes_provider_;
 
   std::unique_ptr<BirchSelfShareProvider> self_share_provider_;
 
+  std::unique_ptr<BirchWeatherV2Provider> weather_v2_provider_;
+
   base::ScopedObservation<Shell, ShellObserver> shell_observation_{this};
 
   std::unique_ptr<RefreshTokenWaiter> refresh_token_waiter_;
+
+  // The test data provider is a separate member because it needs to be a
+  // generic BirchDataProvider and `calendar_provider_` cannot be changed to
+  // that type.
+  raw_ptr<BirchDataProvider> calendar_provider_for_test_;
+
+  // This is a member for consistency with `calendar_provider_for_test`.
+  raw_ptr<BirchDataProvider> file_suggest_provider_for_test_;
 };
 
 }  // namespace ash

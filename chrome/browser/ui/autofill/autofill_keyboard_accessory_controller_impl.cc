@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/autofill_suggestion_delegate.h"
+#include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -154,7 +155,8 @@ void AutofillKeyboardAccessoryControllerImpl::Hide(
     delegate_->OnSuggestionsHidden();
   }
   popup_hide_helper_.reset();
-  AutofillMetrics::LogAutofillSuggestionHidingReason(reason);
+  AutofillMetrics::LogAutofillSuggestionHidingReason(
+      suggestions_filling_product_, reason);
   HideViewAndDie();
 }
 
@@ -215,6 +217,10 @@ content::WebContents* AutofillKeyboardAccessoryControllerImpl::GetWebContents()
 const gfx::RectF& AutofillKeyboardAccessoryControllerImpl::element_bounds()
     const {
   return controller_common_.element_bounds;
+}
+
+PopupAnchorType AutofillKeyboardAccessoryControllerImpl::anchor_type() const {
+  return controller_common_.anchor_type;
 }
 
 base::i18n::TextDirection
@@ -417,6 +423,10 @@ void AutofillKeyboardAccessoryControllerImpl::Show(
     std::vector<Suggestion> suggestions,
     AutofillSuggestionTriggerSource trigger_source,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
+  suggestions_filling_product_ =
+      !suggestions.empty() && IsStandaloneSuggestionType(suggestions[0].type)
+          ? GetFillingProductFromSuggestionType(suggestions[0].type)
+          : FillingProduct::kNone;
   if (auto* rwhv = web_contents_->GetRenderWidgetHostView();
       !rwhv || !rwhv->HasFocus()) {
     Hide(SuggestionHidingReason::kNoFrameHasFocus);

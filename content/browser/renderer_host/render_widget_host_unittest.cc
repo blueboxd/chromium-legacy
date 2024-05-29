@@ -32,7 +32,7 @@
 #include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
-#include "content/browser/renderer_host/input/touch_emulator.h"
+#include "content/browser/renderer_host/input/touch_emulator_impl.h"
 #include "content/browser/renderer_host/mock_render_widget_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -97,7 +97,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/common/input/events_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/events/event.h"
 #endif

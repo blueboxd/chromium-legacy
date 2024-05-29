@@ -48,7 +48,7 @@ namespace {
 const FormData& WithNewVersion(const FormData& form) {
   static FormVersion version_counter;
   ++*version_counter;
-  const_cast<FormData&>(form).version = version_counter;
+  const_cast<FormData&>(form).set_version(version_counter);
   return form;
 }
 
@@ -189,11 +189,6 @@ bool ContentAutofillDriver::IsInActiveFrame() const {
 
 bool ContentAutofillDriver::IsInAnyMainFrame() const {
   return render_frame_host_->GetMainFrame() == render_frame_host();
-}
-
-bool ContentAutofillDriver::IsPrerendering() const {
-  return render_frame_host_->IsInLifecycleState(
-      content::RenderFrameHost::LifecycleState::kPrerendering);
 }
 
 bool ContentAutofillDriver::HasSharedAutofillPermission() const {
@@ -539,8 +534,6 @@ void ContentAutofillDriver::HidePopup() {
     return;
   }
   router().HidePopup(*this, [](autofill::AutofillDriver& target) {
-    DCHECK(!target.IsPrerendering())
-        << "We should never affect UI while prerendering";
     target.GetAutofillManager().OnHidePopup();
   });
 }
@@ -653,7 +646,7 @@ ContentAutofillDriver::GetAutofillAgent() {
 void ContentAutofillDriver::SetFrameAndFormMetaData(
     FormData& form,
     base::optional_ref<FormFieldData> field) const {
-  form.host_frame = GetFrameToken();
+  form.set_host_frame(GetFrameToken());
 
   // GetLastCommittedURL doesn't include URL updates due to document.open() and
   // so it might be about:blank or about:srcdoc. In this case fallback to
@@ -661,19 +654,19 @@ void ContentAutofillDriver::SetFrameAndFormMetaData(
   GURL url = render_frame_host_->GetLastCommittedURL();
   if (url.SchemeIs(url::kAboutScheme))
     url = render_frame_host_->GetLastCommittedOrigin().GetURL();
-  form.url = StripAuthAndParams(url);
+  form.set_url(StripAuthAndParams(url));
 
   if (auto* main_rfh = render_frame_host_->GetMainFrame())
-    form.main_frame_origin = main_rfh->GetLastCommittedOrigin();
+    form.set_main_frame_origin(main_rfh->GetLastCommittedOrigin());
   else
-    form.main_frame_origin = url::Origin();
+    form.set_main_frame_origin(url::Origin());
 
   // The form signature must not be calculated before setting FormData::url.
   FormSignature form_signature = CalculateFormSignature(form);
 
   auto SetFieldMetaData = [&](FormFieldData& f) {
-    f.set_host_frame(form.host_frame);
-    f.set_host_form_id(form.renderer_id);
+    f.set_host_frame(form.host_frame());
+    f.set_host_form_id(form.renderer_id());
     f.set_origin(render_frame_host_->GetLastCommittedOrigin());
     f.set_host_form_signature(form_signature);
     f.set_bounds(TransformBoundingBoxToViewportCoordinates(f.bounds()));
@@ -702,7 +695,6 @@ std::optional<FormData> ContentAutofillDriver::GetFormWithFrameAndFormMetaData(
 }
 
 AutofillDriverRouter& ContentAutofillDriver::router() {
-  DCHECK(!IsPrerendering());
   return owner_->router();
 }
 

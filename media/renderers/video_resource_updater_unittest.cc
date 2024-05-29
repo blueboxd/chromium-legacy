@@ -78,7 +78,7 @@ class UploadCounterGLES2Interface : public viz::TestGLES2Interface {
 
  private:
   int upload_count_;
-  const uint8_t* last_upload_ = nullptr;
+  raw_ptr<const uint8_t, DanglingUntriaged> last_upload_ = nullptr;
 };
 
 class VideoResourceUpdaterTest : public testing::Test {
@@ -318,11 +318,10 @@ class VideoResourceUpdaterTest : public testing::Test {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
 
-    scoped_refptr<gpu::ClientSharedImage>
-        shared_images[VideoFrame::kMaxPlanes] = {
-            gpu::ClientSharedImage::CreateForTesting()};
-    scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapSharedImages(
-        format, shared_images, kMailboxSyncToken, target,
+    scoped_refptr<gpu::ClientSharedImage> shared_image =
+        gpu::ClientSharedImage::CreateForTesting();
+    scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapSharedImage(
+        format, shared_image, kMailboxSyncToken, target,
         base::BindOnce(&VideoResourceUpdaterTest::SetReleaseSyncToken,
                        base::Unretained(this)),
         size,                // coded_size

@@ -45,17 +45,11 @@ extern UIControlEvents TabGridPageChangeByDragEvent;
 // but will not cause any UIControl actions to be sent.
 @property(nonatomic, assign) CGFloat sliderPosition;
 
-// The number of regular tabs that the control should display in the appropriate
+// The number of tabs that the control should display in the appropriate
 // sections.
 // Numbers less than 1 are not displayed.
 // Numbers greater than 99 are displayed as ':-)'.
-@property(nonatomic, assign) NSUInteger regularTabCount;
-
-// The number of pinned tabs that the control should display in the appropriate
-// sections.
-// Numbers less than 1 are not displayed.
-// Numbers greater than 99 are displayed as ':-)'.
-@property(nonatomic, assign) NSUInteger pinnedTabCount;
+@property(nonatomic, assign) NSUInteger tabCount;
 
 // Create and return a new instance of this control. This is the preferred way
 // to create instances of this class.
@@ -74,6 +68,14 @@ extern UIControlEvents TabGridPageChangeByDragEvent;
 // Updates the appearance of the control, based on whether the content below it
 // is `scrolledToEdge` or not.
 - (void)setScrollViewScrolledToEdge:(BOOL)scrolledToEdge;
+
+// Highlights (put a blue background) the last element of the page control.
+- (void)highlightLastPageControl;
+// Removes the highlight on the last page control, if there is one.
+- (void)resetLastPageControlHighlight;
+
+// Returns the frame of the last segment, in window coordinates.
+- (CGRect)lastSegmentFrame;
 
 @end
 

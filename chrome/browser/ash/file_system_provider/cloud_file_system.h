@@ -38,7 +38,8 @@ namespace ash::file_system_provider {
 // A simple wrapper over a `ProvidedFileSystem` that adds additional logging,
 // currently this is hidden behind the `FileSystemProviderCloudFileSystem`
 // feature flag.
-class CloudFileSystem : public ProvidedFileSystemInterface {
+class CloudFileSystem : public ProvidedFileSystemInterface,
+                        public ContentCache::Observer {
  public:
   explicit CloudFileSystem(
       std::unique_ptr<ProvidedFileSystemInterface> file_system);
@@ -136,6 +137,9 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
   std::unique_ptr<ScopedUserInteraction> StartUserInteraction() override;
 
+  // ContentCache::Observer
+  void OnItemEvicted(const base::FilePath& fsp_path) override;
+
  private:
   const std::string GetFileSystemId() const;
   void OnTimer();
@@ -181,6 +185,18 @@ class CloudFileSystem : public ProvidedFileSystemInterface {
                            int bytes_read,
                            bool has_more,
                            base::File::Error result);
+
+  // Called when the write file request is completed with either a success or
+  // an error.
+  void OnWriteFileCompleted(int file_handle,
+                            storage::AsyncFileUtil::StatusCallback callback,
+                            base::File::Error result);
+
+  // Called when the delete entry request is completed with either a success or
+  // an error.
+  void OnDeleteEntryCompleted(const base::FilePath& entry_path,
+                              storage::AsyncFileUtil::StatusCallback callback,
+                              base::File::Error result);
 
   // After the bytes have finished caching, invoke the `callback`. This is the
   // `ReadChunkReceivedCallback` above and will always be invoked as the FSP

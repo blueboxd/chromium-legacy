@@ -38,7 +38,7 @@ std::optional<base::Value::Dict> LoadManifestOnFileThread(
                 << error;
     LOG(ERROR) << errorStream.str();
     static auto* const crash_key = base::debug::AllocateCrashKeyString(
-        "helper_extension_failure", base::debug::CrashKeySize::Size64);
+        "helper_extension_failure", base::debug::CrashKeySize::Size1024);
     base::debug::SetCrashKeyString(crash_key, errorStream.str());
     base::debug::DumpWithoutCrashing();
     return std::nullopt;
@@ -226,7 +226,7 @@ void EmbeddedA11yExtensionLoader::MaybeInstallExtension(
   base::FilePath resources_path;
 #if BUILDFLAG(IS_MAC)
   base::FilePath root_path;
-  CHECK(base::PathService::Get(base::DIR_ASSETS, &root_path));
+  CHECK(base::PathService::Get(base::DIR_MODULE, &root_path));
   resources_path = root_path.Append("resources");
 #else
   if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {

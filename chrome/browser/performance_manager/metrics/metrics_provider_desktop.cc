@@ -9,8 +9,12 @@
 #include "base/power_monitor/cpu_frequency_utils.h"
 #include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_mode.h"
@@ -30,6 +34,8 @@ uint64_t kBytesPerMb = 1024 * 1024;
 #if BUILDFLAG(IS_MAC)
 uint64_t kKilobytesPerMb = 1024;
 #endif
+
+base::TimeDelta kCpuThroughputSamplingInterval = base::Minutes(5);
 
 }  // namespace
 
@@ -149,6 +155,8 @@ void MetricsProviderDesktop::Initialize() {
   current_mode_ = ComputeCurrentMode();
 
   ResetTrackers();
+
+  PostDiskMetricsTask();
 }
 
 void MetricsProviderDesktop::ProvideCurrentSessionData(
@@ -168,10 +176,17 @@ void MetricsProviderDesktop::ProvideCurrentSessionData(
   // that this mode is what is adequately reported at the next report, unless it
   // changes in the meantime.
   current_mode_ = ComputeCurrentMode();
+
+  RecordDiskMetrics();
+
+  // Request a disk measurement so it's ready for the next interval
+  PostDiskMetricsTask();
 }
 
 MetricsProviderDesktop::MetricsProviderDesktop(PrefService* local_state)
-    : local_state_(local_state) {
+    : local_state_(local_state),
+      disk_metrics_getter_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {
   DCHECK(!g_metrics_provider);
   g_metrics_provider = this;
 
@@ -181,10 +196,7 @@ MetricsProviderDesktop::MetricsProviderDesktop(PrefService* local_state)
                           base::Unretained(this)));
 
   if constexpr (ShouldCollectCpuFrequencyMetrics()) {
-    cpu_frequency_metrics_timer_.Start(
-        FROM_HERE, base::Minutes(5),
-        base::BindRepeating(&MetricsProviderDesktop::RecordCpuFrequencyMetrics,
-                            base::Unretained(this)));
+    ScheduleCpuFrequencyTask();
   }
 }
 
@@ -279,8 +291,12 @@ void MetricsProviderDesktop::ResetTrackers() {
       "PerformanceManager.UserTuning.MemorySaverModeEnabledPercent");
 }
 
-void MetricsProviderDesktop::RecordCpuFrequencyMetrics() {
+// static
+void MetricsProviderDesktop::RecordCpuFrequencyMetrics(
+    base::TimeTicks posted_at_time) {
   CHECK(ShouldCollectCpuFrequencyMetrics());
+
+  auto queued_time = base::TimeTicks::Now() - posted_at_time;
 
   static const double kHzInMhz = 1000 * 1000;
 
@@ -292,38 +308,154 @@ void MetricsProviderDesktop::RecordCpuFrequencyMetrics() {
     return;
   }
 
+  std::string_view core_type_suffix = "Performance";
+  if (cpu_frequency_info.type == base::CpuFrequencyInfo::CoreType::kBalanced) {
+    core_type_suffix = "Balanced";
+  } else if (cpu_frequency_info.type ==
+             base::CpuFrequencyInfo::CoreType::kEfficiency) {
+    core_type_suffix = "Efficiency";
+  }
+
+  base::UmaHistogramCustomMicrosecondsTimes(
+      base::StrCat(
+          {"CPU.Experimental.CpuEstimationTaskQueuedTime.", core_type_suffix}),
+      queued_time, base::Microseconds(1), base::Seconds(1), 50);
+
+  base::UmaHistogramCustomMicrosecondsTimes(
+      base::StrCat(
+          {"CPU.Experimental.CpuEstimationTaskTotalTime.", core_type_suffix}),
+      queued_time + cpu_throughput->wall_time, base::Microseconds(1),
+      base::Seconds(1), 50);
+
+  base::UmaHistogramCustomMicrosecondsTimes(
+      base::StrCat(
+          {"CPU.Experimental.CpuEstimationTaskThreadTime.", core_type_suffix}),
+      cpu_throughput->thread_time, base::Microseconds(1), base::Seconds(1), 50);
+
+  base::UmaHistogramCustomMicrosecondsTimes(
+      base::StrCat(
+          {"CPU.Experimental.CpuEstimationTaskWallTime.", core_type_suffix}),
+      cpu_throughput->wall_time, base::Microseconds(1), base::Seconds(1), 50);
+
+  base::UmaHistogramBoolean("CPU.Experimental.CpuEstimationTaskMigrated",
+                            cpu_throughput->migrated);
+
+  // These can be 0 in tests
+  if (!cpu_throughput->thread_time.is_zero() &&
+      !cpu_throughput->wall_time.is_zero()) {
+    base::UmaHistogramPercentage(
+        base::StrCat({"CPU.Experimental.CpuEstimationThreadTimePercent.",
+                      core_type_suffix}),
+        static_cast<int>(cpu_throughput->thread_time /
+                         cpu_throughput->wall_time * 100.0));
+  }
+
   if (cpu_throughput->migrated) {
-    // Don't record these metrics if the code migrated from one CPU to another
-    // in the middle of the estimation loop.
+    // Don't record frequency metrics if the code migrated from one CPU to
+    // another in the middle of the estimation loop. This is because the nominal
+    // frequency of the start and end cores might be different.
     return;
   }
 
   double estimated_mhz = cpu_throughput->estimated_frequency / kHzInMhz;
 
-  std::string_view suffix = "Performance";
-  if (cpu_frequency_info.type == base::CpuFrequencyInfo::CoreType::kBalanced) {
-    suffix = "Balanced";
-  } else if (cpu_frequency_info.type ==
-             base::CpuFrequencyInfo::CoreType::kEfficiency) {
-    suffix = "Efficiency";
-  }
-
   // Max/Limit can (rarely) be 0 in the field, perhaps in virtualized or
   // sandboxed environments.
   if (cpu_frequency_info.max_mhz > 0UL) {
     base::UmaHistogramPercentage(
-        base::StrCat(
-            {"CPU.Experimental.EstimatedFrequencyAsPercentOfMax.", suffix}),
+        base::StrCat({"CPU.Experimental.EstimatedFrequencyAsPercentOfMax.",
+                      core_type_suffix}),
         static_cast<int>(estimated_mhz * 100.0 /
                          static_cast<double>(cpu_frequency_info.max_mhz)));
   }
 
   if (cpu_frequency_info.mhz_limit > 0UL) {
     base::UmaHistogramPercentage(
-        base::StrCat(
-            {"CPU.Experimental.EstimatedFrequencyAsPercentOfLimit.", suffix}),
+        base::StrCat({"CPU.Experimental.EstimatedFrequencyAsPercentOfLimit.",
+                      core_type_suffix}),
         static_cast<int>(estimated_mhz * 100.0 /
                          static_cast<double>(cpu_frequency_info.mhz_limit)));
   }
+
+  ScheduleCpuFrequencyTask();
 }
+
+// static
+void MetricsProviderDesktop::ScheduleCpuFrequencyTask() {
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&MetricsProviderDesktop::PostCpuFrequencyEstimation),
+      kCpuThroughputSamplingInterval);
+}
+
+// static
+void MetricsProviderDesktop::PostCpuFrequencyEstimation() {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&MetricsProviderDesktop::RecordCpuFrequencyMetrics,
+                     base::TimeTicks::Now()));
+}
+
+void MetricsProviderDesktop::RecordDiskMetrics() {
+  if (!pending_disk_metrics_) {
+    // The measurements aren't ready yet, don't report anything.
+    return;
+  }
+
+  if (pending_disk_metrics_->free_bytes == -1 ||
+      pending_disk_metrics_->total_bytes == -1) {
+    return;
+  }
+
+  base::UmaHistogramCustomCounts(
+      "PerformanceManager.DiskStats.UserDataDirFreeSpaceMb",
+      pending_disk_metrics_->free_bytes /
+          kBytesPerMb,  // space_info is bytes, convert to Mb
+      0, 10240,  // It's fine to bucket everything >10Gb as "large enough"
+      100);
+  // Also report as a percentage of capacity
+  base::UmaHistogramPercentage(
+      "PerformanceManager.DiskStats.UserDataDirFreeSpacePercent",
+      pending_disk_metrics_->free_bytes * 100 /
+          pending_disk_metrics_->total_bytes);
+
+  pending_disk_metrics_ = std::nullopt;
+}
+
+void MetricsProviderDesktop::PostDiskMetricsTask() {
+  if (!g_browser_process || !g_browser_process->profile_manager()) {
+    // It's possible to have a null browser process or a null profile manager in
+    // unit tests.
+    return;
+  }
+
+  // Records the free/available space on the disk that hosts the user data dir.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  const base::FilePath& user_data_dir = profile_manager->user_data_dir();
+
+  disk_metrics_getter_
+      .AsyncCall(&MetricsProviderDesktop::DiskMetricsThreadPoolGetter::
+                     ComputeDiskMetrics)
+      .WithArgs(user_data_dir)
+      .Then(base::BindOnce(&MetricsProviderDesktop::SavePendingDiskMetrics,
+                           base::Unretained(this)));
+}
+
+MetricsProviderDesktop::DiskMetrics
+MetricsProviderDesktop::DiskMetricsThreadPoolGetter::ComputeDiskMetrics(
+    const base::FilePath& user_data_dir) {
+  return {
+      .free_bytes = base::SysInfo::AmountOfFreeDiskSpace(user_data_dir),
+      .total_bytes = base::SysInfo::AmountOfTotalDiskSpace(user_data_dir),
+  };
+}
+
+void MetricsProviderDesktop::SavePendingDiskMetrics(DiskMetrics metrics) {
+  pending_disk_metrics_ = metrics;
+}
+
 }  // namespace performance_manager

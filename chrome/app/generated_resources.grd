@@ -8883,20 +8883,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         To easily get back to the side panel, click Pin at the top right
       </message>
       <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_IPH" desc="The body text of the IPH describing that the Lens Overlay panel is pinnable.">
-        You can pin this feature for easy access
+        You can pin Google Lens for easy access
       </message>
       <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_IPH_SCREENREADER"
           desc="The screen reader text of the IPH describing that the Lens Overlay panel is pinnable."
           is_accessibility_with_no_ui="true">
-        You can pin this feature for easy access; click the Pin button at the top of the side panel
+        You can pin Google Lens for easy access; click the Pin button at the top of the side panel
       </message>
       <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_FOLLOWUP_IPH" desc="The body text of the IPH describing that the Lens Overlay panel has been pinned.">
-        Pinned! Use this feature again from the toolbar
+        Pinned! Use Google Lens again from the toolbar
       </message>
       <message name="IDS_SIDE_PANEL_LENS_OVERLAY_PINNABLE_FOLLOWUP_IPH_SCREENREADER"
           desc="The screen reader text of the IPH describing that the Lens Overlay panel has been pinned."
           is_accessibility_with_no_ui="true">
-        Pinned! You can access this feature again from the new button on the toolbar
+        Pinned! You can access Google Lens again from the new button on the toolbar
       </message>
 
       <!-- Bookmarks strings -->
@@ -16080,6 +16080,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_PIN_ENTRY_ERROR_SAME_AS_CURRENT" desc="Error message. Displayed when the user attempts to set a new PIN code for their security key (an external physical device for user authentication), and the new PIN is the same as the currently set PIN.">
         Create a new PIN that's different from your current PIN
       </message>
+      <message name="IDS_WEBAUTHN_USE_PHONE_WITH_NAME" desc="Text that appears on a button to save or use a passkey on the user's phone. It identifies the phone by name.">
+        Use <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 6 Pro</ex></ph>
+      </message>
 
       <!-- WebAuthn authenticator internal user verification -->
       <message name="IDS_WEBAUTHN_INLINE_ENROLLMENT_CANCEL_LABEL" desc="The label on a button allowing users to skip fingerprint registration when setting up a fingerprint enabled authenticator.">
@@ -16215,9 +16218,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_QR_USE_PASSKEY_ON_SECURITY_KEY_LABEL" desc="Label on a modal dialog with a QR code. The label indicates to the user that instead of scanning the QR code with a phone, they can insert and activate a security key to sign in with a passkey instead. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
          If your passkey for <ph name="APP_NAME">$1<ex>google.com</ex></ph> is on a USB security key, insert and touch it now
       </message>
-      <message name="IDS_WEBAUTHN_BACK" desc="Label on a button on a dialog for creating or using a passkey to sign into a website. Pressing the button will take the user to the previous step.">
-         Back
-      </message>
 
       <!-- Multi source passkey picker -->
       <message name="IDS_WEBAUTHN_CHOOSE_PASSKEY_FOR_RP_TITLE" desc="The title of a dialog prompting the user to choose a passkey from a list to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
@@ -16335,6 +16335,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_GPM_INCOGNITO_CREATE_DESC" desc="The description of a dialog that is shown when a user is creating a Google Password Manager passkey while browsing in Incognito mode. It is explaining to the user that the passkey will continue to exist in the password manager outside of Incognito mode.">
         This passkey will be saved to your password manager. Anyone with access to it will be able to use this passkey.
+      </message>
+
+      <!-- Web-modal dialog shown during Digital Credential request -->
+      <message name="IDS_WEB_DIGITAL_CREDENTIALS_QR_TITLE" translateable="false">
+        Retrieve credentials from phone or tablet.
+      </message>
+
+      <message name="IDS_WEB_DIGITAL_CREDENTIALS_QR_BODY" translateable="false">
+        Scan this QR code with a camera on the device from which you want to retrieve credentials for <ph name="APP_NAME">$1<ex>example.com</ex></ph>
+      </message>
+
+      <message name="IDS_WEB_DIGITAL_CREDENTIALS_QR_CODE_ALT_TEXT" translateable="false">
+        QR code
       </message>
 
       <!-- Side Search -->
@@ -16741,6 +16754,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <ph name="APP_NAME">$1<ex>Google Photos</ex></ph> is blocked by admin. Ask admin for permission to use this app.
     </message>
 
+    <!-- App local block prompt -->
+    <message name="IDS_APP_LOCAL_BLOCK_PROMPT_TITLE" desc="Titlebar of the app local block prompt window">
+      <ph name="APP_NAME">$1<ex>Google Photos</ex></ph> is blocked on your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
+    </message>
+
+    <message name="IDS_APP_LOCAL_BLOCK_HEADING" desc="Tells the child that parent can unblock the app in the settings.">
+      Ask your parent to allow access in Settings
+    </message>
+
     <!-- Extension request -->
     <if expr="not is_android">
       <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_APPROVED_TITLE" desc="The notification title when there are some extension requests approved.">
@@ -16879,14 +16901,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_LENS_OVERLAY_COPY_TOAST_MESSAGE" desc="Notification shown in the Lens Overlay when the user has copied selected text to the clipboard.">
       Text copied
     </message>
+    <message name="IDS_LENS_OVERLAY_MORE_OPTIONS_BUTTON_LABEL" desc="Text that is shown in the tooltip of the more options button in the Lens Overlay.">
+      More options
+    </message>
+    <message name="IDS_LENS_OVERLAY_MY_ACTIVITY" desc="Text that is shown in the more options menu to open the user's activity page.">
+      My Activity
+    </message>
     <message name="IDS_LENS_OVERLAY_TOAST_DISMISS_MESSAGE" desc="The label for the button that dismisses the toast message">
       Dismiss
     </message>
     <message name="IDS_LENS_OVERLAY_TRANSLATE" desc="Command in the Lens Overlay context menu to translate text.">
       Translate
     </message>
-    <message name="IDS_LENS_OVERLAY_INFO_BUTTON_LABEL" desc="Text that is shown in the tooltip of the info button in the Lens Overlay.">
+    <message name="IDS_LENS_OVERLAY_LEARN_MORE" desc="Text that is shown in the more options menu to open the help center article.">
       Learn more
+    </message>
+    <message name="IDS_LENS_OVERLAY_INITIAL_TOAST_LABEL" desc="Accessibility label for the initial user eduction bubble that appears at the top of the screen after the user invokes the Lens Overlay feature. Informs the user to select an object to search with Google Lens, or use the escape key to exit the feature.">
+      Select anything to search with Google Lens or press escape to exit Google Lens
     </message>
     <message name="IDS_LENS_OVERLAY_INITIAL_TOAST_MESSAGE" desc="Text that is shown in the Lens Overlay education bubble when starting the feature. Informs the user to tap an object or drag over the screen to select a region to search with Google Lens.">
       Select anything to search with Google Lens
@@ -16903,7 +16934,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_LENS_OVERLAY_CURSOR_TOOLTIP_LIVE_PAGE_MESSAGE" desc="Text that is shown in the Lens Overlay tooltip that appears beneath the cursor. Informs the user to click to exit Google Lens.">
       Click to exit Google Lens
     </message>
-    <message name="IDS_LENS_SEND_FEEDBACK_LABEL" desc="Text that is shown in the tooltip of the send feedback button in the Lens Overlay.">
+    <message name="IDS_LENS_SEND_FEEDBACK" desc="Text that is shown in the more options menu to open the feedback dialog.">
       Send feedback
     </message>
     <message name="IDS_LENS_SEND_FEEDBACK_PLACEHOLDER" desc="Placeholder text that is shown in the feedback dialog to send feedback for the Lens Overlay.">
@@ -17359,6 +17390,26 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_HOVERCARD_INACTIVE_TAB" desc="Text at the bottom of a hovercard indicating that a tab is inactive.">
         Inactive tab
+      </message>
+    </if>
+    <!-- Performance Intervention Strings-->
+    <!-- TODO(crbug.com/341709409): Finalize the intervention strings and mark them as translateable -->
+    <if expr="not is_android">
+        <message name="IDS_PERFORMANCE_INTERVENTION_DIALOG_TITLE" desc="Title text for a dialog with information on tabs that could be causing performance issues." translateable="false">
+        Performance Issue Detected
+        </message>
+      <if expr="use_titlecase">
+        <message name="IDS_PERFORMANCE_INTERVENTION_DEACTIVATE_TABS_BUTTON" desc="In Title Case: Label on a dialog button that deactivate the specified tabs in the dialog when clicked." translateable="false">
+        Deactivate Tabs
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_PERFORMANCE_INTERVENTION_DEACTIVATE_TABS_BUTTON" desc="Label on a dialog button that deactivate the specified tabs in the dialog when clicked." translateable="false">
+        Deactivate tabs
+      </message>
+      </if>
+      <message name="IDS_PERFORMANCE_INTERVENTION_DISMISS_BUTTON" desc="Label on a dialog button that dismisses the dialog when clicked." translateable="false">
+        Dismiss
       </message>
     </if>
     <message name="IDS_ACCNAME_SIDEBAR_WEBVIEW_LOCATION_BAR" desc="The accessible name of the sidebar webview's location bar.">

@@ -58,6 +58,7 @@
 /fuchsia-sdk/images-internal
 /fuchsia-sdk/sdk
 /glfw/src
+/glslang/src
 /gn/
 /gnu_binutils/
 /google-java-format/*.jar
@@ -66,7 +67,6 @@
 /guava/lib/
 /hamcrest/lib/
 /icu4j/lib/
-/instrumented_libraries/
 /instrumented_libs/
 /jacoco/coverage/
 /jacoco/doc/
@@ -150,6 +150,9 @@
 /soda-win32
 /soda-win64
 /speex
+/spirv-cross/src
+/spirv-headers/src
+/spirv-tools/src
 /sqlite4java/lib/
 /subresource-filter-ruleset/data/*
 /swift-format
@@ -164,6 +167,11 @@
 /turbine/*.jar
 /usb_ids
 /v8-i18n
+/vulkan-headers/src
+/vulkan-loader/src
+/vulkan-tools/src
+/vulkan-utility-libraries/src
+/vulkan-validation-layers/src
 /webdriver/python/selenium
 /webgl
 /webpagereplay

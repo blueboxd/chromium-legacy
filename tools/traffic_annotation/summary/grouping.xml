@@ -312,6 +312,7 @@ after discussions on the right group.
       <annotation id="chromeos_picker_gif_media_fetcher"/>
       <annotation id="weather_icon"/>
       <annotation id="birch_calendar_provider"/>
+      <annotation id="birch_weather_provider"/>
       <annotation id="recovery_key_store_fetch"/>
       <annotation id="enterprise_logo_fetcher"/>
       <annotation id="remoting_corp_logging_report_session_disconnected"/>
@@ -326,6 +327,11 @@ after discussions on the right group.
       <annotation id="youtube_music_integration"/>
       <annotation id="personalized_recommended_apps_download"/>
       <annotation id="focus_sounds_configuration"/>
+      <annotation id="device_image_downloader"/>
+      <annotation id="data_sharing_service_create_group"/>
+      <annotation id="data_sharing_service_read_groups"/>
+      <annotation id="data_sharing_service_delete_groups"/>
+      <annotation id="data_sharing_service_update_group"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -605,7 +611,7 @@ after discussions on the right group.
       <annotation id="ranker_url_fetcher"/>
     </sender>
     <sender name="Whats New">
-      <annotation id="whats_new_handler"/>
+      <annotation id="whats_new_fetcher"/>
     </sender>
   </group>
   <group name="PlusAddresses" hidden="true">

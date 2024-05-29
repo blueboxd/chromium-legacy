@@ -57,7 +57,12 @@
 #endif
 
 namespace cc {
+class ImageDecodeCache;
 class Scheduler;
+class TextureLayerImpl;
+}  // namespace cc
+namespace gpu {
+class SchedulerDfs;
 }
 namespace base::internal {
 class DelayTimerBase;
@@ -220,6 +225,20 @@ struct IsSupportedType<mojo::Connector> {
 };
 template <>
 struct IsSupportedType<blink::scheduler::NonMainThreadTaskQueue> {
+  static constexpr bool value = false;
+};
+// The ones below were identified from MotionMark. See crbug.com/335556942 for
+// more info.
+template <>
+struct IsSupportedType<cc::ImageDecodeCache> {
+  static constexpr bool value = false;
+};
+template <>
+struct IsSupportedType<cc::TextureLayerImpl> {
+  static constexpr bool value = false;
+};
+template <>
+struct IsSupportedType<gpu::SchedulerDfs> {
   static constexpr bool value = false;
 };
 

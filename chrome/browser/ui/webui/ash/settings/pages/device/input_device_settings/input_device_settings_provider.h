@@ -61,6 +61,9 @@ class InputDeviceSettingsProvider
       mojo::PendingRemote<mojom::ButtonPressObserver> observer) override;
   void ObserveKeyboardBrightness(
       mojo::PendingRemote<mojom::KeyboardBrightnessObserver> observer) override;
+  void ObserveKeyboardAmbientLightSensor(
+      mojo::PendingRemote<mojom::KeyboardAmbientLightSensorObserver> observer)
+      override;
 
   void RestoreDefaultKeyboardRemappings(uint32_t device_id) override;
   void SetKeyboardSettings(uint32_t device_id,
@@ -133,6 +136,8 @@ class InputDeviceSettingsProvider
   // chromeos::PowerManagerClient observer:
   void KeyboardBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
+  void KeyboardAmbientLightSensorEnabledChanged(
+      const power_manager::AmbientLightSensorChange& change) override;
 
   // ash::ShellObserver:
   void OnShellDestroying() override;
@@ -172,6 +177,9 @@ class InputDeviceSettingsProvider
 
   void OnReceiveKeyboardBrightness(std::optional<double> brightness_percent);
 
+  void OnReceiveKeyboardAmbientLightSensorEnabled(
+      std::optional<bool> keyboard_ambient_light_sensor_enabled);
+
   // Denotes whether button observing should be paused due to the settings app
   // being out of focus or minimized. Default to true to require a valid widget
   // to observe devices.
@@ -189,6 +197,8 @@ class InputDeviceSettingsProvider
       graphics_tablet_settings_observers_;
   mojo::RemoteSet<mojom::ButtonPressObserver> button_press_observers_;
   mojo::Remote<mojom::KeyboardBrightnessObserver> keyboard_brightness_observer_;
+  mojo::Remote<mojom::KeyboardAmbientLightSensorObserver>
+      keyboard_ambient_light_sensor_observer_;
 
   raw_ptr<views::Widget> widget_ = nullptr;
 

@@ -78,7 +78,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(52 == syncer::GetNumModelTypes(),
+    static_assert(53 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled). Check similar "
                   "function in "
@@ -152,7 +152,7 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::AUTOFILL_WALLET_OFFER);
     datatypes.Put(syncer::BOOKMARKS);
     if (base::FeatureList::IsEnabled(commerce::kProductSpecificationsSync)) {
-      datatypes.Put(syncer::COMPARE);
+      datatypes.Put(syncer::PRODUCT_COMPARISON);
     }
     datatypes.Put(syncer::CONTACT_INFO);
     datatypes.Put(syncer::DEVICE_INFO);
@@ -182,6 +182,9 @@ class SyncServiceFactoryTest : public testing::Test {
 #endif  // BUILDFLAG(IS_ANDROID)
     if (base::FeatureList::IsEnabled(syncer::kSyncPlusAddress)) {
       datatypes.Put(syncer::PLUS_ADDRESS);
+    }
+    if (base::FeatureList::IsEnabled(syncer::kSyncPlusAddressSetting)) {
+      datatypes.Put(syncer::PLUS_ADDRESS_SETTING);
     }
 
     // TODO(b/318391357) add `syncer::COOKIES` (under IS_CHROMEOS) after adding

@@ -1191,6 +1191,39 @@ C AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   // This test passes if no CHECK failures.
 }
 
+// crbug.com/342027571 A crash with an overflowing continuation ruby column.
+TEST_F(LineBreakerTest, OverflowingContinuationRuby2) {
+  InlineNode node = CreateInlineNode(R"HTML(
+<div id="container" style="writing-mode:vertical-rl; word-wrap:break-word;">
+<ruby>)S
+<rb dir="rtl" style="margin-bottom:-6em;"><svg></svg></rb>
+<rt>x AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</ruby>
+)HTML");
+  ComputeMinMaxSizes(node);
+  // This test passes if no DCHECK failures.
+}
+
+TEST_F(LineBreakerTest, MinMaxWithAtomicInlineInRuby) {
+  InlineNode node = CreateInlineNode(R"HTML(
+<div id="container">
+<ruby><svg></svg><rt></ruby>)HTML");
+  ComputeMinMaxSizes(node);
+  // This test passes if no CHECK failures.
+}
+
+// crbug.com/342801061 LineInfo::Width() was zero unexpectedly.
+TEST_F(LineBreakerTest, RemoveTrailingCollapsibleSpace) {
+  InlineNode node = CreateInlineNode(R"HTML(
+<div id="container" style="font-size:20px; word-spacing:2569999em;">
+<ruby dir="rtl">
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AxBxC
+<rt  dir="ltr">a AxBxC</ruby>
+</div>)HTML");
+  ComputeMinMaxSizes(node);
+  // Pass if no division-by-zero.
+}
+
 struct CanBreakInsideTestData {
   bool can_break_insde;
   const char* html;

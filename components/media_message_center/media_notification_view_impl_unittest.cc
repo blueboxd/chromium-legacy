@@ -104,7 +104,8 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     // focus.
     widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+        CreateParams(views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
+                     views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(kWidgetSize);
     widget_->Init(std::move(params));
@@ -162,9 +163,7 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     return GetHeaderRow(view());
   }
 
-  const std::u16string& accessible_name() const {
-    return view()->GetAccessibleName();
-  }
+  std::u16string accessible_name() const { return view()->GetAccessibleName(); }
 
   views::View* button_row() const { return view()->button_row_; }
 

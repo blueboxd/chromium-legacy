@@ -935,9 +935,10 @@ template("test_runner_script") {
       if (build_with_chromium) {
         _allowlist = "//testing/android/junit/shadows-allowlist.txt"
         data += [ _allowlist ]
+        _rebased_allowlist = rebase_path(_allowlist, root_build_dir)
         executable_args += [
           "--shadows-allowlist",
-          rebase_path(_allowlist, root_build_dir),
+          "@WrappedPath($_rebased_allowlist)",
         ]
       }
       if (use_jacoco_coverage) {

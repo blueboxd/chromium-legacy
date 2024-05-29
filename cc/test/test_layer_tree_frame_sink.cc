@@ -23,6 +23,7 @@
 #include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "gpu/command_buffer/client/test_shared_image_interface.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -88,6 +89,8 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
       viz::FrameSinkManagerImpl::InitParams(shared_bitmap_manager_.get()));
+  frame_sink_manager_->SetSharedImageInterfaceProviderForTest(
+      &shared_image_interface_provider_);
 
   std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
       display_controller;
@@ -338,6 +341,20 @@ base::TimeDelta TestLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
     const viz::FrameSinkId& id,
     viz::mojom::CompositorFrameSinkType* type) {
   return viz::BeginFrameArgs::MinInterval();
+}
+
+TestLayerTreeFrameSink::StubSharedImageInterfaceProvider::
+    StubSharedImageInterfaceProvider()
+    : viz::SharedImageInterfaceProvider(nullptr),
+      shared_image_interface_(
+          base::MakeRefCounted<gpu::TestSharedImageInterface>()) {}
+
+TestLayerTreeFrameSink::StubSharedImageInterfaceProvider::
+    ~StubSharedImageInterfaceProvider() = default;
+
+gpu::SharedImageInterface* TestLayerTreeFrameSink::
+    StubSharedImageInterfaceProvider::GetSharedImageInterface() {
+  return shared_image_interface_.get();
 }
 
 }  // namespace cc

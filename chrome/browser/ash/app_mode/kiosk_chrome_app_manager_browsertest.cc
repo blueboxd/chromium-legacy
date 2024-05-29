@@ -39,6 +39,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/policy/core/common/device_local_account_type.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -261,7 +262,7 @@ class ChromeAppKioskAppManagerTest : public InProcessBrowserTest {
             // SetAutoLaunchApp work with the existing app entry created here.
             .Set(kAccountsPrefDeviceLocalAccountsKeyId, app_id + "@kiosk-apps")
             .Set(kAccountsPrefDeviceLocalAccountsKeyType,
-                 policy::DeviceLocalAccount::TYPE_KIOSK_APP)
+                 static_cast<int>(policy::DeviceLocalAccountType::kKioskApp))
             .Set(kAccountsPrefDeviceLocalAccountsKeyEphemeralMode,
                  static_cast<int>(
                      policy::DeviceLocalAccount::EphemeralMode::kUnset))
@@ -795,62 +796,6 @@ IN_PROC_BROWSER_TEST_F(ChromeAppKioskAppManagerTest, UpdateAndRemoveApp) {
     EXPECT_FALSE(base::PathExists(v2_crx_path));
   }
   EXPECT_FALSE(GetCachedCrx(kTestLocalFsKioskApp, &v2_crx_path, &version));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeAppKioskAppManagerTest, EnableConsumerKiosk) {
-  // Consumer kiosk is disabled by default. Enable it for test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableConsumerKiosk);
-
-  TestFuture<KioskChromeAppManager::ConsumerKioskAutoLaunchStatus>
-      result_future;
-  manager()->GetConsumerKioskAutoLaunchStatus(result_future.GetCallback());
-  EXPECT_EQ(KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kConfigurable,
-            result_future.Get());
-
-  TestFuture<bool> result_future2;
-  manager()->EnableConsumerKioskAutoLaunch(result_future2.GetCallback());
-  EXPECT_TRUE(result_future2.Get());
-
-  TestFuture<KioskChromeAppManager::ConsumerKioskAutoLaunchStatus>
-      result_future3;
-  manager()->GetConsumerKioskAutoLaunchStatus(result_future3.GetCallback());
-  EXPECT_EQ(KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kEnabled,
-            result_future3.Get());
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeAppKioskAppManagerTest, ConsumerKioskDisabled) {
-  TestFuture<KioskChromeAppManager::ConsumerKioskAutoLaunchStatus>
-      result_future;
-  manager()->GetConsumerKioskAutoLaunchStatus(result_future.GetCallback());
-  EXPECT_EQ(KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kDisabled,
-            result_future.Get());
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeAppKioskAppManagerTest,
-                       PreventEnableConsumerKioskForEnterprise) {
-  // Consumer kiosk is disabled by default. Enable it for test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableConsumerKiosk);
-
-  // Lock the device as enterprise.
-  EXPECT_EQ(LockDeviceForEnterprise(), InstallAttributes::LOCK_SUCCESS);
-
-  TestFuture<KioskChromeAppManager::ConsumerKioskAutoLaunchStatus>
-      result_future;
-  manager()->GetConsumerKioskAutoLaunchStatus(result_future.GetCallback());
-  EXPECT_EQ(KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kDisabled,
-            result_future.Get());
-
-  TestFuture<bool> result_future2;
-  manager()->EnableConsumerKioskAutoLaunch(result_future2.GetCallback());
-  EXPECT_FALSE(result_future2.Get());
-
-  TestFuture<KioskChromeAppManager::ConsumerKioskAutoLaunchStatus>
-      result_future3;
-  manager()->GetConsumerKioskAutoLaunchStatus(result_future3.GetCallback());
-  EXPECT_EQ(KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kDisabled,
-            result_future3.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeAppKioskAppManagerTest,

@@ -358,6 +358,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.CheckUrl.Action"
+    enum="SafeBrowsingCheckUrlAction" expires_after="2025-05-22">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    The action of URL check conducted by the Safe Browsing reputation lookup.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.CheckUrl.FirstRequestThreatType{ThreatSource}"
     enum="SBThreatType" expires_after="2024-11-17">
   <owner>drubery@chromium.org</owner>
@@ -645,7 +654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Enhanced.ProtegoRequestSentInLast24Hours"
-    enum="SafeBrowsingEnhancedProtegoPingType" expires_after="2024-09-22">
+    enum="SafeBrowsingEnhancedProtegoPingType" expires_after="2024-11-24">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -743,6 +752,19 @@ chromium-metrics-reviews@google.com.
       variants="MetricsCollectorTimesDisabledEnabledDuration"/>
 </histogram>
 
+<histogram name="SafeBrowsing.EsbDownloadRowPromo.Outcome"
+    enum="SafeBrowsingEsbDownloadRowPromoOutcome" expires_after="2024-10-06">
+  <owner>awado@google.com</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records the outcome of showing an ESB promotion on a download item on the
+    chrome://downloads page. Promotions are only shown on downloads that have
+    been determined to be dangerous and only when the user is able to enable
+    enhanced protection. The histogram outcome is recorded on display and on
+    every click on the promotion.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.EsbPromotionFlow.IphShown"
     enum="SafeBrowsingReferralMethod" expires_after="2024-10-06">
   <owner>awado@google.com</owner>
@@ -829,6 +851,29 @@ chromium-metrics-reviews@google.com.
     <variant name="Removed" summary="removed"/>
     <variant name="Shown" summary="shown"/>
   </token>
+</histogram>
+
+<histogram name="SafeBrowsing.ExtensionTelemetry.Enterprise.ReportSize"
+    units="bytes" expires_after="2025-02-19">
+  <owner>richche@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    The size of an enterprise telemetry report. This is recorded once for each
+    send to Chrome Enterprise Reporting server, regardless of whether it was
+    successful. Sending attempts occur periodically (default period is 5
+    minutes).
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.ExtensionTelemetry.Enterprise.Signals.SignalType"
+    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2025-02-19">
+  <owner>richche@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the extension telemetry signal type. Logged each time a signal is
+    triggered (eg. a cookies.get API call is invoked). Applicable only to
+    enterprise.
+  </summary>
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.CollectionDuration"
@@ -1042,7 +1087,7 @@ chromium-metrics-reviews@google.com.
     triggered (eg. a tabs.executeScript API call is invoked). The signal can be
     a raw signal that is created externally and passed to extension service or a
     combined signal that is created internally and derived from other raw
-    signals.
+    signals. Applicable only to ESB.
   </summary>
 </histogram>
 
@@ -1347,17 +1392,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.BackoffReportErrorReason"
-    enum="BackoffReportErrorReason" expires_after="2024-10-20">
-  <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Logs the reason when the backoff operator reports an error during
-    hash-prefix real-time lookup. This histogram is useful to track how much
-    missing OHTTP key contributes to backoff mode.
-  </summary>
-</histogram>
-
 <histogram name="SafeBrowsing.HPRT.BackoffState" enum="BooleanBackoff"
     expires_after="2024-11-03">
   <owner>thefrog@chromium.org</owner>
@@ -1638,6 +1672,20 @@ chromium-metrics-reviews@google.com.
     about to be attempted (either triggered by hash prefix lookup, asynchronous
     workflow or server hint), which will not go through if the service is in
     backoff mode.
+  </summary>
+</histogram>
+
+<histogram
+    name="SafeBrowsing.HPRT.OhttpKeyService.FirstLookupResponseCodeFromCurrentKey"
+    enum="HttpResponseCode" expires_after="2024-11-23">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    HTTP response code from the first SafeBrowsing hash-prefix real-time lookup
+    using the current ohttp key. Logged only for the first response after a new
+    ohttp key is fetched. This histogram helps us understand how often a new key
+    fails to work. Not logged if this is the first request using the key that is
+    retrieved from disk.
   </summary>
 </histogram>
 
@@ -2099,7 +2147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RendererThrottle.TotalDelay" units="ms"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2149,7 +2197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.BackoffState{UserCategory}"
-    enum="BooleanBackoff" expires_after="2024-09-22">
+    enum="BooleanBackoff" expires_after="2024-11-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2477,16 +2525,6 @@ chromium-metrics-reviews@google.com.
     {UserCategory}
   </summary>
   <token key="UserCategory" variants="RealTimeUrlCheckUserCategory"/>
-</histogram>
-
-<histogram name="SafeBrowsing.RT.RequestDestinations.Requested"
-    enum="RequestDestination" expires_after="2024-09-22">
-  <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Logs the request destination that was requested to be checked by Safe
-    Browsing real time URL lookup. Logged on each resource check.
-  </summary>
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Response.VerdictType.{UserPopulation}"

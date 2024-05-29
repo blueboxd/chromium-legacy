@@ -16,9 +16,9 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
-#include "components/visited_url_ranking/internal/url_visit_util.h"
 #include "components/visited_url_ranking/public/fetch_result.h"
 #include "components/visited_url_ranking/public/url_visit.h"
+#include "components/visited_url_ranking/public/url_visit_util.h"
 #include "url/gurl.h"
 
 namespace visited_url_ranking {
@@ -47,8 +47,10 @@ void AddAggregateVisitDataFromSession(
         }
 
         auto url_key = ComputeURLMergeKey(tab_url);
-        if (url_visit_tab_data_map.find(url_key) ==
-            url_visit_tab_data_map.end()) {
+        bool tab_data_map_already_has_url_entry =
+            url_visit_tab_data_map.find(url_key) !=
+            url_visit_tab_data_map.end();
+        if (!tab_data_map_already_has_url_entry) {
           auto last_active_tab = URLVisitAggregate::Tab(
               tab->tab_id.id(),
               URLVisit(tab_url, current_navigation.title(), tab->timestamp,
@@ -58,20 +60,23 @@ void AddAggregateVisitDataFromSession(
         }
 
         auto& session_tab = url_visit_tab_data_map.at(url_key);
-        session_tab.tab_count += 1;
-        URLVisitAggregate::Tab& last_active_tab = session_tab.last_active_tab;
-        last_active_tab.visit.last_modified =
-            std::max(tab->timestamp, last_active_tab.visit.last_modified);
-        base::Time current_last_active_time =
-            std::max(session_tab.last_active, base::Time::Min());
-        if (tab->last_active_time > current_last_active_time) {
-          session_tab.last_active_tab = URLVisitAggregate::Tab(
-              tab->tab_id.id(),
-              URLVisit(tab_url, current_navigation.title(), tab->timestamp,
-                       session->GetDeviceFormFactor(), source),
-              session->GetSessionTag(), session->GetSessionName());
-          session_tab.last_active = tab->last_active_time;
+        if (tab_data_map_already_has_url_entry) {
+          session_tab.tab_count += 1;
+          URLVisitAggregate::Tab& last_active_tab = session_tab.last_active_tab;
+          last_active_tab.visit.last_modified =
+              std::max(tab->timestamp, last_active_tab.visit.last_modified);
+          base::Time current_last_active_time =
+              std::max(session_tab.last_active, base::Time::Min());
+          if (tab->last_active_time > current_last_active_time) {
+            session_tab.last_active_tab = URLVisitAggregate::Tab(
+                tab->tab_id.id(),
+                URLVisit(tab_url, current_navigation.title(), tab->timestamp,
+                         session->GetDeviceFormFactor(), source),
+                session->GetSessionTag(), session->GetSessionName());
+            session_tab.last_active = tab->last_active_time;
+          }
         }
+
         session_tab.pinned = session_tab.pinned || tab->pinned;
         session_tab.in_group = session_tab.in_group || tab->group.has_value();
       }

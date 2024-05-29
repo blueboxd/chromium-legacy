@@ -45,9 +45,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kAdInterestGroupAPIRestrictedPolicyByDefault);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kAllowBFCacheWhenClosedMediaStreamTrack);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kAlwaysAllowFledgeDeprecatedRenderURLReplacements);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowerHighResolutionTimerThreshold);
@@ -398,12 +395,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 // Kill-switch for a deprecation trial that unpartitions storage in third-party
 // contexts under the registered top-level site. If
-// `kDisableThirdPartyStoragePartitioningDeprecationTrial` is enabled, the
+// `kDisableThirdPartyStoragePartitioningDeprecationTrial2` is enabled, the
 // deprecation trial information can be sent to and enabled in the browser
-// process (i.e. when the base::Feature is enabled, the deprecation trial is
-// enabled in the browser process too).
+// process (i.e. when the base::Feature is enabled, the deprecation trial
+// extension is enabled in the browser process too).
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kDisableThirdPartyStoragePartitioningDeprecationTrial);
+    kDisableThirdPartyStoragePartitioningDeprecationTrial2);
 
 // These values are used to implement a browser intervention: if a cross-origin
 // iframe has moved more than {param:distance} device independent pixels
@@ -723,10 +720,6 @@ enum class LcppResourceLoadPriority {
 BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppResourceLoadPriority>
     kLCPCriticalPathPredictorImageLoadPriority;
 
-// Enables LCPP ElementLocator performance improvements
-BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements;
-
 // Enable ResourceLoadPriority changes for all HTMLImageElement loaded images.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement;
@@ -862,6 +855,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kLCPPFontURLPredictorExcludedHosts;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPPLazyLoadImagePreload);
+
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLCPPLazyLoadImagePreloadDryRun;
 
 // The type of preloading for LCP images which are loaded lazily.
 // crbug.com/1498777 for more details.
@@ -1101,6 +1097,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPartitionVisitedLinkDatabase);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPlzDedicatedWorker);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDedicatedWorkerAblationStudyEnabled);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kDedicatedWorkerStartDelayInMs;
+
 // Whether first-party to third-party different-bucket same-origin post messages
 // are blocked.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -1198,6 +1198,17 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // No-Vary-Search header.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2NoVarySearch);
 
+// Enables to warm up compositor on certain loading event of prerender initial
+// navigation. The feature `kWarmUpCompositor` in cc is required to enable this
+// feature. Please see crbug.com/41496019 for more details.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2WarmUpCompositor);
+enum class Prerender2WarmUpCompositorTriggerPoint {
+  kDidFinishLoad,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    Prerender2WarmUpCompositorTriggerPoint>
+    kPrerender2WarmUpCompositorTriggerPoint;
+
 // Enables to run prerendering for new tabs (e.g., target="_blank").
 // See https://crbug.com/1350676.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
@@ -1227,9 +1238,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiProtectedAudienceExtensionsEnabled;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiDebugModeEnabledAtAll;
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kPrivateAggregationApiMultipleCloudProviders);
 
 // If set, HTMLDocumentParser processes data immediately rather than after a
 // delay. This is further controlled by the feature params starting with the
@@ -1645,8 +1653,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
 // ----------------------------------------------------------------------------
 // Helper functions for querying feature status. Please declare any features or
 // constants for features in the section above.
-
-BLINK_COMMON_EXPORT bool IsAllowBFCacheWhenClosedMediaStreamTrackEnabled();
 
 BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 

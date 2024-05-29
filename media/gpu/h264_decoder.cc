@@ -1234,6 +1234,15 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     new_color_space = container_color_space_;
   }
 
+  if (new_color_space.matrix == VideoColorSpace::MatrixID::RGB) {
+    // Some H.264 videos contain a VUI that specifies a color matrix of GBR,
+    // when they are actually ordinary YUV. H264 only supports 4:2:0 subsampling
+    // and BGR should only be used with 4:4:4, hence default to Rec709. See
+    // crbug.com/341266991.
+    CHECK_NE(chroma_sampling_, VideoChromaSampling::k444);
+    new_color_space = VideoColorSpace::REC709();
+  }
+
   bool is_color_space_change = false;
   if (base::FeatureList::IsEnabled(kAVDColorSpaceChanges)) {
     is_color_space_change = new_color_space.IsSpecified() &&
@@ -1332,7 +1341,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessEncryptedSliceHeader(
   DCHECK(curr_slice_hdr_);
   std::vector<base::span<const uint8_t>> spans(prior_cencv1_nalus_.begin(),
                                                prior_cencv1_nalus_.end());
-  spans.emplace_back(curr_nalu_->data,
+  spans.emplace_back(curr_nalu_->data.get(),
                      base::checked_cast<size_t>(curr_nalu_->size));
   std::vector<SubsampleEntry> all_subsamples(prior_cencv1_subsamples_.begin(),
                                              prior_cencv1_subsamples_.end());
@@ -1349,7 +1358,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessEncryptedSliceHeader(
   // Insert this encrypted slice data as well in case this is a multi-slice
   // picture.
   prior_cencv1_nalus_.emplace_back(
-      curr_nalu_->data, base::checked_cast<size_t>(curr_nalu_->size));
+      curr_nalu_->data.get(), base::checked_cast<size_t>(curr_nalu_->size));
   prior_cencv1_subsamples_.insert(prior_cencv1_subsamples_.end(),
                                   subsamples.begin(), subsamples.end());
   return rv;
@@ -1482,7 +1491,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
     // Calling H264Accelerator::SetStream() here instead of when the stream is
     // originally set in case the accelerator needs to return kTryAgain.
     H264Accelerator::Status result = accelerator_->SetStream(
-        base::span<const uint8_t>(current_stream_, current_stream_size_),
+        base::span<const uint8_t>(current_stream_.get(), current_stream_size_),
         current_decrypt_config_.get());
     switch (result) {
       case H264Accelerator::Status::kOk:
@@ -1626,7 +1635,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         accelerator_->ProcessSPS(
             parser_.GetSPS(sps_id),
             base::span<const uint8_t>(
-                curr_nalu_->data,
+                curr_nalu_->data.get(),
                 base::checked_cast<size_t>(curr_nalu_->size)));
 
         if (state_ == State::kNeedStreamMetadata)
@@ -1654,7 +1663,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         accelerator_->ProcessPPS(
             parser_.GetPPS(last_parsed_pps_id_),
             base::span<const uint8_t>(
-                curr_nalu_->data,
+                curr_nalu_->data.get(),
                 base::checked_cast<size_t>(curr_nalu_->size)));
         break;
       }
@@ -1678,7 +1687,8 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
               parser_.GetCurrentSubsamples();
           if (!subsamples.empty()) {
             prior_cencv1_nalus_.emplace_back(
-                curr_nalu_->data, base::checked_cast<size_t>(curr_nalu_->size));
+                curr_nalu_->data.get(),
+                base::checked_cast<size_t>(curr_nalu_->size));
             DCHECK_EQ(1u, subsamples.size());
             prior_cencv1_subsamples_.push_back(subsamples[0]);
             // Since the SEI is encrypted, do not try to parse it below as it

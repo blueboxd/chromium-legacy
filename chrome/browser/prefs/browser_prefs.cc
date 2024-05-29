@@ -145,7 +145,6 @@
 #include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/permissions/permission_hats_trigger_helper.h"
 #include "components/permissions/pref_names.h"
-#include "components/plus_addresses/plus_address_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/policy/core/common/local_test_policy_provider.h"
@@ -300,7 +299,6 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
-#include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/headless/policy/headless_mode_prefs.h"
 #include "components/live_caption/live_caption_controller.h"
@@ -471,7 +469,6 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "chrome/browser/enterprise/platform_auth/platform_auth_policy_observer.h"
 #include "chrome/browser/font_prewarmer_tab_helper.h"
 #include "chrome/browser/media/cdm_pref_service_helper.h"
 #include "chrome/browser/media/media_foundation_service_monitor.h"
@@ -485,6 +482,7 @@
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "chrome/browser/enterprise/platform_auth/platform_auth_policy_observer.h"
 #include "components/os_crypt/sync/os_crypt.h"
 #endif
 
@@ -1086,6 +1084,10 @@ inline constexpr char kAccessibilityMouseKeysShortcutToPauseEnabled[] =
 // text fields.
 inline constexpr char kAccessibilityMouseKeysDisableInTextFields[] =
     "settings.a11y.mouse_keys.disable_in_text_fields";
+// A boolean pref which determines whether screen magnifier should center
+// the text input focus.
+inline constexpr char kAccessibilityScreenMagnifierCenterFocus[] =
+    "settings.a11y.screen_magnifier_center_focus";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Deprecated 05/2024.
@@ -1098,6 +1100,11 @@ inline constexpr char kDefaultSearchProviderChoiceLocationPrefName[] =
 // Deprecated 05/2024.
 inline constexpr char kSyncCachedTrustedVaultAutoUpgradeDebugInfo[] =
     "sync.cached_trusted_vault_auto_upgrade_debug_info";
+
+// Deprecated 05/2024.
+inline constexpr char kAutologinEnabled[] = "autologin.enabled";
+inline constexpr char kReverseAutologinRejectedEmailList[] =
+    "reverse_autologin.rejected_email_list";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -1571,6 +1578,7 @@ void RegisterProfilePrefsForMigration(
                                 true);
   registry->RegisterBooleanPref(kAccessibilityMouseKeysDisableInTextFields,
                                 true);
+  registry->RegisterBooleanPref(kAccessibilityScreenMagnifierCenterFocus, true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Deprecated 05/2024.
@@ -1583,6 +1591,10 @@ void RegisterProfilePrefsForMigration(
 
   // Deprecated 05/2024.
   registry->RegisterStringPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo, "");
+
+  // Deprecated 05/2024.
+  registry->RegisterBooleanPref(kAutologinEnabled, true);
+  registry->RegisterListPref(kReverseAutologinRejectedEmailList);
 }
 
 void ClearSyncRequestedPrefAndMaybeMigrate(PrefService* profile_prefs) {
@@ -1718,7 +1730,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
-  WhatsNewUI::RegisterLocalStatePrefs(registry);
+  registry->RegisterIntegerPref(prefs::kLastWhatsNewVersion, 0);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -1835,6 +1847,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kRendererAppContainerEnabled, true);
   registry->RegisterBooleanPref(prefs::kBlockBrowserLegacyExtensionPoints,
                                 true);
+  registry->RegisterIntegerPref(prefs::kDynamicCodeSettings, /*Default=*/0);
   registry->RegisterBooleanPref(prefs::kApplicationBoundEncryptionEnabled,
                                 true);
   registry->RegisterBooleanPref(
@@ -1865,9 +1878,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   screen_ai::RegisterLocalStatePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   PlatformAuthPolicyObserver::RegisterPrefs(registry);
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Platform-specific and compile-time conditional individual preferences.
   // If you have multiple preferences that should clearly be grouped together,
@@ -1949,7 +1962,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   permissions::RegisterProfilePrefs(registry);
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
-  plus_addresses::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PolicyUI::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
@@ -2941,6 +2953,7 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
   // Added 05/2024.
   profile_prefs->ClearPref(kAccessibilityMouseKeysShortcutToPauseEnabled);
   profile_prefs->ClearPref(kAccessibilityMouseKeysDisableInTextFields);
+  profile_prefs->ClearPref(kAccessibilityScreenMagnifierCenterFocus);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Added 05/2024.
@@ -2951,6 +2964,10 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs,
 
   // Added 05/2024.
   profile_prefs->ClearPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo);
+
+  // Added 05/2024.
+  profile_prefs->ClearPref(kAutologinEnabled);
+  profile_prefs->ClearPref(kReverseAutologinRejectedEmailList);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

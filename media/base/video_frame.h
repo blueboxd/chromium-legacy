@@ -238,6 +238,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp);
 
+  // Wraps a native texture shared image with a VideoFrame.
+  // |mailbox_holder_release_cb| will be called with a sync token as the
+  // argument when the VideoFrame is to be destroyed.
+  static scoped_refptr<VideoFrame> WrapSharedImage(
+      VideoPixelFormat format,
+      scoped_refptr<gpu::ClientSharedImage> shared_image,
+      gpu::SyncToken sync_token,
+      uint32_t texture_target,
+      ReleaseMailboxCB mailbox_holder_release_cb,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp);
+
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
   // The image data resides in |data| and is assumed to be packed tightly in a
   // buffer of logical dimensions |coded_size| with the appropriate bit depth
@@ -336,6 +350,19 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
       scoped_refptr<gpu::ClientSharedImage> shared_images[kMaxPlanes],
+      const gpu::SyncToken& sync_token,
+      uint32_t texture_target,
+      ReleaseMailboxAndGpuMemoryBufferCB mailbox_holder_and_gmb_release_cb,
+      base::TimeDelta timestamp);
+
+  // Same as the function above except that this variant accepts a shared image
+  // (plus a sync token and a texture target) instead of a shared image
+  // array.
+  static scoped_refptr<VideoFrame> WrapExternalGpuMemoryBuffer(
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+      scoped_refptr<gpu::ClientSharedImage> shared_image,
       const gpu::SyncToken& sync_token,
       uint32_t texture_target,
       ReleaseMailboxAndGpuMemoryBufferCB mailbox_holder_and_gmb_release_cb,
@@ -663,10 +690,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // caller shall not close them, or use them after the VideoFrame is destroyed.
   // For such use cases, use dup() to obtain your own copy of the FDs.
   int GetDmabufFd(size_t i) const;
-
-  // Returns true if both VideoFrames are backed by DMABUF memory and point
-  // to the same set of DMABUFs, meaning that both frames use the same memory.
-  bool IsSameDmaBufsAs(const VideoFrame& frame) const;
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -887,14 +910,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  class DmabufHolder;
 
   // Dmabufs for the frame, used when storage is STORAGE_DMABUFS. Size is either
   // equal or less than the number of planes of the frame. If it is less, then
   // the memory area represented by the last FD contains the remaining planes.
-  // If a STORAGE_DMABUFS frame is wrapped into another, the wrapping frame
-  // will get an extra reference to the FDs (i.e. no duplication is involved).
-  scoped_refptr<DmabufHolder> dmabuf_fds_;
+  std::vector<base::ScopedFD> dmabuf_fds_;
 
   friend scoped_refptr<VideoFrame>
   WrapChromeOSCompressedGpuMemoryBufferAsVideoFrame(

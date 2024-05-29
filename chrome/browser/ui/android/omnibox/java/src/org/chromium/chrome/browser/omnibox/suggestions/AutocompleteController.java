@@ -26,6 +26,7 @@ import org.chromium.url.GURL;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,7 +50,7 @@ public class AutocompleteController {
 
     private final @NonNull Set<OnSuggestionsReceivedListener> mListeners = new HashSet<>();
     private long mNativeController;
-    private @NonNull AutocompleteResult mAutocompleteResult = AutocompleteResult.EMPTY_RESULT;
+    private @NonNull Optional<AutocompleteResult> mAutocompleteResult = Optional.empty();
 
     /** Listener for receiving OmniboxSuggestions. */
     public interface OnSuggestionsReceivedListener {
@@ -67,12 +68,11 @@ public class AutocompleteController {
     /**
      * Acquire an instance of AutocompleteController associated with the supplied Profile.
      *
-     * @param profile The profile to get the AutocompleteController for.
      * @return An existing (if one is available) or new (otherwise) instance of the
      *     AutocompleteController associated with the supplied profile.
      */
     @CalledByNative
-    private AutocompleteController(@NonNull Profile profile, long nativeController) {
+    private AutocompleteController(long nativeController) {
         mNativeController = nativeController;
     }
 
@@ -204,7 +204,9 @@ public class AutocompleteController {
         // Skip suggestions from cache.
         OmniboxMetrics.recordUsedSuggestionFromCache(match.getNativeObjectRef() == 0L);
         if (match.getNativeObjectRef() == 0L) return false;
-        return mAutocompleteResult.verifyCoherency(AutocompleteResult.NO_SUGGESTION_INDEX, reason);
+        return mAutocompleteResult
+                .map(res -> res.verifyCoherency(AutocompleteResult.NO_SUGGESTION_INDEX, reason))
+                .orElse(false);
     }
 
     /**
@@ -244,7 +246,7 @@ public class AutocompleteController {
     @VisibleForTesting
     public void onSuggestionsReceived(
             @NonNull AutocompleteResult autocompleteResult, boolean isFinal) {
-        mAutocompleteResult = autocompleteResult;
+        mAutocompleteResult = Optional.of(autocompleteResult);
 
         // Notify callbacks of suggestions.
         for (OnSuggestionsReceivedListener listener : mListeners) {
@@ -406,10 +408,9 @@ public class AutocompleteController {
      * @return An existing (if one is available) or new (otherwise) instance of the
      *     AutocompleteController associated with the supplied profile.
      */
-    public static AutocompleteController getForProfile(Profile profile) {
-        assert profile != null : "AutocompleteController cannot be created for null profile";
-        if (profile == null) return null;
-        return AutocompleteControllerJni.get().getForProfile(profile);
+    public static Optional<AutocompleteController> getForProfile(Profile profile) {
+        return Optional.ofNullable(
+                profile == null ? null : AutocompleteControllerJni.get().getForProfile(profile));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

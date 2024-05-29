@@ -16,9 +16,12 @@
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/ranges/algorithm.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 
 namespace base {
@@ -100,10 +103,8 @@ void MessagePumpEpoll::Run(Delegate* delegate) {
     native_work_started_ = false;
 
     // Process any immediately ready IO event, but don't wait for more yet.
-    WaitForEpollEvents(TimeDelta());
-
-    bool attempt_more_work = immediate_work_available || processed_io_events_;
-    processed_io_events_ = false;
+    bool did_native_work = WaitForEpollEvents(TimeDelta());
+    bool attempt_more_work = immediate_work_available || did_native_work;
 
     if (run_state.should_quit) {
       break;
@@ -112,12 +113,9 @@ void MessagePumpEpoll::Run(Delegate* delegate) {
       continue;
     }
 
-    attempt_more_work = delegate->DoIdleWork();
+    delegate->DoIdleWork();
     if (run_state.should_quit) {
       break;
-    }
-    if (attempt_more_work) {
-      continue;
     }
 
     TimeDelta timeout = TimeDelta::Max();
@@ -234,8 +232,8 @@ bool MessagePumpEpoll::WaitForEpollEvents(TimeDelta timeout) {
     return false;
   }
 
-  const base::span<epoll_event> ready_events(events,
-                                             static_cast<size_t>(epoll_result));
+  const span<epoll_event> ready_events =
+      span(events).first(base::checked_cast<size_t>(epoll_result));
   for (auto& e : ready_events) {
     if (e.data.ptr == &wake_event_) {
       // Wake-up events are always safe to handle immediately. Unlike other
@@ -340,7 +338,6 @@ void MessagePumpEpoll::HandleEvent(int fd,
                                    FdWatchController* controller) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   BeginNativeWorkBatch();
-  processed_io_events_ = true;
   // Make the MessagePumpDelegate aware of this other form of "DoWork". Skip if
   // HandleNotification() is called outside of Run() (e.g. in unit tests).
   Delegate::ScopedDoWorkItem scoped_do_work_item;
@@ -380,7 +377,6 @@ void MessagePumpEpoll::HandleEvent(int fd,
 void MessagePumpEpoll::HandleWakeUp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   BeginNativeWorkBatch();
-  processed_io_events_ = true;
   uint64_t value;
   ssize_t n = HANDLE_EINTR(read(wake_event_.get(), &value, sizeof(value)));
   DPCHECK(n == sizeof(value));

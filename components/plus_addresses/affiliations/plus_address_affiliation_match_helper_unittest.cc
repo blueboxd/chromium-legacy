@@ -37,9 +37,9 @@ class PlusAddressAffiliationMatchHelperTest : public testing::Test {
   PlusAddressAffiliationMatchHelperTest() {
     plus_address_service_ = std::make_unique<PlusAddressService>(
         /*identity_manager=*/nullptr,
-        /*pref_service=*/nullptr,
         std::make_unique<testing::NiceMock<MockPlusAddressHttpClient>>(),
-        /*webdata_service=*/nullptr);
+        /*webdata_service=*/nullptr,
+        /*affiliation_service=*/mock_affiliation_service());
 
     match_helper_ = std::make_unique<PlusAddressAffiliationMatchHelper>(
         plus_address_service(), mock_affiliation_service());

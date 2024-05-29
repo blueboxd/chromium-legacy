@@ -123,8 +123,9 @@ AutofillField* FindAutofillFillField(const FormStructure& form,
 // TODO(crbug.com/40183094): This should be some form of FormData::DeepEqual().
 bool CachedFormNeedsUpdate(const FormData& live_form,
                            const FormStructure& cached_form) {
-  if (cached_form.version() > live_form.version)
+  if (cached_form.version() > live_form.version()) {
     return false;
+  }
 
   if (live_form.fields.size() != cached_form.field_count())
     return true;
@@ -153,9 +154,9 @@ void AutofillManager::LogAutofillTypePredictionsAvailable(
 
 AutofillManager::AutofillManager(AutofillDriver* driver)
     : driver_(CHECK_DEREF(driver)),
-      log_manager_(unsafe_client().GetLogManager()),
+      log_manager_(client().GetLogManager()),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  if (auto* translate_driver = unsafe_client().GetTranslateDriver()) {
+  if (auto* translate_driver = client().GetTranslateDriver()) {
     translate_observation_.Observe(translate_driver);
   }
 }
@@ -279,7 +280,7 @@ void AutofillManager::OnFormSubmitted(const FormData& form,
   if (!IsValidFormData(form)) {
     return;
   }
-  NotifyObservers(&Observer::OnFormSubmitted, form.global_id());
+  NotifyObservers(&Observer::OnFormSubmitted, form);
   OnFormSubmittedImpl(form, known_success, source);
 }
 
@@ -513,7 +514,7 @@ bool AutofillManager::GetCachedFormAndField(
 std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>
 AutofillManager::CreateFormInteractionsUkmLogger() {
   return std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
-      &unsafe_client(), unsafe_client().GetUkmRecorder());
+      &client(), client().GetUkmRecorder());
 }
 
 size_t AutofillManager::FindCachedFormsBySignature(

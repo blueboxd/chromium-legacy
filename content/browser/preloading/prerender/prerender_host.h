@@ -149,6 +149,8 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   int GetOuterDelegateFrameTreeNodeId() override;
   RenderFrameHostImpl* GetProspectiveOuterDocument() override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
+  FrameTree* GetOwnedPictureInPictureFrameTree() override;
+  FrameTree* GetPictureInPictureOpenerFrameTree() override;
 
   // NavigationControllerDelegate
   void NotifyNavigationStateChangedFromController(
@@ -322,6 +324,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
 
   const std::optional<net::HttpNoVarySearchData>& no_vary_search() const {
     return no_vary_search_;
+  }
+
+  const std::optional<net::HttpNoVarySearchData>& no_vary_search_expected()
+      const {
+    return attributes_.no_vary_search_expected;
   }
 
   bool IsInitialNavigation(const NavigationRequest& navigation_request) const;

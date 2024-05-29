@@ -1266,7 +1266,9 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   };
   test_api_->RegisterAccelerators(accelerators);
 
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(5, 5, 20, 20);
   views::Widget* widget = new views::Widget;
   params.context = GetContext();
@@ -1904,20 +1906,20 @@ INSTANTIATE_TEST_SUITE_P(
     AshSideVolumeButton,
     SideVolumeButtonAcceleratorTest,
     testing::ValuesIn(
-        {std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
-                                                  kVolumeButtonSideLeft),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
-                                                  kVolumeButtonSideRight),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
-                                                  kVolumeButtonSideBottom),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
-                                                  kVolumeButtonSideLeft),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
-                                                  kVolumeButtonSideRight),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
-                                                  kVolumeButtonSideTop),
-         std::make_pair<std::string, std::string>(kVolumeButtonRegionScreen,
-                                                  kVolumeButtonSideBottom)}));
+        {std::pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                             kVolumeButtonSideLeft),
+         std::pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                             kVolumeButtonSideRight),
+         std::pair<std::string, std::string>(kVolumeButtonRegionKeyboard,
+                                             kVolumeButtonSideBottom),
+         std::pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                             kVolumeButtonSideLeft),
+         std::pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                             kVolumeButtonSideRight),
+         std::pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                             kVolumeButtonSideTop),
+         std::pair<std::string, std::string>(kVolumeButtonRegionScreen,
+                                             kVolumeButtonSideBottom)}));
 
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAcceleratorsWithFunctionKey) {
   base::test::ScopedFeatureList feature_list;

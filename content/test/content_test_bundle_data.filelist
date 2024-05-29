@@ -1283,6 +1283,7 @@ data/accessibility/aria/aria-progressbar-expected-android.txt
 data/accessibility/aria/aria-progressbar-expected-auralinux.txt
 data/accessibility/aria/aria-progressbar-expected-blink.txt
 data/accessibility/aria/aria-progressbar-expected-mac.txt
+data/accessibility/aria/aria-progressbar-expected-uia-win.txt
 data/accessibility/aria/aria-progressbar-expected-win.txt
 data/accessibility/aria/aria-progressbar.html
 data/accessibility/aria/aria-radio-expected-android-assist-data.txt
@@ -5609,6 +5610,7 @@ data/attribution_reporting/databases/version_56.sql
 data/attribution_reporting/databases/version_57.sql
 data/attribution_reporting/databases/version_58.sql
 data/attribution_reporting/databases/version_59.sql
+data/attribution_reporting/databases/version_60.sql
 data/attribution_reporting/inject_cross_app_web_third_party_ot.js
 data/attribution_reporting/interop/aggregatable_budget.json
 data/attribution_reporting/interop/aggregatable_contributions_creation.json
@@ -6837,12 +6839,7 @@ data/media/bear_corp.flac
 data/media/bear_corp.flac.mock-http-headers
 data/media/bear_corp.webm
 data/media/bear_corp.webm.mock-http-headers
-data/media/bear_divx_mp3.avi
-data/media/bear_gsm_ms.wav
 data/media/bear_h264_aac.3gp
-data/media/bear_mpeg4_amrnb.3gp
-data/media/bear_mpeg4_mp3.avi
-data/media/bear_mpeg4asp_mp3.avi
 data/media/bear_mulaw.wav
 data/media/bear_pcm.wav
 data/media/bear_pcm_s16be.mov
@@ -6851,7 +6848,6 @@ data/media/bear_silent.mp4
 data/media/bear_silent.ogv
 data/media/bear_silent.webm
 data/media/blackwhite.png
-data/media/blackwhite_yuv420p.avi
 data/media/blackwhite_yuv420p.mp4
 data/media/blackwhite_yuv420p.ogv
 data/media/blackwhite_yuv420p.webm

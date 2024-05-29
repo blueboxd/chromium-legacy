@@ -62,11 +62,13 @@ PlusAddressServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<plus_addresses::PlusAddressService> plus_address_service =
       std::make_unique<plus_addresses::PlusAddressService>(
-          identity_manager, browser_state->GetPrefs(),
+          identity_manager,
           std::make_unique<plus_addresses::PlusAddressHttpClientImpl>(
               identity_manager, browser_state->GetSharedURLLoaderFactory()),
           ios::WebDataServiceFactory::GetPlusAddressWebDataForBrowserState(
-              browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+              browser_state, ServiceAccessType::EXPLICIT_ACCESS),
+          // TODO(b/340494671): Pass a valid instance of affiliation service.
+          nullptr);
 
   if (base::FeatureList::IsEnabled(
           plus_addresses::features::kPlusAddressAffiliations)) {

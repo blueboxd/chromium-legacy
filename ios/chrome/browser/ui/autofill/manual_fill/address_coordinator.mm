@@ -70,7 +70,7 @@
         new autofill::PersonalDataManagerObserverBridge(self));
     _personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
-    std::vector<autofill::AutofillProfile*> profiles =
+    std::vector<const autofill::AutofillProfile*> profiles =
         _personalDataManager->address_data_manager().GetProfilesToSuggest();
 
     _addressMediator =
@@ -97,16 +97,16 @@
 #pragma mark - AddressListDelegate
 
 - (void)openAddressSettings {
-  __weak id<AddressCoordinatorDelegate> weakDelegate = self.delegate;
+  __weak __typeof(self) weakSelf = self;
   [self dismissIfNecessaryThenDoCompletion:^{
-    [weakDelegate openAddressSettings];
+    [weakSelf.delegate openAddressSettings];
   }];
 }
 
 #pragma mark - PersonalDataManagerObserver
 
 - (void)onPersonalDataChanged {
-  std::vector<autofill::AutofillProfile*> profiles =
+  std::vector<const autofill::AutofillProfile*> profiles =
       _personalDataManager->address_data_manager().GetProfilesToSuggest();
 
   [self.addressMediator reloadWithProfiles:profiles];

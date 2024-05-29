@@ -7,6 +7,7 @@
 #import <memory>
 #import <ostream>
 
+#import "base/check.h"
 #import "base/check_op.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
@@ -151,6 +152,13 @@ void MoveTabGroupToBrowser(const TabGroup* source_tab_group,
     return;
   }
 
+  if (source_browser == destination_browser) {
+    // This is a reorder operation within the same WebStateList.
+    destination_browser->GetWebStateList()->MoveGroup(
+        source_tab_group, destination_tab_group_index);
+    return;
+  }
+
   // Get and lock `source_web_state_list` and `destination_web_state_list`.
   WebStateList* source_web_state_list = source_browser->GetWebStateList();
   WebStateList* destination_web_state_list =
@@ -169,6 +177,8 @@ void MoveTabGroupToBrowser(const TabGroup* source_tab_group,
   // Move tabs to the new browser.
   for (int destination_index_offset = 0; destination_index_offset < tab_count;
        destination_index_offset++) {
+    CHECK(source_web_state_list->ContainsIndex(source_web_state_start_index),
+          base::NotFatalUntil::M128);
     CHECK_EQ(source_web_state_list->GetGroupOfWebStateAt(
                  source_web_state_start_index),
              source_tab_group);

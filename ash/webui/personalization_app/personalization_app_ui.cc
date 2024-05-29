@@ -514,6 +514,9 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isGooglePhotosIntegrationEnabled",
                      wallpaper_provider_->IsEligibleForGooglePhotos());
 
+  source->AddBoolean("isManagedSeaPenEnabled",
+                     wallpaper_provider_->IsManagedSeaPenEnabled());
+
   source->AddBoolean("isGooglePhotosSharedAlbumsEnabled",
                      features::IsWallpaperGooglePhotosSharedAlbumsEnabled());
 
@@ -550,6 +553,10 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
                          common_sea_pen_requirements);
   source->AddBoolean("isSeaPenUINextEnabled",
                      ::ash::features::IsSeaPenUINextEnabled() &&
+                         manta::features::IsMantaServiceEnabled() &&
+                         common_sea_pen_requirements);
+  source->AddBoolean("isSeaPenUseExptTemplateEnabled",
+                     ::ash::features::IsSeaPenUseExptTemplateEnabled() &&
                          manta::features::IsMantaServiceEnabled() &&
                          common_sea_pen_requirements);
   source->AddBoolean("isSeaPenEnterpriseEnabled",

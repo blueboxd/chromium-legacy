@@ -521,9 +521,9 @@ This builder measures build performance for Android developer builds, by simulat
         ),
     ),
     gn_args = {
-        "ninja": gn_args.config(configs = ["android_developer", "reclient", "no_siso"]),
-        "siso_reproxy": gn_args.config(configs = ["android_developer", "reclient"]),
-        "siso_native": gn_args.config(configs = ["android_developer"]),
+        "ninja": gn_args.config(configs = ["android_developer", "remoteexec", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["android_developer", "remoteexec"]),
+        "siso_native": gn_args.config(configs = ["android_developer", "remoteexec", "no_reclient"]),
     },
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -554,9 +554,9 @@ This builder measures build performance for Linux developer builds, by simulatin
         ),
     ),
     gn_args = {
-        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
-        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
-        "siso_native": gn_args.config(configs = ["developer"]),
+        "ninja": gn_args.config(configs = ["developer", "remoteexec", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "remoteexec"]),
+        "siso_native": gn_args.config(configs = ["developer", "remoteexec", "no_reclient"]),
     },
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -587,9 +587,9 @@ This builder measures build performance for Windows developer builds, by simulat
         ),
     ),
     gn_args = {
-        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
-        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
-        "siso_native": gn_args.config(configs = ["developer"]),
+        "ninja": gn_args.config(configs = ["developer", "remoteexec", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "remoteexec"]),
+        "siso_native": gn_args.config(configs = ["developer", "remoteexec", "no_reclient"]),
     },
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -620,9 +620,9 @@ This builder measures build performance for Mac developer builds, by simulating 
         ),
     ),
     gn_args = {
-        "ninja": gn_args.config(configs = ["developer", "reclient", "no_siso"]),
-        "siso_reproxy": gn_args.config(configs = ["developer", "reclient"]),
-        "siso_native": gn_args.config(configs = ["developer"]),
+        "ninja": gn_args.config(configs = ["developer", "remoteexec", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["developer", "remoteexec"]),
+        "siso_native": gn_args.config(configs = ["developer", "remoteexec", "no_reclient"]),
     },
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
@@ -657,9 +657,9 @@ This builder measures build performance for iOS developer builds, by simulating 
         ),
     ),
     gn_args = {
-        "ninja": gn_args.config(configs = ["ios_developer", "reclient", "no_siso"]),
-        "siso_reproxy": gn_args.config(configs = ["ios_developer", "reclient"]),
-        "siso_native": gn_args.config(configs = ["ios_developer"]),
+        "ninja": gn_args.config(configs = ["ios_developer", "remoteexec", "no_siso"]),
+        "siso_reproxy": gn_args.config(configs = ["ios_developer", "remoteexec"]),
+        "siso_native": gn_args.config(configs = ["ios_developer", "remoteexec", "no_reclient"]),
     },
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
@@ -688,7 +688,7 @@ ci.builder(
             target_platform = builder_config.target_platform.LINUX,
         ),
     ),
-    gn_args = "no_reclient",
+    gn_args = "no_remoteexec",
     os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         category = "linux",

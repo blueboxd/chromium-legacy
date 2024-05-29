@@ -144,7 +144,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -600,7 +599,7 @@ ScriptPromise<IDLUndefined> ServiceWorkerGlobalScope::skipWaiting(
   // FIXME: short-term fix, see details at:
   // https://codereview.chromium.org/535193002/.
   if (!execution_context)
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
 
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);

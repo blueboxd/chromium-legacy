@@ -191,6 +191,7 @@
           <ph name="LIST_ITEM" />послодавца или школу
           <ph name="LIST_ITEM" />интернет провајдера
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">Пратите ову ставку</translation>
 <translation id="1337692097987160377">Дели ову картицу</translation>
 <translation id="1339601241726513588">Домен уписнице:</translation>
 <translation id="1340482604681802745">Адреса преузимања</translation>
@@ -360,6 +361,7 @@
 <translation id="1641976391427233992">Одложи излаз до</translation>
 <translation id="1643651787397909318">Идите на дугме Chrome провера безбедности, активирајте га да бисте посетили страницу Chrome провера безбедности у подешавањима</translation>
 <translation id="1644574205037202324">Историја</translation>
+<translation id="1645004815457365098">Непознат извор</translation>
 <translation id="1645368109819982629">Неподржани протокол</translation>
 <translation id="1650602712345345441">Управљајте подешавањима Chrome-а</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -454,6 +456,7 @@
 <translation id="1812527064848182527">водоравно</translation>
 <translation id="1812975699435941848">Здравствено образовање и медицинска обука</translation>
 <translation id="1816436748874040213">Може да тражи да скролује и зумира дељене картице</translation>
+<translation id="1817364650920811003">Улога: савет за Chrome. Ознака приступачности: <ph name="CHROME_TIP" /></translation>
 <translation id="1818522458013171885">Одблокирај</translation>
 <translation id="1818585559878922121">Документарни филмови</translation>
 <translation id="182139138257690338">аутоматска преузимања</translation>
@@ -575,7 +578,6 @@
 <translation id="2056658168519009885">Сајтови могу да затраже од Chrome-а информације да би персонализовали огласе који вам се приказују.</translation>
 <translation id="2059166748188874810">Општина</translation>
 <translation id="2059202684901022309">22×34 in</translation>
-<translation id="206275378685759380">Сачекајте за куповину</translation>
 <translation id="2064568741209980952">Кредити и позајмице</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 предлог}one{# предлог}few{# предлога}other{# предлога}}</translation>
 <translation id="2066915425250589881">затражите брисање</translation>
@@ -1397,6 +1399,7 @@
 <translation id="3642638418806704195">Апликација:</translation>
 <translation id="3646643500201740985">Мерење учинка огласа</translation>
 <translation id="3647286794400715637">Унос сваког стринга URL-а мора да садржи између 1 и 2 URL-а.</translation>
+<translation id="3647400963805615193">Дугме Одбаци савет за Chrome, притисните Enter да бисте одбацили, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="3650584904733503804">Потврда ваљаности је успела</translation>
 <translation id="3650594806107685466">Да бисте заштитили картицу, унесите CVC (<ph name="SIDE_OF_CARD" />)</translation>
 <translation id="3650917416636556301">Пешачење и камповање</translation>
@@ -2611,6 +2614,7 @@
 <translation id="6035491133925068289">Атлетика</translation>
 <translation id="6039846035001940113">Ако се проблем и даље јавља, контактирајте власника сајта.</translation>
 <translation id="6040143037577758943">Затвори</translation>
+<translation id="6040539895181423374">Увид у цене</translation>
 <translation id="604124094241169006">Аутоматски</translation>
 <translation id="6041777658117377052">Температура коморе</translation>
 <translation id="6042308850641462728">Још</translation>
@@ -3215,7 +3219,6 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">Када укључите ово подешавање, вратите се на ову картицу да бисте почели да пишете</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">Администратор може да види:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, притисните Tab, па Enter да бисте отворили нову картицу без архивирања и прегледали приватно</translation>
 <translation id="7203375778433816396">Подесите Chrome као подразумевани прегледач система</translation>
 <translation id="7210863904660874423">Хост <ph name="HOST_NAME" /> не поштује безбедносне стандарде.</translation>
@@ -3368,6 +3371,7 @@
 <translation id="7481312909269577407">Напред</translation>
 <translation id="7481603210197454575">Италијанска коверта</translation>
 <translation id="7483482939016730822">Школски прибор и опрема за учионице</translation>
+<translation id="7483863401933039889"><ph name="CHROME_TIP" />, притисните Tab, па Enter да бисте одбацили савет за Chrome.</translation>
 <translation id="7485085230273446323">Врсте пословања и индустрија</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
 <translation id="7489392576326061356">Шампони и регенератори</translation>

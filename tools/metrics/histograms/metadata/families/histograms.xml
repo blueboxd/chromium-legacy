@@ -611,7 +611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ManagedUsers.TopLevelFilteringResult"
-    enum="SupervisedUserFilterTopLevelResult" expires_after="2024-09-25">
+    enum="SupervisedUserFilterTopLevelResult" expires_after="2024-11-24">
   <owner>fernandex@chromium.org</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>
@@ -619,6 +619,19 @@ chromium-metrics-reviews@google.com.
     includes the outcome of the filter (allowed or blocked). If outcome is
     blocked reason for the block (e.g. SafeSites, Blocklist) is also recorded.
     For more granular information see ManagedUsers.FilteringResult.
+  </summary>
+</histogram>
+
+<histogram name="SupervisedUsers.ExtensionApprovalsCountOnExtensionToggle"
+    units="Extensions" expires_after="2024-12-12">
+  <owner>anthie@google.com</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Records the number of extensions that will be granted parental approval at
+    the time of flipping the Family Link &quot;Extensions&quot; toggle to
+    Enabled. When this action happens, all the extensions missing parental
+    approval are granted it.
   </summary>
 </histogram>
 
@@ -650,6 +663,17 @@ chromium-metrics-reviews@google.com.
     Dialog. Asked Parent count increments when the supervised user clicks
     &quot;Ask a parent&quot;. Child Canceled count increments when the
     supervised user clicks &quot;Cancel&quot;.
+  </summary>
+</histogram>
+
+<histogram name="SupervisedUsers.ExtensionParentApprovalEntryPoint"
+    enum="SupervisedUserExtensionParentApprovalEntryPoint"
+    expires_after="2024-12-12">
+  <owner>anthie@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Records the different flows that lead to displaying the Extensions parent
+    approval dialog on Windows/Linux/Mac platrforms.
   </summary>
 </histogram>
 
@@ -695,6 +719,19 @@ chromium-metrics-reviews@google.com.
     Records the different flows that lead to granting an automatic parent
     approval on an extension (without having to explicitely request the
     approval).
+  </summary>
+</histogram>
+
+<histogram
+    name="SupervisedUsers.InitialLocallyApprovedExtensionsCountOnWinLinuxMac"
+    units="Extensions" expires_after="2024-12-12">
+  <owner>anthie@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Records the number of extensions that will be granted local parental
+    approval at the release time the feature that introduces the Skip Parent
+    Approval mode for extension installations. Applies to Win/Linux/Mac only, so
+    on ChromeOS it is always zero.
   </summary>
 </histogram>
 

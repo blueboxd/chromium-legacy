@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 // See "SSPI Sample Application" at
 // http://msdn.microsoft.com/en-us/library/aa918273.aspx
 
@@ -399,11 +404,11 @@ void HttpAuthSSPI::ResetSecurityContext() {
 HttpAuth::AuthorizationResult HttpAuthSSPI::ParseChallenge(
     HttpAuthChallengeTokenizer* tok) {
   if (!SecIsValidHandle(&ctxt_)) {
-    return net::ParseFirstRoundChallenge(scheme_, tok);
+    return ParseFirstRoundChallenge(scheme_, tok);
   }
   std::string encoded_auth_token;
-  return net::ParseLaterRoundChallenge(scheme_, tok, &encoded_auth_token,
-                                       &decoded_server_auth_token_);
+  return ParseLaterRoundChallenge(scheme_, tok, &encoded_auth_token,
+                                  &decoded_server_auth_token_);
 }
 
 int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,

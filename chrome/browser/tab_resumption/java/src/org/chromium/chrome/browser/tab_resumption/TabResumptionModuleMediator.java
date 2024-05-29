@@ -18,8 +18,7 @@ import org.chromium.chrome.browser.tab_resumption.TabResumptionDataProvider.Resu
 import org.chromium.chrome.browser.tab_resumption.TabResumptionDataProvider.SuggestionsResult;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ModuleNotShownReason;
 import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleMetricsUtils.ModuleShowConfig;
-import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallbacks;
-import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
+import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -285,9 +284,8 @@ public class TabResumptionModuleMediator {
     private final PropertyModel mModel;
 
     protected final UrlImageProvider mUrlImageProvider;
-    protected final ThumbnailProvider mThumbnailProvider;
     protected final Runnable mStatusChangedCallback;
-    protected final SuggestionClickCallbacks mSuggestionClickCallbacks;
+    protected final SuggestionClickCallback mSuggestionClickCallback;
     private final ShowHideHelper mShowHideHelper;
 
     private Session mSession;
@@ -297,25 +295,22 @@ public class TabResumptionModuleMediator {
             @NonNull ModuleDelegate moduleDelegate,
             @NonNull PropertyModel model,
             @NonNull UrlImageProvider urlImageProvider,
-            @NonNull ThumbnailProvider thumbnailProvider,
             @NonNull Runnable statusChangedCallback,
             @NonNull Runnable seeMoreLinkClickCallback,
-            @NonNull SuggestionClickCallbacks suggestionClickCallbacks) {
+            @NonNull SuggestionClickCallback suggestionClickCallback) {
         mContext = context;
         mModuleDelegate = moduleDelegate;
         mModel = model;
         mUrlImageProvider = urlImageProvider;
-        mThumbnailProvider = thumbnailProvider;
         mStatusChangedCallback = statusChangedCallback;
-        mSuggestionClickCallbacks = suggestionClickCallbacks;
+        mSuggestionClickCallback = suggestionClickCallback;
         mShowHideHelper = new ShowHideHelper();
 
         mModel.set(TabResumptionModuleProperties.URL_IMAGE_PROVIDER, mUrlImageProvider);
-        mModel.set(TabResumptionModuleProperties.THUMBNAIL_PROVIDER, mThumbnailProvider);
         mModel.set(
                 TabResumptionModuleProperties.SEE_MORE_LINK_CLICK_CALLBACK,
                 seeMoreLinkClickCallback);
-        mModel.set(TabResumptionModuleProperties.CLICK_CALLBACK, mSuggestionClickCallbacks);
+        mModel.set(TabResumptionModuleProperties.CLICK_CALLBACK, mSuggestionClickCallback);
         mModel.set(
                 TabResumptionModuleProperties.USE_SALIENT_IMAGE,
                 TabResumptionModuleUtils.TAB_RESUMPTION_USE_SALIENT_IMAGE.getValue());
@@ -348,7 +343,7 @@ public class TabResumptionModuleMediator {
      * @return Whether the given suggestion is qualified to be shown in UI.
      */
     private static boolean isSuggestionValid(SuggestionEntry entry) {
-        return (entry instanceof LocalTabSuggestionEntry) || !TextUtils.isEmpty(entry.title);
+        return (entry.isLocalTab()) || !TextUtils.isEmpty(entry.title);
     }
 
     /**

@@ -13,6 +13,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
+#include "chrome/browser/ai/ai_manager_impl.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
-#include "chrome/browser/model_execution/model_manager_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/on_device_translation/translation_manager_impl.h"
 #include "chrome/browser/optimization_guide/optimization_guide_internals_ui.h"
@@ -209,7 +209,6 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/browser/ui/webui/webui_gallery/webui_gallery_ui.h"
-#include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/page_image_service/mojom/page_image_service.mojom.h"
@@ -239,6 +238,10 @@
 #include "chrome/common/companion/visual_query/features.h"
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
@@ -286,6 +289,8 @@
 #include "ash/webui/help_app_ui/help_app_ui.mojom.h"
 #include "ash/webui/help_app_ui/help_app_untrusted_ui.h"
 #include "ash/webui/help_app_ui/search/search.mojom.h"
+#include "ash/webui/mall/mall_ui.h"
+#include "ash/webui/mall/mall_ui.mojom.h"
 #include "ash/webui/media_app_ui/media_app_guest_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.mojom.h"
@@ -363,6 +368,7 @@
 #include "chrome/browser/ui/webui/ash/settings/os_settings_ui.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/apps/mojom/app_notification_handler.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/apps/mojom/app_parental_controls_handler.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/date_time/mojom/date_time_handler.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/display_settings/display_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/input_device_settings/input_device_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/files/mojom/google_drive_handler.mojom.h"
@@ -1236,8 +1242,11 @@ void PopulateChromeWebUIFrameBinders(
       HistoryClustersSidePanelUI, NewTabPageUI, BookmarksSidePanelUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      browser_command::mojom::CommandHandlerFactory, NewTabPageUI, WhatsNewUI>(
-      map);
+      browser_command::mojom::CommandHandlerFactory,
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+      WhatsNewUI,
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+      NewTabPageUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<searchbox::mojom::PageHandler,
                                          NewTabPageUI, OmniboxPopupUI>(map);
@@ -1696,11 +1705,9 @@ void PopulateChromeWebUIFrameBinders(
       ash::audio_config::mojom::CrosAudioConfig, ash::settings::OSSettingsUI>(
       map);
 
-  if (ash::features::IsHotspotEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::hotspot_config::mojom::CrosHotspotConfig,
-        ash::settings::OSSettingsUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::hotspot_config::mojom::CrosHotspotConfig,
+      ash::settings::OSSettingsUI>(map);
 
   if (base::FeatureList::IsEnabled(
           ash::features::kSystemJapanesePhysicalTyping)) {
@@ -1747,6 +1754,10 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ash::settings::google_drive::mojom::PageHandlerFactory,
+      ash::settings::OSSettingsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::settings::date_time::mojom::PageHandlerFactory,
       ash::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1877,6 +1888,7 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
       .Add<color_change_listener::mojom::PageHandler>();
   registry.ForWebUI<FeedbackUI>()
       .Add<color_change_listener::mojom::PageHandler>();
+  registry.ForWebUI<ash::MallUI>().Add<ash::mall::mojom::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // --- Section 2: chrome-untrusted:// WebUIs:

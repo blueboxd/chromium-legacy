@@ -436,7 +436,7 @@ void ShowAccessibilityNotification(
       message_center::SystemNotificationWarningLevel::NORMAL;
 
   if (type == A11yNotificationType::kBrailleDisplayConnected) {
-    text = l10n_util::GetStringUTF16(
+    title = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
     catalog_name = NotificationCatalogName::kBrailleDisplayConnected;
   } else if (type == A11yNotificationType::kDictationAllDlcsDownloaded) {
@@ -1315,9 +1315,6 @@ void AccessibilityController::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kAccessibilityScreenMagnifierMouseFollowingMode,
       static_cast<int>(MagnifierMouseFollowingMode::kEdge),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kAccessibilityScreenMagnifierCenterFocus, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled, true,

@@ -86,20 +86,6 @@ Exemption updated to 1.0.117 in Feb 2024.
 Exemption updated to 1.0.122 in May 2024.
 """
 
-[[exemptions.libc]]
-version = "0.2.154"
-criteria = ["safe-to-deploy", "ub-risk-2"]
-notes = """
-Grandparented-in when setting up `cargo vet` in Jan 2024
-
-Unsoundness was found in 0.2.152 behind a crate feature (called \"extra_traits\")
-that is unused by Chromium.  https://crbug.com/1524111 tracks ensuring that we
-don't accidentally start depending on this feature.
-
-Exemption updated to 0.2.153 in Feb 2024.
-Exemption updated to 0.2.154 in May 2024.
-"""
-
 [[exemptions.memchr]]
 version = "2.7.2"
 criteria = ["safe-to-deploy", "ub-risk-2"]
@@ -118,19 +104,18 @@ I hear that Fuchsia has also been working on reviewing 2.7.1 (so we should check
 later if maybe we can just import their audit).
 """
 
-[[exemptions.rand_chacha]]
-version = "0.3.1"
-criteria = "does-not-implement-crypto"
-notes = "Grandparented-in when setting up `cargo vet` in Jan 2024"
-
 [[exemptions.rand_core]]
 version = "0.6.4"
-criteria = "does-not-implement-crypto"
-notes = "Grandparented-in when setting up `cargo vet` in Jan 2024"
+criteria = "crypto-safe"
+notes = """
+Grandparented-in when setting up `cargo vet` in Jan 2024
+
+TODO(b/341950532): Remove this exemption.
+"""
 
 [[exemptions.ryu]]
 version = "1.0.18"
-criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+criteria = ["safe-to-deploy", "crypto-safe", "ub-risk-2"]
 notes = """
 Grandparented-in when setting up `cargo vet` in Jan 2024.
 
@@ -142,8 +127,8 @@ Exemption updated to 1.0.18 in May 2024.
 """
 
 [[exemptions.syn]]
-version = "2.0.63"
-criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+version = "2.0.65"
+criteria = ["safe-to-deploy", "crypto-safe", "ub-risk-2"]
 notes = """
 Grandparented-in when setting up `cargo vet` in Jan 2024
 
@@ -159,4 +144,5 @@ Exemption updated to 2.0.55 when updating the crate, with notes:
 Exemption updated to 2.0.59 when updating the crate in Apr 2024.
 Exemption updated to 2.0.60 when updating the crate.
 Exemption updated to 2.0.63 when updating the crate in May 2024.
+Exemption updated to 2.0.65 when updating the crate in May 2024.
 """

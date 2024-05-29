@@ -92,7 +92,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
-#include "chromeos/ash/components/cryptohome/cryptohome_util.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
@@ -102,6 +101,7 @@
 #include "chromeos/ash/components/osauth/public/auth_hub.h"
 #include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/standalone_browser/migrator_util.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
@@ -799,7 +799,8 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   if (BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
           g_browser_process->local_state(), user_context.GetAccountId(),
           user_context.GetUserIDHash(),
-          crosapi::browser_util::PolicyInitState::kAfterInit)) {
+          ash::standalone_browser::migrator_util::PolicyInitState::
+              kAfterInit)) {
     // TODO(crbug.com/40799062): Add an UMA.
     LOG(WARNING) << "Restarting Chrome to resume move migration.";
     return;
@@ -1551,10 +1552,6 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
         KioskAppId::ForChromeApp(user_context.GetAccountId().GetUserEmail(),
                                  user_context.GetAccountId()));
     return;
-  }
-
-  if (user_context.GetUserType() == user_manager::UserType::kArcKioskApp) {
-    NOTREACHED_NORETURN();
   }
 
   if (user_context.GetUserType() == user_manager::UserType::kWebKioskApp) {

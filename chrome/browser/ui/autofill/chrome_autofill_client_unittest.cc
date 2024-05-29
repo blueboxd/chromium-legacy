@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/mock_autofill_suggestion_delegate.h"
 #include "components/autofill/core/browser/ui/mock_fast_checkout_client.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
@@ -211,9 +212,12 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
                   return std::make_unique<TestPersonalDataManager>();
                 }));
 
-    personal_data_manager_->SetAutofillProfileEnabled(true);
-    personal_data_manager_->SetAutofillPaymentMethodsEnabled(true);
-    personal_data_manager_->SetAutofillWalletImportEnabled(false);
+    personal_data_manager_->test_address_data_manager()
+        .SetAutofillProfileEnabled(true);
+    personal_data_manager_->test_payments_data_manager()
+        .SetAutofillPaymentMethodsEnabled(true);
+    personal_data_manager_->test_payments_data_manager()
+        .SetAutofillWalletImportEnabled(false);
 
     // Enable MSBB by default. If MSBB has been explicitly turned off, Fast
     // Checkout is not supported.
@@ -292,8 +296,8 @@ TEST_F(ChromeAutofillClientTest, ClassifiesLoginFormOnChildFrame) {
   // Ensure that the child frame is picked up as a child frame of `main_form`.
   {
     autofill::FrameTokenWithPredecessor child_frame_information;
-    child_frame_information.token = child_form.host_frame;
-    main_form.child_frames = {child_frame_information};
+    child_frame_information.token = child_form.host_frame();
+    main_form.set_child_frames({child_frame_information});
   }
 
   {

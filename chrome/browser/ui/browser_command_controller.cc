@@ -75,6 +75,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -93,7 +94,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
@@ -964,11 +964,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
       break;
     case IDC_CHROME_WHATS_NEW:
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
+    (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX))
       ShowChromeWhatsNew(browser_);
 #else
       NOTREACHED_IN_MIGRATION();
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
+        // (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX))
       break;
     case IDC_SHOW_BETA_FORUM:
       ShowBetaForum(browser_);
@@ -1611,8 +1613,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   UpdateCommandAndActionEnabled(IDC_SEND_TAB_TO_SELF, kActionSendTabToSelf,
                                 CanSendTabToSelf(browser_));
 
-  command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR,
-                                        CanGenerateQrCode(browser_));
+  UpdateCommandAndActionEnabled(IDC_QRCODE_GENERATOR, kActionQrCodeGenerator,
+                                CanGenerateQrCode(browser_));
 
   if (features::IsChromeRefresh2023()) {
     ChromeTranslateClient* chrome_translate_client =

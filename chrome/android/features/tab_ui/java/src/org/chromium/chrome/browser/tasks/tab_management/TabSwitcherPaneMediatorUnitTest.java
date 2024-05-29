@@ -9,11 +9,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BLOCK_TOUCH_INPUT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BROWSER_CONTROLS_STATE_PROVIDER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.FOCUS_TAB_INDEX_FOR_ACCESSIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
@@ -92,10 +94,12 @@ public class TabSwitcherPaneMediatorUnitTest {
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mDialogBackPressChangedSupplier =
             new ObservableSupplierImpl<>();
+    private final ObservableSupplierImpl<Boolean> mShowingOrAnimationSupplier =
+            new ObservableSupplierImpl<>(false);
     private final ObservableSupplierImpl<Boolean> mIsVisibleSupplier =
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mIsAnimatingSupplier =
-            new ObservableSupplierImpl<>();
+            new ObservableSupplierImpl<>(false);
     private final ObservableSupplierImpl<TabListEditorController> mTabListEditorControllerSupplier =
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mTabListEditorBackPressChangedSupplier =
@@ -140,6 +144,8 @@ public class TabSwitcherPaneMediatorUnitTest {
 
         when(mTabGridDialogController.getHandleBackPressChangedSupplier())
                 .thenReturn(mDialogBackPressChangedSupplier);
+        when(mTabGridDialogController.getShowingOrAnimationSupplier())
+                .thenReturn(mShowingOrAnimationSupplier);
         when(mTabListEditorController.getHandleBackPressChangedSupplier())
                 .thenReturn(mTabListEditorBackPressChangedSupplier);
 
@@ -190,7 +196,7 @@ public class TabSwitcherPaneMediatorUnitTest {
     public void tearDown() {
         mMediator.destroy();
 
-        verify(mTabModelFilter).removeObserver(mTabModelObserverCaptor.getValue());
+        verify(mTabModelFilter, atLeastOnce()).removeObserver(mTabModelObserverCaptor.getValue());
 
         assertFalse(mTabModelFilterSupplier.hasObservers());
         assertFalse(mIsVisibleSupplier.hasObservers());
@@ -231,6 +237,37 @@ public class TabSwitcherPaneMediatorUnitTest {
         when(mTabListEditorController.isVisible()).thenReturn(true);
         observer.multipleTabsPendingClosure(null, false);
         assertTrue(dialogVisibilitySupplier.get());
+    }
+
+    @Test
+    @SmallTest
+    public void testLateTabModelFilterWhileVisible() {
+        // Reset to simulate the UI is shown with no tab model filter set.
+        mIsVisibleSupplier.set(false);
+        mTabModelFilterSupplier.set(null);
+        verify(mTabModelFilter, times(1)).addObserver(mTabModelObserverCaptor.capture());
+
+        mMediator.destroy();
+
+        mMediator =
+                new TabSwitcherPaneMediator(
+                        mResetHandler,
+                        mTabModelFilterSupplier,
+                        mTabGridDialogControllerSupplier,
+                        mModel,
+                        mContainerView,
+                        mOnTabSwitcherShownRunnable,
+                        mIsVisibleSupplier,
+                        mIsAnimatingSupplier,
+                        mOnTabClickedCallback);
+        ShadowLooper.runUiThreadTasks();
+
+        mIsVisibleSupplier.set(true);
+
+        // When the filter is set we need to show tabs when visible if the restore already finished.
+        mTabModelFilterSupplier.set(mTabModelFilter);
+        verify(mTabModelFilter, times(2)).addObserver(mTabModelObserverCaptor.capture());
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, false);
     }
 
     @Test
@@ -294,7 +331,9 @@ public class TabSwitcherPaneMediatorUnitTest {
         mTabListEditorBackPressChangedSupplier.set(false);
         assertFalse(mMediator.getHandleBackPressChangedSupplier().get());
 
+        verify(mTabGridDialogController).hideDialog(true);
         mIsAnimatingSupplier.set(true);
+        verify(mTabGridDialogController, times(2)).hideDialog(true);
         assertTrue(mMediator.getHandleBackPressChangedSupplier().get());
         assertEquals(BackPressResult.SUCCESS, mMediator.handleBackPress());
         mIsAnimatingSupplier.set(false);
@@ -415,5 +454,15 @@ public class TabSwitcherPaneMediatorUnitTest {
         mMediator.removeCustomView(mCustomView);
         verify(mContainerView).removeView(mCustomView);
         assertFalse(mMediator.getHandleBackPressChangedSupplier().get());
+    }
+
+    @Test
+    @SmallTest
+    public void testBlockTouchInput() {
+        assertFalse(mModel.get(BLOCK_TOUCH_INPUT));
+        mShowingOrAnimationSupplier.set(true);
+        assertTrue(mModel.get(BLOCK_TOUCH_INPUT));
+        mShowingOrAnimationSupplier.set(false);
+        assertFalse(mModel.get(BLOCK_TOUCH_INPUT));
     }
 }

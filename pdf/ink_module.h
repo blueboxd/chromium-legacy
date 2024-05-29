@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "pdf/buildflags.h"
 #include "pdf/ink/ink_stroke_input.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 static_assert(BUILDFLAG(ENABLE_PDF_INK2), "ENABLE_PDF_INK2 not set to true");
 
@@ -30,7 +31,9 @@ class PointF;
 
 namespace chrome_pdf {
 
+class InkInProgressStroke;
 class InkStroke;
+class PdfInkBrush;
 
 class InkModule {
  public:
@@ -59,24 +62,71 @@ class InkModule {
   // Returns whether the message was handled or not.
   bool OnMessage(const base::Value::Dict& message);
 
+  // For testing only. Returns the current PDF ink brush used to draw strokes.
+  const PdfInkBrush* GetPdfInkBrushForTesting() const;
+
  private:
+  struct DrawingStrokeState {
+    DrawingStrokeState();
+    DrawingStrokeState(const DrawingStrokeState&) = delete;
+    DrawingStrokeState& operator=(const DrawingStrokeState&) = delete;
+    ~DrawingStrokeState();
+
+    // The current brush to use for drawing strokes. Never null.
+    std::unique_ptr<PdfInkBrush> ink_brush;
+
+    std::optional<base::Time> ink_start_time;
+    std::vector<InkStrokeInput> ink_inputs;
+  };
+
+  // No state, so just use a placeholder enum type.
+  enum class EraserState { kIsEraser };
+
+  // Returns whether the event was handled or not.
   bool OnMouseDown(const blink::WebMouseEvent& event);
   bool OnMouseUp(const blink::WebMouseEvent& event);
   bool OnMouseMove(const blink::WebMouseEvent& event);
 
+  // Return values have the same semantics as OnMouse()* above.
+  bool StartInkStroke(const gfx::PointF& position);
+  bool ContinueInkStroke(const gfx::PointF& position);
+  bool FinishInkStroke();
+
+  // Return values have the same semantics as OnMouse*() above.
+  bool StartEraseInkStroke(const gfx::PointF& position);
+  bool ContinueEraseInkStroke(const gfx::PointF& position);
+  bool FinishEraseInkStroke();
+
   void HandleSetAnnotationBrushMessage(const base::Value::Dict& message);
   void HandleSetAnnotationModeMessage(const base::Value::Dict& message);
 
-  // Convert `ink_inputs_` into an entry in `ink_strokes_`.
-  void ConvertInkInputsIntoStroke();
+  bool is_drawing_stroke() const {
+    return absl::holds_alternative<DrawingStrokeState>(current_tool_state_);
+  }
+  bool is_erasing_stroke() const {
+    return absl::holds_alternative<EraserState>(current_tool_state_);
+  }
+  const DrawingStrokeState& drawing_stroke_state() const {
+    return absl::get<DrawingStrokeState>(current_tool_state_);
+  }
+  DrawingStrokeState& drawing_stroke_state() {
+    return absl::get<DrawingStrokeState>(current_tool_state_);
+  }
+
+  // Converts `current_tool_state_` into an InkInProgressStroke. Requires
+  // `current_tool_state_` to hold a `DrawingStrokeState`. If there is no
+  // `DrawingStrokeState`, or the state currently has no inputs, then return
+  // nullptr.
+  std::unique_ptr<InkInProgressStroke> CreateInProgressStrokeFromInputs() const;
 
   const raw_ref<Client> client_;
 
   bool enabled_ = false;
 
-  // Set when InkModule is in the middle of drawing a stroke.
-  std::optional<base::Time> ink_start_time_;
-  std::vector<InkStrokeInput> ink_inputs_;
+  // The state of the current tool that is in use.
+  absl::variant<DrawingStrokeState, EraserState> current_tool_state_;
+
+  // The strokes that have been completed.
   std::vector<std::unique_ptr<InkStroke>> ink_strokes_;
 };
 

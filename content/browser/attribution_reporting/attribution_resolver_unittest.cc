@@ -23,10 +23,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "components/aggregation_service/features.h"
+#include "build/buildflag.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
@@ -194,17 +193,17 @@ class AttributionResolverTest : public testing::Test {
   raw_ptr<ConfigurableStorageDelegate> delegate_;
 };
 
-TEST_F(AttributionResolverTest,
-       StorageUsedAfterFailedInitilization_FailsSilently) {
+TEST_F(AttributionResolverTest, StorageUsedAfterFailedInitialization_NoCrash) {
+  const base::FilePath db_path =
+      dir_.GetPath().Append(FILE_PATH_LITERAL("Conversions"));
+
   // We create a failed initialization by writing a dir to the database file
   // path.
-  base::CreateDirectoryAndGetError(
-      dir_.GetPath().Append(FILE_PATH_LITERAL("Conversions")), nullptr);
+  ASSERT_TRUE(base::CreateDirectoryAndGetError(db_path, nullptr));
+
   std::unique_ptr<AttributionResolver> storage =
       std::make_unique<AttributionResolverImpl>(
           dir_.GetPath(), std::make_unique<ConfigurableStorageDelegate>());
-  static_cast<AttributionResolverImpl*>(storage.get())
-      ->set_ignore_errors_for_testing(true);
 
   // Test all public methods on AttributionResolver.
   EXPECT_NO_FATAL_FAILURE(storage->StoreSource(SourceBuilder().Build()));
@@ -217,6 +216,12 @@ TEST_F(AttributionResolverTest,
   EXPECT_NO_FATAL_FAILURE(storage->ClearData(
       base::Time::Min(), base::Time::Max(), base::NullCallback()));
   EXPECT_EQ(storage->AdjustOfflineReportTimes(), std::nullopt);
+
+#if BUILDFLAG(IS_FUCHSIA)
+  EXPECT_FALSE(base::PathExists(db_path));
+#else
+  EXPECT_TRUE(base::PathExists(db_path));
+#endif
 }
 
 TEST_F(AttributionResolverTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
@@ -1245,7 +1250,8 @@ TEST_F(AttributionResolverTest, MaxAttributionsBetweenSites) {
             DroppedEventLevelReportIs(std::nullopt)));
 
   const auto source =
-      source_builder.SetAggregatableBudgetConsumed(8).BuildStored();
+      source_builder.SetRemainingAggregatableAttributionBudget(65536 - 8)
+          .BuildStored();
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
               ElementsAre(EventLevelDataIs(TriggerDataIs(1)),
                           EventLevelDataIs(TriggerDataIs(2)),
@@ -1835,7 +1841,7 @@ TEST_F(AttributionResolverTest, FalselyAttributeImpression_ReportStored) {
               .SetTime(fake_trigger_time)
               .Build(),
           builder.SetAttributionLogic(StoredSource::AttributionLogic::kFalsely)
-              .SetAggregatableBudgetConsumed(2)
+              .SetRemainingAggregatableAttributionBudget(65536 - 2)
               .SetExpiry(kExpiry)
               .SetActiveState(
                   StoredSource::ActiveState::kReachedEventLevelAttributionLimit)
@@ -1846,7 +1852,8 @@ TEST_F(AttributionResolverTest, FalselyAttributeImpression_ReportStored) {
 
   const AttributionReport expected_aggregatable_report =
       GetExpectedAggregatableReport(
-          builder.SetAggregatableBudgetConsumed(2).BuildStored(),
+          builder.SetRemainingAggregatableAttributionBudget(65536 - 2)
+              .BuildStored(),
           DefaultAggregatableHistogramContributions({1}), trigger);
 
   task_environment_.FastForwardBy(kExpiry);
@@ -3131,7 +3138,7 @@ TEST_F(AttributionResolverTest, MaxReportingOriginsPerAttribution) {
 TEST_F(AttributionResolverTest, SourceBudgetValueRetrieved) {
   storage()->StoreSource(SourceBuilder().Build());
   EXPECT_THAT(storage()->GetActiveSources(),
-              ElementsAre(AggregatableBudgetConsumedIs(0)));
+              ElementsAre(RemainingAggregatableAttributionBudgetIs(65536)));
 }
 
 TEST_F(AttributionResolverTest, MaxAggregatableBudgetPerSource) {
@@ -3196,7 +3203,7 @@ TEST_F(AttributionResolverTest, BudgetConsumedAfterTriggerIsRetrieved) {
       AttributionTrigger::AggregatableResult::kSuccess);
 
   EXPECT_THAT(storage()->GetActiveSources(),
-              ElementsAre(AggregatableBudgetConsumedIs(2)));
+              ElementsAre(RemainingAggregatableAttributionBudgetIs(65536 - 2)));
 }
 
 TEST_F(AttributionResolverTest,
@@ -3621,8 +3628,9 @@ TEST_F(AttributionResolverTest, AggregatableAttribution_ReportsScheduled) {
             NewAggregatableReportIs(Optional(AggregatableAttributionDataIs(
                 AggregatableHistogramContributionsAre(contributions))))));
 
-  const auto source = source_builder.SetAggregatableBudgetConsumed(5)
-                          .BuildStored();
+  const auto source =
+      source_builder.SetRemainingAggregatableAttributionBudget(65536 - 5)
+          .BuildStored();
   auto expected_aggregatable_report =
       GetExpectedAggregatableReport(source, std::move(contributions), trigger);
 
@@ -3754,9 +3762,6 @@ TEST_F(AttributionResolverTest,
 }
 
 TEST_F(AttributionResolverTest, AggregationCoordinator_RoundTrip) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      ::aggregation_service::kAggregationServiceMultipleCloudProviders);
-
   auto coordinator_origin = SuitableOrigin::Deserialize("https://a.test");
 
   storage()->StoreSource(TestAggregatableSourceProvider().GetBuilder().Build());
@@ -3879,10 +3884,10 @@ TEST_F(AttributionResolverTest, BothRealAndNullAggregatableReports) {
           .BuildNullAggregatable();
 
   const AttributionReport expected_aggregatable_report =
-      GetExpectedAggregatableReport(builder.SetAggregatableBudgetConsumed(1)
-                                        .BuildStored(),
-                                    DefaultAggregatableHistogramContributions(),
-                                    trigger);
+      GetExpectedAggregatableReport(
+          builder.SetRemainingAggregatableAttributionBudget(65536 - 1)
+              .BuildStored(),
+          DefaultAggregatableHistogramContributions(), trigger);
 
   EXPECT_THAT(
       storage()->GetAttributionReports(base::Time::Max()),

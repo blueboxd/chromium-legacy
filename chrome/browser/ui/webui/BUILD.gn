@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
+import("//components/metrics/generate_allowlist_from_histograms_file.gni")
+
+generate_allowlist_from_histograms_file("webui_url_hashes") {
+  namespace = "webui_metrics"
+  input_xml_file = "//tools/metrics/histograms/enums.xml"
+  tag = "enum"
+  output_file = "webui_url_hashes.h"
+  allow_list_name = "WebUIUrlHashes"
+}
 
 source_set("configs") {
   sources = [
@@ -16,6 +25,7 @@ source_set("configs") {
 
   deps = [
     "//chrome/browser/ui:ui",
+    "//chrome/browser/ui/webui:webui",
     "//components/compose:buildflags",
     "//components/lens:buildflags",
     "//content/public/browser",
@@ -48,6 +58,7 @@ source_set("configs") {
       "//ash/webui/firmware_update_ui",
       "//ash/webui/focus_mode",
       "//ash/webui/help_app_ui",
+      "//ash/webui/mall",
       "//ash/webui/os_feedback_ui",
       "//ash/webui/print_management",
       "//ash/webui/print_preview_cros",
@@ -58,6 +69,7 @@ source_set("configs") {
       "//ash/webui/status_area_internals",
       "//ash/webui/vc_background_ui",
       "//chrome/browser/ash",
+      "//chromeos/ash/components/kiosk/vision/webui",
       "//components/cross_device/logging",
     ]
 
@@ -72,7 +84,11 @@ source_set("webui") {
     "webui_util.cc",
     "webui_util.h",
   ]
+
+  sources += get_target_outputs(":webui_url_hashes")
+
   deps = [
+    ":webui_url_hashes",
     "//base",
     "//content/public/browser",
     "//content/public/common",

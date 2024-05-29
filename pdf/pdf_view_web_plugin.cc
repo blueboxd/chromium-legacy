@@ -4,6 +4,11 @@
 
 #include "pdf/pdf_view_web_plugin.h"
 
+#if defined(UNSAFE_BUFFERS_BUILD)
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -2483,7 +2488,9 @@ void PdfViewWebPlugin::LoadAccessibility() {
       GetAccessibilityDocInfo());
 
   // Record whether the PDF is tagged when opened by an accessibility user.
-  metrics_handler_->RecordAccessibilityIsDocTagged(engine_->IsPDFDocTagged());
+  if (metrics_handler_) {
+    metrics_handler_->RecordAccessibilityIsDocTagged(engine_->IsPDFDocTagged());
+  }
 
   // If the document contents isn't accessible, don't send anything more.
   if (!(engine_->HasPermission(DocumentPermission::kCopy) ||

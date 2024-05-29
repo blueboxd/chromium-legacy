@@ -714,10 +714,7 @@ Node* Element::Clone(Document& factory,
   if (!shadow_root) {
     return copy;
   }
-  if ((RuntimeEnabledFeatures::ShadowRootClonableEnabled() &&
-       shadow_root->clonable()) ||
-      (!RuntimeEnabledFeatures::ShadowRootClonableEnabled() &&
-       data.Has(CloneOption::kIncludeAllShadowRoots))) {
+  if (shadow_root->clonable()) {
     if (shadow_root->GetMode() == ShadowRootMode::kOpen ||
         shadow_root->GetMode() == ShadowRootMode::kClosed) {
       // 7.1 Run attach a shadow root with copy, node’s shadow root’s mode,
@@ -746,9 +743,6 @@ Node* Element::Clone(Document& factory,
       // node’s shadow root, in tree order: append the result of cloning child
       // with document and the clone children flag set, to copy’s shadow root.
       NodeCloningData shadow_data{CloneOption::kIncludeDescendants};
-      if (!RuntimeEnabledFeatures::ShadowRootClonableEnabled()) {
-        shadow_data.Put(CloneOption::kIncludeAllShadowRoots);
-      }
       cloned_shadow_root.CloneChildNodesFrom(*shadow_root, shadow_data);
     }
   }
@@ -1164,8 +1158,16 @@ NamedNodeMap* Element::attributesForBindings() const {
   return rare_data.AttributeMap();
 }
 
-AttributeNamesView Element::getAttributeNames() const {
+AttributeNamesView Element::getAttributeNamesForBindings() const {
   return bindings::Transform<AttributeToNameTransform>(Attributes());
+}
+
+Vector<AtomicString> Element::getAttributeNames() const {
+  Vector<AtomicString> result;
+  auto view = getAttributeNamesForBindings();
+  std::transform(view.begin(), view.end(), std::back_inserter(result),
+                 [](const String& str) { return AtomicString(str); });
+  return result;
 }
 
 inline ElementRareDataVector* Element::GetElementRareData() const {
@@ -3718,6 +3720,8 @@ void Element::RecalcStyle(const StyleRecalcChange change,
 
   if (child_change.TraversePseudoElements(*this)) {
     UpdateBackdropPseudoElement(child_change, child_recalc_context);
+    UpdatePseudoElement(kPseudoIdScrollMarkerGroupBefore, child_change,
+                        child_recalc_context);
     UpdatePseudoElement(kPseudoIdMarker, child_change, child_recalc_context);
     UpdatePseudoElement(kPseudoIdBefore, child_change, child_recalc_context);
   }
@@ -3739,6 +3743,8 @@ void Element::RecalcStyle(const StyleRecalcChange change,
 
   if (child_change.TraversePseudoElements(*this)) {
     UpdatePseudoElement(kPseudoIdAfter, child_change, child_recalc_context);
+    UpdatePseudoElement(kPseudoIdScrollMarkerGroupAfter, child_change,
+                        child_recalc_context);
 
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
@@ -4267,6 +4273,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     } else {
       child_attacher = &whitespace_attacher;
     }
+    RebuildPseudoElementLayoutTree(kPseudoIdScrollMarkerGroupAfter,
+                                   *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdAfter, *child_attacher);
     if (GetShadowRoot()) {
       RebuildShadowRootLayoutTree(*child_attacher);
@@ -4275,6 +4283,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     }
     RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
     RebuildMarkerLayoutTree(*child_attacher);
+    RebuildPseudoElementLayoutTree(kPseudoIdScrollMarkerGroupBefore,
+                                   *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
     RebuildFirstLetterLayoutTree();
     ClearChildNeedsReattachLayoutTree();
@@ -5534,8 +5544,6 @@ bool Element::AttachDeclarativeShadowRoot(HTMLTemplateElement& template_element,
                                           bool serializable,
                                           bool clonable) {
   CHECK(type == ShadowRootMode::kOpen || type == ShadowRootMode::kClosed);
-  CHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMSerializableEnabled() ||
-        !serializable);
 
   // 12. Run attach a shadow root with shadow host equal to declarative shadow
   // host element, mode equal to declarative shadow mode, and delegates focus
@@ -5582,9 +5590,6 @@ ShadowRoot& Element::AttachShadowRootInternal(
   DCHECK(type == ShadowRootMode::kOpen || type == ShadowRootMode::kClosed)
       << type;
   DCHECK(!AlwaysCreateUserAgentShadowRoot());
-  CHECK(!serializable ||
-        RuntimeEnabledFeatures::DeclarativeShadowDOMSerializableEnabled());
-  CHECK(!clonable || RuntimeEnabledFeatures::ShadowRootClonableEnabled());
 
   GetDocument().SetContainsShadowRoot();
 
@@ -7815,7 +7820,8 @@ void Element::UpdateFirstLetterPseudoElement(
     DCHECK(text_node_changed);
     const ComputedStyle* pseudo_style =
         element->StyleForLayoutObject(style_recalc_context);
-    if (PseudoElementLayoutObjectIsNeeded(pseudo_style, this)) {
+    if (PseudoElementLayoutObjectIsNeeded(kPseudoIdFirstLetter, pseudo_style,
+                                          this)) {
       element->SetComputedStyle(pseudo_style);
     } else {
       GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
@@ -7835,7 +7841,8 @@ void Element::UpdateFirstLetterPseudoElement(
   element->RecalcStyle(change, style_recalc_context);
 
   if (element->NeedsReattachLayoutTree() &&
-      !PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle(), this)) {
+      !PseudoElementLayoutObjectIsNeeded(kPseudoIdFirstLetter,
+                                         element->GetComputedStyle(), this)) {
     GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
     GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
   }
@@ -7866,8 +7873,8 @@ PseudoElement* Element::UpdatePseudoElement(
       }
       element->RecalcStyle(change.ForPseudoElement(), style_recalc_context);
       if (element->NeedsReattachLayoutTree() &&
-          !PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle(),
-                                             this)) {
+          !PseudoElementLayoutObjectIsNeeded(
+              pseudo_id, element->GetComputedStyle(), this)) {
         generate_pseudo = false;
       }
     }
@@ -7903,7 +7910,7 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(
 
   const ComputedStyle* pseudo_style =
       pseudo_element->StyleForLayoutObject(style_recalc_context);
-  if (!PseudoElementLayoutObjectIsNeeded(pseudo_style, this)) {
+  if (!PseudoElementLayoutObjectIsNeeded(pseudo_id, pseudo_style, this)) {
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr,
                                            view_transition_name);
     return nullptr;
@@ -8102,7 +8109,7 @@ const ComputedStyle* Element::StyleForPseudoElement(
   if (request.pseudo_id == kPseudoIdFirstLineInherited) {
     StyleRequest first_line_inherited_request = request;
     first_line_inherited_request.pseudo_id =
-        IsPseudoElement() ? To<PseudoElement>(this)->GetPseudoId()
+        IsPseudoElement() ? To<PseudoElement>(this)->GetPseudoIdForStyling()
                           : kPseudoIdNone;
     first_line_inherited_request.can_trigger_animations = false;
     StyleRecalcContext local_recalc_context(style_recalc_context);
@@ -10162,6 +10169,8 @@ Element* Element::ImplicitAnchorElement() const {
       case kPseudoIdBefore:
       case kPseudoIdAfter:
       case kPseudoIdBackdrop:
+      case kPseudoIdScrollMarkerGroupBefore:
+      case kPseudoIdScrollMarkerGroupAfter:
         return pseudo_element->OriginatingElement()->ImplicitAnchorElement();
       default:
         return nullptr;

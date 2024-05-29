@@ -169,8 +169,10 @@ void PasswordAuthView::CreateAndConfigureTextfieldContainer() {
 
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
-  login_textfield_ = textfield_container->AddChildView(
-      std::make_unique<LoginTextfield>(dispatcher_));
+  login_textfield_ =
+      textfield_container->AddChildView(std::make_unique<LoginTextfield>());
+
+  login_textfield_->SetDelegate(this);
 
   login_textfield_->set_controller(contents_changed_listener_.get());
   login_textfield_->SetPlaceholderText(
@@ -242,7 +244,9 @@ PasswordAuthView::PasswordAuthView(AuthPanelEventDispatcher* dispatcher,
   CreateAndConfigureSubmitButton();
 }
 
-PasswordAuthView::~PasswordAuthView() = default;
+PasswordAuthView::~PasswordAuthView() {
+  login_textfield_->SetDelegate(nullptr);
+}
 
 AshAuthFactor PasswordAuthView::GetFactor() {
   return AshAuthFactor::kGaiaPassword;
@@ -296,7 +300,7 @@ void PasswordAuthView::OnStateChanged(const AuthFactorStore::State& state) {
   CHECK(state.password_view_state_.has_value());
   const auto& password_view_state = state.password_view_state_.value();
 
-  login_textfield_->OnStateChanged(password_view_state.login_textfield_state_);
+  UpdateTextfield(password_view_state.login_textfield_state_);
 
   const auto& password = password_view_state.login_textfield_state_.password_;
 
@@ -322,6 +326,32 @@ void PasswordAuthView::OnStateChanged(const AuthFactorStore::State& state) {
 void PasswordAuthView::SetCapsLockIconHighlighted(bool highlight) {
   capslock_icon_->SetImage(highlight ? capslock_icon_highlighted_
                                      : capslock_icon_blurred_);
+}
+
+void PasswordAuthView::OnTextfieldBlur() {
+  dispatcher_->DispatchEvent(AuthPanelEventDispatcher::UserAction{
+      AuthPanelEventDispatcher::UserAction::Type::kPasswordTextfieldBlurred,
+      std::nullopt});
+}
+
+void PasswordAuthView::OnTextfieldFocus() {
+  dispatcher_->DispatchEvent(AuthPanelEventDispatcher::UserAction{
+      AuthPanelEventDispatcher::UserAction::Type::kPasswordTextfieldFocused,
+      std::nullopt});
+}
+
+void PasswordAuthView::UpdateTextfield(
+    const AuthFactorStore::State::LoginTextfieldState& login_textfield_state) {
+  login_textfield_->SetReadOnly(login_textfield_state.is_read_only);
+
+  login_textfield_->SetTextInputType(login_textfield_state.is_password_visible_
+                                         ? ui::TEXT_INPUT_TYPE_NULL
+                                         : ui::TEXT_INPUT_TYPE_PASSWORD);
+
+  if (auto new_text = base::UTF8ToUTF16(login_textfield_state.password_);
+      new_text != login_textfield_->GetText()) {
+    login_textfield_->SetText(new_text);
+  }
 }
 
 BEGIN_METADATA(PasswordAuthView)

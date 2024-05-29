@@ -17,7 +17,6 @@ import os
 import shutil
 import subprocess
 import sys
-import time
 from typing import List
 
 _SRC_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -27,7 +26,6 @@ from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android import forwarder
-from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
@@ -283,6 +281,16 @@ class AndroidProfileTool:
     data = self._PullProfileData(profile_benchmark)
     self._DeleteDeviceData()
     return data
+
+  def InstallAndSetWebViewProvider(self, installer_path: str):
+    """Installs the built WebView on the device and set it as the WebView
+    provider.
+    public instructions: https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#installing-webview-and-switching-provider # pylint: disable=line-too-long
+    """
+    # Uninstall the existing WebView package to avoid signatures issues.
+    self._device.Uninstall('com.google.android.webview.debug')
+    self._RunCommand([installer_path, 'install'])
+    self._RunCommand([installer_path, 'set-webview-provider'])
 
   @staticmethod
   def _GetBrowserFromApk(apk: str):

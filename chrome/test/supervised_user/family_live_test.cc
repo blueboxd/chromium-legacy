@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
@@ -23,14 +24,26 @@
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/invalidations/invalidations_status_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/test/supervised_user/family_member.h"
 #include "chrome/test/supervised_user/test_state_seeded_observer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace supervised_user {
 namespace {
+
+// When enabled the tests explicitly wait for sync invalidation to be ready.
+const char* kWaitForSyncInvalidationReadyFlag =
+    "supervised-tests-wait-for-sync-invalidation-ready";
+
+bool IsFeatureFlagEnabled(const char* flag) {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(flag);
+}
 
 // List of accounts specified in
 // chrome/browser/internal/resources/signin/test_accounts.json.
@@ -50,6 +63,37 @@ std::string GetFamilyMemberIdentifier(FamilyIdentifier family_identifier,
   return family_identifier.value() + "_" + std::string(member_identifier);
 }
 
+bool HasAuthError(syncer::SyncServiceImpl* service) {
+  return service->GetAuthError().state() ==
+             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+         service->GetAuthError().state() ==
+             GoogleServiceAuthError::SERVICE_ERROR ||
+         service->GetAuthError().state() ==
+             GoogleServiceAuthError::REQUEST_CANCELED;
+}
+
+class SyncSetupChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncSetupChecker(syncer::SyncServiceImpl* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync setup to complete";
+    if (service()->GetTransportState() ==
+            syncer::SyncService::TransportState::ACTIVE &&
+        service()->IsSyncFeatureActive()) {
+      return true;
+    }
+    // Sync is blocked by an auth error.
+    if (HasAuthError(service())) {
+      return true;
+    }
+
+    // Still waiting on sync setup.
+    return false;
+  }
+};
+
 }  // namespace
 
 FamilyLiveTest::FamilyLiveTest(FamilyIdentifier family_identifier)
@@ -67,6 +111,19 @@ FamilyLiveTest::~FamilyLiveTest() = default;
       2, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
   member.browser()->tab_strip_model()->CloseWebContentsAt(
       1, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
+
+  if (IsFeatureFlagEnabled(kWaitForSyncInvalidationReadyFlag)) {
+    // After turning the sync on, wait until this is fully initialized.
+    LOG(INFO) << "Waiting for sync service to set up invalidations.";
+    syncer::SyncServiceImpl* service =
+        SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+            member.browser()->profile());
+    service->SetInvalidationsForSessionsEnabled(true);
+    CHECK(SyncSetupChecker(service).Wait()) << "SyncSetupChecker timed out.";
+    CHECK(InvalidationsStatusChecker(service, /*expected_status=*/true).Wait())
+        << "Invalidation checker timed out.";
+    LOG(INFO) << "Invalidations ready.";
+  }
 }
 
 void FamilyLiveTest::SetUp() {
@@ -155,21 +212,16 @@ InteractiveFamilyLiveTest::WaitForStateSeeding(
     const BrowserState& state) {
   return Steps(
       Log(base::StrCat({"WaitForState[", state.ToString(), "]: start"})),
-      If(state.GetIntendedStateCheck(browser_user),
-         /* then_steps= */
-         Log(base::StrCat(
-             {"WaitForState[", state.ToString(), "]: not needed"})),
-         /* else_steps= */
-         Steps(
-             ObserveState(id,
-                          base::BindOnce(&FamilyMember::supervised_user_service,
-                                         base::Unretained(&browser_user)),
-                          base::BindOnce(&BrowserState::GetIntendedStateCheck,
-                                         base::Unretained(&state),
-                                         std::ref(browser_user))),
-             Do([&]() { state.Seed(rpc_issuer, browser_user); }),
-             WaitForState(id, BrowserState::SeedingStatus::kCompleted),
-             StopObservingState(id))),
+      If([&]() { return !state.Check(browser_user); },
+         /*then_steps=*/
+         Steps(Do([&]() { state.Seed(rpc_issuer, browser_user); }),
+               PollState(
+                   id, [&]() { return state.Check(browser_user); },
+                   /*polling_interval=*/base::Seconds(2)),
+               WaitForState(id, true), StopObservingState(id)),
+         /*else_steps=*/
+         Steps(Log(base::StrCat(
+             {"WaitForState[", state.ToString(), "]: seeding skipped"})))),
       Log(base::StrCat({"WaitForState[", state.ToString(), "]: completed"})));
 }
 

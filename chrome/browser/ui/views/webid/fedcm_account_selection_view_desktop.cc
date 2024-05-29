@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webid/account_selection_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -31,18 +32,21 @@ std::unique_ptr<AccountSelectionView> AccountSelectionView::Create(
 }
 
 // static
-int AccountSelectionView::GetBrandIconMinimumSize() {
-  return 20 / FedCmAccountSelectionView::kMaskableWebIconSafeZoneRatio;
+int AccountSelectionView::GetBrandIconMinimumSize(
+    blink::mojom::RpMode rp_mode) {
+  return (rp_mode == blink::mojom::RpMode::kButton ? kModalIdpIconSize
+                                                   : kBubbleIdpIconSize) /
+         FedCmAccountSelectionView::kMaskableWebIconSafeZoneRatio;
 }
 
 // static
-int AccountSelectionView::GetBrandIconIdealSize() {
+int AccountSelectionView::GetBrandIconIdealSize(blink::mojom::RpMode rp_mode) {
   // As only a single brand icon is selected and the user can have monitors with
   // different screen densities, make the ideal size be the size which works
   // with a high density display (if the OS supports high density displays).
   const float max_supported_scale =
       ui::GetScaleForMaxSupportedResourceScaleFactor();
-  return round(GetBrandIconMinimumSize() * max_supported_scale);
+  return round(GetBrandIconMinimumSize(rp_mode) * max_supported_scale);
 }
 
 FedCmAccountSelectionView::FedCmAccountSelectionView(
@@ -70,18 +74,12 @@ void FedCmAccountSelectionView::ShowDialogWidget() {
   //   one to focus on the content area and one to focus on the clickable
   //   2. user typing will be interrupted because the widget that's not
   //   gated by user gesture would take the focus
-  // However, from accessibility's perspective, when the widget is
-  // displayed, there would be announcement with it and it would be better
-  // to focus on the widget such that the user could have more context and
-  // interact with it easily.
-  if (accessibility_state_utils::IsScreenReaderEnabled()) {
-    GetDialogWidget()->Show();
-    return;
-  }
-  GetDialogWidget()->ShowInactive();
+  // TODO(crbug.com/41482141): figure out how to address this issue without
+  // causing additional problems such as obscuring other browser UIs.
+  GetDialogWidget()->Show();
 }
 
-void FedCmAccountSelectionView::Show(
+bool FedCmAccountSelectionView::Show(
     const std::string& top_frame_etld_plus_one,
     const std::optional<std::string>& iframe_etld_plus_one,
     const std::vector<content::IdentityProviderData>&
@@ -94,11 +92,16 @@ void FedCmAccountSelectionView::Show(
   if (IsIdpSigninPopupOpen()) {
     popup_window_state_ =
         PopupWindowResult::kAccountsReceivedAndPopupNotClosedByIdp;
-    show_accounts_dialog_callback_ = base::BindOnce(
-        &FedCmAccountSelectionView::Show, weak_ptr_factory_.GetWeakPtr(),
-        top_frame_etld_plus_one, iframe_etld_plus_one,
-        identity_provider_data_list, sign_in_mode, rp_mode, new_account_idp);
-    return;
+    // We need to use ShowNoReturn() here because it is not allowed to bind
+    // WeakPtrs to methods with return values.
+    show_accounts_dialog_callback_ =
+        base::BindOnce(base::IgnoreResult(&FedCmAccountSelectionView::Show),
+                       weak_ptr_factory_.GetWeakPtr(), top_frame_etld_plus_one,
+                       iframe_etld_plus_one, identity_provider_data_list,
+                       sign_in_mode, rp_mode, new_account_idp);
+    // This is considered successful since we are intentionally delaying showing
+    // the UI.
+    return true;
   }
 
   accounts_displayed_callback_ =
@@ -163,7 +166,7 @@ void FedCmAccountSelectionView::Show(
 
     if (!account_selection_view_) {
       delegate_->OnDismiss(DismissReason::kOther);
-      return;
+      return false;
     }
   }
 
@@ -179,7 +182,7 @@ void FedCmAccountSelectionView::Show(
     // return.
     if (!ShowVerifyingSheet(idp_display_data_list_[0].accounts[0],
                             idp_display_data_list_[0])) {
-      return;
+      return false;
     }
   } else if (new_account_idp) {
     // When we just logged in to an account, show that account right away.
@@ -202,7 +205,7 @@ void FedCmAccountSelectionView::Show(
       // ShowVerifyingSheet will call delegate_->OnAccountSelected to proceed.
       if (!ShowVerifyingSheet(new_account_idp_display_data_->accounts[0],
                               *new_account_idp_display_data_)) {
-        return;
+        return false;
       }
     } else {
       state_ = State::REQUEST_PERMISSION;
@@ -255,7 +258,7 @@ void FedCmAccountSelectionView::Show(
 
   if (!GetDialogWidget()) {
     delegate_->OnDismiss(DismissReason::kOther);
-    return;
+    return false;
   }
 
   // Initialize InputEventActivationProtector to handle potentially unintended
@@ -305,13 +308,14 @@ void FedCmAccountSelectionView::Show(
     // placeholder assumption is true i.e. the user has closed the tab.
     modal_account_chooser_state_ = AccountChooserResult::kTabClosed;
   }
+  return true;
 }
 
 void FedCmAccountSelectionView::OnAccountsDisplayed() {
   delegate_->OnAccountsDisplayed();
 }
 
-void FedCmAccountSelectionView::ShowFailureDialog(
+bool FedCmAccountSelectionView::ShowFailureDialog(
     const std::string& top_frame_etld_plus_one,
     const std::optional<std::string>& iframe_etld_plus_one,
     const std::string& idp_etld_plus_one,
@@ -349,7 +353,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
 
     if (!account_selection_view_) {
       delegate_->OnDismiss(DismissReason::kOther);
-      return;
+      return false;
     }
   }
 
@@ -359,7 +363,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
 
   if (!GetDialogWidget()) {
     delegate_->OnDismiss(DismissReason::kOther);
-    return;
+    return false;
   }
 
   // Initialize InputEventActivationProtector to handle potentially unintended
@@ -379,9 +383,10 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   // Else:
   // The dialog is not guaranteed to be shown. The dialog will be hidden if the
   // associated web contents are hidden.
+  return true;
 }
 
-void FedCmAccountSelectionView::ShowErrorDialog(
+bool FedCmAccountSelectionView::ShowErrorDialog(
     const std::string& top_frame_etld_plus_one,
     const std::optional<std::string>& iframe_etld_plus_one,
     const std::string& idp_etld_plus_one,
@@ -420,7 +425,7 @@ void FedCmAccountSelectionView::ShowErrorDialog(
 
     if (!account_selection_view_) {
       delegate_->OnDismiss(DismissReason::kOther);
-      return;
+      return false;
     }
   }
 
@@ -430,7 +435,7 @@ void FedCmAccountSelectionView::ShowErrorDialog(
 
   if (!GetDialogWidget()) {
     delegate_->OnDismiss(DismissReason::kOther);
-    return;
+    return false;
   }
 
   // Initialize InputEventActivationProtector to handle potentially unintended
@@ -447,9 +452,10 @@ void FedCmAccountSelectionView::ShowErrorDialog(
   // Else:
   // The dialog is not guaranteed to be shown. The dialog will be hidden if the
   // associated web contents are hidden.
+  return true;
 }
 
-void FedCmAccountSelectionView::ShowLoadingDialog(
+bool FedCmAccountSelectionView::ShowLoadingDialog(
     const std::string& top_frame_etld_plus_one,
     const std::string& idp_etld_plus_one,
     blink::mojom::RpContext rp_context,
@@ -469,7 +475,7 @@ void FedCmAccountSelectionView::ShowLoadingDialog(
 
     if (!account_selection_view_) {
       delegate_->OnDismiss(DismissReason::kOther);
-      return;
+      return false;
     }
   }
 
@@ -477,7 +483,7 @@ void FedCmAccountSelectionView::ShowLoadingDialog(
 
   if (!GetDialogWidget()) {
     delegate_->OnDismiss(DismissReason::kOther);
-    return;
+    return false;
   }
 
   // Initialize InputEventActivationProtector to handle potentially unintended
@@ -493,6 +499,7 @@ void FedCmAccountSelectionView::ShowLoadingDialog(
   // Else:
   // The dialog is not guaranteed to be shown. The dialog will be hidden if the
   // associated web contents are hidden.
+  return true;
 }
 
 void FedCmAccountSelectionView::ShowUrl(LinkType link_type, const GURL& url) {
@@ -597,8 +604,9 @@ AccountSelectionViewBase* FedCmAccountSelectionView::CreateAccountSelectionView(
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
 
   // Reject the API if the browser is not found or its tab strip model does not
-  // exist, as we require those to show UI. It is unclear why there are callers
-  // attempting FedCM when some of these checks fail.
+  // exist, as we require those to show UI.
+  // TODO(crbug.com/342216390): It is unclear why there are callers attempting
+  // FedCM when some of these checks fail.
   if (!browser || !browser->tab_strip_model()) {
     return nullptr;
   }

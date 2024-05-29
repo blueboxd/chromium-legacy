@@ -170,4 +170,14 @@ void LogServerIbanUnmaskStatus(bool is_successful) {
   base::UmaHistogramBoolean("Autofill.Iban.UnmaskIbanResult", is_successful);
 }
 
+void LogIbanSaveOfferedCountry(std::string_view country_code) {
+  base::UmaHistogramEnumeration("Autofill.Iban.CountryOfSaveOfferedIban",
+                                Iban::GetIbanSupportedCountry(country_code));
+}
+
+void LogIbanSaveAcceptedCountry(std::string_view country_code) {
+  base::UmaHistogramEnumeration("Autofill.Iban.CountryOfSaveAcceptedIban",
+                                Iban::GetIbanSupportedCountry(country_code));
+}
+
 }  // namespace autofill::autofill_metrics

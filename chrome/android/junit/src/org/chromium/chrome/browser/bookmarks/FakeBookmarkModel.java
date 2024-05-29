@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.bookmarks;
 
 import org.mockito.Mockito;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
@@ -75,6 +74,21 @@ public class FakeBookmarkModel extends BookmarkModel {
     /** Adds a managed folder, parent cannot be the root. */
     public BookmarkId addManagedFolder(BookmarkId parent, String title) {
         return addFolder(parent, title, /* isManaged= */ true);
+    }
+
+    /** Adds a partner bookmark to the partner bookmark folder. */
+    public BookmarkId addPartnerBookmarkItem(String title, GURL url) {
+        BookmarkId id = new BookmarkId(mNextNodeId++, BookmarkType.PARTNER);
+        return addBookmarkItem(
+                id,
+                getPartnerFolderId(),
+                title,
+                url,
+                /* isFolder= */ false,
+                /* isEditable= */ false,
+                /* isManaged= */ false,
+                /* read= */ false,
+                /* isAccountBookmark= */ false);
     }
 
     public void setAreAccountBookmarkFoldersActive(boolean active) {
@@ -276,19 +290,6 @@ public class FakeBookmarkModel extends BookmarkModel {
         @Override
         public boolean areAccountBookmarkFoldersActive(long nativeBookmarkBridge) {
             return FakeBookmarkModel.this.mAreAccountBookmarkFoldersActive;
-        }
-
-        @Override
-        public void getImageUrlForBookmark(
-                long nativeBookmarkBridge,
-                GURL url,
-                boolean isAccountBookmark,
-                Callback<GURL> callback) {
-            if (areAccountBookmarkFoldersActive(nativeBookmarkBridge) && isAccountBookmark) {
-                callback.onResult(new GURL("https://fakeimage.com"));
-            } else {
-                callback.onResult(null);
-            }
         }
 
         @Override
@@ -594,12 +595,12 @@ public class FakeBookmarkModel extends BookmarkModel {
 
         @Override
         public void startGroupingUndos(long nativeBookmarkBridge) {
-            assert false : "Not implemented!";
+            // No-op
         }
 
         @Override
         public void endGroupingUndos(long nativeBookmarkBridge) {
-            assert false : "Not implemented!";
+            // No-op
         }
 
         @Override

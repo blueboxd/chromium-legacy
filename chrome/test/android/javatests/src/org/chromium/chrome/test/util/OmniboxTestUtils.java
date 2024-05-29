@@ -50,6 +50,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -440,7 +441,7 @@ public class OmniboxTestUtils {
                 () -> {
                     mUrlBar.setText(userText);
                     // Push this to the model as well.
-                    mUrlBar.setAutocompleteText(userText, "");
+                    mUrlBar.setAutocompleteText(userText, "", Optional.empty());
                 });
         checkText(Matchers.equalTo(userText), null);
     }
@@ -470,15 +471,16 @@ public class OmniboxTestUtils {
      * Specify the text to be offered as an inline autocompletion for the current user input.
      *
      * @param autocompleteText The suggested autocompletion for the text.
+     * @param additionalText The additional autocompletion for the text.
      */
-    public void setAutocompleteText(String autocompleteText) {
+    public void setAutocompleteText(String autocompleteText, Optional<String> additionalText) {
         checkFocus(true);
 
         AtomicReference<String> userText = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     userText.set(mUrlBar.getTextWithoutAutocomplete());
-                    mUrlBar.setAutocompleteText(userText.get(), autocompleteText);
+                    mUrlBar.setAutocompleteText(userText.get(), autocompleteText, additionalText);
                 });
         checkText(
                 Matchers.equalTo(userText.get()),
@@ -494,7 +496,7 @@ public class OmniboxTestUtils {
     public void checkText(
             @NonNull Matcher<String> textMatcher,
             @Nullable Matcher<String> autocompleteTextMatcher) {
-        checkText(textMatcher, autocompleteTextMatcher, null, null);
+        checkText(textMatcher, autocompleteTextMatcher, null);
     }
 
     /**
@@ -502,17 +504,34 @@ public class OmniboxTestUtils {
      *
      * @param textMatcher Matcher checking the content of the Omnibox.
      * @param autocompleteTextMatcher Optional Matcher for autocompletion.
+     * @param additionalTextMatcher Optional Matcher for additional text.
+     */
+    public void checkText(
+            @NonNull Matcher<String> textMatcher,
+            @Nullable Matcher<String> autocompleteTextMatcher,
+            @Nullable Matcher<String> additionalTextMatcher) {
+        checkText(textMatcher, autocompleteTextMatcher, additionalTextMatcher, null, null);
+    }
+
+    /**
+     * Verify the text content of the Omnibox.
+     *
+     * @param textMatcher Matcher checking the content of the Omnibox.
+     * @param autocompleteTextMatcher Optional Matcher for autocompletion.
+     * @param additionalTextMatcher Optional Matcher for additional text.
      * @param autocompleteSelectionStart Matcher for Autocomplete's start position.
      * @param autocompleteSelectionEnd Matcher for Autocomplete's end position.
      */
     public void checkText(
             @NonNull Matcher<String> textMatcher,
             @Nullable Matcher<String> autocompleteTextMatcher,
+            @Nullable Matcher<String> additionalTextMatcher,
             int autocompleteSelectionStart,
             int autocompleteSelectionEnd) {
         checkText(
                 textMatcher,
                 autocompleteTextMatcher,
+                additionalTextMatcher,
                 Matchers.is(autocompleteSelectionStart),
                 Matchers.is(autocompleteSelectionEnd));
     }
@@ -522,12 +541,14 @@ public class OmniboxTestUtils {
      *
      * @param textMatcher Matcher checking the content of the Omnibox.
      * @param autocompleteTextMatcher Optional Matcher for autocompletion.
+     * @param additionalTextMatcher Optional Matcher for additional text.
      * @param autocompleteSelectionStart Optional Matcher for Autocomplete's start position.
      * @param autocompleteSelectionEnd Optional Matcher for Autocomplete's end position.
      */
     public void checkText(
             @NonNull Matcher<String> textMatcher,
             @Nullable Matcher<String> autocompleteTextMatcher,
+            @Nullable Matcher<String> additionalTextMatcher,
             @Nullable Matcher<Integer> autocompleteSelectionStart,
             @Nullable Matcher<Integer> autocompleteSelectionEnd) {
         waitAnimationsComplete();
@@ -550,6 +571,13 @@ public class OmniboxTestUtils {
                                     "Text with autocomplete should match",
                                     mUrlBar.getTextWithAutocomplete(),
                                     autocompleteTextMatcher);
+                        }
+
+                        if (additionalTextMatcher != null) {
+                            Criteria.checkThat(
+                                    "Additional Text should match",
+                                    mUrlBar.getAdditionalText().orElse(""),
+                                    additionalTextMatcher);
                         }
 
                         if (autocompleteSelectionStart != null) {

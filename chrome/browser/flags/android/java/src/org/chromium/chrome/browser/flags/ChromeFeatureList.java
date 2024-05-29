@@ -173,6 +173,7 @@ public abstract class ChromeFeatureList {
             "AndroidTabDeclutterRescueKillswitch";
     public static final String ANDROID_TAB_GROUP_STABLE_IDS = "AndroidTabGroupStableIds";
     public static final String ANIMATED_IMAGE_DRAG_SHADOW = "AnimatedImageDragShadow";
+    public static final String APP_INFO_TAB_RESUMPTION_MODULE = "AppInfoTabResumptionModule";
     public static final String APP_SPECIFIC_HISTORY = "AppSpecificHistory";
     public static final String ARCHIVE_TAB_SERVICE = "ArchiveTabService";
     public static final String ASYNC_NOTIFICATION_MANAGER = "AsyncNotificationManager";
@@ -253,8 +254,6 @@ public abstract class ChromeFeatureList {
     public static final String CCT_TAB_MODAL_DIALOG = "CCTTabModalDialog";
     public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
     public static final String CHROME_SHARE_PAGE_INFO = "ChromeSharePageInfo";
-    public static final String CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION =
-            "ClearOmniboxFocusAfterNavigation";
     public static final String COLLECT_ANDROID_FRAME_TIMELINE_METRICS =
             "CollectAndroidFrameTimelineMetrics";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
@@ -370,6 +369,7 @@ public abstract class ChromeFeatureList {
     public static final String PERMISSION_DEDICATED_CPSS_SETTING_ANDROID =
             "PermissionDedicatedCpssSettingAndroid";
     public static final String PLUS_ADDRESSES_ENABLED = "PlusAddressesEnabled";
+    public static final String PLUS_ADDRESS_UI_REDESIGN = "PlusAddressUIRedesign";
     public static final String PREFETCH_BROWSER_INITIATED_TRIGGERS =
             "PrefetchBrowserInitiatedTriggers";
     public static final String PRERENDER2 = "Prerender2";
@@ -405,6 +405,8 @@ public abstract class ChromeFeatureList {
     public static final String READALOUD_IPH_MENU_BUTTON_HIGHLIGHT_CCT =
             "ReadAloudIPHMenuButtonHighlightCCT";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
+    public static final String READING_LIST_ENABLE_SYNC_TRANSPORT_MODE_UPON_SIGNIN =
+            "ReadingListEnableSyncTransportModeUponSignIn";
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String REDIRECT_EXPLICIT_CTA_INTENTS_TO_EXISTING_ACTIVITY =
             "RedirectExplicitCTAIntentsToExistingActivity";
@@ -531,6 +533,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sAndroidHub = newCachedFlag(ANDROID_HUB, true);
     public static final CachedFlag sAndroidTabGroupStableIds =
             newCachedFlag(ANDROID_TAB_GROUP_STABLE_IDS, true);
+    public static final CachedFlag sAppInfoTabResumptionModule =
+            newCachedFlag(APP_INFO_TAB_RESUMPTION_MODULE, false);
     public static final CachedFlag sAppSpecificHistory = newCachedFlag(APP_SPECIFIC_HISTORY, false);
     public static final CachedFlag sArchiveTabService = newCachedFlag(ARCHIVE_TAB_SERVICE, false);
     public static final CachedFlag sAsyncNotificationManager =
@@ -552,7 +556,7 @@ public abstract class ChromeFeatureList {
             newCachedFlag(CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false);
     public static final CachedFlag sCctIntentFeatureOverrides =
             newCachedFlag(CCT_INTENT_FEATURE_OVERRIDES, true);
-    public static final CachedFlag sCctMinimized = newCachedFlag(CCT_MINIMIZED, false);
+    public static final CachedFlag sCctMinimized = newCachedFlag(CCT_MINIMIZED, true);
     public static final CachedFlag sCctPageInsightsHub = newCachedFlag(CCT_PAGE_INSIGHTS_HUB, true);
     public static final CachedFlag sCctNavigationalPrefetch =
             newCachedFlag(CCT_NAVIGATIONAL_PREFETCH, false);
@@ -690,6 +694,7 @@ public abstract class ChromeFeatureList {
                     sAndroidElegantTextHeight,
                     sAndroidHub,
                     sAndroidTabGroupStableIds,
+                    sAppInfoTabResumptionModule,
                     sAppSpecificHistory,
                     sArchiveTabService,
                     sAsyncNotificationManager,

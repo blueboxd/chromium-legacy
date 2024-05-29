@@ -26,7 +26,6 @@ class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
 class CollaborationGroupSpecifics;
-class CompareSpecifics;
 class ContactInfoSpecifics;
 class CookieSpecifics;
 class CrossUserSharingPublicKey;
@@ -53,6 +52,7 @@ class PasswordSpecifics;
 class PasswordSpecificsData;
 class PaymentInstrument;
 class PaymentsCustomerData;
+class PlusAddressSettingSpecifics;
 class PlusAddressSpecifics;
 class PowerBookmarkSpecifics;
 class PreferenceSpecifics;
@@ -60,6 +60,7 @@ class PrinterPPDReference;
 class PrinterSpecifics;
 class PrintersAuthorizationServerSpecifics;
 class PriorityPreferenceSpecifics;
+class ProductComparisonSpecifics;
 class ReadingListSpecifics;
 class SavedTabGroupSpecifics;
 class SearchEngineSpecifics;
@@ -140,9 +141,6 @@ base::Value ClientConfigParamsToValue(const sync_pb::ClientConfigParams& proto);
 base::Value CollaborationGroupSpecificsToValue(
     const sync_pb::CollaborationGroupSpecifics& proto);
 
-base::Value CompareSpecificsToValue(
-    const sync_pb::CompareSpecifics& compare_specifics);
-
 base::Value ContactInfoSpecificsToValue(
     const sync_pb::ContactInfoSpecifics& proto);
 
@@ -213,6 +211,9 @@ base::Value PaymentInstrumentToValue(
 base::Value PaymentsCustomerDataToValue(
     const sync_pb::PaymentsCustomerData& payments_customer_data);
 
+base::Value PlusAddressSettingSpecificsToValue(
+    const sync_pb::PlusAddressSettingSpecifics& plus_address_setting_specifics);
+
 base::Value PlusAddressSpecificsToValue(
     const sync_pb::PlusAddressSpecifics& plus_address_specifics);
 
@@ -234,6 +235,9 @@ base::Value PrintersAuthorizationServerSpecificsToValue(
 
 base::Value PriorityPreferenceSpecificsToValue(
     const sync_pb::PriorityPreferenceSpecifics& proto);
+
+base::Value ProductComparisonSpecificsToValue(
+    const sync_pb::ProductComparisonSpecifics& product_comparison_specifics);
 
 base::Value CrossUserSharingPublicKeyToValue(
     const sync_pb::CrossUserSharingPublicKey& proto);

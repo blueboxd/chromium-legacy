@@ -6,6 +6,9 @@
 
 #include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/commerce/core/mock_cluster_manager.h"
+#include "components/commerce/core/product_specifications/mock_product_specifications_service.h"
+#include "components/sync/test/mock_model_type_change_processor.h"
 
 namespace commerce {
 
@@ -30,7 +33,16 @@ MockShoppingService::MockShoppingService()
                                 nullptr,
                                 nullptr,
                                 nullptr,
-                                nullptr) {}
+                                nullptr) {
+  product_specifications_service_ =
+      std::make_unique<MockProductSpecificationsService>();
+  ON_CALL(*this, GetProductSpecificationsService)
+      .WillByDefault(testing::Return(product_specifications_service_.get()));
+  cluster_manager_ = std::make_unique<MockClusterManager>(
+      product_specifications_service_.get());
+  ON_CALL(*this, GetClusterManager)
+      .WillByDefault(testing::Return(cluster_manager_.get()));
+}
 
 MockShoppingService::~MockShoppingService() = default;
 
@@ -285,23 +297,5 @@ void MockShoppingService::SetResponseForGetProductSpecificationsForUrls(
                                           std::optional<ProductSpecifications>(
                                               std::move(specs))));
           });
-}
-
-void MockShoppingService::SetResponseForGetEntryPointInfoForSelection(
-    std::optional<EntryPointInfo> entry_point_info) {
-  ON_CALL(*this, GetEntryPointInfoForSelection)
-      .WillByDefault(testing::Return(entry_point_info));
-}
-
-void MockShoppingService::SetResponseForGetEntryPointInfoForNavigation(
-    std::optional<EntryPointInfo> entry_point_info) {
-  ON_CALL(*this, GetEntryPointInfoForNavigation)
-      .WillByDefault(testing::Return(entry_point_info));
-}
-
-void MockShoppingService::SetResponseForGetProductGroupForCandidateProduct(
-    std::optional<ProductGroup> product_group) {
-  ON_CALL(*this, GetProductGroupForCandidateProduct)
-      .WillByDefault(testing::Return(product_group));
 }
 }  // namespace commerce

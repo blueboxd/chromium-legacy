@@ -28,8 +28,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "net/base/isolation_info.h"
 #include "net/base/url_util.h"
 #include "net/cookies/site_for_cookies.h"
@@ -151,77 +149,55 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
   // If this is the first request before redirects, a container info and
   // container host has not yet been created.
   if (!handle_->has_container_info()) {
-    // Create `container_info`.
-    auto container_info =
-        blink::mojom::ServiceWorkerContainerInfoForClient::New();
-    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-        host_receiver =
-            container_info->host_remote.InitWithNewEndpointAndPassReceiver();
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        client_remote;
-
-    container_info->client_receiver =
-        client_remote.InitWithNewEndpointAndPassReceiver();
-    handle_->OnCreatedContainerHost(std::move(container_info));
-
     // Create the ServiceWorkerContainerHost. Its lifetime is bound to
     // `container_info`.
     DCHECK(!handle_->service_worker_client());
-    base::WeakPtr<ServiceWorkerClient> service_worker_client;
-    bool inherit_controller_only = false;
-
     if (blink::IsRequestDestinationFrame(request_destination_)) {
-      service_worker_client = context_core->CreateServiceWorkerClientForWindow(
-          std::move(host_receiver), are_ancestors_secure_,
-          std::move(client_remote), frame_tree_node_id_);
+      handle_->set_service_worker_client(
+          context_core->CreateServiceWorkerClientForWindow(
+              are_ancestors_secure_, frame_tree_node_id_));
     } else {
       DCHECK(request_destination_ ==
                  network::mojom::RequestDestination::kWorker ||
              request_destination_ ==
                  network::mojom::RequestDestination::kSharedWorker);
 
-      ServiceWorkerClientInfo client_info =
-          absl::ConvertVariantTo<ServiceWorkerClientInfo>(*worker_token_);
-
-      service_worker_client = context_core->CreateServiceWorkerClientForWorker(
-          std::move(host_receiver), process_id_, std::move(client_remote),
-          client_info);
-
-      // TODO(crbug.com/324939068): remove this UMA after the launch.
-      if (request_destination_ ==
-          network::mojom::RequestDestination::kSharedWorker) {
-        base::UmaHistogramBoolean(
-            "ServiceWorker.SharedWorkerScript.IsBlob",
-            tentative_resource_request.url.SchemeIsBlob());
-      }
-
-      if (base::FeatureList::IsEnabled(kSharedWorkerBlobURLFix) ||
-          request_destination_ == network::mojom::RequestDestination::kWorker) {
-        // For the blob worker case, inherit the controller from the worker's
-        // parent. See
-        // https://w3c.github.io/ServiceWorker/#control-and-use-worker-client
-        base::WeakPtr<ServiceWorkerClient> parent_service_worker_client =
-            handle_->parent_service_worker_client();
-        if (parent_service_worker_client &&
-            tentative_resource_request.url.SchemeIsBlob()) {
-          service_worker_client->InheritControllerFrom(
-              *parent_service_worker_client,
-              net::SimplifyUrlForRequest(tentative_resource_request.url));
-          inherit_controller_only = true;
-        }
-      }
+      handle_->set_service_worker_client(
+          context_core->CreateServiceWorkerClientForWorker(
+              process_id_,
+              absl::ConvertVariantTo<ServiceWorkerClientInfo>(*worker_token_)));
     }
-    DCHECK(service_worker_client);
-    handle_->set_service_worker_client(service_worker_client);
+    CHECK(handle_->service_worker_client());
 
-    // For the blob worker case, we only inherit the controller and do not let
-    // it intercept the main resource request. Blob URLs are not eligible to
-    // go through service worker interception. So just call the loader
-    // callback now.
-    if (inherit_controller_only) {
-      CompleteWithoutLoader(std::move(loader_callback),
-                            handle_->service_worker_client());
-      return;
+    // TODO(crbug.com/324939068): remove this UMA after the launch.
+    if (request_destination_ ==
+        network::mojom::RequestDestination::kSharedWorker) {
+      base::UmaHistogramBoolean("ServiceWorker.SharedWorkerScript.IsBlob",
+                                tentative_resource_request.url.SchemeIsBlob());
+    }
+
+    if ((request_destination_ ==
+             network::mojom::RequestDestination::kSharedWorker &&
+         base::FeatureList::IsEnabled(kSharedWorkerBlobURLFix)) ||
+        request_destination_ == network::mojom::RequestDestination::kWorker) {
+      // For the blob worker case, inherit the controller from the worker's
+      // parent. See
+      // https://w3c.github.io/ServiceWorker/#control-and-use-worker-client
+      base::WeakPtr<ServiceWorkerClient> parent_service_worker_client =
+          handle_->parent_service_worker_client();
+      if (parent_service_worker_client &&
+          tentative_resource_request.url.SchemeIsBlob()) {
+        handle_->service_worker_client()->InheritControllerFrom(
+            *parent_service_worker_client,
+            net::SimplifyUrlForRequest(tentative_resource_request.url));
+        // For the blob worker case, we only inherit the controller and do not
+        // let it intercept the main resource request. Blob URLs are not
+        // eligible to go through service worker interception. So just call the
+        // loader callback now.
+        CompleteWithoutLoader(std::move(loader_callback),
+                              handle_->service_worker_client());
+        return;
+      }
     }
   }
 
@@ -287,13 +263,12 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
 void ServiceWorkerMainResourceLoaderInterceptor::CompleteWithoutLoader(
     LoaderCallback loader_callback,
     base::WeakPtr<ServiceWorkerClient> service_worker_client) {
-  auto subresource_loader_params =
-      ServiceWorkerClient::MaybeCreateSubresourceLoaderParams(
-          service_worker_client);
-  if (subresource_loader_params.controller_service_worker_info) {
+  if (service_worker_client && service_worker_client->controller()) {
     std::move(loader_callback)
         .Run(NavigationLoaderInterceptor::Result(
-            /*factory=*/nullptr, std::move(subresource_loader_params)));
+            /*factory=*/nullptr,
+            ServiceWorkerClient::MaybeCreateSubresourceLoaderParams(
+                service_worker_client)));
     return;
   }
 

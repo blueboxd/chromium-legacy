@@ -52,7 +52,7 @@ constexpr chromeos::AppType kAppTypeDenylist[] = {
 const char* kWorkspaceDomainsWithPathDenylist[][2] = {
     {"calendar.google", ""}, {"docs.google", ""},      {"drive.google", ""},
     {"keep.google", ""},     {"mail.google", "/chat"}, {"mail.google", "/mail"},
-    {"meet.google", ""},
+    {"meet.google", ""},     {"script.google", ""},    {"sites.google", ""},
 };
 
 const char* kWorkspaceAppIdDenylist[] = {
@@ -156,6 +156,10 @@ bool IsInputMethodEngineAllowed(const std::vector<std::string>& allowlist,
 }
 
 bool IsAppTypeAllowed(chromeos::AppType app_type) {
+  if (base::FeatureList::IsEnabled(features::kOrcaArc) &&
+      app_type == chromeos::AppType::ARC_APP) {
+    return true;
+  }
   return !base::Contains(kAppTypeDenylist, app_type);
 }
 
@@ -289,12 +293,17 @@ bool EditorSwitch::IsAllowedForUse() const {
 }
 
 EditorOpportunityMode EditorSwitch::GetEditorOpportunityMode() const {
-  if (IsAllowedForUse() && IsInputTypeAllowed(context_->input_type())) {
+  if (!IsAllowedForUse()) {
+    return EditorOpportunityMode::kNotAllowedForUse;
+  }
+
+  if (IsInputTypeAllowed(context_->input_type())) {
     return context_->selected_text_length() > 0
                ? EditorOpportunityMode::kRewrite
                : EditorOpportunityMode::kWrite;
   }
-  return EditorOpportunityMode::kNone;
+
+  return EditorOpportunityMode::kInvalidInput;
 }
 
 std::vector<EditorBlockedReason> EditorSwitch::GetBlockedReasons() const {

@@ -170,7 +170,10 @@ if (!is_android && !is_mac) {
           "//components/variations/cros_evaluate_seed:evaluate_seed",
           "//sandbox/linux:chrome_sandbox",
         ]
-        deps += [ "//components/exo/wayland:ui_controls_protocol_stub" ]
+        deps += [
+          "//components/exo/wayland:test_controller_stub",
+          "//components/exo/wayland:ui_controls_protocol_stub",
+        ]
       }
 
       if (also_build_lacros_chrome_for_architecture != "") {
@@ -1820,7 +1823,7 @@ if (is_linux || is_chromeos) {
           symbol_file = "$root_out_dir/angle_libvulkan.breakpad.$current_cpu"
         }
 
-        deps = [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+        deps = [ "//third_party/vulkan-loader/src:libvulkan" ]
       }
     }
     if (build_with_internal_optimization_guide) {
@@ -1968,7 +1971,7 @@ if (is_chrome_for_testing && is_linux) {
 
   strip_binary("strip_libvulkan_shlib") {
     binary_input = "$root_out_dir/libvulkan.so.1"
-    deps = [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+    deps = [ "//third_party/vulkan-loader/src:libvulkan" ]
   }
 
   strip_binary("strip_libvk_swiftshader_shlib") {

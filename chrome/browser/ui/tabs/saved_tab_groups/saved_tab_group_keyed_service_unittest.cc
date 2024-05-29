@@ -275,7 +275,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest, AlreadyOpenedGroupIsFocused) {
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Activate the second tab.
   browser_1->tab_strip_model()->ActivateTabAt(1);
@@ -324,7 +324,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Activate the second tab.
   browser_1->tab_strip_model()->ActivateTabAt(1);
@@ -369,7 +369,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Expect calling StoreLocalToSavedId before the model is loaded does not link
   // non-existent saved groups.
@@ -430,7 +430,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Retrieve the 2 saved groups from the model.
   SavedTabGroupModel* model = service()->model();
@@ -480,7 +480,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Retrieve the saved group from the SavedTabGroupModel.
   SavedTabGroupModel* model = service()->model();
@@ -546,7 +546,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Retrieve the saved group from the SavedTabGroupModel.
   SavedTabGroupModel* model = service()->model();
@@ -612,7 +612,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // Notify the KeyedService that the SavedTabGroupModel has loaded all local
   // data triggered by the completion of SavedTabGroupModel::LoadStoredEntries.
-  service()->model()->LoadStoredEntries({});
+  service()->model()->LoadStoredEntries(/*groups=*/{}, /*tabs=*/{});
 
   // Retrieve the saved group from the SavedTabGroupModel.
   SavedTabGroupModel* model = service()->model();
@@ -689,9 +689,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   SavedTabGroupTab navigated_tab = *saved_group->GetTab(saved_tab_id);
   navigated_tab.SetURL(url);
   navigated_tab.SetTitle(u"Example Page");
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> specific =
-      navigated_tab.ToSpecifics();
-  service()->model()->MergeTab(*specific);
+  service()->model()->MergeRemoteTab(navigated_tab);
 
   // The local tab should have navigated too.
   EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url);
@@ -704,8 +702,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   navigated_tab = *saved_group->GetTab(saved_tab_id);
   navigated_tab.SetURL(url_2);
   navigated_tab.SetTitle(u"Example Page - Section 1");
-  specific = navigated_tab.ToSpecifics();
-  service()->model()->MergeTab(*specific);
+  service()->model()->MergeRemoteTab(navigated_tab);
 
   // The local tab should not have changed.
   EXPECT_NE(tabstrip->GetWebContentsAt(0)->GetURL(), url_2);
@@ -994,9 +991,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   SavedTabGroupTab navigated_tab = *saved_group->GetTab(saved_tab_id);
   navigated_tab.SetURL(url);
   navigated_tab.SetTitle(u"Example Page");
-  std::unique_ptr<sync_pb::SavedTabGroupSpecifics> specific =
-      navigated_tab.ToSpecifics();
-  service()->model()->MergeTab(*specific);
+  service()->model()->MergeRemoteTab(navigated_tab);
 
   // The local tab should not navigate to the new URL.
   EXPECT_NE(tabstrip->GetWebContentsAt(0)->GetURL(), url);

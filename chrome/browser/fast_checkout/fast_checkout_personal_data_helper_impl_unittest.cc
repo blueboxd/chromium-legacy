@@ -40,9 +40,12 @@ std::unique_ptr<KeyedService> BuildTestPersonalDataManager(
     content::BrowserContext* context) {
   auto personal_data_manager =
       std::make_unique<autofill::TestPersonalDataManager>();
-  personal_data_manager->SetAutofillProfileEnabled(true);
-  personal_data_manager->SetAutofillPaymentMethodsEnabled(true);
-  personal_data_manager->SetAutofillWalletImportEnabled(true);
+  personal_data_manager->test_address_data_manager().SetAutofillProfileEnabled(
+      true);
+  personal_data_manager->test_payments_data_manager()
+      .SetAutofillPaymentMethodsEnabled(true);
+  personal_data_manager->test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   return personal_data_manager;
 }
 
@@ -170,7 +173,7 @@ TEST_F(FastCheckoutPersonalDataHelperTest,
       ->address_data_manager()
       .AddProfile(kIncompleteProfile);
 
-  std::vector<autofill::AutofillProfile*> profiles =
+  std::vector<const autofill::AutofillProfile*> profiles =
       personal_data_helper()->GetProfilesToSuggest();
 
   EXPECT_EQ(profiles.size(), 2UL);

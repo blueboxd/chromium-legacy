@@ -29,7 +29,9 @@ class MockAutofillComposeDelegate : public AutofillComposeDelegate {
       (override));
   MOCK_METHOD(std::optional<autofill::Suggestion>,
               GetSuggestion,
-              (const FormFieldData&, AutofillSuggestionTriggerSource),
+              (const autofill::FormData&,
+               const FormFieldData&,
+               AutofillSuggestionTriggerSource),
               (override));
   MOCK_METHOD(void,
               NeverShowComposeForOrigin,
@@ -37,6 +39,7 @@ class MockAutofillComposeDelegate : public AutofillComposeDelegate {
               (override));
   MOCK_METHOD(void, DisableCompose, (), (override));
   MOCK_METHOD(void, GoToSettings, (), (override));
+  MOCK_METHOD(bool, ShouldAnchorNudgeOnCaret, (), (override));
 };
 
 }  // namespace autofill

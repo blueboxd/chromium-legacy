@@ -44,6 +44,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/credit_card_number_validation.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/prefs/pref_service.h"
 #include "url/android/gurl_android.h"
@@ -663,10 +664,11 @@ BankAccount PersonalDataManagerAndroid::CreateNativeBankAccountFromJava(
 
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
-    const std::vector<AutofillProfile*>& profiles) {
+    const std::vector<const AutofillProfile*>& profiles) {
   std::vector<std::u16string> guids;
-  for (AutofillProfile* profile : profiles)
+  for (const AutofillProfile* profile : profiles) {
     guids.push_back(base::UTF8ToUTF16(profile->guid()));
+  }
 
   return base::android::ToJavaArrayOfStrings(env, guids);
 }
@@ -687,7 +689,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     bool include_name_in_label,
     bool include_organization_in_label,
     bool include_country_in_label,
-    std::vector<AutofillProfile*> profiles) {
+    std::vector<const AutofillProfile*> profiles) {
   FieldTypeSet suggested_fields;
   size_t minimal_fields_shown = 2;
   if (address_only) {
@@ -711,8 +713,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
   FieldType excluded_field = include_name_in_label ? UNKNOWN_TYPE : NAME_FULL;
 
   std::vector<std::u16string> labels;
-  // TODO(crbug.com/40283168): Replace by `profiles` when `GetProfilesToSuggest`
-  // starts returning a list of const AutofillProfile*.
+  // TODO(crbug.com/40283168): Replace by `profiles`.
   AutofillProfile::CreateInferredLabels(
       std::vector<raw_ptr<const AutofillProfile, VectorExperimental>>(
           profiles.begin(), profiles.end()),
@@ -880,9 +881,8 @@ JNI_PersonalDataManager_GetBasicCardIssuerNetwork(
     return ConvertUTF8ToJavaString(env, "");
   }
   return ConvertUTF8ToJavaString(
-      env,
-      data_util::GetPaymentRequestData(CreditCard::GetCardNetwork(card_number))
-          .basic_card_issuer_network);
+      env, data_util::GetPaymentRequestData(GetCardNetwork(card_number))
+               .basic_card_issuer_network);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using

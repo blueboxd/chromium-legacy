@@ -142,6 +142,9 @@ public final class ProductionSupportedFlagList {
         Flag.commandLine(
                 AwSwitches.WEBVIEW_FENCED_FRAMES,
                 "Enables fenced frames. Also enables PrivacySandboxAdsAPIsOverride."),
+        Flag.commandLine(
+                AwSwitches.DEBUG_BLINDAUTH,
+                "Override and enable features useful for blindauth testing/debugging."),
         Flag.baseFeature(
                 "DefaultPassthroughCommandDecoder", "Use the passthrough GLES2 command decoder."),
         Flag.baseFeature(
@@ -240,15 +243,15 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_ENABLE_EXPIRATION_DATE_IMPROVEMENTS,
                 "Enables various improvements to handling expiration dates."),
         Flag.baseFeature(
-                AutofillFeatures.AUTOFILL_ENABLE_SELECT_LIST,
-                "Enables autofill of <selectlist> elements."),
-        Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_PHONE_NUMBER_TRUNK_TYPES,
                 "Rationalizes city-and-number and city-code fields to the "
                         + "correct trunk-prefix types."),
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_FIX_CACHING_ON_JAVA_SCRIPT_CHANGES,
                 "When enabled, Autofill will reset the autofill state of fields modified by JS"),
+        Flag.baseFeature(
+                AutofillFeatures.AUTOFILL_INFER_COUNTRY_CALLING_CODE,
+                "Infers the country calling code from the profile's country, if available."),
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_DETECT_REMOVED_FORM_CONTROLS,
                 "Enables Autofill to detect if form controls are removed from the DOM"),
@@ -265,6 +268,10 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_PREFER_LABELS_IN_SOME_COUNTRIES,
                 "When enabled, Autofill will first look at field labels and then at field "
                         + "attributes when classifying address fields in Mexico."),
+        Flag.baseFeature(
+                AutofillFeatures.AUTOFILL_PREFER_PARSED_PHONE_NUMBER,
+                "When enabled, Autofill will always prefer the phone number parsed using "
+                        + "libphonenumber over the format provided by the field during imports."),
         Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_REPLACE_CACHED_WEB_ELEMENTS_BY_RENDERER_IDS,
                 "When enabled, AutofillAgent will store its cached form and fields as renderer ids "
@@ -347,6 +354,9 @@ public final class ProductionSupportedFlagList {
                 AutofillFeatures.AUTOFILL_CARET_EXTRACTION,
                 "When enabled, autofill extracts the caret position on certain events."),
         Flag.baseFeature(
+                AutofillFeatures.AUTOFILL_CONSIDER_PHONE_NUMBER_SEPARATORS_VALID_LABELS,
+                "Makes label inference accept strings made up of  '(', ')', and '-' as labels."),
+        Flag.baseFeature(
                 AutofillFeatures.AUTOFILL_CONTENT_EDITABLE_CHANGE_EVENTS,
                 "When enabled, autofill responds to content editable change events."),
         Flag.baseFeature(
@@ -407,9 +417,6 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING,
                 "Initiate metric uploading on a background thread."),
-        Flag.baseFeature(
-                BlinkFeatures.CSSMPC_IMPROVEMENTS,
-                "Enables CSS matched property cache improvement."),
         Flag.baseFeature(
                 BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                 "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
@@ -1002,6 +1009,10 @@ public final class ProductionSupportedFlagList {
                 BlinkFeatures.CONCURRENT_VIEW_TRANSITIONS_SPA,
                 "Allows concurrent transitions in local frames rendered in the same process"),
         Flag.baseFeature("WebViewVizUseThreadPool"),
+        Flag.baseFeature("InProcessGpuUseIOThread"),
+        Flag.baseFeature("EnableCustomInputStreamBufferSize"),
+        Flag.baseFeature("NetworkServiceDedicatedThread"),
+        Flag.baseFeature("BrowserThreadPoolAdjustment"),
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

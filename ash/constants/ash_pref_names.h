@@ -35,6 +35,9 @@ inline constexpr char kContextualGoogleIntegrationsConfiguration[] =
 inline constexpr char kGoogleCalendarIntegrationName[] = "GoogleCalendar";
 inline constexpr char kGoogleClassroomIntegrationName[] = "GoogleClassroom";
 inline constexpr char kGoogleTasksIntegrationName[] = "GoogleTasks";
+inline constexpr char kChromeSyncIntegrationName[] = "ChromeSync";
+inline constexpr char kGoogleDriveIntegrationName[] = "GoogleDrive";
+inline constexpr char kWeatherIntegrationName[] = "Weather";
 
 // A boolean pref of whether emoji suggestion is enabled.
 inline constexpr char kEmojiSuggestionEnabled[] =
@@ -54,6 +57,15 @@ inline constexpr char kManagedOrcaEnabled[] =
 
 // A boolean pref of whether mahi is enabled.
 inline constexpr char kMahiEnabled[] = "settings.mahi_enabled";
+
+// An integer pref which indicates the HMR (Quick answers and Mahi) consent
+// status from the user.
+inline constexpr char kHMRConsentStatus[] = "settings.hmr.consent_status";
+
+// An integer pref which indicates the number of times the HMR (Quick answers
+// and Mahi) consent window has been dismissed by the user.
+inline constexpr char kHMRConsentWindowDismissCount[] =
+    "settings.hmr.consent_window_dismiss_count";
 
 // A boolean pref used by an admin policy to enable/disable particular
 // features on the physical keyboard. See the policy at
@@ -78,6 +90,15 @@ inline constexpr char kOrcaConsentWindowDismissCount[] =
 // A boolean pref of whether GIF support is enabled in emoji picker.
 inline constexpr char kEmojiPickerGifSupportEnabled[] =
     "emoji_picker.gif_support_enabled";
+
+// A dictionary storing the history of emoji picker inputs. The history is keyed
+// by the emoji picker categories, i.e. "emoji", "symbol" and "emoticon". The
+// history value for each category is a list of objects, each should at least
+// contain a "text" field indicating the inputted emoji/symbol/emoticon.
+inline constexpr char kEmojiPickerHistory[] = "emoji_picker.history";
+
+// A dictionary storing user preferences for emoji picker.
+inline constexpr char kEmojiPickerPreferences[] = "emoji_picker.preferences";
 
 // Pref which stores a list of Embedded Universal Integrated Circuit Card
 // (EUICC) D-Bus paths which have had their installed profiles refreshed from
@@ -154,6 +175,18 @@ inline constexpr char kAudioInputDevicesUserPriority[] =
 // E.g {(0x9a, 1), (0xab, 2), (0xbc, 3), (0xcd, 4)}
 inline constexpr char kAudioOutputDevicesUserPriority[] =
     "settings.audio.output_user_priority";
+
+// A dictionary pref that maps a set of input devices to the user-preferred
+// device among this set. E.g {(0xab,0xbc -> 0xbc), (0xab,0xbc,0xcd -> 0xbc),
+// (0xab,0xbc,0xcd,0xde -> 0xbc)}.
+inline constexpr char kAudioInputDevicePreferenceSet[] =
+    "settings.audio.input_preference_set";
+
+// A dictionary pref that maps a set of output devices to the user-preferred
+// device among this set. E.g {(0xab,0xbc -> 0xbc), (0xab,0xbc,0xcd -> 0xbc),
+// (0xab,0xbc,0xcd,0xde -> 0xbc)}.
+inline constexpr char kAudioOutputDevicePreferenceSet[] =
+    "settings.audio.output_preference_set";
 
 // A dictionary pref that maps device id string to the timestamp of the last
 // time the audio device was connected, in
@@ -488,10 +521,6 @@ inline constexpr char kAccessibilityMagnifierFollowsSts[] =
 // magnifier. This maps to AccessibilityController::MagnifierMouseFollowingMode.
 inline constexpr char kAccessibilityScreenMagnifierMouseFollowingMode[] =
     "settings.a11y.screen_magnifier_mouse_following_mode";
-// A boolean pref which determines whether screen magnifier should center
-// the text input focus.
-inline constexpr char kAccessibilityScreenMagnifierCenterFocus[] =
-    "settings.a11y.screen_magnifier_center_focus";
 // A double pref which determines a zooming scale of the screen magnifier.
 inline constexpr char kAccessibilityScreenMagnifierScale[] =
     "settings.a11y.screen_magnifier_scale";
@@ -1267,8 +1296,15 @@ inline constexpr char kUserWallpaperInfo[] = "user_wallpaper_info";
 inline constexpr char kRecentDailyGooglePhotosWallpapers[] =
     "recent_daily_google_photos_wallpapers";
 
-// A dictionary pref that maps usernames to wallpaper info.
+// A dictionary pref that maps usernames to versioned wallpaper info.
 // This is for wallpapers that are syncable across devices.
+inline constexpr char kSyncableVersionedWallpaperInfo[] =
+    "syncable_versioned_wallpaper_info";
+
+// A dictionary pref that maps usernames to wallpaper info.
+// This is for wallpapers that are syncable across devices. It is being replaced
+// by `kSyncableVersionedWallpaperInfo`. Data from this pref will be migrated to
+// the new pref.
 inline constexpr char kSyncableWallpaperInfo[] = "syncable_wallpaper_info";
 
 // A dictionary pref that maps wallpaper file paths to their prominent colors.
@@ -1447,6 +1483,10 @@ inline constexpr char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 
 // The hash for the pin quick unlock mechanism.
 inline constexpr char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
+
+// Counter of failed pin quick unlock attempts.
+inline constexpr char kQuickUnlockPinFailedAttempts[] =
+    "quick_unlock.pin.failed_attempts";
 
 // Enum that specifies how often a user has to enter their password to continue
 // using quick unlock. These values are the same as the ones in
@@ -1765,6 +1805,16 @@ inline constexpr char kPersonalizationKeyboardBacklightZoneColors[] =
 inline constexpr char kPersonalizationKeyboardBacklightColorDisplayType[] =
     "ash.personalization.keyboard_backlight_color_display_type";
 
+// An integer pref used by an admin policy to enable/disable GenAI wallpaper
+// feature. See the policy at GenAIWallpaperEnabled.yaml.
+inline constexpr char kGenAIWallpaperSettings[] =
+    "ash.personalization_app.gen_ai_wallpaper_enterprise_policy_settings";
+
+// An integer pref used by an admin policy to enable/disable GenAI VC Background
+// feature. See the policy at GenAIVcBackgroundSettings.yaml.
+inline constexpr char kGenAIVcBackgroundSettings[] =
+    "ash.vc_background_ui.gen_ai_vc_background_enterprise_policy_settings";
+
 // Integer pref corresponding to the autozoom state, the value should be one of
 // cros::mojom::CameraAutoFramingState.
 inline constexpr char kAutozoomState[] = "ash.camera.autozoom_state";
@@ -2038,6 +2088,9 @@ inline constexpr char kFocusModeSessionDuration[] =
 // off of the last session, if any.
 inline constexpr char kFocusModeDoNotDisturb[] =
     "ash.focus_mode.do_not_disturb";
+// A dictionary pref containing the data pertaining to the task selected by the
+// user for a focus session.
+inline constexpr char kFocusModeSelectedTask[] = "ash.focus_mode.selected_task";
 
 // An integer pref that holds enum value of current demo mode configuration.
 // Values are defined by DemoSession::DemoModeConfig enum.
@@ -2201,6 +2254,9 @@ inline constexpr char kBirchUseFileSuggest[] = "ash.birch.use_file_suggest";
 
 // A boolean pref indicating whether Birch should use recent tab data.
 inline constexpr char kBirchUseRecentTabs[] = "ash.birch.use_recent_tabs";
+
+// A boolean pref indicating whether Birch should use most visited URL data.
+inline constexpr char kBirchUseMostVisited[] = "ash.birch.use_most_visited";
 
 // A boolean pref indicating whether Birch should use self share data.
 inline constexpr char kBirchUseSelfShare[] = "ash.birch.use_self_share";

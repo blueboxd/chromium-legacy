@@ -41,7 +41,6 @@
 #import "components/optimization_guide/core/optimization_guide_prefs.h"
 #import "components/password_manager/core/browser/password_manager.h"
 #import "components/payments/core/payment_prefs.h"
-#import "components/plus_addresses/plus_address_prefs.h"
 #import "components/policy/core/browser/browser_policy_connector.h"
 #import "components/policy/core/browser/url_blocklist_manager.h"
 #import "components/policy/core/common/local_test_policy_provider.h"
@@ -189,6 +188,11 @@ constexpr char kPreferencesMigratedToBasic[] =
 // Deprecated 05/2024.
 constexpr char kSyncCachedTrustedVaultAutoUpgradeDebugInfo[] =
     "sync.cached_trusted_vault_auto_upgrade_debug_info";
+
+// Deprecated 05/2024.
+inline constexpr char kAutologinEnabled[] = "autologin.enabled";
+inline constexpr char kReverseAutologinRejectedEmailList[] =
+    "reverse_autologin.rejected_email_list";
 
 // Helper function migrating the preference `pref_name` of type "double" from
 // `defaults` to `pref_service`.
@@ -545,7 +549,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   optimization_guide::prefs::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
-  plus_addresses::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PushNotificationService::RegisterBrowserStatePrefs(registry);
@@ -805,6 +808,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kContentNotificationsEnrollmentEligibility);
 
   registry->RegisterStringPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo, "");
+
+  // Deprecated 05/2024.
+  registry->RegisterBooleanPref(kAutologinEnabled, true);
+  registry->RegisterListPref(kReverseAutologinRejectedEmailList);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1021,6 +1028,10 @@ void MigrateObsoleteBrowserStatePrefs(const base::FilePath& state_path,
 
   // Added 05/2024.
   prefs->ClearPref(kSyncCachedTrustedVaultAutoUpgradeDebugInfo);
+
+  // Added 05/2024.
+  prefs->ClearPref(kAutologinEnabled);
+  prefs->ClearPref(kReverseAutologinRejectedEmailList);
 }
 
 void MigrateObsoleteUserDefault() {

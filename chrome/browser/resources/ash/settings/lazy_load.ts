@@ -36,8 +36,7 @@ import './kerberos_page/kerberos_accounts_subpage.js';
 import './os_a11y_page/chromevox_subpage.js';
 import './os_a11y_page/cursor_and_touchpad_page.js';
 import './os_a11y_page/display_and_magnification_subpage.js';
-import './os_a11y_page/facegaze_cursor_subpage.js';
-import './os_a11y_page/facegaze_facial_expression_subpage.js';
+import './os_a11y_page/facegaze_subpage.js';
 import './os_a11y_page/keyboard_and_text_input_page.js';
 import './os_a11y_page/live_caption_section.js';
 import './os_a11y_page/live_translate_section.js';
@@ -171,7 +170,6 @@ export {SettingsCrostiniSubpageElement} from './crostini_page/crostini_subpage.j
 export {SettingsDateTimePageElement} from './date_time_page/date_time_page.js';
 export {DateTimeSettingsCardElement} from './date_time_page/date_time_settings_card.js';
 export {TimeZoneAutoDetectMethod} from './date_time_page/date_time_types.js';
-export {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.js';
 export {TimezoneSelectorElement} from './date_time_page/timezone_selector.js';
 export {TimezoneSubpageElement} from './date_time_page/timezone_subpage.js';
 export {CustomizeButtonDropdownItemElement} from './device_page/customize_button_dropdown_item.js';
@@ -230,8 +228,7 @@ export {ChangeDictationLocaleDialog, DictationLocaleOption} from './os_a11y_page
 export {SettingsChromeVoxSubpageElement} from './os_a11y_page/chromevox_subpage.js';
 export {SettingsCursorAndTouchpadPageElement} from './os_a11y_page/cursor_and_touchpad_page.js';
 export {SettingsDisplayAndMagnificationSubpageElement} from './os_a11y_page/display_and_magnification_subpage.js';
-export {SettingsFaceGazeCursorSubpageElement} from './os_a11y_page/facegaze_cursor_subpage.js';
-export {SettingsFaceGazeFacialExpressionSubpageElement} from './os_a11y_page/facegaze_facial_expression_subpage.js';
+export {SettingsFaceGazeSubpageElement} from './os_a11y_page/facegaze_subpage.js';
 export {SettingsKeyboardAndTextInputPageElement} from './os_a11y_page/keyboard_and_text_input_page.js';
 export {SettingsLiveCaptionElement} from './os_a11y_page/live_caption_section.js';
 export {SettingsLiveTranslateElement} from './os_a11y_page/live_translate_section.js';
@@ -272,6 +269,7 @@ export {AppNotificationRowElement} from './os_apps_page/app_notifications_page/a
 export {SettingsAppNotificationsManagerSubpage} from './os_apps_page/app_notifications_page/app_notifications_manager_subpage.js';
 export {AppNotificationsSubpage} from './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 export {SettingsAppParentalControlsSubpageElement} from './os_apps_page/app_parental_controls/app_parental_controls_subpage.js';
+export {AppSetupPinDialogElement} from './os_apps_page/app_parental_controls/app_setup_pin_dialog.js';
 export {BlockAppItemElement} from './os_apps_page/app_parental_controls/block_app_item.js';
 export {ManageIsolatedWebAppsSubpageElement} from './os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage.js';
 export {SettingsBluetoothChangeDeviceNameDialogElement} from './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';

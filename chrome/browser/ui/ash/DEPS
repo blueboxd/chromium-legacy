@@ -10,6 +10,7 @@ include_rules = [
 
   # These dependencies are currently in //chrome but are semantically part of
   # ChromeOS.
+  "+chrome/browser/apps/app_preload_service",
   "+chrome/browser/apps/app_service",
   "+chrome/browser/apps/browser_instance",
   "+chrome/browser/ash",
@@ -243,6 +244,7 @@ include_rules = [
   "+chrome/common/chrome_switches.h",
   "+chrome/common/extensions/extension_constants.h",
   "+chrome/common/extensions/manifest_handlers/app_launch_info.h",
+  "+chrome/common/extensions/api/file_manager_private.h",
   "+chrome/common/pref_names.h",
   "+chrome/common/url_constants.h",
   "+chrome/common/webui_url_constants.h",
@@ -297,6 +299,9 @@ specific_include_rules = {
   ],
   "birch_self_share_provider\.cc": [
     "+chrome/browser/favicon/favicon_utils.h",
+    "+chrome/browser/sync/send_tab_to_self_sync_service_factory.h",
+  ],
+  "birch_keyed_service_unittest\.cc": [
     "+chrome/browser/sync/send_tab_to_self_sync_service_factory.h",
   ]
 }

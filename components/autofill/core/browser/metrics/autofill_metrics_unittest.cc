@@ -149,12 +149,12 @@ FieldSignature Collapse(FieldSignature sig) {
 }
 
 void CreateSimpleForm(const GURL& origin, FormData& form) {
-  form.host_frame = test::MakeLocalFrameToken();
-  form.renderer_id = test::MakeFormRendererId();
-  form.name = u"TestForm";
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-  form.main_frame_origin = url::Origin::Create(origin);
+  form.set_host_frame(test::MakeLocalFrameToken());
+  form.set_renderer_id(test::MakeFormRendererId());
+  form.set_name(u"TestForm");
+  form.set_url(GURL("http://example.com/form.html"));
+  form.set_action(GURL("http://example.com/submit.html"));
+  form.set_main_frame_origin(url::Origin::Create(origin));
 }
 
 std::string SerializeAndEncode(const AutofillQueryResponse& response) {
@@ -1280,6 +1280,8 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
         form, form.fields.front(),
+        /*caret_bounds=*/gfx::Rect(),
+
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
@@ -1308,6 +1310,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
         form, form.fields.front(),
+        /*caret_bounds=*/gfx::Rect(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
@@ -1334,6 +1337,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
         form, form.fields.front(),
+        /*caret_bounds=*/gfx::Rect(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
@@ -1463,6 +1467,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
     base::UserActionTester user_action_tester;
     external_delegate().OnQuery(
         form, form.fields.front(),
+        /*caret_bounds=*/gfx::Rect(),
         AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
     external_delegate().DidAcceptSuggestion(
@@ -1599,10 +1604,10 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
 
   {
     // Simulate having seen this insecure form on page load.
-    form.host_frame = test::MakeLocalFrameToken();
-    form.renderer_id = test::MakeFormRendererId();
-    form.url = GURL("http://example.com/form.html");
-    form.action = GURL("http://example.com/submit.html");
+    form.set_host_frame(test::MakeLocalFrameToken());
+    form.set_renderer_id(test::MakeFormRendererId());
+    form.set_url(GURL("http://example.com/form.html"));
+    form.set_action(GURL("http://example.com/submit.html"));
     // In order to test that the QueriedCreditCardFormIsSecure is logged as
     // false, we need to set the main frame origin, otherwise this fill is
     // skipped due to the form being detected as mixed content.
@@ -1611,8 +1616,8 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
     replacements.SetSchemeStr(url::kHttpScheme);
     autofill_client_->set_form_origin(
         client_form_origin.ReplaceComponents(replacements));
-    form.main_frame_origin =
-        url::Origin::Create(autofill_client_->form_origin());
+    form.set_main_frame_origin(
+        url::Origin::Create(autofill_client_->form_origin()));
     autofill_manager().AddSeenForm(form, field_types);
 
     // Simulate an Autofill query on a credit card field (HTTP, non-secure
@@ -1627,12 +1632,12 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
 
   {
     autofill_manager().Reset();
-    form.host_frame = test::MakeLocalFrameToken();
-    form.renderer_id = test::MakeFormRendererId();
-    form.url = GURL("https://example.com/form.html");
-    form.action = GURL("https://example.com/submit.html");
-    form.main_frame_origin =
-        url::Origin::Create(autofill_client_->form_origin());
+    form.set_host_frame(test::MakeLocalFrameToken());
+    form.set_renderer_id(test::MakeFormRendererId());
+    form.set_url(GURL("https://example.com/form.html"));
+    form.set_action(GURL("https://example.com/submit.html"));
+    form.set_main_frame_origin(
+        url::Origin::Create(autofill_client_->form_origin()));
     autofill_manager().AddSeenForm(form, field_types);
 
     // Simulate an Autofill query on a credit card field (HTTPS form).
@@ -4720,46 +4725,6 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   }
 }
 
-// Test that we log that Profile Autofill is enabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtPageLoad) {
-  base::HistogramTester histogram_tester;
-  autofill_manager().SetAutofillProfileEnabled(*autofill_client_, true);
-  autofill_manager().OnFormsSeen(/*updated_forms=*/{},
-                                 /*removed_forms=*/{});
-  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
-                                      true, 1);
-}
-
-// Test that we log that Profile Autofill is disabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtPageLoad) {
-  base::HistogramTester histogram_tester;
-  autofill_manager().SetAutofillProfileEnabled(*autofill_client_, false);
-  autofill_manager().OnFormsSeen(/*updated_forms=*/{},
-                                 /*removed_forms=*/{});
-  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
-                                      false, 1);
-}
-
-// Test that we log that CreditCard Autofill is enabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtPageLoad) {
-  base::HistogramTester histogram_tester;
-  autofill_manager().SetAutofillPaymentMethodsEnabled(*autofill_client_, true);
-  autofill_manager().OnFormsSeen(/*updated_forms=*/{},
-                                 /*removed_forms=*/{});
-  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
-                                      true, 1);
-}
-
-// Test that we log that CreditCard Autofill is disabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtPageLoad) {
-  base::HistogramTester histogram_tester;
-  autofill_manager().SetAutofillPaymentMethodsEnabled(*autofill_client_, false);
-  autofill_manager().OnFormsSeen(/*updated_forms=*/{},
-                                 /*removed_forms=*/{});
-  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
-                                      false, 1);
-}
-
 // Test that we log the days since last use of a credit card when it is used.
 TEST_F(AutofillMetricsTest, DaysSinceLastUse_CreditCard) {
   base::HistogramTester histogram_tester;
@@ -4867,8 +4832,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
 
   // Fill additional form.
   FormData second_form = empty_form;
-  second_form.host_frame = test::MakeLocalFrameToken();
-  second_form.renderer_id = test::MakeFormRendererId();
+  second_form.set_host_frame(test::MakeLocalFrameToken());
+  second_form.set_renderer_id(test::MakeFormRendererId());
   second_form.fields.push_back(CreateTestFormField(
       "Second Phone", "second_phone", "", FormControlType::kInputText));
 
@@ -5271,10 +5236,11 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
  public:
   void SetUp() override {
     FormData form;
-    form.host_frame = test::MakeLocalFrameToken();
-    form.renderer_id = test::MakeFormRendererId();
-    form.url = GURL("http://foo.com");
-    form.main_frame_origin = url::Origin::Create(GURL("http://foo_root.com"));
+    form.set_host_frame(test::MakeLocalFrameToken());
+    form.set_renderer_id(test::MakeFormRendererId());
+    form.set_url(GURL("http://foo.com"));
+    form.set_main_frame_origin(
+        url::Origin::Create(GURL("http://foo_root.com")));
     FormFieldData field;
     field.set_form_control_type(FormControlType::kInputText);
 
@@ -5432,7 +5398,7 @@ TEST_F(AutofillMetricsTest, NonSecureCreditCardForm) {
 
   // Non-https origin.
   GURL frame_origin("http://example_root.com/form.html");
-  form.main_frame_origin = url::Origin::Create(frame_origin);
+  form.set_main_frame_origin(url::Origin::Create(frame_origin));
   autofill_client_->set_form_origin(frame_origin);
 
   autofill_manager().AddSeenForm(form, field_types);
@@ -5927,29 +5893,6 @@ TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {
       /*expected_count=*/1);
 }
 
-// Verify that we correctly log the IsEnabled metrics with the appropriate sync
-// state.
-TEST_F(AutofillMetricsTest, LogIsAutofillEnabledAtPageLoad_BySyncState) {
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
-        /*enabled=*/true, PaymentsSigninState::kSignedIn);
-    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad.SignedIn",
-                                       true, 1);
-    // Make sure the metric without the sync state is still recorded.
-    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad", true, 1);
-  }
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
-        /*enabled=*/false, PaymentsSigninState::kSignedOut);
-    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad.SignedOut",
-                                       false, 1);
-    // Make sure the metric without the sync state is still recorded.
-    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad", false, 1);
-  }
-}
-
 TEST_F(AutofillMetricsTest, LogServerCardLinkClicked) {
   {
     base::HistogramTester histogram_tester;
@@ -6078,10 +6021,10 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
          .renderer_id = test::MakeFormRendererId(),
          .main_frame_origin = main_origin});
 
-    ASSERT_EQ(form_.main_frame_origin, form_.fields[0].origin());
-    ASSERT_EQ(form_.main_frame_origin, form_.fields[2].origin());
-    ASSERT_NE(form_.main_frame_origin, form_.fields[1].origin());
-    ASSERT_NE(form_.main_frame_origin, form_.fields[3].origin());
+    ASSERT_EQ(form_.main_frame_origin(), form_.fields[0].origin());
+    ASSERT_EQ(form_.main_frame_origin(), form_.fields[2].origin());
+    ASSERT_NE(form_.main_frame_origin(), form_.fields[1].origin());
+    ASSERT_NE(form_.main_frame_origin(), form_.fields[3].origin());
     ASSERT_EQ(form_.fields[1].origin(), form_.fields[3].origin());
 
     // Mock a simplified security model which allows to filter (only) fields
@@ -7162,7 +7105,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   FormData form = CreateForm(
       {CreateTestFormField("input", "", "", FormControlType::kInputText)});
   // Form whose action is a search URL should not be parsed.
-  form.action = GURL("http://google.com/search?q=hello");
+  form.set_action(GURL("http://google.com/search?q=hello"));
 
   SeeForm(form);
   SubmitForm(form);

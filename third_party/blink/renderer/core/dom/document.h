@@ -1523,12 +1523,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void EnqueueVisualViewportScrollEvent();
   void EnqueueVisualViewportScrollEndEvent();
   void EnqueueVisualViewportResizeEvent();
-  void EnqueueSnapChangedEvent(Node* target,
-                               Member<Node>& block_target,
-                               Member<Node>& inline_target);
-  void EnqueueSnapChangingEvent(Node* target,
-                                Member<Node>& block_target,
-                                Member<Node>& inline_target);
+  void EnqueueScrollSnapChangeEvent(Node* target,
+                                    Member<Node>& block_target,
+                                    Member<Node>& inline_target);
+  void EnqueueScrollSnapChangingEvent(Node* target,
+                                      Member<Node>& block_target,
+                                      Member<Node>& inline_target);
 
   void DispatchEventsForPrinting();
 
@@ -1789,6 +1789,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // attempts (both successful and not successful) by the page. This will return
   // null if the document is stopped.
   FontMatchingMetrics* GetFontMatchingMetrics();
+
+  void MaybeRecordShapeTextElapsedTime(base::TimeDelta elapsed_time);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
 

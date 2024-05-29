@@ -22,9 +22,11 @@ import org.chromium.chrome.browser.magic_stack.ModuleProviderBuilder;
 import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 /** The {@link ModuleProviderBuilder} to build the single tab module on the magic stack. */
 public class SingleTabModuleBuilder implements ModuleProviderBuilder, ModuleConfigChecker {
@@ -60,6 +62,11 @@ public class SingleTabModuleBuilder implements ModuleProviderBuilder, ModuleConf
                 (tabId) -> {
                     moduleDelegate.onTabClicked(tabId, ModuleType.SINGLE_TAB);
                 };
+        Runnable seeMoreLinkClickedCallback =
+                () -> {
+                    moduleDelegate.onUrlClicked(
+                            new GURL(UrlConstants.RECENT_TABS_URL), ModuleType.SINGLE_TAB);
+                };
         Runnable snapshotParentViewRunnable =
                 () -> {
                     moduleDelegateHost.onCaptureThumbnailStatusChanged();
@@ -74,13 +81,12 @@ public class SingleTabModuleBuilder implements ModuleProviderBuilder, ModuleConf
                 new SingleTabSwitcherCoordinator(
                         mActivity,
                         /* container= */ null,
-                        /* activityLifecycleDispatcher= */ null,
                         mTabModelSelectorSupplier.get(),
                         isShownOnNtp,
                         DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity),
-                        moduleDelegateHost.showScrollableMvt(),
                         isShownOnNtp ? moduleDelegate.getTrackingTab() : null,
                         singleTabCardClickedCallback,
+                        seeMoreLinkClickedCallback,
                         snapshotParentViewRunnable,
                         mTabContentManagerSupplier.get(),
                         moduleDelegateHost.getUiConfig(),

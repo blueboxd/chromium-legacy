@@ -98,7 +98,6 @@
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
-#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -144,7 +143,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/security/coop/cross_origin_opener_policy_reporter.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
-#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/site_info.h"
 #include "content/browser/sms/webotp_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
@@ -260,6 +258,7 @@
 #include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/ai/ai_manager.mojom.h"
 #include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
@@ -270,14 +269,12 @@
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
-#include "third_party/blink/public/mojom/model_execution/model_manager.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom.h"
 #include "third_party/blink/public/mojom/opengraph/metadata.mojom.h"
 #include "third_party/blink/public/mojom/page/draggable_region.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
@@ -341,7 +338,7 @@ BASE_FEATURE(kEvictOnAXEvents,
 
 BASE_FEATURE(kDoNotEvictOnAXLocationChange,
              "DoNotEvictOnAXLocationChange",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -2230,11 +2227,6 @@ void RenderFrameHostImpl::DisableProactiveBrowsingInstanceSwapForTesting() {
   // This should only be called on primary main frames.
   DCHECK(IsInPrimaryMainFrame());
   has_test_disabled_proactive_browsing_instance_swap_ = true;
-}
-
-void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
-  was_granted_media_access_ = true;
-  MaybeEvictFromBackForwardCache();
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() const {
@@ -4392,7 +4384,7 @@ bool RenderFrameHostImpl::IsThirdPartyStoragePartitioningEnabled(
   // If the deprecation trial is enabled, we have directive to override the
   // current value of net::features::ThirdPartyStoragePartitioning.
   if (rfs_document_data_for_storage_key->runtime_feature_state_read_context()
-          .IsDisableThirdPartyStoragePartitioningEnabled()) {
+          .IsDisableThirdPartyStoragePartitioning2Enabled()) {
     return false;
   }
   // Compile the list of third-party origins we need to check in addition to the
@@ -4407,7 +4399,7 @@ bool RenderFrameHostImpl::IsThirdPartyStoragePartitioningEnabled(
   // frame we have directive to override the current value of
   // net::features::ThirdPartyStoragePartitioning.
   if (rfs_document_data_for_storage_key->runtime_feature_state_read_context()
-          .IsDisableThirdPartyStoragePartitioningEnabledForThirdParty(
+          .IsDisableThirdPartyStoragePartitioning2EnabledForThirdParty(
               third_party_origins)) {
     return false;
   }
@@ -4943,11 +4935,6 @@ void RenderFrameHostImpl::DidChangeBackForwardCacheDisablingFeatures(
   renderer_reported_bfcache_blocking_details_ = std::move(details);
 
   MaybeEvictFromBackForwardCache();
-
-  if (back_forward_cache_disabling_features_callback_for_testing_) {
-    back_forward_cache_disabling_features_callback_for_testing_.Run(
-        GetBackForwardCacheDisablingFeatures());
-  }
 }
 
 using BackForwardCacheDisablingFeatureHandle =
@@ -9899,7 +9886,7 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 
 void RenderFrameHostImpl::HandleAXEvents(
     const ui::AXTreeID& tree_id,
-    ui::AXUpdatesAndEvents updates_and_events,
+    blink::mojom::AXUpdatesAndEventsPtr updates_and_events,
     uint32_t reset_token) {
   TRACE_EVENT0("accessibility", "RenderFrameHostImpl::HandleAXEvents");
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
@@ -9947,13 +9934,11 @@ void RenderFrameHostImpl::HandleAXEvents(
     DUMP_WILL_BE_CHECK(false);
   }
 
-  // TODO(accessibility): we should probably consolidate these two params.
-  updates_and_events.ax_tree_id = tree_id;
-
   if (base::FeatureList::IsEnabled(features::kEvictOnAXEvents)) {
     // If the flag is on, evict the bfcache entry now that AX events are
     // received.
-    if (IsInactiveAndDisallowActivationForAXEvents(updates_and_events.events)) {
+    if (IsInactiveAndDisallowActivationForAXEvents(
+            updates_and_events->events)) {
       return;
     }
   } else {
@@ -9969,7 +9954,11 @@ void RenderFrameHostImpl::HandleAXEvents(
 
   GetOrCreateBrowserAccessibilityManager();
 
-  for (auto& update : updates_and_events.updates) {
+  ui::AXUpdatesAndEvents details;
+  details.ax_tree_id = tree_id;
+  details.events = std::move(updates_and_events->events);
+  details.updates = std::move(updates_and_events->updates);
+  for (auto& update : details.updates) {
     if (update.has_tree_data) {
       DCHECK_EQ(tree_id, update.tree_data.tree_id);
       ax_tree_data_ = update.tree_data;
@@ -9980,32 +9969,32 @@ void RenderFrameHostImpl::HandleAXEvents(
   if (needs_ax_root_id_) {
     // This is the first update after the tree id changed. AXTree must be sent
     // a new root id, otherwise crashes are likely to result.
-    DCHECK(!updates_and_events.updates.empty());
-    DCHECK_NE(ui::kInvalidAXNodeID, updates_and_events.updates[0].root_id);
+    DCHECK(!details.updates.empty());
+    DCHECK_NE(ui::kInvalidAXNodeID, details.updates[0].root_id);
     needs_ax_root_id_ = false;
   }
 
   if (features::IsUseMoveNotCopyInMergeTreeUpdateEnabled()) {
-    // While experimenting with moving data, we have to ensure this call
+    // While experimenting with moving `details`, we have to ensure this call
     // order. This won't be the final structure of the code.
-    delegate_->ProcessAccessibilityUpdatesAndEvents(updates_and_events);
+    delegate_->AccessibilityEventReceived(details);
 
-    // This call steals the contents of the data to avoid copying.
-    SendAccessibilityEventsToManager(updates_and_events);
+    // This call steals the contents of `details` to avoid copying.
+    SendAccessibilityEventsToManager(details);
   } else {
-    SendAccessibilityEventsToManager(updates_and_events);
-    delegate_->ProcessAccessibilityUpdatesAndEvents(updates_and_events);
+    SendAccessibilityEventsToManager(details);
+    delegate_->AccessibilityEventReceived(details);
   }
 
   // For testing only.
   if (!accessibility_testing_callback_.is_null()) {
-    if (updates_and_events.events.empty()) {
+    if (details.events.empty()) {
       // Objects were marked dirty but no events were provided.
       // The callback must still run, otherwise dump event tests can hang.
       accessibility_testing_callback_.Run(this, ax::mojom::Event::kNone, 0);
     } else {
       // Call testing callback functions for each event to fire.
-      for (auto& event : updates_and_events.events) {
+      for (auto& event : details.events) {
         if (static_cast<int>(event.event_type) < 0)
           continue;
 
@@ -10782,7 +10771,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    SubresourceLoaderParams subresource_loader_params,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller,
     std::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
@@ -11093,21 +11082,6 @@ void RenderFrameHostImpl::CommitNavigation(
                          should_replace_current_entry));
     }
   } else {
-    // Pass the controller service worker info if we have one.
-    blink::mojom::ControllerServiceWorkerInfoPtr controller;
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
-        remote_object;
-    blink::mojom::ServiceWorkerState sent_state;
-    if (subresource_loader_params.controller_service_worker_info) {
-      controller =
-          std::move(subresource_loader_params.controller_service_worker_info);
-      if (controller->object_info) {
-        controller->object_info->receiver =
-            remote_object.InitWithNewEndpointAndPassReceiver();
-        sent_state = controller->object_info->state;
-      }
-    }
-
     // Set up the subresource loader factory that will pass requests from the
     // renderer to the originally intended network service endpoint. To save
     // memory, this is intentionally shared for prefetch, topics, and
@@ -11282,15 +11256,6 @@ void RenderFrameHostImpl::CommitNavigation(
     navigation_request->frame_tree_node()
         ->navigator()
         .LogCommitNavigationSent();
-
-    // |remote_object| is an associated interface ptr, so calls can't be made on
-    // it until its request endpoint is sent. Now that the request endpoint was
-    // sent, it can be used, so add it to ServiceWorkerObjectHost.
-    if (remote_object.is_valid()) {
-      subresource_loader_params.controller_service_worker_object_host
-          ->AddRemoteObjectPtrAndUpdateState(std::move(remote_object),
-                                             sent_state);
-    }
   }
 }
 
@@ -11693,7 +11658,7 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
   detail.updates[0].tree_data = GetAXTreeData();
 
   SendAccessibilityEventsToManager(detail);
-  delegate_->ProcessAccessibilityUpdatesAndEvents(detail);
+  delegate_->AccessibilityEventReceived(detail);
 }
 
 RenderFrameHostImpl::UpdateAXFocusDeferScope::UpdateAXFocusDeferScope(
@@ -12378,12 +12343,12 @@ void RenderFrameHostImpl::BindNonAssociatedLocalFrameHost(
   non_associated_local_frame_host_receiver_.Bind(std::move(receiver));
 }
 
-void RenderFrameHostImpl::BindModelManager(
-    mojo::PendingReceiver<blink::mojom::ModelManager> receiver) {
+void RenderFrameHostImpl::BindAIManager(
+    mojo::PendingReceiver<blink::mojom::AIManager> receiver) {
   CHECK(
       base::FeatureList::IsEnabled(blink::features::kEnableModelExecutionAPI));
 
-  GetContentClient()->browser()->BindModelManager(this, std::move(receiver));
+  GetContentClient()->browser()->BindAIManager(this, std::move(receiver));
 }
 
 bool RenderFrameHostImpl::CancelPrerendering(
@@ -14997,6 +14962,34 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
       is_file_origin_key,
       bool_to_crash_key(origin.scheme() == url::kFileScheme));
 
+  static auto* const is_data_url_key = base::debug::AllocateCrashKeyString(
+      "is_data_url", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      is_data_url_key, bool_to_crash_key(url.SchemeIs(url::kDataScheme)));
+
+  static auto* const is_srcdoc_url_key = base::debug::AllocateCrashKeyString(
+      "is_srcdoc_url", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(is_srcdoc_url_key,
+                                 bool_to_crash_key(url.IsAboutSrcdoc()));
+
+  static auto* const is_loaddatawithbaseurl_key =
+      base::debug::AllocateCrashKeyString("is_loaddatawithbaseurl_navrequest",
+                                          base::debug::CrashKeySize::Size32);
+  bool is_loaddatawithbaseurl =
+      navigation_request && navigation_request->IsLoadDataWithBaseURL();
+  base::debug::SetCrashKeyString(is_loaddatawithbaseurl_key,
+                                 bool_to_crash_key(is_loaddatawithbaseurl));
+
+  static auto* const is_loaddatawithbaseurl_samedoc_key =
+      base::debug::AllocateCrashKeyString("is_loaddatawithbaseurl_samedoc",
+                                          base::debug::CrashKeySize::Size32);
+  bool is_loaddatawithbaseurl_samedoc =
+      is_same_document_navigation &&
+      renderer_url_info_.was_loaded_from_load_data_with_base_url;
+  base::debug::SetCrashKeyString(
+      is_loaddatawithbaseurl_samedoc_key,
+      bool_to_crash_key(is_loaddatawithbaseurl_samedoc));
+
   static auto* const site_lock_key = base::debug::AllocateCrashKeyString(
       "site_lock", base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(
@@ -15007,6 +15000,13 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
       "process_lock", base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(process_lock_key,
                                  GetProcess()->GetProcessLock().ToString());
+
+  static auto* const is_process_locked_key =
+      base::debug::AllocateCrashKeyString("is_process_locked",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      is_process_locked_key,
+      bool_to_crash_key(GetProcess()->GetProcessLock().is_locked_to_site()));
 
   if (!GetSiteInstance()->IsDefaultSiteInstance()) {
     static auto* const original_url_origin_key =
@@ -15333,14 +15333,18 @@ GURL CalculateLoadingURL(
 
 bool ShouldVerify(const std::string& param) {
 #if DCHECK_IS_ON()
+  // Check for all params when DCHECK is on, to have full coverage on bots.
   return true;
 #else
-  if (param != "should_replace_current_entry" &&
-      param != "url_is_unreachable") {
-    // All params except the two above have no known complications and should be
-    // compared by default.
+  if (param == "origin") {
+    // Always enable checking origin. To disable checking origin, turn off the
+    // VerifyDidCommitParams flag.
     return true;
   }
+
+  // For other params, default to disable checking the param. However, it's
+  // possible to force-enable checking the param via the VerifyDidCommitParams
+  // flag's param.
   return GetFieldTrialParamByFeatureAsBool(features::kVerifyDidCommitParams,
                                            param, false);
 #endif
@@ -15407,6 +15411,9 @@ void RenderFrameHostImpl::
   // - history_list_was_cleared
   // - origin
   // TODO(crbug.com/40150370): Verify more params.
+  // To disable the check for all params, disable the VerifyDidCommitParams
+  // flag. To disable the check for a subset of params, see `ShouldVerify()`.
+
   // We can know if we're going to be in an error document after this navigation
   // if the net error code is not net::OK, or if we're doing a same-document
   // navigation on an error document (only possible for renderer-initiated
@@ -16842,6 +16849,11 @@ bool RenderFrameHostImpl::IsClipboardOwner(
 void RenderFrameHostImpl::MarkClipboardOwner(
     ui::ClipboardSequenceNumberToken seqno) {
   SetLastClipboardWrite(*this, seqno);
+}
+
+void RenderFrameHostImpl::GetBoundInterfacesForTesting(
+    std::vector<std::string>& out) {
+  broker_.GetBinderMapInterfacesForTesting(out);  // IN-TEST
 }
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_traits.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_service.h"
@@ -58,8 +59,8 @@
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/grit/extensions_browser_resources.h"
-
 namespace {
 constexpr int32_t kAppDialogIconSize = 48;
 
@@ -892,12 +893,27 @@ bool AppServiceProxyAsh::MaybeShowLaunchPreventionDialog(
     return false;
   }
 
-  // Return true, and load the icon for the app block dialog when the app
-  // is blocked by policy, or by local settings.
-  if (apps_util::IsDisabled(update.Readiness())) {
+  // Return true and load the icon for the app block dialog when the app
+  // is blocked by policy.
+  if (update.Readiness() == apps::Readiness::kDisabledByPolicy) {
     LoadIconForDialog(
         update, base::BindOnce(&AppServiceProxyAsh::OnLoadIconForBlockDialog,
                                weak_ptr_factory_.GetWeakPtr(), update.Name()));
+    return true;
+  }
+
+  // Return true and load the icon for the app local block dialog when the app
+  // is blocked by local settings.
+  if (update.Readiness() == apps::Readiness::kDisabledByLocalSettings) {
+    AppServiceProxyAsh::CreateLocalBlockDialog(update.Name());
+
+    // For browser tests, call the dialog created callback to stop the run loop.
+    if (!dialog_created_callback_.is_null()) {
+      // Post task to the UI thread so local block dialog matches the
+      // asynchronicity of the other dialogs.
+      content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+          ->PostTask(FROM_HERE, std::move(dialog_created_callback_));
+    }
     return true;
   }
 

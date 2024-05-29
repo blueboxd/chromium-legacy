@@ -21,6 +21,7 @@
 #include "components/services/app_service/public/cpp/types_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/containers/map_util.h"
 #include "base/types/optional_util.h"
 #include "chrome/browser/ash/file_manager/office_file_tasks.h"
@@ -59,13 +60,15 @@ constexpr auto kSystemWebAppsMapping =
          {"shimless_rma", ash::SystemWebAppType::SHIMLESS_RMA},
          {"demo_mode", ash::SystemWebAppType::DEMO_MODE},
          {"os_feedback", ash::SystemWebAppType::OS_FEEDBACK},
+         {"os_sanitize", ash::SystemWebAppType::OS_SANITIZE},
          {"projector", ash::SystemWebAppType::PROJECTOR},
          {"os_url_handler", ash::SystemWebAppType::OS_URL_HANDLER},
          {"firmware_update", ash::SystemWebAppType::FIRMWARE_UPDATE},
          {"os_flags", ash::SystemWebAppType::OS_FLAGS},
          {"vc_background", ash::SystemWebAppType::VC_BACKGROUND},
          {"print_preview_cros", ash::SystemWebAppType::PRINT_PREVIEW_CROS},
-         {"boca", ash::SystemWebAppType::BOCA}});
+         {"boca", ash::SystemWebAppType::BOCA},
+         {"app_mall", ash::SystemWebAppType::MALL}});
 
 constexpr ash::SystemWebAppType GetMaxSystemWebAppType() {
   return base::ranges::max(kSystemWebAppsMapping, base::ranges::less{},

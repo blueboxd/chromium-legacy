@@ -259,6 +259,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="MantaMetricType">
+  <variant name="AnchovyProvider" summary="Request from Anchovy provider"/>
   <variant name="MahiProvider.Outline"
       summary="Request from Mahi provider for outline"/>
   <variant name="MahiProvider.QA" summary="Request from Mahi provider for QA"/>
@@ -616,6 +617,16 @@ chromium-metrics-reviews@google.com.
   <token key="Settings" variants="AmbientUiSettings"/>
 </histogram>
 
+<histogram name="Ash.AmbientMode.TopicSource" enum="AmbientModeTopicSource"
+    expires_after="2025-01-01">
+  <owner>pzliu@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Emitted when screen saver starts running. Logs the topic source of the
+    screen saver.
+  </summary>
+</histogram>
+
 <histogram name="Ash.AmbientMode.TotalNumberOfAlbums" units="int"
     expires_after="2024-12-01">
   <owner>cowmoo@google.com</owner>
@@ -881,6 +892,7 @@ chromium-metrics-reviews@google.com.
   <token key="Type">
     <variant name=".Calendar" summary="calendar"/>
     <variant name=".File" summary="file"/>
+    <variant name=".MostVisited" summary="most visited URLs"/>
     <variant name=".ReleaseNotes" summary="release notes"/>
     <variant name=".SelfShare" summary="self share"/>
     <variant name=".Tab" summary="recent tab"/>
@@ -899,6 +911,7 @@ chromium-metrics-reviews@google.com.
   <token key="Type">
     <variant name=".Calendar" summary="calendar"/>
     <variant name=".FileSuggest" summary="file suggest"/>
+    <variant name=".MostVisited" summary="most visited URLs"/>
     <variant name=".RecentTabs" summary="recent tabs"/>
     <variant name=".ReleaseNotes" summary="release notes"/>
     <variant name=".SelfShare" summary="self share"/>
@@ -935,6 +948,7 @@ chromium-metrics-reviews@google.com.
     <variant name=".Attachment" summary="calendar event file attachment"/>
     <variant name=".Calendar" summary="calendar"/>
     <variant name=".File" summary="file"/>
+    <variant name=".MostVisited" summary="most visited URLs"/>
     <variant name=".ReleaseNotes" summary="release notes"/>
     <variant name=".SelfShare" summary="self share"/>
     <variant name=".Tab" summary="recent tab"/>
@@ -3737,6 +3751,46 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.FocusMode.EndingMomentBubbleAction"
+    enum="FocusModeEndingMomentBubbleClosedReason" expires_after="2025-05-01">
+  <owner>hongyulong@chromium.org</owner>
+  <owner>richui@chromium.org</owner>
+  <owner>nupurjain@google.com</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>Record the reason for the ending moment bubble closed.</summary>
+</histogram>
+
+<histogram name="Ash.FocusMode.PercentOfSessionCompleted.{SessionDurationType}"
+    units="%" expires_after="2025-05-01">
+  <owner>nupurjain@google.com</owner>
+  <owner>richui@chromium.org</owner>
+  <owner>skau@chromium.org</owner>
+  <owner>hongyulong@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>
+    Records the percent of the session which was completed (bucketed by the
+    final session duration) when a session is over. This is for the
+    {SessionDurationType} type of `Short` (&lt; 11 mins), `Medium` (11 - 29
+    mins), and `Long` (&gt; 29 mins).
+  </summary>
+  <token key="SessionDurationType">
+    <variant name="Long"/>
+    <variant name="Medium"/>
+    <variant name="Short"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.FocusMode.SessionDuration" units="minutes"
+    expires_after="2025-05-01">
+  <owner>hongyulong@chromium.org</owner>
+  <owner>richui@chromium.org</owner>
+  <owner>nupurjain@google.com</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>
+    Record the time in minutes since the session started when the session ends.
+  </summary>
+</histogram>
+
 <histogram name="Ash.FocusMode.StartSession.HasSelectedTask" enum="Boolean"
     expires_after="2025-02-01">
   <owner>hongyulong@chromium.org</owner>
@@ -3769,6 +3823,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded whenever a focus session will be started through the focus panel or
     the feature pod.
+  </summary>
+</histogram>
+
+<histogram name="Ash.FocusMode.TasksCompleted" units="count"
+    expires_after="2025-05-01">
+  <owner>nupurjain@google.com</owner>
+  <owner>richui@chromium.org</owner>
+  <owner>skau@chromium.org</owner>
+  <owner>hongyulong@chromium.org</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>
+    When a session ends, record how many tasks were marked as completed by the
+    user during the session.
   </summary>
 </histogram>
 
@@ -6041,6 +6108,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Personalization.Ambient.LinkToGooglePhotosClicked"
+    enum="BooleanHit" expires_after="2025-06-01">
+  <owner>pzliu@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Emitted whenever the user clicks the hyperlink to config Google Photos from
+    the ambient UI albums selection subpage.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Personalization.AmbientMode.AlbumsPath"
+    enum="AmbientModeTopicSource" expires_after="2025-01-01">
+  <owner>pzliu@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Emitted when a user navigates to the ambient mode albums selection page in
+    the Personalization Hub. Record the type of albums the user visits.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Personalization.AmbientMode.AnimationTheme2"
     enum="AmbientModeAnimationTheme" expires_after="2024-11-17">
   <owner>jasontt@chromium.org</owner>
@@ -7202,6 +7289,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.SeaPen.WordCount" units="int" expires_after="2024-12-31">
+  <owner>pzliu@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the number of words in the SeaPen text query when the user clicks
+    the create button.
+  </summary>
+</histogram>
+
 <histogram name="Ash.SeaPen.{AppName}.RecentImage.ActionMenu"
     enum="SeaPenActionMenuItem" expires_after="2025-03-30">
   <owner>thuongphan@google.com</owner>
@@ -7966,7 +8062,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SplitView.TimeInMultiDisplaySplitView" units="ms"
-    expires_after="2024-07-02">
+    expires_after="2025-05-21">
   <owner>xdai@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -9245,7 +9341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wm.MultiWindowResizerClick" enum="Boolean"
-    expires_after="2024-06-02">
+    expires_after="2025-05-21">
   <owner>michelefan@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -9255,7 +9351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wm.MultiWindowResizerClickTwoWindowsSnapped"
-    enum="Boolean" expires_after="2024-07-21">
+    enum="Boolean" expires_after="2025-05-21">
   <owner>michelefan@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -9265,7 +9361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wm.MultiWindowResizerShow" enum="Boolean"
-    expires_after="2024-07-21">
+    expires_after="2025-05-21">
   <owner>michelefan@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -9274,7 +9370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wm.MultiWindowResizerShowTwoWindowsSnapped" enum="Boolean"
-    expires_after="2024-07-21">
+    expires_after="2025-05-21">
   <owner>michelefan@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -9359,6 +9455,93 @@ chromium-metrics-reviews@google.com.
   <owner>chromeos-wm-corexp@google.com</owner>
   <summary>
     Emits every 30 minutes to report the number of opened application windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateActiveWindowAppType"
+    enum="WindowAppType" expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window states type of the active
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateActiveWindowSize"
+    enum="WindowSizeRange" expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window bounds type of the active
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateActiveWindowState"
+    enum="WindowStateType" expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window states type of the active
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateAllAppTypes" enum="WindowAppType"
+    expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window states type of all opened
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateAllWindowSizes" enum="WindowSizeRange"
+    expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window bounds type of all opened
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateAllWindowStates"
+    enum="WindowStateType" expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window states type of all opened
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateFreeformedWindowSizes"
+    enum="WindowSizeRange" expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the window bounds type of freeformed
+    application windows. This metrics should be removed after M127 stable is
+    released.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowLayoutStateWindowNumbers" units="int"
+    expires_after="2025-02-26">
+  <owner>xdai@chromium.org</owner>
+  <owner>chromeos-wm-corexp@google.com</owner>
+  <summary>
+    Emits every 30 minutes to report the number of opened application windows.
+    This metrics should be removed after M127 stable is released.
   </summary>
 </histogram>
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_CHROMEOS_MAGIC_BOOST_MAGIC_BOOST_CONTROLLER_H_
 #define CHROME_BROWSER_UI_CHROMEOS_MAGIC_BOOST_MAGIC_BOOST_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/no_destructor.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 
@@ -15,6 +17,10 @@ class Rect;
 namespace views {
 class Widget;
 }  // namespace views
+
+namespace mahi {
+class MahiPrefsController;
+}  // namespace mahi
 
 namespace chromeos {
 
@@ -31,30 +37,31 @@ class MagicBoostController {
   virtual void ShowOptInUi(const gfx::Rect& anchor_view_bounds);
   virtual void CloseOptInUi();
 
-  // Shows Magic Boost disclaimer widget.
+  // Shows/closes Magic Boost disclaimer widget.
   void ShowDisclaimerUi();
-
-  // For testing.
-  views::Widget* opt_in_widget_for_test() { return opt_in_widget_.get(); }
-  views::Widget* disclaimer_widget_for_test() {
-    return disclaimer_widget_.get();
-  }
-
-  // Closes Magic Boost disclaimer widget.
-  void CloseDisclaimerUi() {}
+  void CloseDisclaimerUi();
 
   // Whether the Quick Answers and Mahi features should show the opt in UI.
   virtual bool ShouldQuickAnswersAndMahiShowOptIn();
 
   // Enables or disables all the features (including Quick Answers, Orca, and
   // Mahi).
-  void SetAllFeaturesState(bool enabled);
+  virtual void SetAllFeaturesState(bool enabled);
 
   // Enables or disables Quick Answers and Mahi.
-  void SetQuickAnswersAndMahiFeaturesState(bool enabled);
+  virtual void SetQuickAnswersAndMahiFeaturesState(bool enabled);
 
   // Enables or disables Orca.
   void SetOrcaFeatureState(bool enabled) {}
+
+  bool is_orca_included() { return is_orca_included_; }
+
+  // For testing.
+  void SetIsOrcaIncludedForTest(bool include);
+  views::Widget* opt_in_widget_for_test() { return opt_in_widget_.get(); }
+  views::Widget* disclaimer_widget_for_test() {
+    return disclaimer_widget_.get();
+  }
 
  protected:
   friend class base::NoDestructor<MagicBoostController>;
@@ -63,8 +70,13 @@ class MagicBoostController {
   ~MagicBoostController();
 
  private:
+  // If Orca feature is included.
+  bool is_orca_included_ = false;
+
   views::UniqueWidgetPtr opt_in_widget_;
   views::UniqueWidgetPtr disclaimer_widget_;
+
+  std::unique_ptr<::mahi::MahiPrefsController> mahi_prefs_controller_;
 };
 
 // Helper class to automatically set and reset the `MagicBoostController` global

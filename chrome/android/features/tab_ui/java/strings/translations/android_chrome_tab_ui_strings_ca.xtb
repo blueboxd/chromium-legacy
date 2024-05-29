@@ -8,6 +8,7 @@
 <translation id="1173894706177603556">Canvia el nom</translation>
 <translation id="1197088940767939838">Taronja</translation>
 <translation id="125153950246128346">Toca per veure una altra pestanya</translation>
+<translation id="1273910660700874265">Opcions del grup de pestanyes <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="1322824555808364080">Convida persones</translation>
 <translation id="1419023007528516122">Amb aquesta acció, el grup se suprimirà permanentment del dispositiu</translation>
 <translation id="149054111719651807">{NUM_MINS,plural, =1{Creat fa <ph name="NUM_MINS_ONE" /> minut}other{Creat fa <ph name="NUM_MINS_MANY" /> minuts}}</translation>
@@ -39,6 +40,7 @@
 <translation id="2928243913527329289">Google | Sobre aquesta botiga</translation>
 <translation id="2977480621796371840">Suprimeix del grup</translation>
 <translation id="3008554597174452548">Atura el seguiment del producte</translation>
+<translation id="3026391124054406831">Crea grups per organitzar les pestanyes.</translation>
 <translation id="3052964831964880138">Baixada de preu de <ph name="PRICE_DROP" /> per a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3078350928901129212">Icona del color del grup de pestanyes (<ph name="COLOR_NAME" />)</translation>
 <translation id="3194464645767632461">puntuació</translation>
@@ -52,13 +54,13 @@
 <translation id="3882834874697329510">Per rebre una alerta quan hi hagi un preu més baix en una pestanya oberta, activa les notificacions a Configuració.</translation>
 <translation id="3940195383040445971">Seguiment dels preus a les pestanyes</translation>
 <translation id="3954615705217314756">{TABS_COUNT,plural, =1{Agrupa la pestanya}other{Agrupa les pestanyes}}</translation>
+<translation id="3969565576924904454">Obre <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="3996880007329611795">Rep una notificació</translation>
 <translation id="4009732926939031387">{NUM_DAYS,plural, =1{Creat fa <ph name="NUM_DAYS_ONE" /> dia}other{Creat fa <ph name="NUM_DAYS_MANY" /> dies}}</translation>
 <translation id="4133493477912226187">Sembla que hi ha <ph name="NUMBER_OF_TABS" /> pestanyes relacionades. Vols agrupar-les?</translation>
 <translation id="4139634748112164403">Les pestanyes continuaran obertes en aquest dispositiu, però el grup se suprimirà permanentment</translation>
 <translation id="4156086991340739772">{NUMBER_OF_TABS,plural, =1{Tanca el grup <ph name="TITLE_OF_GROUP" /> de color <ph name="COLOR_NAME" /> amb <ph name="TABS_COUNT_ONE" /> pestanya.}other{Tanca el grup <ph name="TITLE_OF_GROUP" /> de color <ph name="COLOR_NAME" /> amb <ph name="TABS_COUNT_MANY" /> pestanyes.}}</translation>
 <translation id="4159784952369912983">Porpra</translation>
-<translation id="4212246570487010370">Continua navegant</translation>
 <translation id="4220650239473304853">{NUMBER_OF_TABS,plural, =1{Desplega el grup <ph name="TITLE_OF_GROUP" /> format per <ph name="TABS_COUNT_ONE" /> pestanya.}other{Desplega el grup <ph name="TITLE_OF_GROUP" /> format per <ph name="TABS_COUNT_MANY" /> pestanyes.}}</translation>
 <translation id="427987768447457592">Grup de pestanyes nou</translation>
 <translation id="4460014764210899310">Desagrupa</translation>
@@ -104,7 +106,6 @@
 <translation id="6557858706263317126">+<ph name="HIDDEN_TABS_COUNT" /></translation>
 <translation id="6562820390860419811">Mou la pestanya cap a l'esquerra</translation>
 <translation id="6615455863669487791">Mostra-m'ho</translation>
-<translation id="661742612106409204">Pots trobar les pestanyes tancades a Pestanyes recents, al menú principal de Chrome.</translation>
 <translation id="6744956528665271406">Edita el color del grup</translation>
 <translation id="6840760312327750441">Per agrupar les pestanyes, mantén-ne una premuda. A continuació, arrossega-la fins a una altra.</translation>
 <translation id="6856809498882026482">Amaga el mode de multiselecció</translation>

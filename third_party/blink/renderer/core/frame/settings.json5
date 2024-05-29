@@ -1100,7 +1100,7 @@
     {
       name: "preferredRootScrollbarColorScheme",
       initial: "mojom::blink::PreferredColorScheme::kLight",
-      invalidate: ["ColorScheme"],
+      invalidate: ["Paint"],
       type: "mojom::blink::PreferredColorScheme",
       include_paths: [
         "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-shared.h"
@@ -1203,6 +1203,8 @@
       name: "bypassCSP",
       initial: false,
     },
+    // Enables automatic adjustments of text size on mobile. This enables the
+    // text autosizer, and controls whether text-size-adjust can apply.
     {
       name: "textAutosizingEnabled",
       initial: false,

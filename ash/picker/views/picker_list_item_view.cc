@@ -12,8 +12,10 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/picker/views/picker_badge_view.h"
 #include "ash/picker/views/picker_item_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/style_util.h"
 #include "ash/style/typography.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -46,41 +48,40 @@ constexpr auto kBadgeLeftPadding = gfx::Insets::TLBR(0, 8, 0, 0);
 PickerListItemView::PickerListItemView(SelectItemCallback select_item_callback)
     : PickerItemView(std::move(select_item_callback),
                      FocusIndicatorStyle::kFocusBar) {
-  SetLayoutManager(std::make_unique<views::FlexLayout>());
+  // This view only contains one child for the moment, but treat this as a
+  // full-width vertical list.
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+
+  // `item_contents` is used to group child views that should not receive
+  // events.
   auto* item_contents = AddChildView(
       views::Builder<views::FlexLayoutView>()
-          .SetOrientation(views::LayoutOrientation::kHorizontal)
-          .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+          .SetCanProcessEventsWithinSubtree(false)
+          .Build());
+
+  // The leading container contains an icon and should always be preferred size.
+  leading_container_ = item_contents->AddChildView(
+      views::Builder<views::FlexLayoutView>()
+          .Build());
+
+  // The main container should use the remaining horizontal space.
+  // Shrink to zero to allow the main contents to be elided.
+  auto* main_container = item_contents->AddChildView(
+      views::Builder<views::FlexLayoutView>()
+          .SetOrientation(views::LayoutOrientation::kVertical)
           .SetProperty(
               views::kFlexBehaviorKey,
               views::FlexSpecification(views::LayoutOrientation::kHorizontal,
                                        views::MinimumFlexSizeRule::kScaleToZero,
                                        views::MaximumFlexSizeRule::kUnbounded))
-          .SetCanProcessEventsWithinSubtree(false)
-          .Build());
-
-  leading_container_ = item_contents->AddChildView(
-      views::Builder<views::FlexLayoutView>()
-          .SetOrientation(views::LayoutOrientation::kVertical)
-          .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
-          .Build());
-
-  auto* main_container = item_contents->AddChildView(
-      views::Builder<views::FlexLayoutView>()
-          .SetOrientation(views::LayoutOrientation::kVertical)
-          .SetProperty(views::kFlexBehaviorKey,
-                       views::FlexSpecification(
-                           views::LayoutOrientation::kHorizontal,
-                           views::MinimumFlexSizeRule::kScaleToZero,
-                           views::MaximumFlexSizeRule::kUnbounded,
-                           /*adjust_height_for_width=*/false,
-                           views::MinimumFlexSizeRule::kScaleToZero))
           .Build());
   primary_container_ = main_container->AddChildView(
       views::Builder<views::View>().SetUseDefaultFillLayout(true).Build());
   secondary_container_ = main_container->AddChildView(
       views::Builder<views::View>().SetUseDefaultFillLayout(true).Build());
 
+  // Trailing badge should always be preferred size and centered vertically.
   trailing_badge_ = item_contents->AddChildView(
       views::Builder<PickerBadgeView>()
           .SetProperty(views::kCrossAxisAlignmentKey,
@@ -147,6 +148,26 @@ void PickerListItemView::SetSecondaryText(
           cros_tokens::kCrosSysOnSurfaceVariant));
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+}
+
+void PickerListItemView::SetBadgeAction(PickerActionType action) {
+  switch (action) {
+    case PickerActionType::kDo:
+      trailing_badge_->SetText(u"");
+      break;
+    case PickerActionType::kInsert:
+      trailing_badge_->SetText(
+          l10n_util::GetStringUTF16(IDS_PICKER_RESULT_BADGE_LABEL_INSERT));
+      break;
+    case PickerActionType::kOpen:
+      trailing_badge_->SetText(
+          l10n_util::GetStringUTF16(IDS_PICKER_RESULT_BADGE_LABEL_OPEN));
+      break;
+    case PickerActionType::kCreate:
+      trailing_badge_->SetText(
+          l10n_util::GetStringUTF16(IDS_PICKER_RESULT_BADGE_LABEL_CREATE));
+      break;
+  }
 }
 
 void PickerListItemView::SetBadgeVisible(bool visible) {

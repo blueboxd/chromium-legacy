@@ -69,8 +69,9 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   // TODO(crbug.com/40218026): In non-DCHECK mode we could fall through here and
   // hard-crash if we requested a bubble and were in the wrong state. In the
   // meantime we will abort if we did not create a bubble.
-  if (!g_manage_passwords_bubble_)
+  if (!g_manage_passwords_bubble_) {
     return;
+  }
 
   g_manage_passwords_bubble_->SetHighlightedButton(
       button_provider->GetPageActionIconView(
@@ -163,7 +164,9 @@ void PasswordBubbleViewBase::CloseCurrentBubble() {
         g_manage_passwords_bubble_->GetController();
     DCHECK(controller);
     controller->OnBubbleClosing();
-    g_manage_passwords_bubble_->GetWidget()->Close();
+    if (auto* const widget = g_manage_passwords_bubble_->GetWidget()) {
+      widget->Close();
+    }
   }
 }
 
@@ -194,8 +197,9 @@ PasswordBubbleViewBase::PasswordBubbleViewBase(
 }
 
 PasswordBubbleViewBase::~PasswordBubbleViewBase() {
-  if (g_manage_passwords_bubble_ == this)
+  if (g_manage_passwords_bubble_ == this) {
     g_manage_passwords_bubble_ = nullptr;
+  }
 }
 
 void PasswordBubbleViewBase::SetBubbleHeader(int light_image_id,

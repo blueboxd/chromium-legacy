@@ -14,7 +14,6 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
-#include "base/strings/string_piece.h"
 #include "components/reporting/proto/synced/status.pb.h"
 
 namespace reporting {
@@ -161,4 +160,4 @@ class Scoped : public base::OnceCallback<void(Failed)> {
 };
 }  // namespace reporting
 
-#endif  // MISSIVE_UTIL_STATUS_H_
+#endif  // COMPONENTS_REPORTING_UTIL_STATUS_H_

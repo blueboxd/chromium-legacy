@@ -4,6 +4,8 @@
 
 #include "chromeos/ash/components/nearby/common/connections_manager/nearby_connections_manager_impl.h"
 
+#include <string>
+
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"
@@ -228,6 +230,52 @@ void NearbyConnectionsManagerImpl::StopAdvertising(
 
   process_reference_->GetNearbyConnections()->StopAdvertising(
       service_id_, std::move(callback));
+}
+
+void NearbyConnectionsManagerImpl::InjectBluetoothEndpoint(
+    const std::string& service_id,
+    const std::string& endpoint_id,
+    const std::vector<uint8_t> endpoint_info,
+    const std::vector<uint8_t> remote_bluetooth_mac_address,
+    ConnectionsCallback callback) {
+  nearby::connections::mojom::NearbyConnections* nearby_connections =
+      GetNearbyConnections();
+  if (!nearby_connections) {
+    CD_LOG(ERROR, Feature::NS)
+        << __func__ << " Nearby Connections cannot be retrieved.";
+    std::move(callback).Run(ConnectionsStatus::kError);
+    return;
+  }
+
+  if (endpoint_id.length() != 4) {
+    CD_LOG(ERROR, Feature::NS)
+        << __func__ << " endpoint ID must be length 4. Actual size: "
+        << base::NumberToString(endpoint_id.length());
+    std::move(callback).Run(ConnectionsStatus::kError);
+    return;
+  }
+
+  if (endpoint_info.size() == 0 || endpoint_info.size() > 130) {
+    CD_LOG(ERROR, Feature::NS)
+        << __func__
+        << " endpoint info must have size >0 and <131. Actual size: "
+        << base::NumberToString(endpoint_info.size());
+    std::move(callback).Run(ConnectionsStatus::kError);
+    return;
+  }
+
+  if (remote_bluetooth_mac_address.size() != 6) {
+    CD_LOG(ERROR, Feature::NS)
+        << __func__
+        << " bluetooth mac address size must be 6 bytes. Actual size: "
+        << base::NumberToString(remote_bluetooth_mac_address.size());
+    std::move(callback).Run(ConnectionsStatus::kError);
+    return;
+  }
+
+  nearby_connections->InjectBluetoothEndpoint(
+      service_id, endpoint_id, endpoint_info, remote_bluetooth_mac_address,
+      std::move(callback));
 }
 
 void NearbyConnectionsManagerImpl::StartDiscovery(
@@ -645,6 +693,9 @@ void NearbyConnectionsManagerImpl::ConnectV3(
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id));
   connect_timeout_timers_v3_.emplace(endpoint_id, std::move(timeout_timer));
 
+  endpoint_id_to_connect_v3_start_time_.emplace(endpoint_id,
+                                                base::TimeTicks::Now());
+
   auto presence_device =
       *endpoint_id_to_presence_device_map_.at(endpoint_id).get();
 
@@ -1011,15 +1062,15 @@ void NearbyConnectionsManagerImpl::OnConnectionInitiatedV3(
 void NearbyConnectionsManagerImpl::OnConnectionResultV3(
     const std::string& endpoint_id,
     Status status) {
-  CD_LOG(INFO, Feature::NEARBY_INFRA)
-      << __func__ << ": OnConnectionResult result=" << status;
+  CD_LOG(INFO, Feature::NEARBY_INFRA) << __func__ << ": result=" << status;
 
   auto it = pending_outgoing_connections_.find(endpoint_id);
-  if (it == pending_outgoing_connections_.end()) {
-    connection_listener_v3s_.ReportBadMessage(
-        base::StringPrintf("OnConnectionResult() received endpoint_id=%s which "
-                           "does not exist in connections V3",
-                           endpoint_id.c_str()));
+  if (it == pending_outgoing_connections_.end() ||
+      !base::Contains(endpoint_id_to_connect_v3_start_time_, endpoint_id)) {
+    connection_listener_v3s_.ReportBadMessage(base::StringPrintf(
+        "OnConnectionResultV3() received endpoint_id=%s which "
+        "does not exist in connections V3",
+        endpoint_id.c_str()));
     return;
   }
 
@@ -1030,12 +1081,20 @@ void NearbyConnectionsManagerImpl::OnConnectionResultV3(
     std::move(it->second)
         .Run(
             /*nearby_connection=*/result.first->second.get());
+
+    base::UmaHistogramTimes(
+        "Nearby.Connections.V3.ConnectionResult.Success.Latency",
+        base::TimeTicks::Now() -
+            endpoint_id_to_connect_v3_start_time_.at(endpoint_id));
   } else {
     std::move(it->second).Run(/*nearby_connection=*/nullptr);
   }
 
+  base::UmaHistogramEnumeration("Nearby.Connections.V3.Connection.Result",
+                                status);
   pending_outgoing_connections_.erase(it);
   connect_timeout_timers_v3_.erase(endpoint_id);
+  endpoint_id_to_connect_v3_start_time_.erase(endpoint_id);
 }
 
 void NearbyConnectionsManagerImpl::OnDisconnectedV3(
@@ -1196,6 +1255,7 @@ void NearbyConnectionsManagerImpl::Reset() {
   on_bandwidth_changed_endpoint_ids_v3_.clear();
   current_upgraded_mediums_.clear();
   current_upgraded_mediums_v3_.clear();
+  endpoint_id_to_connect_v3_start_time_.clear();
 
   for (auto& entry : pending_outgoing_connections_) {
     std::move(entry.second).Run(/*connection=*/nullptr);

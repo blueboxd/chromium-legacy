@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/ash/mako/mako_bubble_coordinator.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -60,11 +61,14 @@ using ::testing::IsSupersetOf;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Property;
+using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 using ::testing::VariantWith;
 
 using MockSearchResultsCallback =
     testing::MockFunction<PickerClientImpl::CrosSearchResultsCallback>;
+
+namespace fmp = extensions::api::file_manager_private;
 
 bool CreateTestFile(const base::FilePath& path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -82,15 +86,21 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
   return std::move(service);
 }
 
-std::unique_ptr<KeyedService> BuildTestRecentModelFactory(
-    std::vector<ash::RecentFile> files,
-    content::BrowserContext* context) {
-  auto source = std::make_unique<ash::FakeRecentSource>();
-  source->AddProducer(std::make_unique<ash::FileProducer>(
-      /*lag=*/base::Milliseconds(0), std::move(files)));
+struct Volume {
+  fmp::VolumeType type;
+  std::vector<ash::RecentFile> files;
+};
 
+std::unique_ptr<KeyedService> BuildTestRecentModelFactory(
+    std::vector<Volume> volumes,
+    content::BrowserContext* /*context*/) {
   std::vector<std::unique_ptr<ash::RecentSource>> sources;
-  sources.push_back(std::move(source));
+  for (Volume& volume : volumes) {
+    auto source = std::make_unique<ash::FakeRecentSource>(volume.type);
+    source->AddProducer(std::make_unique<ash::FileProducer>(
+        /*lag=*/base::Milliseconds(0), std::move(volume.files)));
+    sources.push_back(std::move(source));
+  }
   return ash::RecentModel::CreateForTest(std::move(sources));
 }
 
@@ -139,25 +149,19 @@ void AddBookmarks(TestingProfile* profile,
                          std::u16string(title), url);
 }
 
-ash::RecentFile CreateRecentFile(const base::FilePath& path,
+ash::RecentFile CreateRecentFile(const base::FilePath& file_path,
                                  storage::FileSystemType type,
                                  base::Time last_modified = base::Time::Now()) {
-  storage::FileSystemURL url =
-      storage::FileSystemURL::CreateForTest(blink::StorageKey(), type, path);
-  return ash::RecentFile(url, last_modified);
+  CreateTestFile(file_path);
+  return ash::RecentFile(storage::FileSystemURL::CreateForTest(
+                             blink::StorageKey(), type, file_path),
+                         last_modified);
 }
 
-void SetRecentFiles(TestingProfile* profile,
-                    std::vector<ash::RecentFile> files) {
+void SetRecentFiles(TestingProfile* profile, std::vector<Volume> volumes) {
   ash::RecentModelFactory::GetInstance()->SetTestingFactoryAndUse(
       profile,
-      base::BindRepeating(BuildTestRecentModelFactory, std::move(files)));
-}
-
-drivefs::FakeMetadata CreateFakeDriveFsMetadata(const base::FilePath& path) {
-  drivefs::FakeMetadata metadata;
-  metadata.path = path;
-  return metadata;
+      base::BindRepeating(BuildTestRecentModelFactory, std::move(volumes)));
 }
 
 class PickerClientImplTest : public BrowserWithTestWindowTest {
@@ -205,7 +209,7 @@ class PickerClientImplTest : public BrowserWithTestWindowTest {
          base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor)},
         {ash::RecentModelFactory::GetInstance(),
          base::BindRepeating(&BuildTestRecentModelFactory,
-                             std::vector<ash::RecentFile>{})},
+                             std::vector<Volume>{})},
         {drive::DriveIntegrationServiceFactory::GetInstance(),
          base::BindRepeating(&BuildTestDriveIntegrationService,
                              temp_dir_.GetPath(),
@@ -315,62 +319,67 @@ TEST_F(PickerClientImplTest, GetRecentLocalFilesWithNoFiles) {
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
 
-  client.GetRecentLocalFileResults(future.GetCallback());
+  client.GetRecentLocalFileResults(/*max_files=*/100, future.GetCallback());
 
   EXPECT_THAT(future.Get(), IsEmpty());
 }
 
-TEST_F(PickerClientImplTest, GetRecentLocalFilesReturnsFilteredFiles) {
+TEST_F(PickerClientImplTest, GetRecentLocalFilesReturnsOnlyLocalFiles) {
   ash::PickerController controller;
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
-  SetRecentFiles(profile(),
-                 {
-                     CreateRecentFile(base::FilePath("aaa.jpg"),
-                                      storage::kFileSystemTypeLocal),
-                     CreateRecentFile(base::FilePath("bbb.mp4"),
-                                      storage::kFileSystemTypeLocal),
-                     CreateRecentFile(base::FilePath("ccc.png"),
-                                      storage::kFileSystemTypeLocal),
-                     CreateRecentFile(base::FilePath("ddd.png"),
-                                      storage::kFileSystemTypeDriveFs),
-                 });
+  const base::FilePath mount_path = GetFakeDriveFs().mount_path();
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDownloads,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("local.png"),
+                                       storage::kFileSystemTypeLocal),
+                  },
+          },
+          Volume{
+              .type = fmp::VolumeType::kDrive,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("drive.png"),
+                                       storage::kFileSystemTypeDriveFs),
+                  },
+          },
+      });
 
-  client.GetRecentLocalFileResults(future.GetCallback());
+  client.GetRecentLocalFileResults(/*max_files=*/100, future.GetCallback());
 
-  EXPECT_THAT(
-      future.Get(),
-      UnorderedElementsAre(
-          Property(
-              "data", &ash::PickerSearchResult::data,
-              VariantWith<ash::PickerSearchResult::LocalFileData>(AllOf(
-                  Field("title", &ash::PickerSearchResult::LocalFileData::title,
-                        u"aaa.jpg"),
-                  Field("file_path",
-                        &ash::PickerSearchResult::LocalFileData::file_path,
-                        base::FilePath("aaa.jpg"))))),
-          Property(
-              "data", &ash::PickerSearchResult::data,
-              VariantWith<ash::PickerSearchResult::LocalFileData>(AllOf(
-                  Field("title", &ash::PickerSearchResult::LocalFileData::title,
-                        u"ccc.png"),
-                  Field("file_path",
-                        &ash::PickerSearchResult::LocalFileData::file_path,
-                        base::FilePath("ccc.png")))))));
+  EXPECT_THAT(future.Get(),
+              UnorderedElementsAre(Property(
+                  "data", &ash::PickerSearchResult::data,
+                  VariantWith<ash::PickerSearchResult::LocalFileData>(Field(
+                      "title", &ash::PickerSearchResult::LocalFileData::title,
+                      u"local.png")))));
 }
 
 TEST_F(PickerClientImplTest, GetRecentLocalFilesDoesNotReturnOldFiles) {
   ash::PickerController controller;
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
-  SetRecentFiles(profile(),
-                 {
-                     CreateRecentFile(base::FilePath("abc.jpg"),
-                                      storage::kFileSystemTypeLocal,
-                                      base::Time::Now() - base::Days(31)),
-                 });
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDownloads,
+              .files =
+                  {
+                      CreateRecentFile(
+                          GetFakeDriveFs().mount_path().AppendASCII("old.png"),
+                          storage::kFileSystemTypeLocal,
+                          base::Time::Now() - base::Days(31)),
+                  },
+          },
+      });
 
-  client.GetRecentDriveFileResults(future.GetCallback());
+  client.GetRecentLocalFileResults(/*max_files=*/100, future.GetCallback());
 
   EXPECT_THAT(future.Get(), IsEmpty());
 }
@@ -380,86 +389,122 @@ TEST_F(PickerClientImplTest, GetRecentDriveFilesWithNoFiles) {
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
 
-  client.GetRecentLocalFileResults(future.GetCallback());
+  client.GetRecentDriveFileResults(/*max_files=*/100, future.GetCallback());
 
   EXPECT_THAT(future.Get(), IsEmpty());
 }
 
-TEST_F(PickerClientImplTest, GetRecentDriveFilesReturnsDriveFiles) {
+TEST_F(PickerClientImplTest, GetRecentDriveFilesReturnsOnlyDriveFiles) {
   ash::PickerController controller;
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
   const base::FilePath mount_path = GetFakeDriveFs().mount_path();
-  ASSERT_TRUE(CreateTestFile(mount_path.AppendASCII("aaa.jpg")));
-  ASSERT_TRUE(CreateTestFile(mount_path.AppendASCII("bbb.mp4")));
-  ASSERT_TRUE(CreateTestFile(mount_path.AppendASCII("ccc.png")));
-  GetFakeDriveFs().SetMetadata(
-      CreateFakeDriveFsMetadata(base::FilePath("aaa.jpg")));
-  GetFakeDriveFs().SetMetadata(
-      CreateFakeDriveFsMetadata(base::FilePath("bbb.mp4")));
-  GetFakeDriveFs().SetMetadata(
-      CreateFakeDriveFsMetadata(base::FilePath("ccc.png")));
-  SetRecentFiles(profile(),
-                 {
-                     CreateRecentFile(mount_path.AppendASCII("aaa.jpg"),
-                                      storage::kFileSystemTypeDriveFs),
-                     CreateRecentFile(mount_path.AppendASCII("bbb.mp4"),
-                                      storage::kFileSystemTypeDriveFs),
-                     CreateRecentFile(mount_path.AppendASCII("ccc.png"),
-                                      storage::kFileSystemTypeLocal),
-                 });
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDownloads,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("local.png"),
+                                       storage::kFileSystemTypeLocal),
+                  },
+          },
+          Volume{
+              .type = fmp::VolumeType::kDrive,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("drive.png"),
+                                       storage::kFileSystemTypeDriveFs),
+                  },
+          },
+      });
 
-  client.GetRecentDriveFileResults(future.GetCallback());
+  client.GetRecentDriveFileResults(/*max_files=*/100, future.GetCallback());
 
   EXPECT_THAT(
       future.Get(),
-      UnorderedElementsAre(
-          Property(
-              "data", &ash::PickerSearchResult::data,
-              VariantWith<ash::PickerSearchResult::DriveFileData>(AllOf(
-                  Field("title", &ash::PickerSearchResult::DriveFileData::title,
-                        u"aaa.jpg"),
-                  Field("url", &ash::PickerSearchResult::DriveFileData::url,
-                        GURL("https://file_alternate_link/aaa.jpg"))))),
-          Property(
-              "data", &ash::PickerSearchResult::data,
-              VariantWith<ash::PickerSearchResult::DriveFileData>(AllOf(
-                  Field("title", &ash::PickerSearchResult::DriveFileData::title,
-                        u"bbb.mp4"),
-                  Field("url", &ash::PickerSearchResult::DriveFileData::url,
-                        GURL("https://file_alternate_link/bbb.mp4")))))));
-}
-
-TEST_F(PickerClientImplTest,
-       GetRecentDriveFilesDoesNotReturnFilesWithNoMetadata) {
-  ash::PickerController controller;
-  PickerClientImpl client(&controller, user_manager());
-  base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
-  SetRecentFiles(profile(),
-                 {
-                     CreateRecentFile(base::FilePath("abc.jpg"),
-                                      storage::kFileSystemTypeDriveFs),
-                 });
-
-  client.GetRecentLocalFileResults(future.GetCallback());
-
-  EXPECT_THAT(future.Get(), IsEmpty());
+      UnorderedElementsAre(Property(
+          "data", &ash::PickerSearchResult::data,
+          VariantWith<ash::PickerSearchResult::DriveFileData>(AllOf(
+              Field("title", &ash::PickerSearchResult::DriveFileData::title,
+                    u"drive.png"),
+              Field("url", &ash::PickerSearchResult::DriveFileData::url,
+                    GURL("https://file_alternate_link/drive.png")))))));
 }
 
 TEST_F(PickerClientImplTest, GetRecentDriveFilesDoesNotReturnOldFiles) {
   ash::PickerController controller;
   PickerClientImpl client(&controller, user_manager());
   base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
-  SetRecentFiles(profile(),
-                 {
-                     CreateRecentFile(base::FilePath("abc.jpg"),
-                                      storage::kFileSystemTypeDriveFs,
-                                      base::Time::Now() - base::Days(31)),
-                 });
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDrive,
+              .files =
+                  {
+                      CreateRecentFile(
+                          GetFakeDriveFs().mount_path().AppendASCII("old.png"),
+                          storage::kFileSystemTypeDriveFs,
+                          base::Time::Now() - base::Days(31)),
+                  },
+          },
+      });
 
-  client.GetRecentLocalFileResults(future.GetCallback());
+  client.GetRecentLocalFileResults(/*max_files=*/100, future.GetCallback());
 
   EXPECT_THAT(future.Get(), IsEmpty());
+}
+
+TEST_F(PickerClientImplTest, GetRecentLocalFilesTruncates) {
+  ash::PickerController controller;
+  PickerClientImpl client(&controller, user_manager());
+  base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
+  const base::FilePath mount_path = GetFakeDriveFs().mount_path();
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDownloads,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("1.jpg"),
+                                       storage::kFileSystemTypeLocal),
+                      CreateRecentFile(mount_path.AppendASCII("2.jpg"),
+                                       storage::kFileSystemTypeLocal),
+                  },
+          },
+      });
+
+  client.GetRecentLocalFileResults(/*max_files=*/1, future.GetCallback());
+
+  EXPECT_THAT(future.Get(), SizeIs(1));
+}
+
+TEST_F(PickerClientImplTest, GetRecentDriveFilesTruncates) {
+  ash::PickerController controller;
+  PickerClientImpl client(&controller, user_manager());
+  base::test::TestFuture<std::vector<ash::PickerSearchResult>> future;
+  const base::FilePath mount_path = GetFakeDriveFs().mount_path();
+  SetRecentFiles(
+      profile(),
+      {
+          Volume{
+              .type = fmp::VolumeType::kDrive,
+              .files =
+                  {
+                      CreateRecentFile(mount_path.AppendASCII("1"),
+                                       storage::kFileSystemTypeDriveFs),
+                      CreateRecentFile(mount_path.AppendASCII("2"),
+                                       storage::kFileSystemTypeDriveFs),
+                  },
+          },
+      });
+
+  client.GetRecentDriveFileResults(/*max_files=*/1, future.GetCallback());
+
+  EXPECT_THAT(future.Get(), SizeIs(1));
 }
 
 TEST_F(PickerClientImplTest, GetSuggestedLinkResultsReturnsLinks) {

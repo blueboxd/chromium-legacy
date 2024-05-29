@@ -360,6 +360,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1641976391427233992">Atrasar saída ata</translation>
 <translation id="1643651787397909318">Botón Vai á comprobación de seguranza de Chrome: actívao para visitar a páxina de comprobación de seguranza de Chrome na configuración</translation>
 <translation id="1644574205037202324">Historial</translation>
+<translation id="1645004815457365098">Fonte descoñecida</translation>
 <translation id="1645368109819982629">Protocolo non compatible</translation>
 <translation id="1650602712345345441">Xestionar a configuración de Chrome</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -575,7 +576,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2056658168519009885">Os sitios poden solicitarlle información a Chrome para axudar a personalizar os anuncios que se che mostren.</translation>
 <translation id="2059166748188874810">Concello</translation>
 <translation id="2059202684901022309">22 × 34 in</translation>
-<translation id="206275378685759380">Esperar para comprar</translation>
 <translation id="2064568741209980952">Crédito e préstamos</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suxestión}other{# suxestións}}</translation>
 <translation id="2066915425250589881">solicitar que se elimine</translation>
@@ -1335,6 +1335,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="353816159217417898">Pantalla (paxinada)</translation>
 <translation id="3542628208405253498">Imaxe da tarxeta</translation>
 <translation id="3542768452570884558">Abrir ligazón nunha ventá nova</translation>
+<translation id="3547442767634383572">A vista xeral do perfil de traballo</translation>
 <translation id="3547746132308051926">20 x 24 polgadas</translation>
 <translation id="3552155506104542239">Advertencia: Esta política está en conflito con <ph name="POLICY_NAME" />, polo que non terá ningún efecto nas aplicacións para Android. Polo resto, funciona do xeito previsto.</translation>
 <translation id="3552297013052089404">Tipo de letra sen serifas</translation>
@@ -2199,6 +2200,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5230733896359313003">Enderezo de envío</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">A persoa administradora pode acceder ao perfil xestionado, ao navegador e a parte da información do dispositivo. Poderá ver datos como:</translation>
 <translation id="5234764350956374838">Rexeitar</translation>
 <translation id="5238301240406177137">Gardar na conta</translation>
 <translation id="5239119062986868403">Prezo habitual</translation>
@@ -2212,6 +2214,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="52517543715119994">Máis información sobre as funcións de Chrome</translation>
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5254043433801397071">Optimizar contido da impresión</translation>
+<translation id="5255583962255635076">As políticas do navegador aplicadas no teu perfil de traballo</translation>
 <translation id="5255690596502591079">Capturar de todos os modos</translation>
 <translation id="5255833070095767006">350 x 460 mm</translation>
 <translation id="5257739419779698609">{0,plural, =1{A política do administrador non recomenda copiar este ficheiro neste destino: <ph name="DESTINATION_NAME" />}other{A política do administrador non recomenda copiar estes ficheiros neste destino: <ph name="DESTINATION_NAME" />}}</translation>
@@ -3213,7 +3216,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="719464814642662924">Visa</translation>
 <translation id="7195852673246414183">Unha vez que actives esta opción de configuración, volve a esta pestana para comezar a escribir</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">O teu administrador pode ver:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Para abrir unha nova pestana do modo de incógnito e navegar de forma privada, preme Tabulador e, a continuación, Introducir</translation>
 <translation id="7203375778433816396">Establecer Chrome como navegador predeterminado do sistema</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non cumpre cos estándares de seguranza.</translation>
@@ -3332,6 +3334,7 @@ Detalles adicionais:
 <translation id="7421067045979951561">controladores de protocolo</translation>
 <translation id="7422347648202898039">Etiquetas (seguranza)</translation>
 <translation id="7423283032694727565">Botón para xestionar as cookies. Actívao para xestionar na configuración de Chrome as túas preferencias relativas ás cookies</translation>
+<translation id="742435751935045381">As aplicacións e extensións instaladas no teu perfil de traballo</translation>
 <translation id="7424421098814895617">Seleccionouse a opción de eliminar o enderezo</translation>
 <translation id="7425037327577270384">Axúdame a escribir</translation>
 <translation id="7425878584435172632">Deseño e artes visuais</translation>
@@ -3878,6 +3881,7 @@ Detalles adicionais:
 Detalles adicionais:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">Permítese o uso do micrófono esta vez</translation>
+<translation id="8421158157346464398">A información do perfil de traballo (por exemplo, o nome de usuario asociado ao devandito perfil)</translation>
 <translation id="8422228580902424274">Os atacantes do sitio que tentas visitar poderían enganarte para que instales software ou reveles datos como o teu contrasinal, teléfono ou número de tarxeta de crédito.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Cambiar</translation>
@@ -4246,6 +4250,7 @@ Detalles adicionais:
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">Os sitios que visitas tamén poden determinar o que che gusta en función da túa actividade neles. Por exemplo, se visitas un sitio que vende zapatillas deportivas para carreiras de longa distancia, ese sitio podería determinar que che interesa participar en maratóns.</translation>
 <translation id="9166851138617700776">Máis información sobre os anuncios suxeridos polos sitios e a medición de anuncios</translation>
+<translation id="9167054383925257837">A información do sistema operativo do dispositivo e do navegador (por exemplo, as súas versións)</translation>
 <translation id="9167594211215946097">Ter acceso directo ás túas impresoras</translation>
 <translation id="9168814207360376865">Permitir que os sitios comproben se tes métodos de pago gardados</translation>
 <translation id="9169664750068251925">Bloquear sempre neste sitio</translation>

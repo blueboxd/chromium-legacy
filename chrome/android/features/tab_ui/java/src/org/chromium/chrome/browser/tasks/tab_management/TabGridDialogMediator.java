@@ -28,6 +28,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.data_sharing.DataSharingNotificationManager;
 import org.chromium.chrome.browser.data_sharing.SharedImageTilesCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -106,11 +107,14 @@ public class TabGridDialogMediator
          * @return Whether the TabGridDialog is visible.
          */
         boolean isVisible();
+
+        /** A supplier that returns if the dialog is currently showing or animating. */
+        ObservableSupplier<Boolean> getShowingOrAnimationSupplier();
     }
 
     /**
-     * Defines an interface for a {@link TabGridDialogMediator} to get the source {@link View}
-     * in order to prepare show/hide animation.
+     * Defines an interface for a {@link TabGridDialogMediator} to get the source {@link View} in
+     * order to prepare show/hide animation.
      */
     interface AnimationSourceViewProvider {
         /**
@@ -131,7 +135,7 @@ public class TabGridDialogMediator
     private final TabGroupModelFilterObserver mTabGroupModelFilterObserver;
     private final TabCreatorManager mTabCreatorManager;
     private final DialogController mDialogController;
-    private final TabSwitcherResetHandler mTabSwitcherResetHandler;
+    private final @Nullable TabSwitcherResetHandler mTabSwitcherResetHandler;
     private final Supplier<RecyclerViewPosition> mRecyclerViewPositionSupplier;
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final DialogHandler mTabGridDialogHandler;
@@ -161,10 +165,10 @@ public class TabGridDialogMediator
             PropertyModel model,
             ObservableSupplier<TabModelFilter> currentTabModelFilterSupplier,
             TabCreatorManager tabCreatorManager,
-            TabSwitcherResetHandler tabSwitcherResetHandler,
+            @Nullable TabSwitcherResetHandler tabSwitcherResetHandler,
             Supplier<RecyclerViewPosition> recyclerViewPositionSupplier,
             AnimationSourceViewProvider animationSourceViewProvider,
-            SnackbarManager snackbarManager,
+            @Nullable SnackbarManager snackbarManager,
             @Nullable SharedImageTilesCoordinator sharedImageTilesCoordinator,
             @NonNull BottomSheetController bottomSheetController,
             Runnable showShareBottomSheetRunnable,
@@ -227,8 +231,18 @@ public class TabGridDialogMediator
                     public void didSelectTab(Tab tab, int type, int lastId) {
                         if (!isVisible()) return;
 
-                        if (type == TabSelectionType.FROM_USER) {
-                            // Cancel the zooming into tab grid card animation.
+                        // When this grid dialog is opened via the tab switcher there is a
+                        // `mTabSwitcherResetHandler`.
+                        boolean isTabSwitcherContext = mTabSwitcherResetHandler != null;
+
+                        // When Hub is not enabled ignore the context and always treat FROM_USER
+                        // selections as hiding the dialog. This is necessary to ensure we
+                        // correctly exit the TabSwitcherLayout.
+                        if (!HubFieldTrial.isHubEnabled()) {
+                            isTabSwitcherContext = false;
+                        }
+                        if (type == TabSelectionType.FROM_USER && !isTabSwitcherContext) {
+                            // Hide the dialog from the strip context only.
                             hideDialog(false);
                         } else if (getRelatedTabs(mCurrentTabId).contains(tab)) {
                             mCurrentTabId = tab.getId();
@@ -274,7 +288,7 @@ public class TabGridDialogMediator
                     @Override
                     public void multipleTabsPendingClosure(
                             List<Tab> closedTabs, boolean isAllTabs) {
-                        if (!isVisible()) return;
+                        if (!isVisible() || mSnackbarManager == null) return;
 
                         // TODO(b/338447134): This shouldn't show a snackbar if the tabs aren't in
                         // this group. However, background closures are currently not-undoable so
@@ -287,7 +301,7 @@ public class TabGridDialogMediator
                         assert !isAllTabs;
                         String content =
                                 String.format(Locale.getDefault(), "%d", closedTabs.size());
-                        snackbarManager.showSnackbar(
+                        mSnackbarManager.showSnackbar(
                                 Snackbar.make(
                                                 content,
                                                 TabGridDialogMediator.this,
@@ -322,7 +336,8 @@ public class TabGridDialogMediator
                     }
 
                     private void showSingleTabClosureSnackbar(Tab tab) {
-                        snackbarManager.showSnackbar(
+                        if (mSnackbarManager == null) return;
+                        mSnackbarManager.showSnackbar(
                                 Snackbar.make(
                                                 tab.getTitle(),
                                                 TabGridDialogMediator.this,
@@ -334,28 +349,31 @@ public class TabGridDialogMediator
                     }
 
                     private void dismissMultipleTabSnackbar(List<Tab> tabs) {
+                        if (mSnackbarManager == null) return;
                         PostTask.postTask(
                                 TaskTraits.UI_DEFAULT,
                                 () -> {
-                                    snackbarManager.dismissSnackbars(
+                                    mSnackbarManager.dismissSnackbars(
                                             TabGridDialogMediator.this, tabs);
                                 });
                     }
 
                     private void dismissSingleTabSnackbar(int tabId) {
+                        if (mSnackbarManager == null) return;
                         PostTask.postTask(
                                 TaskTraits.UI_DEFAULT,
                                 () -> {
-                                    snackbarManager.dismissSnackbars(
+                                    mSnackbarManager.dismissSnackbars(
                                             TabGridDialogMediator.this, tabId);
                                 });
                     }
 
                     private void dismissAllSnackbars() {
+                        if (mSnackbarManager == null) return;
                         PostTask.postTask(
                                 TaskTraits.UI_DEFAULT,
                                 () -> {
-                                    snackbarManager.dismissSnackbars(TabGridDialogMediator.this);
+                                    mSnackbarManager.dismissSnackbars(TabGridDialogMediator.this);
                                 });
                     }
                 };

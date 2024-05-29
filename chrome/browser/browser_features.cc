@@ -206,12 +206,6 @@ BASE_FEATURE(kKeyPinningComponentUpdater,
              "KeyPinningComponentUpdater",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLargeFaviconFromGoogle,
-             "LargeFaviconFromGoogle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
-    &kLargeFaviconFromGoogle, "favicon_size_in_dip", 128};
-
 #if BUILDFLAG(IS_WIN)
 // Enables locking the cookie database for profiles.
 // TODO(crbug.com/40901624): Remove after fully launched.
@@ -412,5 +406,15 @@ BASE_FEATURE(kUseOsCryptAsyncForCookieEncryption,
 BASE_FEATURE(kWebUsbDeviceDetection,
              "WebUsbDeviceDetection",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN)
+// Disable dynamic code using ACG. Prevents the browser process from generating
+// dynamic code or modifying executable code. See comments in
+// sandbox/win/src/security_level.h. Only available on Windows 10 RS1 (1607,
+// Build 14393) onwards.
+BASE_FEATURE(kBrowserDynamicCodeDisabled,
+             "BrowserDynamicCodeDisabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace features

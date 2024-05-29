@@ -1476,11 +1476,12 @@
     Navigate to extra content <ph name="CURRENT_ELEMENT">$1<ex>1</ex></ph> out of <ph name="TOTAL_ELEMENTS">$2<ex>2</ex></ph>
   </message>
   <!-- Strings for tuna screen -->
-  <message name="IDS_TUNA_TITLE" desc="The title of the tuna dialog" translateable="false">
-    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook Plus</ex></ph> comes with Google AI
+  <message name="IDS_TUNA_TITLE" desc="The title of the tuna dialog">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook Plus</ex></ph> comes with Gemini
   </message>
-  <message name="IDS_TUNA_SUBTITLE" desc="The subtitle of the tuna dialog" translateable="false">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Get help on writing, planning, learning and more.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+  <message name="IDS_TUNA_SUBTITLE" desc="The subtitle of the tuna dialog">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Chat with Gemini to start writing, planning, learning and more with Google AI.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>After setup, start using Gemini by selecting the Gemini app on your shelf, at the bottom of your screen.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <!-- Strings for marketing optin screen -->
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_TITLE" desc="The title of the last dialog in the set of screens that are always displayed to the user on the first login to the ChromeOS device.">
@@ -1723,18 +1724,6 @@
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_INCORRECT_OLD_PASSWORD" desc="Error that is shown when incorrect old password was supplied for user cryptohome migration.">
     Incorrect password
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title for the password changed dialog box">
-    To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password.
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_FORGOT_PASSWORD" desc="Text of the link that lets user skip old password input on the password changed dialog in the GAIA flow">
-    Forgot your old password?
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY" desc="Button to proceed without providing old password on the password changed dialog in the GAIA flow">
-    You may proceed, but only your synced data and settings will be restored. All local data will be lost.
-  </message>
-  <message name="IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN" desc="Label for the retry button on the proceed anyway step in the the GAIA password changed flow">
-    Try again
   </message>
   <message name="IDS_LOGIN_PASSWORD_CHANGED_DATA_LOSS_WARNING_TITLE" desc="Title for the data loss warning screen if the user decided not to recover local data">
     Local data will be deleted
@@ -2722,10 +2711,6 @@
   </message>
   <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is not known.">
     This device (SN: <ph name="SERIAL_NUMBER">$1<ex>1234</ex></ph>) was locked by the owner.
-  </message>
-  <message name="IDS_DEVICE_DISABLED_CHROMAD_DISABLED" desc="Explanation shown to the user when the device has been disabled because it's in Active Directory management mode, which is no longer supported.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This device (SN: <ph name="SERIAL_NUMBER">$1<ex>1234</ex></ph>) was locked.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Chrome device management with <ph name="MS_AD_NAME">Microsoft® Active Directory® (AD)</ph> is no longer supported. To sign in, use a different device or contact your device administrator.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
 
   <!-- Encryption migration dialog -->
@@ -5448,6 +5433,9 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_RETRY_BUTTON" desc="Button for Bruschetta (Codename) installer to retry after failing.">
     Retry
   </message>
+  <message name="IDS_BRUSCHETTA_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Bruschetta terminal app, allowing users to shut down the Linux virtual machine.">
+    Shut down <ph name="VM_NAME">$1<ex>Bruschetta</ex></ph>
+  </message>
 
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
@@ -7378,6 +7366,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
       =1 {Can't open file}
       other {Can't open files}}
   </message>
+  <message name="IDS_OFFICE_FILE_ALREADY_BEING_OPENED_MESSAGE" desc="Message for opening office files explaining what to do when the same file is already being opened.">
+    Wait for the file to open before trying again
+  </message>
+  <message name="IDS_OFFICE_FILE_ALREADY_BEING_OPENED_TITLE" desc="Title of notification for opening office files indicating same file is already being opened.">
+    File is already being opened
+  </message>
 
   <!-- security curtain -->
   <message name="IDS_SECURITY_CURTAIN_TITLE" desc="Title text displayed to inform the user a remote admin has taken control of the ChromeOs device.">
@@ -7584,4 +7578,8 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Learn more
   </message>
 
+  <!-- Mall app -->
+  <message name="IDS_MALL_APP_NAME" desc="Name of a system app which can be used to find and install apps and games">
+    Get Apps and Games
+  </message>
 </grit-part>

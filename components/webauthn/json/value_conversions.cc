@@ -4,12 +4,13 @@
 
 #include "components/webauthn/json/value_conversions.h"
 
+#include <iterator>
 #include <optional>
+#include <string_view>
 
 #include "base/base64url.h"
 #include "base/feature_list.h"
 #include "base/ranges/ranges.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "device/fido/attestation_object.h"
 #include "device/fido/authenticator_selection_criteria.h"
@@ -33,13 +34,13 @@ std::string Base64UrlEncode(base::span<const uint8_t> input) {
   // ByteSource, are base64url-encoded without trailing '=' padding.
   std::string output;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(input.data()),
-                        input.size()),
+      std::string_view(reinterpret_cast<const char*>(input.data()),
+                       input.size()),
       base::Base64UrlEncodePolicy::OMIT_PADDING, &output);
   return output;
 }
 
-bool Base64UrlDecode(base::StringPiece input, std::string* output) {
+bool Base64UrlDecode(std::string_view input, std::string* output) {
   return base::Base64UrlDecode(
       input, base::Base64UrlDecodePolicy::DISALLOW_PADDING, output);
 }
@@ -47,7 +48,8 @@ bool Base64UrlDecode(base::StringPiece input, std::string* output) {
 // Base64url-decodes the value of `key` from `dict`. Returns `nullopt` if the
 // key isn't present or decoding failed.
 std::optional<std::string> Base64UrlDecodeStringKey(
-    const base::Value::Dict& dict, const std::string& key) {
+    const base::Value::Dict& dict,
+    const std::string& key) {
   const std::string* b64url_data = dict.FindString(key);
   if (!b64url_data) {
     return std::nullopt;
@@ -70,7 +72,8 @@ std::optional<std::string> Base64UrlDecodeStringKey(
 // Returns `{false, std::nullopt}` if the key wasn't found or if decoding the
 // string failed.
 std::tuple<bool, std::optional<std::string>> Base64UrlDecodeOptionalStringKey(
-    const base::Value::Dict& dict, const std::string& key) {
+    const base::Value::Dict& dict,
+    const std::string& key) {
   const base::Value* value = dict.Find(key);
   if (!value) {
     return {true, std::nullopt};
@@ -344,6 +347,24 @@ base::Value ToValue(const blink::mojom::PRFValuesPtr& prf_input) {
   return base::Value(std::move(prf_value));
 }
 
+base::Value ToValue(const std::vector<blink::mojom::Hint>& hints) {
+  base::Value::List ret;
+  for (const auto& hint : hints) {
+    switch (hint) {
+      case blink::mojom::Hint::SECURITY_KEY:
+        ret.Append(base::Value("security-key"));
+        break;
+      case blink::mojom::Hint::HYBRID:
+        ret.Append(base::Value("hybrid"));
+        break;
+      case blink::mojom::Hint::CLIENT_DEVICE:
+        ret.Append(base::Value("client-device"));
+        break;
+    }
+  }
+  return base::Value(std::move(ret));
+}
+
 }  // namespace
 
 base::Value ToValue(
@@ -367,6 +388,9 @@ base::Value ToValue(
   if (options->authenticator_selection) {
     value.Set("authenticatorSelection",
               ToValue(*options->authenticator_selection));
+  }
+  if (!options->hints.empty()) {
+    value.Set("hints", ToValue(options->hints));
   }
   value.Set("attestation", ToValue(options->attestation));
 
@@ -455,6 +479,9 @@ base::Value ToValue(
   value.Set("allowCredentials", std::move(allow_credentials));
 
   value.Set("userVerification", ToValue(options->user_verification));
+  if (!options->hints.empty()) {
+    value.Set("hints", ToValue(options->hints));
+  }
 
   base::Value::Dict extensions;
 

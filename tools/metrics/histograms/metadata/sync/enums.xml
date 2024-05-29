@@ -341,7 +341,8 @@ chromium-metrics-reviews@google.com.
   <int value="100038" label="(obsolete) AccessibilityGreyscaleAmount"/>
   <int value="100039" label="(obsolete) AccessibilityHueRotationAmount"/>
   <int value="100040" label="(obsolete) AccessibilitySaturationAmount"/>
-  <int value="100041" label="AccessibilityScreenMagnifierCenterFocus"/>
+  <int value="100041"
+      label="(obsolete) AccessibilityScreenMagnifierCenterFocus"/>
   <int value="100042"
       label="AccessibilityScreenMagnifierFocusFollowingEnabled"/>
   <int value="100043" label="AccessibilityScreenMagnifierMouseFollowingMode"/>
@@ -606,6 +607,8 @@ chromium-metrics-reviews@google.com.
   <int value="100279" label="KeyboardDefaultSplitModifierSettings"/>
   <int value="100280" label="DisplayAmbientLightSensorLastEnabled"/>
   <int value="100281" label="AccessibilityMainNodeAnnotationsEnabled"/>
+  <int value="100282" label="SyncableVersionedWallpaperInfo"/>
+  <int value="100283" label="FocusModeSelectedTask"/>
 <!-- LINT.ThenChange(/chrome/browser/sync/prefs/chrome_syncable_prefs_database.cc:ChromeSyncablePref)-->
 
 <!-- LINT.IfChange(IosSyncablePref) -->
@@ -985,8 +988,9 @@ chromium-metrics-reviews@google.com.
   <int value="63" label="Shared Tab Group Data"/>
   <int value="64" label="Collaboration Groups"/>
   <int value="65" label="Plus Address"/>
-  <int value="66" label="Compare"/>
+  <int value="66" label="Product Comparison"/>
   <int value="67" label="Cookies"/>
+  <int value="68" label="Plus Address Settings"/>
 </enum>
 
 <!-- LINT.ThenChange(/components/sync/base/model_type.h:SyncModelTypes) -->

@@ -403,15 +403,14 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Bool(),
     OSSettingsRevampDeviceTestAltAndSplitAndBacklightEnabled::DescribeParams);
 
-class OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled
+class OSSettingsRevampMochaTestApnAndPasspointEnabled
     : public OSSettingsRevampMochaTest {
  protected:
-  OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled() {
+  OSSettingsRevampMochaTestApnAndPasspointEnabled() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled=*/
         {
             ash::features::kApnRevamp,
-            ash::features::kHotspot,
             ash::features::kPasspointSettings,
         },
         /*disabled=*/{});
@@ -423,21 +422,9 @@ class OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled
 
 INSTANTIATE_TEST_SUITE_P(
     RevampParameterized,
-    OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled,
+    OSSettingsRevampMochaTestApnAndPasspointEnabled,
     testing::Bool(),
-    OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled::DescribeParams);
-
-class OSSettingsRevampInternetTestHotspotEnabled
-    : public OSSettingsRevampMochaTest {
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{ash::features::kHotspot};
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    RevampParameterized,
-    OSSettingsRevampInternetTestHotspotEnabled,
-    testing::Bool(),
-    OSSettingsRevampInternetTestHotspotEnabled::DescribeParams);
+    OSSettingsRevampMochaTestApnAndPasspointEnabled::DescribeParams);
 
 class OSSettingsRevampInternetTestApnAndPasspointEnabled
     : public OSSettingsRevampMochaTest {
@@ -645,6 +632,13 @@ INSTANTIATE_TEST_SUITE_P(
     OSSettingsRevampMochaTestFasterSplitScreenDisabled,
     testing::Bool(),
     OSSettingsRevampMochaTestFasterSplitScreenDisabled::DescribeParams);
+
+using OSSettingsRevampTestOsAboutPage = OSSettingsRevampMochaTest;
+
+INSTANTIATE_TEST_SUITE_P(RevampParameterized,
+                         OSSettingsRevampTestOsAboutPage,
+                         testing::Bool(),
+                         OSSettingsRevampTestOsAboutPage::DescribeParams);
 
 /* End Test Classes */
 
@@ -974,9 +968,8 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, InternetPageApnDetailDialog) {
   RunSettingsTest("internet_page/apn_detail_dialog_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(
-    OSSettingsRevampMochaTestApnAndHotspotAndPasspointEnabled,
-    InternetPage) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestApnAndPasspointEnabled,
+                       InternetPage) {
   RunSettingsTest("internet_page/internet_page_test.js");
 }
 
@@ -1010,17 +1003,16 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
   RunSettingsTest("internet_page/esim_rename_dialog_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampInternetTestHotspotEnabled,
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        InternetPageHotspotConfigDialog) {
   RunSettingsTest("internet_page/hotspot_config_dialog_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampInternetTestHotspotEnabled,
-                       InternetPageHotspotSubpage) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, InternetPageHotspotSubpage) {
   RunSettingsTest("internet_page/hotspot_subpage_test.js");
 }
 
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampInternetTestHotspotEnabled,
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
                        InternetPageHotspotSummaryItem) {
   RunSettingsTest("internet_page/hotspot_summary_item_test.js");
 }
@@ -1325,15 +1317,13 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsA11yPageTtsVoiceSubpage) {
   RunSettingsTest("os_a11y_page/tts_voice_subpage_test.js");
 }
 
-// TODO(crbug.com/336428443): Flaky for OsSettingsRevampWayfindingDisabled.
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest,
-                       DISABLED_OsAboutPage_AllBuilds) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampTestOsAboutPage, AllBuilds) {
   RunSettingsTest("os_about_page/os_about_page_test.js",
                   "runMochaSuite('<os-about-page> AllBuilds')");
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTest, OsAboutPage_OfficialBuild) {
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampTestOsAboutPage, OfficialBuild) {
   RunSettingsTest("os_about_page/os_about_page_test.js",
                   "runMochaSuite('<os-about-page> OfficialBuild')");
 }
@@ -1501,6 +1491,13 @@ IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestAppParentalControlsEnabled,
   RunSettingsTest(
       "os_apps_page/app_parental_controls_page/"
       "block_app_item_test.js");
+}
+
+IN_PROC_BROWSER_TEST_P(OSSettingsRevampMochaTestAppParentalControlsEnabled,
+                       OsAppsPageAppParentalControlsPageAppSetupPinKeyboard) {
+  RunSettingsTest(
+      "os_apps_page/app_parental_controls_page/"
+      "app_setup_pin_keyboard_test.js");
 }
 
 IN_PROC_BROWSER_TEST_P(

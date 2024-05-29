@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 
 // static
 const char SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName[] =
@@ -51,6 +52,9 @@ const char SupervisedUserExtensionsMetricsRecorder::
 const char SupervisedUserExtensionsMetricsRecorder::
     kParentPermissionDialogParentCanceledActionName[] =
         "SupervisedUsers_Extensions_ParentPermissionDialog_ParentCanceled";
+const char SupervisedUserExtensionsMetricsRecorder::
+    kIncorrectParentPasswordProvidedActionName[] =
+        "SupervisedUsers_Extensions_IncorrectParentPasswordProvided";
 // Enabling and disabling extensions.
 const char SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName[] =
     "SupervisedUsers.ExtensionEnablement";
@@ -61,8 +65,10 @@ const char SupervisedUserExtensionsMetricsRecorder::kDisabledActionName[] =
 const char
     SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName[] =
         "SupervisedUsers_Extensions_FailedToEnable";
-
 // Extension approval entry points.
+const char SupervisedUserExtensionsMetricsRecorder::
+    kExtensionParentApprovalEntryPointHistogramName[] =
+        "SupervisedUsers.ExtensionParentApprovalEntryPoint";
 const char SupervisedUserExtensionsMetricsRecorder::
     kImplicitParentApprovalGrantEntryPointHistogramName[] =
         "SupervisedUsers.ImplicitParentApprovalGrantEntryPoint";
@@ -150,11 +156,24 @@ void SupervisedUserExtensionsMetricsRecorder::
       base::RecordAction(base::UserMetricsAction(
           kParentPermissionDialogParentCanceledActionName));
       break;
+    case ParentPermissionDialogState::kIncorrectParentPasswordProvided:
+      base::RecordAction(
+          base::UserMetricsAction(kIncorrectParentPasswordProvidedActionName));
+      break;
     case ParentPermissionDialogState::kFailed:
     case ParentPermissionDialogState::kNoParentError:
       // Nothing to do here.
       break;
   }
+}
+
+// static
+void SupervisedUserExtensionsMetricsRecorder::
+    RecordExtensionParentApprovalDialogEntryPointUmaMetrics(
+        SupervisedUserExtensionParentApprovalEntryPoint
+            extension_approval_entry_point) {
+  base::UmaHistogramEnumeration(kExtensionParentApprovalEntryPointHistogramName,
+                                extension_approval_entry_point);
 }
 
 // static

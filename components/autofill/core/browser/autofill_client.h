@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
+#include "components/autofill/core/browser/ui/popup_open_enums.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
 #include "components/autofill/core/browser/ui/suggestion_type.h"
@@ -86,8 +87,6 @@ class CreditCard;
 enum class CreditCardFetchResult;
 class FormDataImporter;
 class Iban;
-class IbanAccessManager;
-class IbanManager;
 class LogManager;
 class MerchantPromoCodeManager;
 struct OfferNotificationOptions;
@@ -285,13 +284,15 @@ class AutofillClient {
                   base::i18n::TextDirection text_direction,
                   std::vector<Suggestion> suggestions,
                   AutofillSuggestionTriggerSource trigger_source,
-                  int32_t form_control_ax_id);
+                  int32_t form_control_ax_id,
+                  PopupAnchorType anchor_type);
     PopupOpenArgs(const PopupOpenArgs&);
     PopupOpenArgs(PopupOpenArgs&&);
     PopupOpenArgs& operator=(const PopupOpenArgs&);
     PopupOpenArgs& operator=(PopupOpenArgs&&);
     ~PopupOpenArgs();
-
+    // TODO(b/340817507): Update this member name since bounds can now refer to
+    // the caret bounds and elements gives the idea of HTML elements only.
     gfx::RectF element_bounds;
     base::i18n::TextDirection text_direction =
         base::i18n::TextDirection::UNKNOWN_DIRECTION;
@@ -299,6 +300,7 @@ class AutofillClient {
     AutofillSuggestionTriggerSource trigger_source =
         AutofillSuggestionTriggerSource::kUnspecified;
     int32_t form_control_ax_id = 0;
+    PopupAnchorType anchor_type = PopupAnchorType::kField;
   };
 
   // Describes the position of the Autofill popup on the screen.
@@ -386,12 +388,6 @@ class AutofillClient {
 
   // Gets the AutocompleteHistoryManager instance associated with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
-
-  // Gets the IbanManager instance associated with the client.
-  virtual IbanManager* GetIbanManager();
-
-  // Gets the IbanAccessManager instance associated with the client.
-  virtual IbanAccessManager* GetIbanAccessManager();
 
   // Returns the `AutofillComposeDelegate` instance for the tab of this client.
   virtual AutofillComposeDelegate* GetComposeDelegate();
@@ -493,14 +489,6 @@ class AutofillClient {
   virtual payments::MandatoryReauthManager*
   GetOrCreatePaymentsMandatoryReauthManager();
 
-  // Prompt the user to enable mandatory reauthentication for payment method
-  // autofill. When enabled, the user will be asked to authenticate using
-  // biometrics or device unlock before filling in payment method information.
-  virtual void ShowMandatoryReauthOptInPrompt(
-      base::OnceClosure accept_mandatory_reauth_callback,
-      base::OnceClosure cancel_mandatory_reauth_callback,
-      base::RepeatingClosure close_mandatory_reauth_callback);
-
   // Should only be called when we are sure re-showing the bubble will display a
   // confirmation bubble. If the most recent bubble was an opt-in bubble and it
   // was accepted, this will display the re-auth opt-in confirmation bubble.
@@ -509,14 +497,6 @@ class AutofillClient {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Hides the virtual card enroll bubble and icon if it is visible.
   virtual void HideVirtualCardEnrollBubbleAndIconIfVisible();
-
-  // Will update the WebAuthn dialog content when there is an error fetching the
-  // challenge.
-  virtual void UpdateWebauthnOfferDialogWithError();
-
-  // Will close the current visible WebAuthn dialog. Returns true if dialog was
-  // visible and has been closed.
-  virtual bool CloseWebauthnDialog();
 
 #else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // Display the cardholder name fix flow prompt and run the |callback| if

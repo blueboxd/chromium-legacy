@@ -65,7 +65,7 @@ try_.builder(
         configs = [
             "release",
             "official_optimize",
-            "reclient",
+            "remoteexec",
             "fuchsia",
             "arm64",
             "cast_receiver_size_optimized",
@@ -119,7 +119,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "debug_builder",
-            "reclient",
+            "remoteexec",
             "fuchsia_smart_display",
         ],
     ),
@@ -141,15 +141,9 @@ try_.builder(
 )
 
 try_.builder(
-    name = "fuchsia-fyi-x64-dbg",
-    mirrors = ["ci/fuchsia-fyi-x64-dbg"],
-    gn_args = "ci/fuchsia-fyi-x64-dbg",
-)
-
-try_.builder(
     name = "fuchsia-fyi-x64-dbg-persistent-emulator",
     mirrors = ["ci/fuchsia-fyi-x64-dbg-persistent-emulator"],
-    gn_args = "ci/fuchsia-fyi-x64-dbg",
+    gn_args = "ci/fuchsia-fyi-x64-dbg-persistent-emulator",
     contact_team_email = "chrome-fuchsia-engprod@google.com",
     execution_timeout = 10 * time.hour,
 )

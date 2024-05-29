@@ -388,6 +388,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const url::Origin& context_origin) override;
   bool IsFullCookieAccessAllowed(content::BrowserContext* browser_context,
+                                 content::RenderFrameHost* rfh,
                                  const GURL& url,
                                  const blink::StorageKey& storage_key) override;
 #if BUILDFLAG(IS_CHROMEOS)
@@ -534,6 +535,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsRendererCodeIntegrityEnabled() override;
   void SessionEnding(std::optional<DWORD> control_type) override;
   bool ShouldEnableAudioProcessHighPriority() override;
+  bool ShouldUseSkiaFontManager(const GURL& site_url) override;
 #endif
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
@@ -906,15 +908,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) override;
 
 #if BUILDFLAG(IS_ANDROID)
-  void ShowDigitalIdentityInterstitialIfNeeded(
+  DigitalIdentityInterstitialAbortCallback
+  ShowDigitalIdentityInterstitialIfNeeded(
       content::WebContents& web_contents,
       const url::Origin& origin,
       bool is_only_requesting_age,
       DigitalIdentityInterstitialCallback callback) override;
+#endif
 
   std::unique_ptr<content::DigitalIdentityProvider>
   CreateDigitalIdentityProvider() override;
-#endif
 
 #if !BUILDFLAG(IS_ANDROID)
   base::TimeDelta GetKeepaliveTimerTimeout(content::BrowserContext* context);
@@ -1046,9 +1049,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool ShouldSuppressAXLoadComplete(content::RenderFrameHost* rfh) override;
 
-  void BindModelManager(
+  void BindAIManager(
       content::RenderFrameHost* rfh,
-      mojo::PendingReceiver<blink::mojom::ModelManager> receiver) override;
+      mojo::PendingReceiver<blink::mojom::AIManager> receiver) override;
 
 #if !BUILDFLAG(IS_ANDROID)
   void QueryInstalledWebAppsByManifestId(

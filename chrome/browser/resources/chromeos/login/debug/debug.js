@@ -27,82 +27,82 @@ function createQuickStartQR() {
 
 function createCategoriesAppsData() {
   const data = {
-      'categorie_1': [
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Pinterest',
-          subname: 'Music streaming',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'WhatsApp Messenger',
-          subname: 'Office software',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Clash Royale',
-          subname: 'Messaging',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Zoom',
-          subname: 'Cloud gaming',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-      ],
-      'categorie_23': [
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Pinterest',
-          subname: 'Music streaming',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'WhatsApp Messenger',
-          subname: 'Office software',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Clash Royale',
-          subname: 'Messaging',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-        {
-          AppId: 'screenID1',
-          icon:
-              'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
-          name: 'Zoom',
-          subname: 'Cloud gaming',
-          package_name: 'Pinterest',
-          selected: false,
-        },
-      ],
+    'categorie_1': [
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'Pinterest',
+        subname: 'Music streaming',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/kMofEFLjobZy_bCuaiDogzBcUT-dz3BBbOrIEjJ-hqOabjK8ieuevGe6wlTD15QzOqw',
+        name: 'WhatsApp Messenger',
+        subname: 'Office software',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN',
+        name: 'Clash Royale',
+        subname: 'Messaging',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'Zoom',
+        subname: 'Cloud gaming',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+    ],
+    'categorie_23': [
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'Pinterest',
+        subname: 'Music streaming',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'WhatsApp Messenger',
+        subname: 'Office software',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'Clash Royale',
+        subname: 'Messaging',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+      {
+        AppId: 'screenID1',
+        icon:
+            'https://lh3.googleusercontent.com/dVsv8Hc4TOUeLFAahxR8KANg22W9dj2jBsTW1VHv3CV-5NCZjP9D9i2j5IpfVx2NTB8',
+        name: 'Zoom',
+        subname: 'Cloud gaming',
+        package_name: 'Pinterest',
+        selected: false,
+      },
+    ],
   };
   return data;
 }
@@ -143,6 +143,13 @@ function createCategoriesData() {
         icon: 'https://meltingpot.googleusercontent.com/oobe/creativity.svg',
         title: 'Productivity',
         subtitle: 'Home office, productivity work',
+        selected: false,
+      },
+      {
+        categoryId: 'oobe_gaming',
+        icon: 'https://meltingpot.googleusercontent.com/oobe/gaming.svg',
+        title: 'Gaming',
+        subtitle: 'Action, adventure, strategy, puzzle games and more',
         selected: false,
       },
     ],
@@ -767,7 +774,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
             screen.loadAuthenticator({
               chromeType: 'chromedevice',
               enterpriseManagedDevice: false,
-              forceReload: true,
               gaiaPath: 'embedded/setup/v2/chromeos',
               gaiaUrl: 'https://accounts.google.com/',
               hl: loadTimeData.getString('app_locale'),
@@ -838,36 +844,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
                 'Sign-in failed because your password could not be ' +
                     'verified. Please contact your administrator or try again.',
                 'Try again');
-          },
-        },
-      ],
-    },
-    {
-      // GAIA password changed.
-      id: 'gaia-password-changed',
-      kind: ScreenKind.OTHER,
-      handledSteps: 'password',
-      data: {
-        email: 'someone@example.com',
-      },
-      states: [
-        {
-          // No error
-          id: 'no-error',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              email: 'someone@example.com',
-            });
-          },
-        },
-        {
-          // Has error
-          id: 'has-error',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              email: 'someone@example.com',
-              showError: true,
-            });
           },
         },
       ],

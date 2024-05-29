@@ -127,27 +127,30 @@ class ChromeAuthenticatorRequestDelegate
   // be installed at a given time.
   class TestObserver {
    public:
-    virtual void Created(ChromeAuthenticatorRequestDelegate* delegate) = 0;
+    virtual void Created(ChromeAuthenticatorRequestDelegate* delegate) {}
 
     virtual void OnDestroy(ChromeAuthenticatorRequestDelegate* delegate) {}
 
     virtual std::vector<std::unique_ptr<device::cablev2::Pairing>>
-    GetCablePairingsFromSyncedDevices() = 0;
+    GetCablePairingsFromSyncedDevices();
 
     virtual void OnTransportAvailabilityEnumerated(
         ChromeAuthenticatorRequestDelegate* delegate,
-        device::FidoRequestHandlerBase::TransportAvailabilityInfo* tai) = 0;
+        device::FidoRequestHandlerBase::TransportAvailabilityInfo* tai) {}
 
-    virtual void UIShown(ChromeAuthenticatorRequestDelegate* delegate) = 0;
+    virtual void UIShown(ChromeAuthenticatorRequestDelegate* delegate) {}
 
     virtual void CableV2ExtensionSeen(
-        base::span<const uint8_t> server_link_data) = 0;
+        base::span<const uint8_t> server_link_data) {}
 
     virtual void ConfiguringCable(device::FidoRequestType request_type) {}
 
     virtual void AccountSelectorShown(
         const std::vector<device::AuthenticatorGetAssertionResponse>&
             responses) {}
+
+    virtual void HintsSet(
+        const AuthenticatorRequestClientDelegate::Hints& hints) {}
   };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -179,6 +182,10 @@ class ChromeAuthenticatorRequestDelegate
   }
 
   GPMEnclaveController* enclave_controller_for_testing() const;
+#if BUILDFLAG(IS_CHROMEOS)
+  chromeos::PasskeyDialogController& chromeos_passkey_controller_for_testing()
+      const;
+#endif
 
   // content::AuthenticatorRequestClientDelegate:
   void SetRelyingPartyId(const std::string& rp_id) override;

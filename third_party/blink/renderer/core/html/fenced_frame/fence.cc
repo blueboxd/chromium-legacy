@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -355,7 +354,7 @@ ScriptPromise<IDLUndefined> Fence::disableUntrustedNetwork(
     exception_state.ThrowSecurityError(
         "May not use a Fence object associated with a Document that is not "
         "fully active.");
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
   LocalFrame* frame = DomWindow()->GetFrame();
   DCHECK(frame->GetDocument());
@@ -367,7 +366,7 @@ ScriptPromise<IDLUndefined> Fence::disableUntrustedNetwork(
   if (!can_disable_untrusted_network) {
     exception_state.ThrowTypeError(
         "This frame is not allowed to disable untrusted network.");
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(

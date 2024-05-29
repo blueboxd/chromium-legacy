@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
@@ -200,8 +201,10 @@ bool TouchToFillDelegateAndroidImpl::TryToShowTouchToFill(
     } else if (std::vector<Iban>* ibans_to_suggest =
                    absl::get_if<std::vector<Iban>>(&dry_run.items_to_suggest);
                ibans_to_suggest &&
-               !manager_->client().ShowTouchToFillIban(
-                   GetWeakPtr(), std::move(*ibans_to_suggest))) {
+               (base::FeatureList::IsEnabled(
+                    features::kAutofillSkipAndroidBottomSheetForIban) ||
+                !manager_->client().ShowTouchToFillIban(
+                    GetWeakPtr(), std::move(*ibans_to_suggest)))) {
       dry_run.outcome = TriggerOutcome::kFailedToDisplayBottomSheet;
     }
   }
@@ -247,15 +250,7 @@ bool TouchToFillDelegateAndroidImpl::IsShowingTouchToFill() {
 // TODO(crbug.com/40233391): Create a central point for TTF hiding decision.
 void TouchToFillDelegateAndroidImpl::HideTouchToFill() {
   if (IsShowingTouchToFill()) {
-    // TODO(crbug.com/40257323): This is to prevent calling virtual functions in
-    // destructors in the following call chain:
-    //       ~ContentAutofillDriver()
-    //   --> ~BrowserAutofillManager()
-    //   --> ~TouchToFillDelegateAndroidImpl()
-    //   --> HideTouchToFill()
-    //   --> AutofillManager::safe_client()
-    //   --> ContentAutofillDriver::IsPrerendering()
-    manager_->unsafe_client(/*pass_key=*/{}).HideTouchToFillCreditCard();
+    manager_->client().HideTouchToFillCreditCard();
   }
 }
 
@@ -324,24 +319,27 @@ void TouchToFillDelegateAndroidImpl::IbanSuggestionSelected(
     absl::variant<Iban::Guid, Iban::InstrumentId> backend_id) {
   HideTouchToFill();
 
-  manager_->client().GetIbanAccessManager()->FetchValue(
-      absl::holds_alternative<Iban::Guid>(backend_id)
-          ? Suggestion::BackendId(
-                Suggestion::Guid(absl::get<Iban::Guid>(backend_id).value()))
-          : Suggestion::BackendId(Suggestion::InstrumentId(
-                absl::get<Iban::InstrumentId>(backend_id).value())),
-      base::BindOnce(
-          [](base::WeakPtr<TouchToFillDelegateAndroidImpl> delegate,
-             const std::u16string& value) {
-            if (delegate) {
-              delegate->manager_->FillOrPreviewField(
-                  mojom::ActionPersistence::kFill,
-                  mojom::FieldActionType::kReplaceAll, delegate->query_form_,
-                  delegate->query_field_, value, SuggestionType::kIbanEntry,
-                  IBAN_VALUE);
-            }
-          },
-          GetWeakPtr()));
+  manager_->client()
+      .GetPaymentsAutofillClient()
+      ->GetIbanAccessManager()
+      ->FetchValue(
+          absl::holds_alternative<Iban::Guid>(backend_id)
+              ? Suggestion::BackendId(
+                    Suggestion::Guid(absl::get<Iban::Guid>(backend_id).value()))
+              : Suggestion::BackendId(Suggestion::InstrumentId(
+                    absl::get<Iban::InstrumentId>(backend_id).value())),
+          base::BindOnce(
+              [](base::WeakPtr<TouchToFillDelegateAndroidImpl> delegate,
+                 const std::u16string& value) {
+                if (delegate) {
+                  delegate->manager_->FillOrPreviewField(
+                      mojom::ActionPersistence::kFill,
+                      mojom::FieldActionType::kReplaceAll,
+                      delegate->query_form_, delegate->query_field_, value,
+                      SuggestionType::kIbanEntry, IBAN_VALUE);
+                }
+              },
+              GetWeakPtr()));
 }
 
 void TouchToFillDelegateAndroidImpl::OnDismissed(bool dismissed_by_user) {

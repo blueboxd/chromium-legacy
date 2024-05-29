@@ -15,7 +15,7 @@
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/icons/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "skia/public/mojom/bitmap.mojom.h"
@@ -130,8 +130,9 @@ ExtensionAction::IconParseResult ExtensionAction::ParseIconFromCanvasDictionary(
       bytes = item.second.GetBlob().data();
       num_bytes = item.second.GetBlob().size();
     } else if (item.second.is_string()) {
-      if (!base::Base64Decode(item.second.GetString(), &byte_string))
+      if (!base::Base64Decode(item.second.GetString(), &byte_string)) {
         return IconParseResult::kDecodeFailure;
+      }
       bytes = byte_string.c_str();
       num_bytes = byte_string.length();
     } else {
@@ -146,8 +147,9 @@ ExtensionAction::IconParseResult ExtensionAction::ParseIconFromCanvasDictionary(
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
     const int kActionIconMaxSize = 10 * ActionIconSize();
-    if (bitmap.drawsNothing() || bitmap.width() > kActionIconMaxSize)
+    if (bitmap.drawsNothing() || bitmap.width() > kActionIconMaxSize) {
       continue;
+    }
 
     float scale = static_cast<float>(bitmap.width()) / ActionIconSize();
     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));

@@ -10,7 +10,9 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 
 @protocol ApplicationCommands;
+@protocol CountryCodePickerCommands;
 @protocol UnitConversionCommands;
+
 class Browser;
 class ChromeBrowserState;
 @class MainController;
@@ -42,6 +44,9 @@ ChromeBrowserState* GetCurrentIncognitoBrowserState();
 // Returns the browser for the main interface.
 Browser* GetMainBrowser();
 
+// Returns the current browser from the foreground active scene.
+Browser* GetCurrentBrowser();
+
 // Returns the active view controller.
 // NOTE: It is preferred to not directly access the active view controller if
 // possible.
@@ -51,7 +56,8 @@ UIViewController* GetActiveViewController();
 id<ApplicationCommands,
    BrowserCommands,
    BrowserCoordinatorCommands,
-   UnitConversionCommands>
+   UnitConversionCommands,
+   CountryCodePickerCommands>
 HandlerForActiveBrowser();
 
 // Removes all presented infobars.

@@ -140,8 +140,10 @@ bool IsValidVersionFormat(const base::Version& version) {
 // Logs the outcome of a reprompt attempt for a specific key (either a specific
 // country or the wildcard).
 void LogSearchRepromptKeyHistograms(RepromptResult result, bool is_wildcard) {
-  // `RepromptResult::kInvalidDictionary` is recorded separately.
+  // `RepromptResult::kInvalidDictionary` and `RepromptResult::kNoReprompt` are
+  // recorded separately.
   CHECK_NE(result, RepromptResult::kInvalidDictionary);
+  CHECK_NE(result, RepromptResult::kNoReprompt);
 
   base::UmaHistogramEnumeration(kSearchEngineChoiceRepromptHistogram, result);
   if (is_wildcard) {
@@ -158,11 +160,16 @@ using NativeCallbackType = base::OnceCallback<void(int)>;
 }  // namespace
 
 SearchEngineChoiceService::SearchEngineChoiceService(PrefService& profile_prefs,
+                                                     PrefService* local_state,
                                                      int variations_country_id)
     : profile_prefs_(profile_prefs),
       variations_country_id_(variations_country_id) {
+  if (local_state) {
+    ProcessPendingChoiceScreenDisplayState(*local_state);
+  } else {
+    CHECK_IS_TEST();
+  }
   PreprocessPrefsForReprompt();
-  ProcessPendingChoiceScreenDisplayState();
 }
 
 SearchEngineChoiceService::~SearchEngineChoiceService() = default;
@@ -433,10 +440,18 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
   }
 
   // Check parameters from `switches::kSearchEngineChoiceTriggerRepromptParams`.
-  std::optional<base::Value::Dict> reprompt_params = base::JSONReader::ReadDict(
-      switches::kSearchEngineChoiceTriggerRepromptParams.Get());
-  if (!reprompt_params) {
-    // No valid reprompt parameters.
+  const std::string reprompt_params =
+      switches::kSearchEngineChoiceTriggerRepromptParams.Get();
+  if (reprompt_params == kNoRepromptString) {
+    base::UmaHistogramEnumeration(kSearchEngineChoiceRepromptHistogram,
+                                  RepromptResult::kNoReprompt);
+    return;
+  }
+
+  std::optional<base::Value::Dict> reprompt_params_json =
+      base::JSONReader::ReadDict(reprompt_params);
+  // Not a valid JSON.
+  if (!reprompt_params_json) {
     base::UmaHistogramEnumeration(kSearchEngineChoiceRepromptHistogram,
                                   RepromptResult::kInvalidDictionary);
     return;
@@ -468,7 +483,7 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
        {country_codes::CountryIDToCountryString(country_id), wildcard_string}) {
     bool is_wildcard = key == wildcard_string;
     const std::string* reprompt_version_string =
-        reprompt_params->FindString(key);
+        reprompt_params_json->FindString(key);
     if (!reprompt_version_string) {
       // No version string for this country. Fallback to the wildcard.
       LogSearchRepromptKeyHistograms(RepromptResult::kNoDictionaryKey,
@@ -507,7 +522,8 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
   }
 }
 
-void SearchEngineChoiceService::ProcessPendingChoiceScreenDisplayState() {
+void SearchEngineChoiceService::ProcessPendingChoiceScreenDisplayState(
+    PrefService& local_state) {
   if (!profile_prefs_->HasPrefPath(
           prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState)) {
     return;
@@ -515,7 +531,7 @@ void SearchEngineChoiceService::ProcessPendingChoiceScreenDisplayState() {
 
   // The display state should not be cached when UMA is disabled.
   if (!SearchEngineChoiceMetricsServiceAccessor::IsMetricsReportingEnabled(
-          &profile_prefs_.get())) {
+          &local_state)) {
     profile_prefs_->ClearPref(
         prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
     return;

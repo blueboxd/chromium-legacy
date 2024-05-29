@@ -64,7 +64,9 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
             new BaseActivityTestRule(BlankUiTestActivity.class);
 
     private static final AccountPickerBottomSheetStrings BOTTOM_SHEET_STRINGS =
-            new AccountPickerBottomSheetStrings.Builder(R.string.sign_in_to_chrome).build();
+            new AccountPickerBottomSheetStrings.Builder(
+                            R.string.signin_account_picker_bottom_sheet_title)
+                    .build();
 
     @Mock private Context mContextMock;
     @Mock private IdentityServicesProvider mIdentityProviderMock;
@@ -101,7 +103,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.NTP_SIGNED_OUT_ICON);
                 });
 
-        verify(mContextMock).startActivity(notNull(), any());
+        verify(mContextMock).startActivity(notNull());
     }
 
     @Test
@@ -127,7 +129,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.NTP_SIGNED_OUT_ICON);
                 });
 
-        verify(mContextMock).startActivity(notNull(), any());
+        verify(mContextMock).startActivity(notNull());
     }
 
     @Test
@@ -149,7 +151,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.RECENT_TABS);
                 });
 
-        verify(mContextMock).startActivity(notNull(), any());
+        verify(mContextMock).startActivity(notNull());
     }
 
     @Test
@@ -175,7 +177,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.NTP_SIGNED_OUT_ICON);
                 });
 
-        verify(mContextMock, never()).startActivity(notNull(), any());
+        verify(mContextMock, never()).startActivity(notNull());
     }
 
     @Test
@@ -201,7 +203,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.NTP_SIGNED_OUT_ICON);
                 });
 
-        verify(mContextMock, never()).startActivity(notNull(), any());
+        verify(mContextMock, never()).startActivity(notNull());
     }
 
     @Test
@@ -228,7 +230,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.NTP_SIGNED_OUT_ICON);
                 });
 
-        verify(mContextMock, never()).startActivity(notNull(), any());
+        verify(mContextMock, never()).startActivity(notNull());
     }
 
     @Test
@@ -253,7 +255,7 @@ public class SigninAndHistoryOptInActivityLauncherImplTest {
                                     SigninAccessPoint.RECENT_TABS);
                 });
 
-        verify(mContextMock, never()).startActivity(notNull(), any());
+        verify(mContextMock, never()).startActivity(notNull());
     }
 
     @Test

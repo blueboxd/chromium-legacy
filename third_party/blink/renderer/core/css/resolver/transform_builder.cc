@@ -219,7 +219,7 @@ TransformOperation* CreateTransformOperation(
     case TransformOperation::kRotateZ:
     case TransformOperation::kRotate: {
       const auto& first_value = To<CSSPrimitiveValue>(transform_value.Item(0));
-      double angle = first_value.ComputeDegrees();
+      double angle = first_value.ComputeDegrees(conversion_data);
       if (transform_value.length() == 1) {
         double x = transform_type == TransformOperation::kRotateX;
         double y = transform_type == TransformOperation::kRotateY;
@@ -245,10 +245,10 @@ TransformOperation* CreateTransformOperation(
       const auto& second_value = To<CSSPrimitiveValue>(transform_value.Item(1));
       const auto& third_value = To<CSSPrimitiveValue>(transform_value.Item(2));
       const auto& fourth_value = To<CSSPrimitiveValue>(transform_value.Item(3));
-      double x = first_value.GetDoubleValue();
-      double y = second_value.GetDoubleValue();
-      double z = third_value.GetDoubleValue();
-      double angle = fourth_value.ComputeDegrees();
+      double x = first_value.ComputeNumber(conversion_data);
+      double y = second_value.ComputeNumber(conversion_data);
+      double z = third_value.ComputeNumber(conversion_data);
+      double angle = fourth_value.ComputeDegrees(conversion_data);
       return MakeGarbageCollected<RotateTransformOperation>(x, y, z, angle,
                                                             transform_type);
     }
@@ -258,7 +258,7 @@ TransformOperation* CreateTransformOperation(
       const auto& first_value = To<CSSPrimitiveValue>(transform_value.Item(0));
       double angle_x = 0;
       double angle_y = 0;
-      double angle = first_value.ComputeDegrees();
+      double angle = first_value.ComputeDegrees(conversion_data);
       if (transform_type == TransformOperation::kSkewY) {
         angle_y = angle;
       } else {
@@ -267,7 +267,7 @@ TransformOperation* CreateTransformOperation(
           if (transform_value.length() > 1) {
             const auto& second_value =
                 To<CSSPrimitiveValue>(transform_value.Item(1));
-            angle_y = second_value.ComputeDegrees();
+            angle_y = second_value.ComputeDegrees(conversion_data);
           }
         }
       }
@@ -275,40 +275,56 @@ TransformOperation* CreateTransformOperation(
                                                           transform_type);
     }
     case TransformOperation::kMatrix: {
-      double a =
-          To<CSSPrimitiveValue>(transform_value.Item(0)).GetDoubleValue();
-      double b =
-          To<CSSPrimitiveValue>(transform_value.Item(1)).GetDoubleValue();
-      double c =
-          To<CSSPrimitiveValue>(transform_value.Item(2)).GetDoubleValue();
-      double d =
-          To<CSSPrimitiveValue>(transform_value.Item(3)).GetDoubleValue();
-      double e =
-          conversion_data.Zoom() *
-          To<CSSPrimitiveValue>(transform_value.Item(4)).GetDoubleValue();
-      double f =
-          conversion_data.Zoom() *
-          To<CSSPrimitiveValue>(transform_value.Item(5)).GetDoubleValue();
+      double a = To<CSSPrimitiveValue>(transform_value.Item(0))
+                     .ComputeNumber(conversion_data);
+      double b = To<CSSPrimitiveValue>(transform_value.Item(1))
+                     .ComputeNumber(conversion_data);
+      double c = To<CSSPrimitiveValue>(transform_value.Item(2))
+                     .ComputeNumber(conversion_data);
+      double d = To<CSSPrimitiveValue>(transform_value.Item(3))
+                     .ComputeNumber(conversion_data);
+      double e = conversion_data.Zoom() *
+                 To<CSSPrimitiveValue>(transform_value.Item(4))
+                     .ComputeNumber(conversion_data);
+      double f = conversion_data.Zoom() *
+                 To<CSSPrimitiveValue>(transform_value.Item(5))
+                     .ComputeNumber(conversion_data);
       return MakeGarbageCollected<MatrixTransformOperation>(a, b, c, d, e, f);
     }
     case TransformOperation::kMatrix3D: {
       auto matrix = gfx::Transform::ColMajor(
-          To<CSSPrimitiveValue>(transform_value.Item(0)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(1)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(2)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(3)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(4)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(5)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(6)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(7)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(8)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(9)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(10)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(11)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(12)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(13)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(14)).GetDoubleValue(),
-          To<CSSPrimitiveValue>(transform_value.Item(15)).GetDoubleValue());
+          To<CSSPrimitiveValue>(transform_value.Item(0))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(1))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(2))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(3))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(4))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(5))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(6))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(7))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(8))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(9))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(10))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(11))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(12))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(13))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(14))
+              .ComputeNumber(conversion_data),
+          To<CSSPrimitiveValue>(transform_value.Item(15))
+              .ComputeNumber(conversion_data));
       matrix.Zoom(conversion_data.Zoom());
       return MakeGarbageCollected<Matrix3DTransformOperation>(matrix);
     }

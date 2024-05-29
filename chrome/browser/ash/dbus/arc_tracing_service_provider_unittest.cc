@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/arc/tracing/overview_tracing_handler.h"
 #include "chrome/browser/ash/arc/tracing/test/overview_tracing_test_base.h"
 #include "chrome/browser/ash/arc/tracing/test/overview_tracing_test_handler.h"
@@ -66,6 +67,15 @@ class ArcTracingServiceProviderTest : public arc::OverviewTracingTestBase {
 
     CHECK(trace_outdir_.CreateUniqueTempDir());
     provider_->set_trace_outdir_for_testing(trace_outdir_.GetPath());
+
+    // Set arbitrary times for tests which fail to start a trace or don't
+    // attempt to - we don't actually use the times because a model file is not
+    // generated, but at least make the times non-zero.
+    auto* first_handler = provider_->GetOrCreateNextHandler();
+    first_handler->set_now(
+        base::Time::FromSecondsSinceUnixEpoch(1'700'009'000));
+    first_handler->set_trace_time_base(
+        base::Time::FromSecondsSinceUnixEpoch(1'700'000'000));
   }
 
   void SetupForRequest(std::string_view method_name) {
@@ -146,9 +156,15 @@ TEST_F(ArcTracingServiceProviderTest, StartTraceAndGetStatus) {
 
   handler->StartTracingOnControllerRespond();
 
+  // Present 60 frames per second until end of trace time.
+  auto frame_time = base::Microseconds(16'666);
+  CommitAndPresentFrames(handler, &s, max_time / frame_time, frame_time);
+
   // Fast forward past the max tracing interval. This will stop the trace at the
-  // end of the fast-forward, which is 400ms after the timeout.
-  FastForwardClockAndTaskQueue(handler, max_time + base::Milliseconds(400));
+  // end of the fast-forward, which is 400ms after the timeout. There are no
+  // events here, so this does not add to the trace duration, so it does not
+  // deflate the FPS measurement.
+  FastForwardClockAndTaskQueue(handler, base::Milliseconds(400));
 
   // Pass results from trace controller to handler.
   handler->StopTracingOnControllerRespond(
@@ -156,11 +172,20 @@ TEST_F(ArcTracingServiceProviderTest, StartTraceAndGetStatus) {
 
   task_environment()->RunUntilIdle();
 
-  EXPECT_EQ(base::StringPrintf(R"(Trace started
-Building model...
-Tracing model is ready: %s/overview_tracing_arctaskwindowdefaulttitle_2023-11-15_08-43-22.json)",
-                               trace_outdir_.GetPath().value().c_str()),
-            InvokeGetStatusMethod());
+  re2::RE2 expected_msg_re{
+      base::StrCat({"Trace started\n", "Building model...\n",
+                    "Tracing model is ready: ", trace_outdir_.GetPath().value(),
+                    "/overview_tracing_arctaskwindowdefaulttitle_2023-11-15_08-"
+                    "43-22.json - ",
+                    "perceived FPS=([0-9.]+), ", "duration=([0-9.]+)s"})};
+
+  double fps, duration;
+  std::string actual_msg = InvokeGetStatusMethod();
+
+  ASSERT_TRUE(RE2::FullMatch(actual_msg, expected_msg_re, &fps, &duration))
+      << actual_msg;
+  EXPECT_NEAR(fps, 60, 0.5);
+  EXPECT_NEAR(duration, 5, 0.2);
 }
 
 TEST_F(ArcTracingServiceProviderTest, StopTraceByLosingFocus) {
@@ -186,9 +211,11 @@ TEST_F(ArcTracingServiceProviderTest, StopTraceByLosingFocus) {
 
   handler->StartTracingOnControllerRespond();
 
-  // Fast forward to before the max tracing interval. This alone does not stop
-  // the test.
-  FastForwardClockAndTaskQueue(handler, max_time - base::Seconds(1));
+  // Present frames at 24 fps until 1 second before end of trace. This alone
+  // does not stop the test since we don't hit the time limit.
+  const auto frame_time = base::Milliseconds(42);
+  CommitAndPresentFrames(
+      handler, &s, (max_time - base::Seconds(1)) / frame_time, frame_time);
 
   // Minimizing window will lose focus and stop the trace.
   arc_widget->Minimize();
@@ -199,31 +226,88 @@ TEST_F(ArcTracingServiceProviderTest, StopTraceByLosingFocus) {
 
   task_environment()->RunUntilIdle();
 
-  EXPECT_EQ(base::StringPrintf(R"(Trace started
-Building model...
-Tracing model is ready: %s/overview_tracing_arctaskwindowdefaulttitle_2024-01-12_13-30-00.json)",
-                               trace_outdir_.GetPath().value().c_str()),
-            InvokeGetStatusMethod());
+  re2::RE2 expected_msg_re{
+      base::StrCat({"Trace started\n", "Building model...\n",
+                    "Tracing model is ready: ", trace_outdir_.GetPath().value(),
+                    "/overview_tracing_arctaskwindowdefaulttitle_2024-01-12_13-"
+                    "30-00.json - ",
+                    "perceived FPS=([0-9.]+), ", "duration=([0-9.]+)s"})};
+
+  double fps, duration;
+  std::string actual_msg = InvokeGetStatusMethod();
+
+  ASSERT_TRUE(RE2::FullMatch(actual_msg, expected_msg_re, &fps, &duration))
+      << actual_msg;
+  EXPECT_NEAR(fps, 24, 0.5);
+  EXPECT_NEAR(duration, 4, 0.2);
 }
 
 TEST_F(ArcTracingServiceProviderTest, FailedStart) {
-  auto* handler = provider_->GetOrCreateNextHandler();
-  // Arbitrary times - we don't actually use them because a model file is not
-  // generated, but at least make the times non-zero.
-  handler->set_now(base::Time::FromSecondsSinceUnixEpoch(1'700'009'000));
-  provider_->GetOrCreateNextHandler()->set_trace_time_base(
-      base::Time::FromSecondsSinceUnixEpoch(1'700'000'000));
-
   exo::Surface s;
   auto arc_widget = arc::ArcTaskWindowBuilder()
                         .SetTaskId(22)
                         .SetPackageName("org.funstuff.client")
                         .SetShellRootSurface(&s)
                         .BuildOwnsNativeWidget();
+  arc_widget->ShowInactive();
 
   ASSERT_EQ("ARC window isn't active", InvokeStartMethod(5));
 
   EXPECT_EQ("", InvokeGetStatusMethod());
+}
+
+TEST_F(ArcTracingServiceProviderTest, FailedStartDueToOneExtraWindow) {
+  exo::Surface arc_surface, extra_surface;
+  auto arc_widget = arc::ArcTaskWindowBuilder()
+                        .SetTaskId(22)
+                        .SetPackageName("org.funstuff.client")
+                        .SetShellRootSurface(&arc_surface)
+                        .BuildOwnsNativeWidget();
+  auto extra_widget = arc::ArcTaskWindowBuilder()
+                          .SetTaskId(2244)
+                          .SetPackageName("net.productive.notfun")
+                          .SetShellRootSurface(&arc_surface)
+                          .SetTitle("Looking busy")
+                          .BuildOwnsNativeWidget();
+
+  extra_widget->Show();
+  arc_widget->Show();
+
+  provider_->GetOrCreateNextHandler()->set_non_trace_app_windows(
+      {extra_widget->GetNativeWindow()});
+  ASSERT_EQ(
+      "Extra windows are open. Close them and try the trace again: |Looking "
+      "busy|",
+      InvokeStartMethod(/*max_time_seconds=*/5));
+}
+
+TEST_F(ArcTracingServiceProviderTest, FailedStartDueToTwoExtraWindows) {
+  constexpr int kWidgetCount = 3;
+  // Note the trace widget is shown last, so it is active.
+  constexpr int kTraceWidget = 2;
+  std::array<exo::Surface, kWidgetCount> surfaces;
+  std::array<std::unique_ptr<views::Widget>, kWidgetCount> widgets;
+  arc::OverviewTracingHandler::AppWindowList non_trace_windows;
+
+  for (int i = 0; i < kWidgetCount; i++) {
+    widgets[i] = arc::ArcTaskWindowBuilder()
+                     .SetTaskId(220 + i)
+                     .SetPackageName("org.funstuff.client")
+                     .SetShellRootSurface(&surfaces[i])
+                     .SetTitle(base::StringPrintf("arc window %d", i))
+                     .BuildOwnsNativeWidget();
+    widgets[i]->Show();
+    if (i != kTraceWidget) {
+      non_trace_windows.emplace_back(widgets[i]->GetNativeWindow());
+    }
+  }
+
+  provider_->GetOrCreateNextHandler()->set_non_trace_app_windows(
+      std::move(non_trace_windows));
+  ASSERT_EQ(
+      "Extra windows are open. Close them and try the trace again: |arc window "
+      "0|, |arc window 1|",
+      InvokeStartMethod(/*max_time_seconds=*/42.42));
 }
 
 }  // namespace

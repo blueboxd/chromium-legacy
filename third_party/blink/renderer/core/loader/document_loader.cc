@@ -854,26 +854,32 @@ void DocumentLoader::InjectAutoSpeculationRules(
 
   const auto& config = AutoSpeculationRulesConfig::GetInstance();
 
+  const Vector<String> from_url_speculation_rules = config.ForUrl(Url());
+  for (const auto& speculation_rules : from_url_speculation_rules) {
+    InjectSpeculationRulesFromString(speculation_rules);
+  }
+
   for (const auto& detected_version : result.detected_versions) {
     if (String speculation_rules =
             config.ForFramework(detected_version.first)) {
-      auto* source = SpeculationRuleSet::Source::FromBrowserInjected(
-          speculation_rules, this->Url());
-      auto* rule_set = SpeculationRuleSet::Parse(source, frame_->DomWindow());
-      CHECK(rule_set);
-
-      // The JSON string in speculation_rules comes from a potentially-fallible
-      // remote config, so this should not be a CHECK failure.
-      if (rule_set->HasError()) {
-        LOG(ERROR) << "Failed to parse speculation rules for "
-                   << detected_version.first << ": " << speculation_rules;
-        continue;
-      }
-
-      DocumentSpeculationRules::From(*frame_->GetDocument())
-          .AddRuleSet(rule_set);
+      InjectSpeculationRulesFromString(speculation_rules);
     }
   }
+}
+
+void DocumentLoader::InjectSpeculationRulesFromString(const String& string) {
+  auto* source = SpeculationRuleSet::Source::FromBrowserInjected(string, Url());
+  auto* rule_set = SpeculationRuleSet::Parse(source, frame_->DomWindow());
+  CHECK(rule_set);
+
+  // The JSON string in speculation_rules comes from a potentially-fallible
+  // remote config, so this should not be a CHECK failure.
+  if (rule_set->HasError()) {
+    LOG(ERROR) << "Failed to parse auto speculation rules " << string;
+    return;
+  }
+
+  DocumentSpeculationRules::From(*frame_->GetDocument()).AddRuleSet(rule_set);
 }
 
 // static
@@ -2272,28 +2278,6 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     debug_info_builder.Append(", url=");
     debug_info_builder.Append(owner_document->Url().BaseAsString());
     debug_info_builder.Append(")");
-  } else if (url_.IsAboutSrcdocURL()) {
-    // If there's no owner_document and this is a sandboxed srcdoc load, then
-    // get the origin from the remote parent. In general, a srcdoc navigation
-    // with no owner_document can only currently happen  if the iframe is
-    // sandboxed and isolated sandboxed frames is enabled, in which case, copy
-    // the origin from the remote parent here (though this origin will only be
-    // used to derive the actual opaque origin later),
-    // TODO(https://crbug.com/328279696): this block can be removed once the
-    // about:srcdoc navigation blocking finishes rolling out, as then the
-    // initiator can never be cross-origin to the parent.
-    bool is_sandboxed = (policy_container_->GetPolicies().sandbox_flags &
-                         network::mojom::blink::WebSandboxFlags::kOrigin) !=
-                        network::mojom::blink::WebSandboxFlags::kNone;
-    CHECK(is_sandboxed);
-    debug_info_builder.Append("about_srcdoc_with_remote_parent[origin=");
-    origin = frame_->Tree()
-                 .Parent()
-                 ->GetSecurityContext()
-                 ->GetSecurityOrigin()
-                 ->IsolatedCopy();
-    debug_info_builder.Append(origin->ToString());
-    debug_info_builder.Append("]");
   } else {
     debug_info_builder.Append("use_url_with_precursor");
     // Otherwise, create an origin that propagates precursor information

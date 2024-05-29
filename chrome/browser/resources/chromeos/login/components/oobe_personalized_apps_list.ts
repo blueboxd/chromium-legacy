@@ -21,9 +21,16 @@ export interface AppsListApp {
   selected: boolean;
 }
 
+export interface CategoryItem {
+  id: string;
+  count: number;
+}
+
 export interface CategoriesAppsMap {
   [category: string]: OobeAppsListData;
 }
+
+export interface CategoriesItemList extends Array<CategoryItem> {}
 
 export interface OobeAppsListData extends Array<AppsListApp> {}
 
@@ -72,10 +79,9 @@ export class OobePersonalizedAppsList extends OobePersonalizedAppsListBase {
       /**
        * Number of dom repeat rendered items.
        */
-      itemRendered: {
-        type: Number,
-        value: 0,
-        observer: 'itemRenderedChanged',
+      categoriesItemRendered: {
+        type: Object,
+        value: [],
       },
     };
   }
@@ -84,7 +90,12 @@ export class OobePersonalizedAppsList extends OobePersonalizedAppsListBase {
   private appsList: OobeAppsListData;
   private selectedAppsCount: number;
   private loadedIconsCount: number;
-  private itemRendered: number;
+  private categoriesItemRendered: CategoriesItemList;
+
+  // Observe the name sub-property on the user object
+  static get observers() {
+    return ['itemRenderedChanged(categoriesItemRendered.*)'];
+  }
 
   /**
    * Initialize the list of categories.
@@ -93,30 +104,68 @@ export class OobePersonalizedAppsList extends OobePersonalizedAppsListBase {
     this.catgoriesMapApps = data;
     this.selectedAppsCount = 0;
     this.loadedIconsCount = 0;
-    this.itemRendered = 0;
+    this.categoriesItemRendered = [];
+    this.appsList = [];
     for (const key in this.catgoriesMapApps) {
+      this.categoriesItemRendered.push({'id': key, 'count': 0});
       this.catgoriesMapApps[key].forEach(element => {
         this.appsList.push(element);
       });
     }
   }
 
-  itemRenderedChanged(): void {
-    if (this.appsList.length !== 0 &&
-        // TODO: Found a better condition as with that one we never render full
-        // list of apps.
-        // this.itemRendered === this.appsList.length &&
-        this.loadedIconsCount === this.appsList.length) {
+  reset(): void {
+    this.catgoriesMapApps = {};
+    this.selectedAppsCount = 0;
+    this.loadedIconsCount = 0;
+    this.categoriesItemRendered = [];
+    this.appsList = [];
+  }
+
+  itemRenderedChanged(_itemRendered: CategoriesItemList): void {
+    let count = 0;
+    this.categoriesItemRendered.forEach((element) => {
+      count += element.count;
+    });
+    if (this.appsList.length !== 0 && count === this.appsList.length) {
+      this.setWebviewStyle();
       this.dispatchEvent(
           new CustomEvent('icons-loaded', {bubbles: true, composed: true}));
     }
   }
 
+  setWebviewStyle(): void {
+    const iconWebviews =
+        this.shadowRoot?.querySelectorAll<chrome.webviewTag.WebView>(
+            '.app-icon');
+    if (iconWebviews) {
+      for (const iconWebview of iconWebviews) {
+        this.injectCss(iconWebview);
+      }
+    }
+  }
+
+  private injectCss(webview: chrome.webviewTag.WebView) {
+    webview.addEventListener('contentload', () => {
+      webview.insertCSS(
+          {
+            code: `body { background-color: transparent !important; }`,
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.warn(
+                  'Failed to insertCSS: ' + chrome.runtime.lastError.message);
+            }
+          });
+    });
+  }
+
   /**
    * Return if categories title should be shown.
    */
-  private shouldShowCategoriesTitle(): boolean {
-    return !(Object.keys(this.catgoriesMapApps).length > 1);
+  private shouldShowCategoriesTitle(catgoriesMapApps: CategoriesAppsMap):
+      boolean {
+    return !(Object.keys(catgoriesMapApps).length > 1);
   }
 
   /**
@@ -136,9 +185,6 @@ export class OobePersonalizedAppsList extends OobePersonalizedAppsListBase {
     return iconUrl;
   }
 
-  getCategories(data: CategoriesAppsMap): string[] {
-    return Object.keys(data);
-  }
 
   getApps(key: string): OobeAppsListData {
     return this.catgoriesMapApps[key];

@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -14,6 +15,7 @@
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 
 namespace {
@@ -128,7 +130,7 @@ void SigninMetricsService::OnPrimaryAccountChanged(
 }
 
 void SigninMetricsService::OnErrorStateOfRefreshTokenUpdatedForAccount(
-    const CoreAccountInfo& account_info,
+    const CoreAccountInfo& core_account_info,
     const GoogleServiceAuthError& error,
     signin_metrics::SourceForRefreshTokenOperation token_operation_source) {
   if (!switches::IsExplicitBrowserSigninUIOnDesktopEnabled() ||
@@ -136,15 +138,41 @@ void SigninMetricsService::OnErrorStateOfRefreshTokenUpdatedForAccount(
     return;
   }
 
-  if (account_info ==
+  if (core_account_info !=
       identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)) {
-    if (error.IsPersistentError()) {
+    return;
+  }
+
+  if (error.IsPersistentError()) {
+    if (!pref_service_->HasPrefPath(kSigninPendingStartTimePref)) {
       pref_service_->SetTime(kSigninPendingStartTimePref, base::Time::Now());
-    } else if (pref_service_->HasPrefPath(kSigninPendingStartTimePref)) {
-      RecordSigninPendingResolution(
-          SigninPendingResolution::kReauth,
-          pref_service_->GetTime(kSigninPendingStartTimePref));
-      pref_service_->ClearPref(kSigninPendingStartTimePref);
+    }
+  } else if (pref_service_->HasPrefPath(kSigninPendingStartTimePref)) {
+    RecordSigninPendingResolution(
+        SigninPendingResolution::kReauth,
+        pref_service_->GetTime(kSigninPendingStartTimePref));
+    pref_service_->ClearPref(kSigninPendingStartTimePref);
+
+    AccountInfo account_info =
+        identity_manager_->FindExtendedAccountInfo(core_account_info);
+    if (account_info.access_point !=
+        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN) {
+      // Only record `Started` from WEB_SIGNIN, since there is no way to know
+      // that a WebSignin resolution has started until it was completed. Other
+      // access points are client access points which can be tracked at the
+      // real started event.
+      if (account_info.access_point ==
+          signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN) {
+        base::UmaHistogramEnumeration(
+            "Signin.SigninPending.ResolutionSourceStarted",
+            account_info.access_point,
+            signin_metrics::AccessPoint::ACCESS_POINT_MAX);
+      }
+
+      base::UmaHistogramEnumeration(
+          "Signin.SigninPending.ResolutionSourceCompleted",
+          account_info.access_point,
+          signin_metrics::AccessPoint::ACCESS_POINT_MAX);
     }
   }
 }

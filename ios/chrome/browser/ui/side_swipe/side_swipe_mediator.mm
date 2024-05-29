@@ -406,6 +406,8 @@ const CGFloat kIpadTabSwipeDistance = 100;
     (UISwipeGestureRecognizerDirection)direction {
   if (![self canNavigate:IsSwipingBack(direction)]) {
     // Back/forward state has changed when the user begins to swipe.
+    NOTREACHED(base::NotFatalUntil::M128)
+        << "Back/forward state has changed when the user begins to swipe.";
     return;
   }
 

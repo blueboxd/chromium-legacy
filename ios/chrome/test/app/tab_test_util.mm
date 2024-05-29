@@ -34,12 +34,6 @@ namespace chrome_test_util {
 
 namespace {
 
-// Returns the browser for the current mode.
-Browser* GetCurrentBrowser() {
-  return GetMainController()
-      .browserProviderInterface.currentBrowserProvider.browser;
-}
-
 // Returns the WebStateList for the current mode. Or nullptr of there is no
 // browser.
 WebStateList* GetCurrentWebStateList() {
@@ -60,7 +54,7 @@ void CloseAllTabsForBrowser(Browser* browser) {
 }  // namespace
 
 BOOL IsIncognitoMode() {
-  return GetMainController()
+  return GetForegroundActiveScene()
       .browserProviderInterface.currentBrowserProvider.browser
       ->GetBrowserState()
       ->IsOffTheRecord();
@@ -71,12 +65,10 @@ void OpenNewTab() {
     OpenNewTabCommand* command = [OpenNewTabCommand command];
     if (GetForegroundActiveSceneController().mainCoordinator.isTabGridActive) {
       // The TabGrid is currently presented.
-      Browser* browser =
-          GetForegroundActiveScene()
-              .browserProviderInterface.mainBrowserProvider.browser;
       UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-      [GetForegroundActiveSceneController() addANewTabAndPresentBrowser:browser
-                                                      withURLLoadParams:params];
+      [GetForegroundActiveSceneController()
+          addANewTabAndPresentBrowser:GetMainBrowser()
+                    withURLLoadParams:params];
       return;
     }
     id<ApplicationCommands, BrowserCommands> handler =
@@ -183,9 +175,7 @@ void CloseTabAtIndex(NSUInteger index) {
 }
 
 NSUInteger GetIndexOfActiveNormalTab() {
-  Browser* browser = chrome_test_util::GetForegroundActiveSceneController()
-                         .browserProviderInterface.mainBrowserProvider.browser;
-  return browser->GetWebStateList()->active_index();
+  return GetMainBrowser()->GetWebStateList()->active_index();
 }
 
 void CloseAllTabsInCurrentMode() {
@@ -195,13 +185,11 @@ void CloseAllTabsInCurrentMode() {
 void CloseAllTabs() {
   if (GetIncognitoTabCount() && GetForegroundActiveSceneController()) {
     CloseAllTabsForBrowser(
-        GetForegroundActiveSceneController()
+        GetForegroundActiveScene()
             .browserProviderInterface.incognitoBrowserProvider.browser);
   }
   if (GetMainTabCount() && GetForegroundActiveScene()) {
-    CloseAllTabsForBrowser(
-        GetForegroundActiveScene()
-            .browserProviderInterface.mainBrowserProvider.browser);
+    CloseAllTabsForBrowser(GetMainBrowser());
   }
   if (GetInactiveTabCount() && GetForegroundActiveScene()) {
     CloseAllTabsForBrowser(
@@ -219,20 +207,18 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 NSUInteger GetMainTabCount() {
-  return GetMainController()
-      .browserProviderInterface.mainBrowserProvider.browser->GetWebStateList()
-      ->count();
+  return GetMainBrowser() ? GetMainBrowser()->GetWebStateList()->count() : 0;
 }
 
 NSUInteger GetInactiveTabCount() {
-  return GetMainController()
+  return GetForegroundActiveScene()
       .browserProviderInterface.mainBrowserProvider.inactiveBrowser
       ->GetWebStateList()
       ->count();
 }
 
 NSUInteger GetIncognitoTabCount() {
-  return GetMainController()
+  return GetForegroundActiveScene()
       .browserProviderInterface.incognitoBrowserProvider.browser
       ->GetWebStateList()
       ->count();
@@ -276,7 +262,7 @@ BOOL SimulateTabsBackgrounding() {
 
 void EvictOtherBrowserTabs() {
   id<BrowserProviderInterface> provider =
-      GetMainController().browserProviderInterface;
+      GetForegroundActiveScene().browserProviderInterface;
   Browser* otherBrowser = IsIncognitoMode()
                               ? provider.mainBrowserProvider.browser
                               : provider.incognitoBrowserProvider.browser;
@@ -289,11 +275,7 @@ void EvictOtherBrowserTabs() {
 }
 
 BOOL CloseAllNormalTabs() {
-  MainController* main_controller = GetMainController();
-  DCHECK(main_controller);
-
-  Browser* browser =
-      main_controller.browserProviderInterface.mainBrowserProvider.browser;
+  Browser* browser = GetMainBrowser();
   DCHECK(browser);
   CloseAllWebStates(*browser->GetWebStateList(),
                     WebStateList::CLOSE_USER_ACTION);
@@ -301,11 +283,11 @@ BOOL CloseAllNormalTabs() {
 }
 
 BOOL CloseAllIncognitoTabs() {
-  MainController* main_controller = GetMainController();
-  DCHECK(main_controller);
+  SceneState* scene_state = GetForegroundActiveScene();
+  DCHECK(scene_state);
+
   Browser* browser =
-      GetMainController()
-          .browserProviderInterface.incognitoBrowserProvider.browser;
+      scene_state.browserProviderInterface.incognitoBrowserProvider.browser;
   DCHECK(browser);
   CloseAllWebStates(*browser->GetWebStateList(),
                     WebStateList::CLOSE_USER_ACTION);
@@ -313,10 +295,8 @@ BOOL CloseAllIncognitoTabs() {
 }
 
 NSUInteger GetEvictedMainTabCount() {
-  Browser* browser =
-      GetMainController().browserProviderInterface.mainBrowserProvider.browser;
   TabUsageRecorderBrowserAgent* tab_usage_recorder =
-      TabUsageRecorderBrowserAgent::FromBrowser(browser);
+      TabUsageRecorderBrowserAgent::FromBrowser(GetMainBrowser());
   if (!tab_usage_recorder)
     return 0;
   return tab_usage_recorder->EvictedTabsMapSize();

@@ -1353,7 +1353,7 @@ BASE_FEATURE(kMediaFoundationVideoCapture,
 // please use IsMediaFoundationD3D11VideoCaptureEnabled() instead.
 BASE_FEATURE(kMediaFoundationD3D11VideoCapture,
              "MediaFoundationD3D11VideoCapture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable zero-copy based on MediaFoundation video capture with D3D11.
 BASE_FEATURE(kMediaFoundationD3D11VideoCaptureZeroCopy,
@@ -1785,14 +1785,6 @@ BASE_FEATURE(kLibaomUseChromeThreads,
              "LibaomUseChromeThreads",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS) && BUILDFLAG(IS_CHROMEOS)
-// Allows demuxing of AVI and decoding of MPEG4 streams. These should not be
-// allowed through the web in Chrome, but may be enabled by the local file app.
-BASE_FEATURE(kCrOSLegacyMediaFormats,
-             "CrOSLegacyMediaFormats",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 #if BUILDFLAG(IS_WIN)
 // Controls whether to use D3D12 video decoder instead of D3D11 when supported.
 BASE_FEATURE(kD3D12VideoDecoder,
@@ -1867,13 +1859,7 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
 }
 
 bool IsMultiPlaneFormatForHardwareVideoEnabled() {
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
   return true;
-#else
-  return
-      base::FeatureList::IsEnabled(kUseMultiPlaneFormatForHardwareVideo);
-#endif
 }
 
 bool IsMultiPlaneFormatForSoftwareVideoEnabled() {

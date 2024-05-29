@@ -65,6 +65,10 @@ BASE_FEATURE(kExtensionDynamicURLRedirection,
              "ExtensionDynamicURLRedirection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kExtensionIconVariants,
+             "ExtensionIconVariants",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionManifestV2DeprecationWarning,
              "ExtensionManifestV2DeprecationWarning",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -157,6 +161,10 @@ BASE_FEATURE(kDeclarativeNetRequestSafeRuleLimits,
 
 BASE_FEATURE(kDeclarativeNetRequestResponseHeaderMatching,
              "DeclarativeNetRequestResponseHeaderMatching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIncludeJSCallStackInExtensionApiRequest,
+             "IncludeJSCallStackInExtensionApiRequest",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseItemSnippetsAPI,

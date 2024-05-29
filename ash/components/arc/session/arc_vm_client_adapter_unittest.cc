@@ -38,7 +38,6 @@
 #include "base/process/process_metrics.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
@@ -2518,7 +2517,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_ArcSwitchToKeymint_Default) {
 // disabled.
 TEST_F(ArcVmClientAdapterTest, ArcGuestZramDisabledSwappiness) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kGuestZram);
+  feature_list.InitAndDisableFeature(kGuestSwap);
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
@@ -2534,7 +2533,7 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
   params["swappiness"] = "90";
   params["size"] = base::NumberToString(256 * 1024 * 1024);
   params["size_percentage"] = "0";
-  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  feature_list.InitAndEnableFeatureWithParameters(kGuestSwap, params);
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
@@ -2559,7 +2558,7 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_5GbSystem) {
   params["size"] = "2000";  // Should be ignored
   params["size_percentage"] = "50";
 
-  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  feature_list.InitAndEnableFeatureWithParameters(kGuestSwap, params);
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
 
@@ -2584,7 +2583,7 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_4GbSystem) {
   params["size"] = "2000";  // Should be ignored
   params["size_percentage"] = "50";
 
-  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  feature_list.InitAndEnableFeatureWithParameters(kGuestSwap, params);
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
 
@@ -2608,7 +2607,7 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_CustomMem) {
   base::FieldTrialParams params;
 
   feature_list.InitWithFeaturesAndParameters(
-      {{kGuestZram, {{"size_percentage", "50"}}},
+      {{kGuestSwap, {{"size_percentage", "50"}}},
        {kVmMemorySize, {{"shift_mib", "-2048"}}}},
       {});
   StartParams start_params(GetPopulatedStartParams());
@@ -2973,6 +2972,23 @@ TEST_F(ArcVmClientAdapterTest, SkipDexOptCacheSetupArcR) {
   UpgradeArcWithParams(true, std::move(upgrade_params));
   EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
                               "ro.boot.skip_dexopt_cache"));
+}
+
+TEST_F(ArcVmClientAdapterTest, VirtualSwapDevice_Enabled) {
+  base::FieldTrialParams params;
+  params["size"] = base::NumberToString(256 * 1024 * 1024);
+  params["virtual_swap_enabled"] = "true";
+  params["virtual_swap_interval_ms"] = "1000";
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(kGuestSwap, params);
+
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0u, request.guest_zram_mib());
+  EXPECT_EQ(1000u, request.virtual_swap_config().swap_interval_ms());
+  EXPECT_EQ(256u, request.virtual_swap_config().size_mib());
 }
 
 }  // namespace

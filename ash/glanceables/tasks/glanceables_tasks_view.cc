@@ -10,6 +10,7 @@
 
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
+#include "ash/glanceables/common/glanceables_contents_scroll_view.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/common/glanceables_util.h"
@@ -168,32 +169,6 @@ class AddNewTaskButton : public views::LabelButton {
 BEGIN_METADATA(AddNewTaskButton)
 END_METADATA
 
-class TaskListScrollView : public views::ScrollView {
-  METADATA_HEADER(TaskListScrollView, views::ScrollView)
- public:
-  TaskListScrollView() {
-    SetID(base::to_underlying(GlanceablesViewId::kTasksBubbleListScrollView));
-    ClipHeightTo(0, std::numeric_limits<int>::max());
-    SetBackgroundColor(std::nullopt);
-    SetDrawOverflowIndicator(false);
-  }
-
-  TaskListScrollView(const TaskListScrollView&) = delete;
-  TaskListScrollView& operator=(const TaskListScrollView&) = delete;
-  ~TaskListScrollView() override = default;
-
-  // views::ScrollView:
-  void ChildPreferredSizeChanged(views::View* view) override {
-    PreferredSizeChanged();
-  }
-
- private:
-  gfx::Size contents_old_size_;
-};
-
-BEGIN_METADATA(TaskListScrollView)
-END_METADATA
-
 }  // namespace
 
 GlanceablesTasksView::ResizeAnimation::ResizeAnimation(
@@ -262,15 +237,11 @@ GlanceablesTasksView::GlanceablesTasksView(
   progress_bar_->SetPreferredSize(kProgressBarPreferredSize);
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
 
-  content_scroll_view_ = AddChildView(std::make_unique<TaskListScrollView>());
+  content_scroll_view_ = AddChildView(
+      std::make_unique<GlanceablesContentsScrollView>(Context::kTasks));
 
   auto* const list_view =
       content_scroll_view_->SetContents(std::make_unique<views::View>());
-  content_scroll_view_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded)
-          .WithWeight(1));
   list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       /*inside_border_insets=*/
@@ -454,6 +425,9 @@ void GlanceablesTasksView::CreateElevatedBackground() {
   SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysSystemOnBaseOpaque, 16.f));
   expand_button_->SetVisible(true);
+  content_scroll_view_->SetOnOverscrollCallback(
+      base::BindRepeating(&GlanceablesTasksView::SetExpandState,
+                          base::Unretained(this), /*is_expanded=*/false));
 }
 
 void GlanceablesTasksView::SetExpandState(bool is_expanded) {

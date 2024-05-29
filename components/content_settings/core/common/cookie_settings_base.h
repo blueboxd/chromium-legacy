@@ -130,8 +130,10 @@ class CookieSettingsBase {
     kAllowBy3PCDMetadataSourceGovEduTld = 18,
     // Allowed by scheme.
     kAllowByScheme = 19,
+    // Allowed by tracking protection exception.
+    kAllowByTrackingProtectionException = 20,
 
-    kMaxValue = kAllowByScheme,
+    kMaxValue = kAllowByTrackingProtectionException,
   };
 
   // Returns true if the allow mechanism represents one of the multiple allow
@@ -189,7 +191,7 @@ class CookieSettingsBase {
   };
 
   // Set of types relevant for CookieSettings.
-  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 8>;
+  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 10>;
 
   // ContentSettings listed in this set will be automatically synced to the
   // CookieSettings instance in the network service.
@@ -335,7 +337,13 @@ class CookieSettingsBase {
   // Returns true iff the query for third-party cookie access should consider
   // grants awarded by the global allowlist.
   bool ShouldConsider3pcdMetadataGrantsSettings(
+      const GURL& first_party_url,
       net::CookieSettingOverrides overrides) const;
+
+  // Returns true if there is a settings for the origin trial for third-party
+  // cookie deprecation blocking third-party cookie access under
+  // `first_party_url`.
+  bool IsBlockedByTopLevel3pcdOriginTrial(const GURL& first_party_url) const;
 
  private:
   // Returns a content setting for the requested parameters and populates |info|
@@ -362,6 +370,10 @@ class CookieSettingsBase {
       const GURL& url,
       const GURL& first_party_url,
       net::CookieSettingOverrides overrides) const;
+
+  bool IsAllowedByTrackingProtectionSetting(const GURL& url,
+                                            const GURL& first_party_url,
+                                            SettingInfo& out_info) const;
 
   bool IsAllowedByTopLevel3pcdTrialSettings(
       const GURL& first_party_url,
@@ -394,15 +406,14 @@ class CookieSettingsBase {
   // Returns a decision on whether to allow or block the cookie request. This
   // accounts for user settings, global settings, and special cases.
   absl::variant<AllowAllCookies, AllowPartitionedCookies, BlockAllCookies>
-  DecideAccess(
-      const GURL& url,
-      const GURL& first_party_url,
-      bool is_third_party_request,
-      net::CookieSettingOverrides overrides,
-      const ContentSetting& setting,
-      const SettingSource& setting_source,
-      bool is_explicit_setting,
-      bool global_setting_or_embedder_blocks_third_party_cookies) const;
+  DecideAccess(const GURL& url,
+               const GURL& first_party_url,
+               bool is_third_party_request,
+               net::CookieSettingOverrides overrides,
+               const ContentSetting& setting,
+               bool is_explicit_setting,
+               bool global_setting_or_embedder_blocks_third_party_cookies,
+               SettingInfo& setting_info) const;
 
   // Returns whether requests for |url| and |first_party_url| should always
   // be allowed. Called before checking other cookie settings.
@@ -413,7 +424,13 @@ class CookieSettingsBase {
   virtual bool ShouldBlockThirdPartyCookies() const = 0;
 
   // Returns whether Third Party Cookie Deprecation mitigations should take
-  // effect.
+  // effect (under `first_party_url`). True when mitigations are enabled for
+  // 3PCD or when third-party cookies are not blocked and the origin trial for
+  // 3PCD is enabled for `first_party_url`.
+  bool ShouldConsiderMitigationsFor3pcd(const GURL& first_party_url) const;
+  // Returns whether Third Party Cookie Deprecation mitigations are enabled,
+  // which requires that we are not blocking or allowing all 3PC and that either
+  // 3PCD is enabled or that ForceThirdPartyCookieBlocking is enabled.
   virtual bool MitigationsEnabledFor3pcd() const = 0;
 
   // Returns whether |scheme| is always allowed to access 3p cookies.

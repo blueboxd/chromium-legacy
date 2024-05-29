@@ -29,6 +29,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -92,6 +93,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
+#include "components/services/app_service/public/cpp/app_instance_waiter.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
@@ -1581,9 +1583,10 @@ IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackClosesUnexpectedly) {
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// Test that ExecuteFileTask() will open a DriveFs office file with a web Drive
-// office task.
-IN_PROC_BROWSER_TEST_F(DriveTest, OpenFileInDrive) {
+// Test that the open-web-drive-office-word task opens an Office file located on
+// Drive directly in the browser, if the Google Docs app isn't installed.
+IN_PROC_BROWSER_TEST_F(DriveTest,
+                       OpenDriveOfficeFileInBrowserWhenDocsAppNotInstalled) {
   // Add test file to fake DriveFs.
   SetUpTest();
 
@@ -1628,6 +1631,39 @@ IN_PROC_BROWSER_TEST_F(DriveTest, OpenFileInDrive) {
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kDriveErrorMetricName,
       ash::cloud_upload::OfficeDriveOpenErrors::kSuccess, 1);
+}
+
+// Test that the open-web-drive-office-word task opens an Office file located on
+// Drive in the Google Docs app, if the app is installed.
+IN_PROC_BROWSER_TEST_F(DriveTest, OpenDriveOfficeFileInDocsAppWhenInstalled) {
+  // Add test file to fake DriveFs.
+  SetUpTest();
+
+  // Disable the setup flow for office files because we want the file to open
+  // without any dialogs.
+  SetWordFileHandlerToFilesSWA(profile(), kActionIdWebDriveOfficeWord);
+
+  // Set connection so that fallback dialog isn't triggered.
+  SetDriveConnectionStatusForTesting(ConnectionStatus::kConnected);
+
+  // Install Google Docs PWA.
+  webapps::AppId docs_app_id = web_app::test::InstallDummyWebApp(
+      profile(), "Google Docs",
+      GURL("https://docs.google.com/document/?usp=installed_webapp"));
+  ASSERT_EQ(docs_app_id, web_app::kGoogleDocsAppId);
+  apps::AppReadinessWaiter(profile(), web_app::kGoogleDocsAppId).Await();
+
+  // Check that the apps opens by waiting for it to be not only started and
+  // running, but also active and visible.
+  auto expected_state = apps::InstanceState(apps::kStarted | apps::kRunning |
+                                            apps::kActive | apps::kVisible);
+  apps::AppInstanceWaiter waiter(
+      apps::AppServiceProxyFactory::GetForProfile(profile())
+          ->InstanceRegistry(),
+      web_app::kGoogleDocsAppId, expected_state);
+  ExecuteFileTask(profile(), CreateWebDriveOfficeTask(), {drive_test_file_url_},
+                  base::DoNothing());
+  waiter.Await();
 }
 
 // Test that the setup flow for office files, that has never been run before,
@@ -1903,7 +1939,10 @@ class OneDriveTest : public TestAccountBrowserTest,
   void OnNotificationDisplayed(
       const message_center::Notification& notification,
       const NotificationCommon::Metadata* const metadata) override {
+    notification_title_ = base::UTF16ToUTF8(notification.title());
     notification_message_ = base::UTF16ToUTF8(notification.message());
+    notification_warning_level_ =
+        notification.system_notification_warning_level();
   }
 
   void OnNotificationClosed(const std::string& notification_id) override {}
@@ -1911,7 +1950,9 @@ class OneDriveTest : public TestAccountBrowserTest,
       NotificationDisplayService* service) override {}
 
  protected:
+  std::string notification_title_;
   std::string notification_message_;
+  message_center::SystemNotificationWarningLevel notification_warning_level_;
   FileSystemURL odfs_docx_test_file_url_1_;
   FileSystemURL odfs_pptx_test_file_url_2_;
   std::unique_ptr<FakeWebAppPublisher> web_app_publisher_;
@@ -2291,9 +2332,9 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, CannotShowDifferentMoveConfirmation) {
       ash::cloud_upload::OfficeTaskResult::kCannotShowMoveConfirmation, 1);
 }
 
-// Test to check that a second setup dialog will not launch when one
+// Test to check that subsequent setup dialogs will not launch when one
 // is already being shown for the same file.
-IN_PROC_BROWSER_TEST_F(OneDriveTest, CannotShowDuplicateSetupDialog) {
+IN_PROC_BROWSER_TEST_F(OneDriveTest, CannotShowDuplicateSetupDialogs) {
   // Doing this before SetUpTest creates a FakeWebAppPublisher which would
   // intercept Files app launching.
   LaunchFilesAppAndWait();
@@ -2324,21 +2365,37 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, CannotShowDuplicateSetupDialog) {
   navigation_observer_dialog.Wait();
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
+  NotificationDisplayService::GetForProfile(profile())->AddObserver(this);
+
   // Fails to launch a second setup dialog for the same file.
   base::test::TestFuture<TaskResult, std::string> failed_future;
   ExecuteFileTask(profile(), open_in_office_task, file_urls,
                   failed_future.GetCallback());
   ASSERT_EQ(failed_future.Get<0>(), TaskResult::kFailed);
 
-  // Both open file requests will log the CloudProvider metric.
+  // Expect that the file already being opened notification was shown.
+  EXPECT_EQ(notification_title_,
+            ash::cloud_upload::GetAlreadyBeingOpenedTitle());
+  EXPECT_EQ(notification_message_,
+            ash::cloud_upload::GetAlreadyBeingOpenedMessage());
+  EXPECT_EQ(notification_warning_level_,
+            message_center::SystemNotificationWarningLevel::NORMAL);
+
+  // Fails to launch a third setup dialog for the same file.
+  base::test::TestFuture<TaskResult, std::string> failed_future2;
+  ExecuteFileTask(profile(), open_in_office_task, file_urls,
+                  failed_future2.GetCallback());
+  ASSERT_EQ(failed_future2.Get<0>(), TaskResult::kFailed);
+
+  // All open file requests will log the CloudProvider metric.
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOpenInitialCloudProviderMetric,
-      ash::cloud_upload::CloudProvider::kOneDrive, 2);
-  // Only the second open file request will complete and with a
+      ash::cloud_upload::CloudProvider::kOneDrive, 3);
+  // Only the subsequent open file requests will complete and with a
   // kFileAlreadyBeingOpened TaskResult.
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOneDriveTaskResultMetricName,
-      ash::cloud_upload::OfficeTaskResult::kFileAlreadyBeingOpened, 1);
+      ash::cloud_upload::OfficeTaskResult::kFileAlreadyBeingOpened, 2);
 }
 
 // Test to check that a second move confirmation dialog will not launch when one
@@ -2378,11 +2435,21 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, CannotShowDuplicateMoveConfirmation) {
   navigation_observer_dialog.Wait();
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
+  NotificationDisplayService::GetForProfile(profile())->AddObserver(this);
+
   // Fails to launch a second move confirmation dialog for the same file.
   base::test::TestFuture<TaskResult, std::string> failed_future;
   ExecuteFileTask(profile(), open_in_office_task, file_urls,
                   failed_future.GetCallback());
   ASSERT_EQ(failed_future.Get<0>(), TaskResult::kFailed);
+
+  // Expect that the file already being opened notification was shown.
+  EXPECT_EQ(notification_title_,
+            ash::cloud_upload::GetAlreadyBeingOpenedTitle());
+  EXPECT_EQ(notification_message_,
+            ash::cloud_upload::GetAlreadyBeingOpenedMessage());
+  EXPECT_EQ(notification_warning_level_,
+            message_center::SystemNotificationWarningLevel::NORMAL);
 
   // Only the first file request will log the TransferRequired metric.
   histogram_.ExpectUniqueSample(
@@ -2521,23 +2588,39 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest,
   ASSERT_TRUE(event_router);
   event_router->AddCloudOpenTask(odfs_docx_test_file_url_1_);
 
+  NotificationDisplayService::GetForProfile(profile())->AddObserver(this);
+
   // Fail to execute a duplicate CloudOpenTask for the file.
   base::test::TestFuture<TaskResult, std::string> failed_future;
   ExecuteFileTask(profile(), open_in_office_task, file_urls,
                   failed_future.GetCallback());
   ASSERT_EQ(failed_future.Get<0>(), TaskResult::kFailed);
 
+  // Expect that the file already being opened notification was shown.
+  EXPECT_EQ(notification_title_,
+            ash::cloud_upload::GetAlreadyBeingOpenedTitle());
+  EXPECT_EQ(notification_message_,
+            ash::cloud_upload::GetAlreadyBeingOpenedMessage());
+  EXPECT_EQ(notification_warning_level_,
+            message_center::SystemNotificationWarningLevel::NORMAL);
+
+  // Fail again to execute a duplicate CloudOpenTask for the file.
+  base::test::TestFuture<TaskResult, std::string> failed_future2;
+  ExecuteFileTask(profile(), open_in_office_task, file_urls,
+                  failed_future2.GetCallback());
+  ASSERT_EQ(failed_future2.Get<0>(), TaskResult::kFailed);
+
   auto launches = web_app_publisher_->GetLaunches();
   ASSERT_EQ(0u, launches.size());
 
   histogram_.ExpectUniqueSample(
-      ash::cloud_upload::kNumberOfFilesToOpenWithOneDriveMetric, 1, 1);
+      ash::cloud_upload::kNumberOfFilesToOpenWithOneDriveMetric, 1, 2);
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOpenInitialCloudProviderMetric,
-      ash::cloud_upload::CloudProvider::kOneDrive, 1);
+      ash::cloud_upload::CloudProvider::kOneDrive, 2);
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOneDriveTaskResultMetricName,
-      ash::cloud_upload::OfficeTaskResult::kFileAlreadyBeingOpened, 1);
+      ash::cloud_upload::OfficeTaskResult::kFileAlreadyBeingOpened, 2);
 }
 
 // Test that ExecuteFileTask() will open ODFS office files with the Open In
@@ -2648,11 +2731,11 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest,
       ash::cloud_upload::CloudProvider::kOneDrive,
       std::move(cloud_open_metrics_)));
   task->OpenOrMoveFiles();
-  // Expect that there was a notification.
-  EXPECT_FALSE(notification_message_.empty());
   // Expect that the reauthentication required notification was shown.
   EXPECT_EQ(notification_message_,
             ash::cloud_upload::GetReauthenticationRequiredMessage());
+  EXPECT_EQ(notification_warning_level_,
+            message_center::SystemNotificationWarningLevel::WARNING);
 
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOneDriveOpenSourceVolumeMetric,
@@ -2696,10 +2779,10 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, FailToOpenFileFromODFSOtherAccessError) {
       ash::cloud_upload::CloudProvider::kOneDrive,
       std::move(cloud_open_metrics_)));
   task->OpenOrMoveFiles();
-  // Expect that there was a notification.
-  EXPECT_FALSE(notification_message_.empty());
   // Expect that the reauthentication required notification was shown.
   EXPECT_EQ(notification_message_, ash::cloud_upload::GetGenericErrorMessage());
+  EXPECT_EQ(notification_warning_level_,
+            message_center::SystemNotificationWarningLevel::WARNING);
 
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kOneDriveOpenSourceVolumeMetric,

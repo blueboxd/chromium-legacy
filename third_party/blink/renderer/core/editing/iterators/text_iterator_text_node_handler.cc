@@ -16,27 +16,6 @@ namespace blink {
 
 namespace {
 
-// A magic value for infinity, used to indicate that text emission should
-// proceed till the end of the text node. Can be removed when we can handle text
-// length differences due to text-transform correctly.
-const unsigned kMaxOffset = std::numeric_limits<unsigned>::max();
-
-// Resolves kMaxOffset to an actual number. Should simply return |dom_length|
-// when we can handle text-transform correctly.
-unsigned CalculateMaxOffset(const Text& text) {
-  DCHECK(!RuntimeEnabledFeatures::OffsetMappingUnitVariableEnabled());
-  DCHECK(text.GetLayoutObject());
-  unsigned dom_length = text.data().length();
-  unsigned layout_length;
-  if (const LayoutTextFragment* fragment =
-          DynamicTo<LayoutTextFragment>(text.GetLayoutObject())) {
-    layout_length = fragment->Start() + fragment->FragmentLength();
-  } else {
-    layout_length = text.GetLayoutObject()->TransformedTextLength();
-  }
-  return std::min(dom_length, layout_length);
-}
-
 bool ShouldSkipInvisibleTextAt(const Text& text,
                                unsigned offset,
                                bool ignores_visibility) {
@@ -48,6 +27,24 @@ bool ShouldSkipInvisibleTextAt(const Text& text,
   if (ignores_visibility)
     return false;
   return layout_object->Style()->Visibility() != EVisibility::kVisible;
+}
+
+String TextIgnoringCSSTextTransforms(const LayoutText& layout_text,
+                                     const OffsetMappingUnit& unit) {
+  String text = layout_text.OriginalText();
+  text = text.Substring(unit.DOMStart(), unit.DOMEnd() - unit.DOMStart());
+  // Per the white space processing spec
+  // https://drafts.csswg.org/css-text-3/#white-space-processing,
+  // collapsed spaces should be ignored completely and this is assured since
+  // |ComputeTextAndOffsetsForEmission| is not called for kCollapsed unit.
+  // Preserved whitespaces can be represented as-is.
+  // Non-preserved newline or tab characters should be converted into a space
+  // to reflect what the user sees on the screen
+  if (!layout_text.StyleRef().ShouldPreserveBreaks()) {
+    text.Replace(kNewlineCharacter, kSpaceCharacter);
+    text.Replace(kTabulationCharacter, kSpaceCharacter);
+  }
+  return text;
 }
 
 struct StringAndOffsetRange {
@@ -63,14 +60,24 @@ StringAndOffsetRange ComputeTextAndOffsetsForEmission(
   StringAndOffsetRange result{mapping.GetText(), unit.TextContentStart(),
                               unit.TextContentEnd()};
 
+  // This is ensured because |unit.GetLayoutObject()| must be the
+  // LayoutObject for TextIteratorTextNodeHandler's |text_node_|.
+  DCHECK(IsA<LayoutText>(unit.GetLayoutObject()));
+  const LayoutText& layout_text = To<LayoutText>(unit.GetLayoutObject());
+
+  // |TextIgnoringCSSTextTransforms| gets |layout_text.OriginalText()|
+  // which is not masked. This should not be allowed when
+  // |-webkit-text-security| property is set.
+  if (behavior.IgnoresCSSTextTransforms() && layout_text.HasTextTransform() &&
+      !layout_text.IsSecure()) {
+    result.string = TextIgnoringCSSTextTransforms(layout_text, unit);
+    result.start = 0;
+    result.end = result.string.length();
+  }
+
   if (behavior.EmitsOriginalText()) {
-    // This is ensured because |unit.GetLayoutObject()| must be the
-    // LayoutObject for TextIteratorTextNodeHandler's |text_node_|.
-    DCHECK(IsA<LayoutText>(unit.GetLayoutObject()));
-    result.string =
-        To<LayoutText>(unit.GetLayoutObject())
-            .OriginalText()
-            .Substring(unit.DOMStart(), unit.DOMEnd() - unit.DOMStart());
+    result.string = layout_text.OriginalText().Substring(
+        unit.DOMStart(), unit.DOMEnd() - unit.DOMStart());
     result.start = 0;
     result.end = result.string.length();
   }
@@ -178,10 +185,6 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
     return;
   }
 
-  // Restore end offset from magic value.
-  if (end_offset_ == kMaxOffset) {
-    end_offset_ = CalculateMaxOffset(*node);
-  }
   mapping_units_ = mapping->GetMappingUnitsForDOMRange(
       EphemeralRange(Position(node, offset_), Position(node, end_offset_)));
   mapping_units_index_ = 0;
@@ -191,11 +194,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
 void TextIteratorTextNodeHandler::HandleTextNodeStartFrom(
     const Text* node,
     unsigned start_offset) {
-  unsigned end_offset =
-      RuntimeEnabledFeatures::OffsetMappingUnitVariableEnabled()
-          ? node->data().length()
-          : kMaxOffset;
-  HandleTextNodeInRange(node, start_offset, end_offset);
+  HandleTextNodeInRange(node, start_offset, node->data().length());
 }
 
 void TextIteratorTextNodeHandler::HandleTextNodeEndAt(const Text* node,

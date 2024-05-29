@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/picker/metrics/picker_feature_usage_metrics.h"
 #include "ash/picker/metrics/picker_session_metrics.h"
+#include "ash/picker/picker_asset_fetcher_impl_delegate.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
@@ -37,9 +38,9 @@ class PickerSearchController;
 class PickerSearchResult;
 
 // Controls a Picker widget.
-class ASH_EXPORT PickerController
-    : public PickerViewDelegate,
-      public views::WidgetObserver {
+class ASH_EXPORT PickerController : public PickerViewDelegate,
+                                    public views::WidgetObserver,
+                                    public PickerAssetFetcherImplDelegate {
  public:
   PickerController();
   PickerController(const PickerController&) = delete;
@@ -93,17 +94,23 @@ class ASH_EXPORT PickerController
       SuggestedEditorResultsCallback callback) override;
   PickerAssetFetcher* GetAssetFetcher() override;
   PickerSessionMetrics& GetSessionMetrics() override;
+  PickerActionType GetActionForResult(
+      const PickerSearchResult& result) override;
 
   // views:WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // PickerAssetFetcherImplDelegate:
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory()
+      override;
+  void FetchFileThumbnail(const base::FilePath& path,
+                          const gfx::Size& size,
+                          FetchFileThumbnailCallback callback) override;
 
   // Disables the feature key checking. Only works in tests.
   static void DisableFeatureKeyCheckForTesting();
 
  private:
-  // Gets the SharedURLLoaderFactory to use for network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
-
   raw_ptr<PickerClient> client_ = nullptr;
   std::unique_ptr<PickerModel> model_;
   views::UniqueWidgetPtr widget_;
@@ -132,4 +139,4 @@ class ASH_EXPORT PickerController
 
 }  // namespace ash
 
-#endif
+#endif  // ASH_PICKER_PICKER_CONTROLLER_H_

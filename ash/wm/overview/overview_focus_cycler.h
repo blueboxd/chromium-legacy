@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
 
 namespace views {
@@ -17,7 +18,7 @@ class View;
 namespace ash {
 class OverviewSession;
 
-class OverviewFocusCycler {
+class ASH_EXPORT OverviewFocusCycler {
  public:
   explicit OverviewFocusCycler(OverviewSession* overview_session);
   OverviewFocusCycler(const OverviewFocusCycler&) = delete;
@@ -31,9 +32,12 @@ class OverviewFocusCycler {
   // Returns the current overview UI focused view if there is one.
   views::View* GetOverviewFocusedView();
 
+  void UpdateAccessibilityFocus();
+
  private:
   // Gets the list of traversable widgets in overview.
-  std::vector<views::Widget*> GetTraversableWidgets() const;
+  std::vector<views::Widget*> GetTraversableWidgets(
+      bool for_accessibility) const;
 
   // The overview session which owns this object. Guaranteed to be non-null for
   // the lifetime of `this`.

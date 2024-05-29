@@ -278,6 +278,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.LocalSharingTargetInfoSupportsSync" enum="Boolean"
+    expires_after="2024-09-27">
+  <owner>rushans@google.com</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records whether the local device contains sharing information to use sync
+    (as opposed to FCM) from other devices. Recorded during device registration
+    on every browser startup or after sync reset.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.MessageReceivedType" enum="SharingMessageType"
     expires_after="2024-11-03">
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -301,7 +312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration" units="ms"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -320,7 +331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration.BytesToQrPixels2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -342,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration.QrPixelsToQrImage2"
-    units="microseconds" expires_after="2024-09-22">
+    units="microseconds" expires_after="2024-11-24">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -426,6 +437,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether a SharingMessage is being sent over sync. Recorded for all
     messages before sending them. Recorded for all platforms.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.SendMessageWithSyncAckFcmConfiguration" enum="Boolean"
+    expires_after="2024-09-27">
+  <owner>rushans@google.com</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records whether a SharingMessage contains data required to send Ack message
+    using sync. Recorded for non-ack messages before sending them.
   </summary>
 </histogram>
 

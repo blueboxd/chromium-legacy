@@ -180,6 +180,7 @@ Si cette règle n'est pas configurée, aucune exception à <ph name="DEVICE_AUTH
 <translation id="1107538157073168076">Désactiver l'extension des insights</translation>
 <translation id="1110426799149444997">Désactiver la recherche par zone <ph name="GOOGLE_LENS_PRODUCT_NAME" />.</translation>
 <translation id="1111324374369583989">Ne pas afficher l'écran de configuration de la taille d'affichage lors de la connexion</translation>
+<translation id="1111824532252882775">Activé : les barres de défilement sont sélectionnables par défaut.</translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
 <translation id="1118093128235245168">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil USB connecté</translation>
 <translation id="111910763555783249">Paramètres de notification</translation>
@@ -395,6 +396,7 @@ Cette règle remplace la règle <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLIC
 <translation id="1305400589435476516">Si cette règle est activée, l'itinérance des données est autorisée sur l'appareil.
 
       Si cette règle est désactivée ou qu'elle n'est pas configurée, l'itinérance des données n'est pas disponible.</translation>
+<translation id="1306041796676461437">Désactiver la prise en charge d'extension SSO d'entreprise</translation>
 <translation id="1308526987406924874">Permet de dresser la liste des formats d'URL pour lesquels les sites ne sont pas autorisés à demander aux utilisateurs à accéder à un port série.
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Si ce n'est pas le cas, le paramètre défini par l'utilisateur s'applique.
@@ -467,6 +469,7 @@ Si elle est définie sur "PromptInTab", lorsque l'authentification de l'utilisat
       Une page supprimée est déchargée et ses ressources entièrement récupérées. L'onglet auquel elle est associée reste dans la barre d'onglets, mais son affichage déclenche une actualisation complète.
       </translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
+<translation id="1389138080311956934">Économies de mémoire maximales.</translation>
 <translation id="1390529781843037070">Si vous activez cette règle, ou si vous ne la configurez pas, les utilisateurs peuvent imprimer sur <ph name="CLOUD_PRINT_NAME" /> à partir de la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />. <ph name="PRODUCT_NAME" /> peut envoyer des documents à <ph name="CLOUD_PRINT_NAME" /> pour impression. Cela n'empêche pas les utilisateurs d'envoyer des tâches d'impression sur des sites Web.
 
       Si vous désactivez cette règle, les utilisateurs ne peuvent pas imprimer sur <ph name="CLOUD_PRINT_NAME" /> à partir de la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />.
@@ -571,6 +574,7 @@ Une réauthentification en ligne peut être requise pour plusieurs raisons (par 
 
       Les imprimantes locales, ou destinations d'impression native, englobent les destinations disponibles sur l'ordinateur local et les imprimantes réseau partagées.</translation>
 <translation id="1456822151187621582">Windows (clients <ph name="PRODUCT_OS_NAME" />) :</translation>
+<translation id="1459693405370120464">Météo</translation>
 <translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME" />.
 
      Si cette règle est définie sur "MultiProfileUserBehaviorUnrestricted", l'utilisateur peut être utilisateur principal ou secondaire dans une session multiprofil.
@@ -2194,15 +2198,6 @@ Le libellé personnalisé ne sera pas traduit.</translation>
 <translation id="2699836109975228367">Activer l'audio mono sur l'écran de connexion</translation>
 <translation id="2702023190395322609">Activer les recommandations de contenus multimédias</translation>
 <translation id="2702682139813393777">Forcer le lancement des hôtes de messagerie native Windows via cmd.exe</translation>
-<translation id="2703733412051211941">Déclenche une action lorsque l'ordinateur est inactif.
-
-      Si cette règle est définie, elle spécifie le délai (en minutes) sans entrée utilisateur avant que le navigateur exécute les actions configurées dans la règle <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" />.
-
-      Si elle n'est pas configurée, aucune action n'est exécutée.
-
-      Le délai minimal est d'une minute.
-
-      Une "entrée utilisateur" est définie par les API du système d'exploitation et inclut, par exemple, un déplacement de la souris ou une saisie au clavier.</translation>
 <translation id="270582584528242502">Ne pas afficher de boîte de dialogue d'avertissement quand l'utilisateur tente de quitter</translation>
 <translation id="2706708761587205154">Autoriser l'impression avec code uniquement</translation>
 <translation id="2707733461906745082">Séparation du profil</translation>
@@ -3113,6 +3108,7 @@ Pour en savoir plus sur la gestion des données pour les fonctionnalités d'IA 
 
       Ce paramètre expérimental sera supprimé lorsque la procédure de connexion intégrée sera entièrement compatible avec l'ensemble des procédures de connexion SSO.</translation>
 <translation id="3435796032110614169">Autoriser la suppression de l'historique des tâches d'impression</translation>
+<translation id="3435896845095436175">Activer</translation>
 <translation id="3436217793443508863">Délai d'inactivité de l'utilisateur, en millisecondes, au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).</translation>
 <translation id="3437924696598384725">Autoriser l'utilisateur à gérer les connexions VPN</translation>
 <translation id="3441664787678256816">Autoriser les connexions d'assistance à distance des entreprises à cet appareil</translation>
@@ -3333,6 +3329,15 @@ Veillez à ne pas laisser cette règle activée en permanence, en particulier po
 <translation id="3606571057705314194">Outil de sélection du profil désactivé au démarrage</translation>
 <translation id="3608206578291537084">Activer le pipeline de rapports chiffrés</translation>
 <translation id="3608281460204780443">Afficher l'icône du Chrome Web Store dans le lanceur d'applis <ph name="PRODUCT_OS_NAME" /> et sur la page de nouvel onglet</translation>
+<translation id="3608411984079625468">Configure la connexion automatique des utilisateurs de comptes recourant à des fournisseurs d'authentification via une extension SSO d'entreprise.
+
+Si cette règle est définie sur 1 (<ph name="POLICY_VALUE_ENABLED" />) ou n'est pas configurée, les fournisseurs d'authentification ayant une extension SSO sur l'appareil utiliseront cette extension pour authentifier les utilisateurs qui tentent de se connecter.
+
+Si cette règle est définie sur 0 (<ph name="POLICY_VALUE_DISABLED" />), la connexion automatique décrite ci-dessus est désactivée.
+
+Cette fonctionnalité est disponible à partir de macOS Catalina.
+
+Remarque : Cette règle ne s'applique ni à la navigation privée ni au mode Invité.</translation>
 <translation id="3612482251405108708">Démarrage automatique de la réauthentification en ligne sur l'écran de verrouillage</translation>
 <translation id="3616490235694929053">Cette règle définit si l'utilisateur voit l'écran de configuration de la taille d'affichage la première fois qu'il se connecte.
       Si cette règle est définie sur "False", l'écran n'est pas affiché.
@@ -3737,29 +3742,6 @@ Remarque : Si ce paramètre a pour conséquence qu'aucune méthode d'authentifi
 <translation id="3982465141749620677">Inviter à s'authentifier de nouveau dans un onglet</translation>
 <translation id="398294729592983401">Autoriser les utilisateurs à activer ou désactiver le paramètre "Protection contre le fingerprinting" de <ph name="PRIVACY_SANDBOX_NAME" /> sur leur appareil.</translation>
 <translation id="3983162212222338509">La résolution DNS du système peut être exécutée dans le processus réseau, en dehors de celui-ci, ou partiellement à l'intérieur et à l'extérieur du processus réseau, en fonction de la configuration du système et des flags de fonctionnalité.</translation>
-<translation id="3984773186203819634">Liste des actions à exécuter lorsque le délai d'inactivité de la règle <ph name="IDLE_TIMEOUT_POLICY_NAME" /> est atteint.
-
-      Cette règle n'a aucune incidence si la règle <ph name="IDLE_TIMEOUT_POLICY_NAME" /> n'est pas configurée.
-
-      Lorsque le délai d'inactivité de la règle <ph name="IDLE_TIMEOUT_POLICY_NAME" /> est atteint, le navigateur exécute les actions configurées dans celle-ci.
-
-      La règle <ph name="IDLE_TIMEOUT_POLICY_NAME" /> n'a aucune incidence si elle est vide ou si elle n'est pas configurée.
-
-      Actions acceptées :
-
-      <ph name="CLOSE_BROWSERS_ACTION" /> : ferme toutes les fenêtres de navigateur et les PWA pour ce profil. Non disponible sur Android et iOS.
-
-      <ph name="CLOSE_TABS_ACTION" /> : ferme tous les onglets ouverts dans les fenêtres ouvertes. Uniquement disponible sur iOS.
-
-      <ph name="SHOW_PROFILE_PICKER_ACTION" /> : affiche la fenêtre de sélection des profils. Non disponible sur Android et iOS.
-
-      <ph name="SIGN_OUT_ACTION" /> : déconnecte l'utilisateur actuellement connecté. Uniquement disponible sur iOS.
-
-      <ph name="CLEAR_BROWSING_HISTORY_ACTION" />, <ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />, <ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />, <ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />, <ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />, <ph name="CLEAR_AUTOFILL_ACTION" />, <ph name="CLEAR_SITE_SETTINGS_ACTION" />, <ph name="CLEAR_HOSTED_APP_DATA_ACTION" /> : efface les données de navigation correspondantes. Pour en savoir plus, consultez la règle <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" />. Les types compatibles avec iOS sont <ph name="CLEAR_BROWSING_HISTORY_ACTION" />, <ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />, <ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />, <ph name="CLEAR_PASSWORD_SIGNIN_ACTION" /> et <ph name="CLEAR_AUTOFILL_ACTION" />.
-
-      <ph name="RELOAD_PAGES_ACTION" /> : actualise toutes les pages Web. L'utilisateur peut d'abord être invité à confirmer l'opération pour certaines pages. Non disponible sur iOS.
-
-      Si vous configurez <ph name="CLEAR_BROWSING_HISTORY_ACTION" />, <ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />, <ph name="CLEAR_AUTOFILL_ACTION" /> et <ph name="CLEAR_SITE_SETTINGS_ACTION" />, la synchronisation sera désactivée pour les types de données respectifs si <ph name="CHROME_SYNC_NAME" /> n'est pas désactivé en définissant la règle <ph name="SYNC_DISABLED_POLICY_NAME" /> et si <ph name="BROWSER_SIGNIN_POLICY_NAME" /> n'est pas désactivé.</translation>
 <translation id="3986700049001404598">Autoriser les utilisateurs à mettre fin aux processus dans le gestionnaire de tâches Chrome</translation>
 <translation id="398884292557092447">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les utilisateurs peuvent contrôler les suggestions de saisie automatique pour les cartes de crédit dans l'interface utilisateur.
 
@@ -3859,11 +3841,6 @@ Ancien comportement : dans "beforeunload", appeler event.preventDefault() ne d�
 <translation id="4051723201852944592">Détecter les fenêtres recouvertes</translation>
 <translation id="4052529125939620019">Charger l'extension du composant CryptoToken au démarrage</translation>
 <translation id="4053157306171963473">Désactiver les rapports sur le temps d'activité de l'appareil</translation>
-<translation id="4055758693679485627">Configure une liste des types de données de navigation devant être supprimés lorsque l'utilisateur ferme toutes les fenêtres du navigateur. Types de données disponibles : historique de navigation (<ph name="DATA_TYPE_BROWSING_HISTORY" />), historique des téléchargements (<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />), cookies (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />), cache (<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />), saisie automatique (<ph name="DATA_TYPE_AUTOFILL" />), mots de passe (<ph name="DATA_TYPE_PASSWORD" />), paramètres des sites (<ph name="DATA_TYPE_SITE_SETTINGS" />) et données des applis hébergées (<ph name="DATA_TYPE_HOSTED_APP_DATA" />). Cette règle ne prévaut pas sur <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME" />.
-
-Jusqu'à Chrome 114, cette règle exigeait que la règle <ph name="SYNC_DISABLED_POLICY_NAME" /> soit définie sur "true". À partir de Chrome 115, si vous configurez cette règle, la synchronisation sera désactivée pour les types de données respectifs si <ph name="CHROME_SYNC_NAME" /> n'est pas désactivé en définissant la règle <ph name="SYNC_DISABLED_POLICY_NAME" /> et que <ph name="BROWSER_SIGNIN_POLICY_NAME" /> n'est pas désactivé.
-
-      Si <ph name="PRODUCT_NAME" /> ne se ferme pas correctement, par exemple si le navigateur ou l'OS plante, les données de navigation seront supprimées lors du prochain chargement du profil.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="4057442294431066708">Cette règle contrôle l'option de raccourci sélectionnée pour remapper les événements avec F11/F12 dans la sous-page des touches de remappage. Ces paramètres ne s'appliquent qu'aux claviers ChromeOS et sont désactivés par défaut lorsque la règle n'est pas configurée.</translation>
 <translation id="4061590579642538878">Transmettre les informations liées aux rapports d'erreur.</translation>
@@ -3879,6 +3856,7 @@ Pour <ph name="PRODUCT_OS_NAME" />, cette règle est liée à l'attestation à d
 Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, veuillez consulter https://support.google.com/chrome/a?p=url_blocklist_filter_format.</translation>
 <translation id="4070039109671307724">Divers</translation>
 <translation id="4072225853834793549">Désactiver les raccourcis d'accessibilité sur l'écran de connexion</translation>
+<translation id="4074922053013383215">Économies de mémoire modérées.</translation>
 <translation id="4075675819066819571">Placer l'étagère sur le côté gauche de l'écran</translation>
 <translation id="4079306023113982053">Contrôle la disponibilité de <ph name="BOREALIS_NAME" /> pour cet utilisateur.
 
@@ -4251,6 +4229,7 @@ Si elle est désactivée, les utilisateurs ne peuvent pas suivre leurs colis dan
 <translation id="4389073105055031853">Autoriser les utilisateurs à gérer tous les certificats</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
 <translation id="4389113579547582722">Autoriser l'affichage de la promo concernant la note sur l'App Store</translation>
+<translation id="4394049700291259645">Désactiver</translation>
 <translation id="4395619678972620537">Si cette règle est activée, les connexions homologues WebRTC peuvent revenir à
       des versions antérieures obsolètes des protocoles TLS/DTLS (DTLS 1.0, TLS 1.0 et TLS 1.1).
       Si cette règle est désactivée ou qu'elle n'est pas configurée, ces versions
@@ -4261,6 +4240,15 @@ Si elle est désactivée, les utilisateurs ne peuvent pas suivre leurs colis dan
 <translation id="439661169333921592">Désactiver la mise en surbrillance des éléments sélectionnés au clavier sur l'écran de connexion</translation>
 <translation id="4397045637922200204">Désactiver la récupération de compte</translation>
 <translation id="4397464099112037398">Paramètre d'autorisation de positionnement des fenêtres par défaut</translation>
+<translation id="4398803806072237638">La syntaxe <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> de la fonctionnalité d'état personnalisé CSS est remplacée par <ph name="CUSTOM_STATE_NEW_SYNTAX" /> dans <ph name="PRODUCT_NAME" /> afin de respecter les modifications apportées à <ph name="FIREFOX_PRODUCT_NAME" /> et <ph name="SAFARI_PRODUCT_NAME" />. Cette règle permet d'activer l'ancienne syntaxe obsolète jusqu'à M133.
+
+L'abandon de cette syntaxe pourrait endommager certains sites limités à <ph name="PRODUCT_NAME" /> qui utilisent la syntaxe <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> obsolète.
+
+Si cette règle est activée, l'ancienne syntaxe obsolète sera activée.
+
+Si elle est désactivée, l'ancienne syntaxe obsolète sera désactivée.
+
+Si cette règle n'est pas configurée, l'ancienne syntaxe obsolète sera désactivée.</translation>
 <translation id="4401196752827224189">WebSQL dans les contextes non sécurisés sera supprimé à partir de M110. Cette règle réactive l'API.
           Si cette règle est définie sur "True", WebSQL est disponible dans des contextes non sécurisés.
           Si elle est définie sur "False" ou n'est pas configurée, WebSQL restera disponible dans les contextes non sécurisés jusqu'à M109, puis sera indisponible à partir de M110.
@@ -4285,15 +4273,6 @@ Si cette règle est configurée, les utilisateurs ne peuvent pas la modifier dan
 <translation id="4426986640594727372">Autoriser l'accès à la géolocalisation du système</translation>
 <translation id="4427173305799125784">La visionneuse de PDF ne peut pas annoter les PDF</translation>
 <translation id="4432762137771104529">Autoriser la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
-<translation id="4434531680131327140">Configure les paramètres de durée de conservation des données de navigation dans <ph name="PRODUCT_NAME" />. Cette règle permet aux administrateurs de définir (selon le type de données) quand le navigateur supprime ces données. C'est utile pour les clients qui utilisent des données sensibles.
-
-      Types de données disponibles : <ph name="DATA_TYPE_BROWSING_HISTORY" />, <ph name="DATA_TYPE_DOWNLOAD_HISTORY" />, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, <ph name="DATA_TYPE_PASSWORD" />, <ph name="DATA_TYPE_AUTOFILL" />, <ph name="DATA_TYPE_SITE_SETTINGS" /> et <ph name="DATA_TYPE_HOSTED_APP_DATA" />. <ph name="DATA_TYPE_DOWNLOAD_HISTORY" /> et <ph name="DATA_TYPE_HOSTED_APP_DATA" /> ne sont pas compatibles avec Android.
-
-      Le navigateur supprimera automatiquement les données des types sélectionnés qui datent de plus de <ph name="TIME_TO_LIVE_IN_HOURS" />. Vous ne pouvez pas définir une valeur inférieure à une heure.
-
-      La suppression des données expirées se fera 15 secondes après le démarrage du navigateur, puis toutes les 30 minutes lorsque le navigateur sera en cours d'exécution.
-
-      Jusqu'à Chrome 114, cette règle exigeait que la règle <ph name="SYNC_DISABLED_POLICY_NAME" /> soit définie sur "true". À partir de Chrome 115, si vous configurez cette règle, la synchronisation sera désactivée pour les types de données respectifs si <ph name="CHROME_SYNC_NAME" /> n'est pas désactivé en définissant la règle <ph name="SYNC_DISABLED_POLICY_NAME" /> et que <ph name="BROWSER_SIGNIN_POLICY_NAME" /> n'est pas désactivé.</translation>
 <translation id="443454694385851356">Anciens types de chiffrement (option non sécurisée)</translation>
 <translation id="4435032708588431506">Autoriser le protocole QUIC</translation>
 <translation id="443665821428652897">Effacer les données des sites à la fermeture du navigateur (obsolète)</translation>
@@ -4585,6 +4564,7 @@ Si cette règle n'est pas configurée, les utilisateurs peuvent modifier la list
 
 La configuration de la règle <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> n'est effective que si la règle <ph name="CHROME_OS_RELEASE_CHANNEL_DELEGATED_POLICY_NAME" /> est définie sur "False".</translation>
 <translation id="4638906910792947645">Activer les enquêtes intégrées au produit</translation>
+<translation id="4641557638919545432">L'ancienne syntaxe obsolète sera activée.</translation>
 <translation id="4646626362889216307">Cette règle permet de fusionner les règles sélectionnées lorsqu'elles proviennent de sources différentes, et si le niveau et les champs d'application sont les mêmes. Cette fusion concerne les clés de premier niveau du dictionnaire provenant de chaque source. La clé qui prévaut est celle dont la source présente la plus haute priorité.
 
       Utilisez le caractère générique "*" pour autoriser la fusion de toutes les règles de dictionnaire compatibles.
@@ -5239,6 +5219,7 @@ Si cette règle n'est pas configurée ou si la liste ne contient aucune référe
       Si la règle relative au fond d'écran est configurée, l'appareil Chrome OS téléchargera et utilisera l'image de fond d'écran sur l'écran de connexion si aucun utilisateur ne s'est encore connecté à l'appareil. Lorsque l'utilisateur se connecte, la règle relative au fond d'écran pour cet utilisateur est activée.
 
       Si la règle relative au fond d'écran n'est pas définie pour l'appareil, la règle correspondante pour l'utilisateur détermine l'élément à afficher (si cette règle est définie).</translation>
+<translation id="5217106427763720473">Activer la prise en charge d'extension SSO d'entreprise</translation>
 <translation id="5219844027738217407">Cette règle ne s'applique qu'au micro pour les applications Android. Lorsqu'elle est définie sur "True", le son du micro est coupé pour toutes les applications Android sans exception.</translation>
 <translation id="5222325605346216869">Appliquer une limitation des minuteurs JavaScript en arrière-plan</translation>
 <translation id="5223606242837275233">Ne pas autoriser le défilement des sites jusqu'à des fragments de texte spécifiques au moyen d'une URL</translation>
@@ -5289,6 +5270,7 @@ Remarque : Cette fonctionnalité n'est pas encore disponible au grand public. S
       Dans le cas présent, le terme "version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".  </translation>
 <translation id="5247584184349816217">Activer l'économiseur d'écran pour l'écran de verrouillage.</translation>
 <translation id="5247973380763021389">Empêcher les règles cloud utilisateur d'ignorer les règles cloud machine.</translation>
+<translation id="5249006530384016395">Détermine si la syntaxe <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> obsolète de l'état personnalisé CSS est activée</translation>
 <translation id="5249453807420671499">Les utilisateurs peuvent ajouter des comptes Kerberos</translation>
 <translation id="5249555581286638799">Active le mode Haute efficacité</translation>
 <translation id="5252210248395576403">Cette règle autorise Réponses rapides à accéder au contenu sélectionné et à envoyer au serveur les infos pour obtenir les résultats de la traduction.
@@ -6785,6 +6767,7 @@ Si cette règle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> stocke par 
 <translation id="6410847321564585975">Liste d'autorisation de rapports sur l'activité de site Web</translation>
 <translation id="6412352702230183710">Autoriser uniquement les hôtes de messagerie natifs au niveau du système</translation>
 <translation id="6416506846917150119">Désactiver l'écriture prédictive lors de la saisie au clavier physique</translation>
+<translation id="6416916931494972926">Activer les rapports de télémétrie de Kiosk Vision.</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
 <translation id="6419001911253110938">Activer l'affichage de l'écran d'introduction pour les fonctionnalités d'IA en cours de session pendant la procédure de connexion</translation>
 <translation id="6421254653839955267">Si cette règle est activée, la recherche du CNAME est ignorée. Le nom du serveur est utilisé tel qu'il a été saisi lors de la génération du SPN Kerberos.
@@ -6828,6 +6811,7 @@ Si cette règle n'est pas configurée, les utilisateurs peuvent activer ou désa
 <translation id="6452882999388592166">Si cette règle est activée, l'extension de composant CryptoToken intégrée sera chargée au démarrage. Si elle est désactivée ou n'est pas configurée, CryptoToken ne sera pas chargée au démarrage du navigateur. Cette règle est une solution temporaire pour les sites qui ne fonctionnent pas lorsque `chrome.runtime` n'est pas défini à la suite de la suppression de CryptoToken dans M106. Les sites Web ne doivent pas compter sur le fait que `chrome.runtime` soit défini sans conditions.</translation>
 <translation id="6453641799812499182">Atténuer les vérifications <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" /></translation>
 <translation id="645425387487868471">Activer la connexion forcée pour <ph name="PRODUCT_NAME" /></translation>
+<translation id="6454450724849956537">Activer les barres de défilement sélectionnables au clavier</translation>
 <translation id="645467061280066516">Si cette règle est activée, la page "Nouvel onglet" est définie comme page d'accueil de l'utilisateur. Toute URL de page d'accueil est ignorée. Si cette règle est désactivée, la page d'accueil de l'utilisateur ne sera jamais la page "Nouvel onglet", sauf si l'URL de la page d'accueil est définie sur "chrome://newtab".
 
 Si cette règle est configurée, l'utilisateur ne peut pas changer de type de page d'accueil dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas configurée, l'utilisateur choisit d'utiliser ou non la page "Nouvel onglet" comme page d'accueil.
@@ -6933,6 +6917,7 @@ Si cette règle n'est pas configurée ou si la liste d'URL est vide, toutes les 
 <translation id="6506486086262398387">Si cette règle est activée, la fonctionnalité Partages de fichiers en réseau de <ph name="PRODUCT_OS_NAME" /> utilise le protocole NTLM pour s'authentifier sur les partages SMB, si nécessaire. Si elle est désactivée, l'authentification NTLM sur les partages SMB l'est également.
 
       Si cette règle n'est pas configurée, le protocole est, par défaut, désactivé pour les utilisateurs gérés et activé pour les autres.</translation>
+<translation id="6508882314969525299">Désactiver les rapports de télémétrie de Kiosk Vision.</translation>
 <translation id="6509376413448002446">Permet de configurer l'économiseur d'écran de l'utilisateur pour l'écran de verrouillage.
 
 Si cette règle est définie sur "True", l'appareil <ph name="PRODUCT_OS_NAME" /> affiche un économiseur d'écran lorsque l'écran de verrouillage est actif.
@@ -8586,6 +8571,7 @@ Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet�
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, les contenus <ph name="FLASH_PLUGIN_NAME" /> de provenance différente ou de petite taille peuvent être bloqués.
 
       Remarque : pour contrôler les sites autorisés à exécuter <ph name="FLASH_PLUGIN_NAME" />, reportez-vous aux règles <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> et <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
+<translation id="7801163363326128751">Modifier le niveau d'économies de l'économiseur de mémoire</translation>
 <translation id="7804859754080118507">Signalez les événements liés à la connexion réseau et la puissance du signal sur les appareils enregistrés.
 
       Si la règle est définie sur "False" ou si elle n'est pas configurée, ces informations ne seront pas transmises.
@@ -8885,6 +8871,13 @@ Nous vous recommandons d'utiliser "<ph name="LACROS_SELECTION_USER_CHOICE_VALUE"
 <translation id="802776363472387903">Hachage SHA-256 de l'image <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="8028814157747157754">Activer le moteur de recherche par défaut et autoriser les utilisateurs à modifier la liste des moteurs de recherche</translation>
 <translation id="8029201909194194377">Durée maximale des sessions autorisée pour les connexions d'accès à distance</translation>
+<translation id="8033450879690820321">Cette règle permet de désactiver temporairement le nouveau comportement des barres de défilement sélectionnables au clavier.
+
+Si cette règle est activée ou n'est pas configurée, les barres de défilement sans enfants sélectionnables peuvent être sélectionnés par défaut au clavier. En outre, les barres de défilement sont sélectionnables par clic et de manière programmatique par défaut.
+
+Lorsque cette règle est désactivée, les barres de défilement ne sont pas sélectionnables par défaut.
+
+Cette règle est une solution temporaire et sera supprimée dans M135.</translation>
 <translation id="8035570672225663428">Activez le modèle de recharge adaptative pour suspendre le processus de charge et allonger la durée de vie de la batterie.</translation>
 <translation id="8036284429246268475">Si cette règle est activée, les utilisateurs peuvent faire en sorte que <ph name="PRODUCT_NAME" /> contrôle si les noms d'utilisateur et les mots de passe saisis ont fait l'objet d'une fuite.
 
@@ -9166,6 +9159,7 @@ Pour en savoir plus sur les anciennes technologies, consultez https://chromestat
 <translation id="8274926413890711289">Activer les contrôles de rapports précis</translation>
 <translation id="8275103737670730746">Autoriser l'appel d'API de sélection de fichiers ou répertoires sans geste préalable de l'utilisateur</translation>
 <translation id="8278133379873210419">Supprimer les boîtes de dialogue JavaScript déclenchées depuis des sous-frames d'une autre origine</translation>
+<translation id="8284028944941138279">Économies de mémoire équilibrées.</translation>
 <translation id="8284296539558710573">Commandes d'authentification HTTP multi-domaines</translation>
 <translation id="8284527236880877730">Si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée, la règle <ph name="PRESENTATION_SCREEN_DIM_DELAY_SCALE_POLICY_NAME" /> permet de définir le pourcentage de scaling du délai d'assombrissement lorsque l'appareil effectue la présentation. Le scaling de ce délai décale d'autant le moment où l'écran doit s'éteindre, se verrouiller et se mettre en veille, ceci afin de maintenir l'intervalle initialement configuré.
 
@@ -9337,9 +9331,6 @@ Si cette règle n'est pas configurée ou qu'elle est définie sur 0, l'URL sél
 
       Cette règle sera supprimée après Chrome 115.</translation>
 <translation id="841395160262233331">La touche du Lanceur d'applications/de recherche ne pourra pas modifier le comportement des touches de fonction, et les utilisateurs ne pourront pas modifier ce paramètre.</translation>
-<translation id="8415506434606458373">Si cette règle est configurée, les origines listées sont autorisées à récupérer les attributs de l'appareil (comme le numéro de série ou le nom d'hôte) à l'aide de l'API Device Attributes.
-
-Les origines doivent correspondre aux applis Web installées d'office à l'aide de la règle <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" /> ou <ph name="ISOLATED_WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" /> (depuis la version 125), ou configurées en tant qu'applis kiosque. Pour connaître les spécifications de l'API Device Attributes, veuillez consulter https://wicg.github.io/WebApiDevice/device_attributes.</translation>
 <translation id="8415953438346821074">Si vous activez cette règle, les paramètres stockés dans les profils <ph name="PRODUCT_NAME" />, comme les favoris, les données de saisie automatique et les mots de passe, entre autres, sont également enregistrés dans un fichier stocké dans le dossier des profils utilisateur itinérants ou à un emplacement défini par l'administrateur tel que spécifié dans la règle <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Si cette règle est activée, la synchronisation cloud est désactivée.
 
       Si cette règle est désactivée ou qu'elle n'est pas configurée, seuls les profils locaux standards sont utilisés.</translation>
@@ -9417,6 +9408,7 @@ Le champ <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indique la quantit
           Si vous ne définissez pas cette règle, le moteur de rendu par défaut est utilisé pour tous les sites, tel que spécifié par la règle "ChromeFrameRendererSettings".
 
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489169564515126823">Désactivé : les barres de défilement ne sont pas sélectionnables par défaut.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
@@ -9575,6 +9567,9 @@ Si cette règle n'est pas configurée, les utilisateurs ne peuvent pas jouer à 
       Si cette règle est définie sur "True", les onglets en arrière-plan depuis au moins cinq minutes peuvent être figés. En figeant ces onglets, vous sollicitez moins le processeur, la batterie et la mémoire. <ph name="PRODUCT_NAME" /> utilise des heuristiques pour ne pas figer les onglets qui exécutent une tâche utile en arrière-plan (par exemple, l'affichage de notifications, la lecture audio d'un contenu, la diffusion d'une vidéo en streaming). Notez que les développeurs Web peuvent également choisir de ne pas figer les pages de leur site (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Si cette règle est définie sur "False", aucun onglet n'est figé.</translation>
+<translation id="8607613052618540095">Si cette règle est activée, les rapports de télémétrie de Kiosk Vision sont activés.
+Elle lance le framework Kiosk Vision et active les rapports de télémétrie sur l'audience.
+Si cette règle est désactivée ou qu'elle n'est pas configurée, les rapports de télémétrie de Kiosk Vision sont désactivés.</translation>
 <translation id="8610216287193516769">Supprimée dans M122, cette règle côté serveur uniquement n'a jamais utilisé l'infrastructure de règles ChromeOS pour sa propagation.
 Si elle est définie sur <ph name="POLICY_VALUE_ALL" /> ou n'est pas configurée, l'utilisation de comptes gérés n'est pas limitée. Il sera donc possible qu'un compte géré soit un compte secondaire. Celui-ci ne recevrait alors de règles que lorsqu'il serait connecté en tant que compte principal dans un profil de navigateur.
       Les règles configurées sur le compte ne s'appliqueront pas dans les cas suivants :
@@ -9588,6 +9583,7 @@ y compris les rapports activés par <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAM
 
 Lorsque cette règle n'est pas définie, les rapports sont importés toutes les 24 heures.
 Lorsqu'elle est définie, elle définit le nombre d'heures entre deux importations.</translation>
+<translation id="8613622696148230463">L'ancienne syntaxe obsolète sera désactivée.</translation>
 <translation id="8618037841203431360">Cette règle détermine si les données de la règle et l'heure de récupération de la règle doivent être enregistrées.
 
 Cette règle est ignorée si la règle <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> n'est pas définie ou si elle est désactivée.

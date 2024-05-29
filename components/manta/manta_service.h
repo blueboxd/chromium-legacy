@@ -29,6 +29,7 @@ enum class FeatureSupportStatus {
   kSupported = 1
 };
 
+class AnchovyProvider;
 class MahiProvider;
 class OrcaProvider;
 class SnapperProvider;
@@ -46,6 +47,7 @@ class COMPONENT_EXPORT(MANTA) MantaService : public KeyedService {
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       signin::IdentityManager* identity_manager,
       bool is_demo_mode,
+      bool is_otr_profile,
       const std::string& chrome_version,
       const std::string& locale);
 
@@ -57,6 +59,8 @@ class COMPONENT_EXPORT(MANTA) MantaService : public KeyedService {
   // Returns a unique pointer to an instance of the Providers for the
   // profile associated with the MantaService instance from which this method
   // is called.
+  std::unique_ptr<AnchovyProvider> CreateAnchovyProvider();
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<MahiProvider> CreateMahiProvider();
   std::unique_ptr<OrcaProvider> CreateOrcaProvider();
@@ -68,6 +72,13 @@ class COMPONENT_EXPORT(MANTA) MantaService : public KeyedService {
   // Determines whether the profile for this KeyedService support Orca feature.
   FeatureSupportStatus SupportsOrca();
 
+  // Determines whether the profile for this KeyedService can access Manta
+  // features without minor restrictions.
+  // If the requirements for which users can access Manta features changes, then
+  // per-feature capabilities will need to be added, which will take a few weeks
+  // to migrate.
+  FeatureSupportStatus CanAccessMantaFeaturesWithoutMinorRestrictions();
+
   // KeyedService:
   void Shutdown() override;
 
@@ -75,6 +86,7 @@ class COMPONENT_EXPORT(MANTA) MantaService : public KeyedService {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   raw_ptr<signin::IdentityManager> identity_manager_;
   const bool is_demo_mode_;
+  const bool is_otr_profile_;
   const std::string chrome_version_;
   const std::string locale_;
 };

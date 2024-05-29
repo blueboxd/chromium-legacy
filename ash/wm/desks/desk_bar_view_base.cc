@@ -523,6 +523,7 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
   scroll_view_->SetTreatAllScrollEventsAsHorizontal(true);
+  scroll_view_->SetAllowKeyboardScrolling(false);
 
   left_scroll_button_ = AddChildView(std::make_unique<ScrollArrowButton>(
       base::BindRepeating(&DeskBarViewBase::ScrollToPreviousPage,
@@ -680,8 +681,8 @@ std::unique_ptr<views::Widget> DeskBarViewBase::CreateDeskWidget(
 
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.accept_events = true;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;

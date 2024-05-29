@@ -28,6 +28,9 @@
 
 namespace {
 
+using Source = visited_url_ranking::URLVisit::Source;
+using FetchSources =
+    base::EnumSet<Source, Source::kNotApplicable, Source::kForeign>;
 using tab_resumption::jni::Java_VisitedUrlRankingBackend_addSuggestionEntry;
 using tab_resumption::jni::Java_VisitedUrlRankingBackend_onSuggestions;
 using tab_resumption::jni::VisitedUrlRankingBackend;
@@ -37,18 +40,29 @@ using visited_url_ranking::Fetcher;
 using visited_url_ranking::FetchOptions;
 using visited_url_ranking::ResultStatus;
 using visited_url_ranking::URLVisitAggregate;
+using visited_url_ranking::URLVisitAggregatesTransformType;
 using visited_url_ranking::VisitedURLRankingService;
+
+static constexpr FetchSources kForeignSources = {Source::kForeign};
+
+// Must match Java Tab.INVALID_TAB_ID.
+static constexpr int kInvalidTabId = -1;
 
 // FetchOptions::CreateDefaultFetchOptionsForTabResumption() specifies data
 // sources that are currently unavailable. This function returns a simplified
 // FetchOptions instance.
-FetchOptions CreateFetchOptionsForTabResumption(base::Time current_time) {
-  // TODO(crbug.com/337858147): Incorporate Fetcher::kHistory when ready.
+// TODO(crbug.com/337858147): Incorporate Fetcher::kHistory when ready.
+FetchOptions CreateFetchOptionsForTabResumption(base::Time current_time,
+                                                bool fetch_local_tabs) {
   return FetchOptions(
       {
-          {Fetcher::kSession, FetchOptions::kOriginSources},
+          {Fetcher::kSession,
+           fetch_local_tabs ? FetchOptions::kOriginSources : kForeignSources},
       },
-      current_time - base::Days(1), {});
+      current_time - base::Days(1),
+      {
+          URLVisitAggregatesTransformType::kDefaultAppUrlFilter,
+      });
 }
 
 // Class to manage tab resumption fetch and rank flow, containing required
@@ -60,6 +74,7 @@ class FetchAndRankFlow : public base::RefCounted<FetchAndRankFlow> {
   FetchAndRankFlow(Profile* profile,
                    JNIEnv* env,
                    base::Time current_time,
+                   bool fetch_local_tabs,
                    jni_zero::ScopedJavaGlobalRef<jobject> j_suggestions,
                    jni_zero::ScopedJavaGlobalRef<jobject> j_callback)
       : ranking_service_(
@@ -68,7 +83,8 @@ class FetchAndRankFlow : public base::RefCounted<FetchAndRankFlow> {
         env_(env),
         j_suggestions_(j_suggestions),
         j_callback_(j_callback),
-        fetch_options_(CreateFetchOptionsForTabResumption(current_time)),
+        fetch_options_(
+            CreateFetchOptionsForTabResumption(current_time, fetch_local_tabs)),
         config_({.key = visited_url_ranking::kTabResumptionRankerKey}) {}
 
   void RunFlow() {
@@ -118,6 +134,9 @@ class FetchAndRankFlow : public base::RefCounted<FetchAndRankFlow> {
           std::get_if<URLVisitAggregate::TabData>(
               &(aggregate.fetcher_data_map.begin()->second));
       if (tab_data) {
+        // TODO(b/343209609) Assign this properly for local tab handling.
+        bool isLocalTab = false;
+
         Java_VisitedUrlRankingBackend_addSuggestionEntry(
             env_,
             base::android::ConvertUTF8ToJavaString(
@@ -127,7 +146,8 @@ class FetchAndRankFlow : public base::RefCounted<FetchAndRankFlow> {
             base::android::ConvertUTF16ToJavaString(
                 env_, tab_data->last_active_tab.visit.title),
             tab_data->last_active.InMillisecondsSinceUnixEpoch(),
-            tab_data->last_active_tab.id, j_suggestions_);
+            isLocalTab ? tab_data->last_active_tab.id : kInvalidTabId,
+            j_suggestions_);
       }
 
       // TODO(crbug.com/337858147): Handle URLVisitAggregate::HistoryData case.
@@ -195,6 +215,7 @@ void VisitedUrlRankingBackend::TriggerUpdate(JNIEnv* env) {
 void VisitedUrlRankingBackend::GetRankedSuggestions(
     JNIEnv* env,
     jlong current_time_ms,
+    jboolean fetch_local_tabs,
     const jni_zero::JavaParamRef<jobject>& suggestions,
     const jni_zero::JavaParamRef<jobject>& callback) {
   jni_zero::ScopedJavaGlobalRef<jobject> j_suggestions(env, suggestions);
@@ -203,7 +224,7 @@ void VisitedUrlRankingBackend::GetRankedSuggestions(
   auto current_time =
       base::Time::FromMillisecondsSinceUnixEpoch(current_time_ms);
   scoped_refptr<FetchAndRankFlow> flow = base::MakeRefCounted<FetchAndRankFlow>(
-      profile_, env, current_time, j_suggestions, j_callback);
+      profile_, env, current_time, fetch_local_tabs, j_suggestions, j_callback);
 
   flow->RunFlow();
 }

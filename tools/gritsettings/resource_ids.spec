@@ -771,8 +771,15 @@
     "META": {"sizes": {"includes": [15],}},
     "includes" : [5740],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/ash/components/kiosk/vision/webui/resources.grd" : {
+    "META": {"sizes": {"includes": [15]}},
+    "includes" : [5750],
+  },
   "chromeos/ash/resources/ash_resources.grd": {
     "includes": [5760],
+  },
+  "chromeos/ash/resources/internal/ash_internal_scaled_resources.grd": {
+    "structures": [5770],
   },
   "chromeos/ash/resources/internal/ash_internal_strings.grd": {
     "messages": [5780],
@@ -859,8 +866,11 @@
   "ash/webui/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd": {
     "includes": [6060],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/mall/resources/resources.grd": {
+    "META": {"join": 2, "sizes": {"includes": [10],}},
+    "includes": [6070],
+  },
   "ash/webui/media_app_ui/resources/media_app_resources.grd": {
-    "META": {"join": 2},
     "includes": [6080],
   },
   # Both media_app_bundle_resources.grd and media_app_bundle_mock_resources.grd

@@ -191,6 +191,7 @@
           <ph name="LIST_ITEM" />ನಿಮ್ಮ ಉದ್ಯೋಗದಾತರು ಅಥವಾ ಶಾಲೆ
           <ph name="LIST_ITEM" />ನಿಮಗೆ ಇಂಟರ್ನೆಟ್ ಸೇವೆ ಒದಗಿಸುವವರು
         <ph name="END_LIST" /></translation>
+<translation id="1335042910556016570">ಈ ಐಟಂ ಅನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ</translation>
 <translation id="1337692097987160377">ಈ ಟ್ಯಾಬ್ ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="1339601241726513588">ಡೊಮೇನ್ ದಾಖಲಾತಿ:</translation>
 <translation id="1340482604681802745">ಪಿಕಪ್ ವಿಳಾಸ</translation>
@@ -359,6 +360,7 @@
 <translation id="1641976391427233992">ಇಷ್ಟು ಸಮಯದವರೆಗೆ ಫಲಿತಾಂಶವನ್ನು ವಿಳಂಬಗೊಳಿಸಿ</translation>
 <translation id="1643651787397909318">Chrome ಸುರಕ್ಷತೆಯ ಪರಿಶೀಲನೆ ಬಟನ್‌ಗೆ ಹೋಗಿ, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Chrome ಭದ್ರತಾ ಪರಿಶೀಲನೆ ಪುಟವನ್ನು ತೆರೆಯಲು ಅದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1644574205037202324">ಇತಿಹಾಸ</translation>
+<translation id="1645004815457365098">ಅಜ್ಞಾತ ಮೂಲ</translation>
 <translation id="1645368109819982629">ಬೆಂಬಲವಿಲ್ಲದ ಪ್ರೊಟೋಕಾಲ್</translation>
 <translation id="1650602712345345441">ನಿಮ್ಮ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -574,7 +576,6 @@
 <translation id="2056658168519009885">ನೀವು ನೋಡುವ ಜಾಹೀರಾತುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು ಸೈಟ್‌ಗಳು Chrome ಅನ್ನು ಮಾಹಿತಿ ಕೇಳಬಹುದು.</translation>
 <translation id="2059166748188874810">ಪುರಸಭೆ</translation>
 <translation id="2059202684901022309">22 x 34 ಇಂಚು</translation>
-<translation id="206275378685759380">ಖರೀದಿಸಲು ನಿರೀಕ್ಷಿಸಿ</translation>
 <translation id="2064568741209980952">ಕ್ರೆಡಿಟ್ ಮತ್ತು ಸಾಲ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 ಸಲಹೆ}one{# ಸಲಹೆಗಳು}other{# ಸಲಹೆಗಳು}}</translation>
 <translation id="2066915425250589881">ಅಳಿಸುವಂತೆ ವಿನಂತಿಸಿಕೊಳ್ಳಬಹುದು</translation>
@@ -1333,6 +1334,7 @@
 <translation id="353816159217417898">ಸ್ಕ್ರೀನ್‌ (ಪುಟದ)</translation>
 <translation id="3542628208405253498">ಕಾರ್ಡ್ ಚಿತ್ರ</translation>
 <translation id="3542768452570884558">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
+<translation id="3547442767634383572">ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ಓವರ್‌ವ್ಯೂ</translation>
 <translation id="3547746132308051926">20 x 24 ಇಂಚು</translation>
 <translation id="3552155506104542239">ಎಚ್ಚರಿಕೆ: ಈ ನೀತಿ ಮತ್ತು <ph name="POLICY_NAME" /> ನಡುವೆ ಸಂಘರ್ಷವಿದೆ, ಇದು Android ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಪರಿಣಾಮಕಾರಿಯಾಗಿಲ್ಲ. ಇಲ್ಲವಾದರೆ, ಈ ನೀತಿಯು ಉದ್ದೇಶಿಸಿದಂತೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ.</translation>
 <translation id="3552297013052089404">ಸ್ಯಾನ್ಸ್ ಸೆರಿಫ್ ಫಾಂಟ್</translation>
@@ -2196,6 +2198,7 @@
 <translation id="5230733896359313003">ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸ</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
+<translation id="5233071178832586743">ನಿರ್ವಹಿಸಿದ ಪ್ರೊಫೈಲ್, ಬ್ರೌಸರ್ ಮತ್ತು ಕೆಲವು ಸಾಧನದ ಮಾಹಿತಿಯನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು. ಅವರು ಈ ಕೆಳಗಿನ ಮಾಹಿತಿಯನ್ನು ನೋಡಬಹುದು:</translation>
 <translation id="5234764350956374838">ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="5238301240406177137">ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಿ</translation>
 <translation id="5239119062986868403">ಸಾಮಾನ್ಯ ಬೆಲೆ</translation>
@@ -2209,6 +2212,7 @@
 <translation id="52517543715119994">Chrome ಫೀಚರ್‌ಗಳ ಕುರಿತು ತಿಳಿಯಿರಿ</translation>
 <translation id="5251803541071282808">ಕ್ಲೌಡ್</translation>
 <translation id="5254043433801397071">ಪ್ರಿಂಟ್ ವಿಷಯವನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡಿ</translation>
+<translation id="5255583962255635076">ನಿಮ್ಮ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಬ್ರೌಸರ್ ನೀತಿಗಳನ್ನು ಅನ್ವಯಿಸಲಾಗಿದೆ</translation>
 <translation id="5255690596502591079">ಹೇಗಿದ್ದರೂ ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ</translation>
 <translation id="5255833070095767006">350 x 460 ಮಿಮೀ</translation>
 <translation id="5257739419779698609">{0,plural, =1{ನಿರ್ವಾಹಕರ ನೀತಿಯು ಈ ಫೈಲ್ ಅನ್ನು <ph name="DESTINATION_NAME" /> ಗೆ ನಕಲಿಸಲು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ}one{ನಿರ್ವಾಹಕರ ನೀತಿಯು ಈ ಫೈಲ್‌ಗಳನ್ನು <ph name="DESTINATION_NAME" /> ಗೆ ನಕಲಿಸಲು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ}other{ನಿರ್ವಾಹಕರ ನೀತಿಯು ಈ ಫೈಲ್‌ಗಳನ್ನು <ph name="DESTINATION_NAME" /> ಗೆ ನಕಲಿಸಲು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ}}</translation>
@@ -2605,6 +2609,7 @@
 <translation id="6035491133925068289">ಟ್ರ್ಯಾಕ್ ಮತ್ತು ಫೀಲ್ಡ್</translation>
 <translation id="6039846035001940113">ಸಮಸ್ಯೆ ಮುಂದುವರಿದರೆ, ಸೈಟ್ ಮಾಲೀಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
+<translation id="6040539895181423374">ದರದ ಒಳನೋಟಗಳು</translation>
 <translation id="604124094241169006">ಸ್ವಯಂಚಾಲಿತ</translation>
 <translation id="6041777658117377052">ಚೇಂಬರ್ ತಾಪಮಾನ</translation>
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
@@ -3210,7 +3215,6 @@
 <translation id="719464814642662924">ವೀಸಾ</translation>
 <translation id="7195852673246414183">ನೀವು ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಆನ್ ಮಾಡಿದ ನಂತರ, ಬರೆಯುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ಈ ಟ್ಯಾಬ್‌ಗೆ ಹಿಂತಿರುಗಿ</translation>
 <translation id="7199278868241956094">Oficio</translation>
-<translation id="7201591969684833065">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಇವುಗಳನ್ನು ನೋಡಬಹುದು:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು ಹೊಸ ಅಜ್ಞಾತ ಟ್ಯಾಬ್ ಒಂದನ್ನು ತೆರೆಯಲು, Tab ಒತ್ತಿರಿ, ನಂತರ Enter ಒತ್ತಿರಿ</translation>
 <translation id="7203375778433816396">Chrome ಅನ್ನು ಸಿಸ್ಟಂನ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಸೆಟ್ ಮಾಡಿ</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ಭದ್ರತೆ ಮಾನದಂಡಗಳನ್ನು ಅನುಸರಿಸುತ್ತಿಲ್ಲ.</translation>
@@ -3328,6 +3332,7 @@
 <translation id="7421067045979951561">ಪ್ರೊಟೊಕಾಲ್ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳು</translation>
 <translation id="7422347648202898039">ಲೇಬಲ್‌ಗಳು (ಭದ್ರತೆ)</translation>
 <translation id="7423283032694727565">ಕುಕಿಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಬಟನ್, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಕುಕಿ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="742435751935045381">ನಿಮ್ಮ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾದ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಎಕ್ಸ್‌ಟೆನ್ಶನ್‌ಗಳು</translation>
 <translation id="7424421098814895617">ವಿಳಾಸ ಅಳಿಸುವ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಲಾಗಿದೆ</translation>
 <translation id="7425037327577270384">ನನಗೆ ಬರೆಯಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="7425878584435172632">ದೃಶ್ಯ ಕಲೆ ಮತ್ತು ವಿನ್ಯಾಸ</translation>
@@ -3874,6 +3879,7 @@
 ಹೆಚ್ಚುವರಿ ವಿವರಗಳು:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8416874502399604126">ಈ ಸಮಯದಲ್ಲಿ ಮೈಕ್ರೋಫೋನ್ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
+<translation id="8421158157346464398">ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ಮಾಹಿತಿ (ಉದಾಹರಣೆಗೆ ನಿಮ್ಮ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ಬಳಕೆದಾರರ ಹೆಸರು)</translation>
 <translation id="8422228580902424274">ನೀವು ಈ ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿದರೆ, ಆಕ್ರಮಣಕಾರರು ದುರುದ್ದೇಶಪೂರಿತ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಫೋನ್ ಸಂಖ್ಯೆಗಳು ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಗಳಂತಹ ಮಾಹಿತಿಯನ್ನು ಒದಗಿಸಲು ನಿಮ್ಮನ್ನು ಮೋಸಗೊಳಿಸಬಹುದು.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
@@ -4242,6 +4248,7 @@
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">ನೀವು ಭೇಟಿ ನೀಡುವ ಸೈಟ್‌ಗಳು, ಸೈಟ್‌ನಲ್ಲಿನ ನಿಮ್ಮ ಚಟುವಟಿಕೆಯ ಆಧಾರದ ಮೇಲೆ ನೀವು ಏನನ್ನು ಇಷ್ಟಪಡುವಿರೆಂಬುದನ್ನು ಸಹ ನಿರ್ಧರಿಸಬಹುದು. ಉದಾಹರಣೆಗೆ, ನೀವು ದೂರದ ಓಟಕ್ಕಾಗಿ ಶೂಗಳನ್ನು ಮಾರಾಟ ಮಾಡುವ ಸೈಟ್‌ ಒಂದಕ್ಕೆ ಭೇಟಿ ನೀಡಿದರೆ, ಆ ಸೈಟ್ ನೀವು ಮ್ಯಾರಥಾನ್ ಓಟದಲ್ಲಿ ಆಸಕ್ತಿ ಹೊಂದಿದ್ದೀರಿ ಎಂದು ನಿರ್ಧರಿಸಬಹುದು.</translation>
 <translation id="9166851138617700776">ಸೈಟ್ ಶಿಫಾರಸು ಮಾಡಿದ ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಜಾಹೀರಾತು ಮಾಪನದ ಕುರಿತು ಇನ್ನಷ್ಟು</translation>
+<translation id="9167054383925257837">ಬ್ರೌಸರ್ ಮತ್ತು ಸಾಧನದ OS ಮಾಹಿತಿ (ಉದಾಹರಣೆಗೆ ಬ್ರೌಸರ್ ಮತ್ತು OS ಆವೃತ್ತಿಗಳು)</translation>
 <translation id="9167594211215946097">ನಿಮ್ಮ ಪ್ರಿಂಟರ್‌ಗಳಿಗೆ ನೇರ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ಹೊಂದಿರಿ</translation>
 <translation id="9168814207360376865">ನೀವು ಪಾವತಿ ವಿಧಾನಗಳನ್ನು ಉಳಿಸಿದಲ್ಲಿ ಪರಿಶೀಲಿಸಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="9169664750068251925">ಈ ಸೈಟ್ ಅನ್ನು ಯಾವಾಗಲೂ ನಿರ್ಬಂಧಿಸು</translation>

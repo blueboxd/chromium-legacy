@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -406,7 +407,9 @@ TEST_P(TouchToFillDelegateAndroidImplPaymentMethodUnitTest,
 TEST_P(TouchToFillDelegateAndroidImplPaymentMethodUnitTest,
        TryToShowTouchToFillFailsForPaymentMethodIfNoPaymentMethodsOnFile) {
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
-  autofill_client_.GetPersonalDataManager()->ClearAllLocalData();
+  autofill_client_.GetPersonalDataManager()
+      ->test_payments_data_manager()
+      .ClearAllLocalData();
 
   TryToShowTouchToFill(/*expected_success=*/false);
   histogram_tester_.ExpectUniqueSample(
@@ -926,23 +929,17 @@ TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
 // Add one valid credit card to PDM and verify that credit card is not shown in
 // IBAN form.
 TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest, PassTheIbansToTheClient) {
-  autofill_client_.GetPersonalDataManager()->ClearAllLocalData();
-  autofill_client_.GetPersonalDataManager()
-      ->payments_data_manager()
-      .AddCreditCard(autofill::test::GetCreditCard());
+  TestPaymentsDataManager& paydm =
+      autofill_client_.GetPersonalDataManager()->test_payments_data_manager();
+  paydm.ClearAllLocalData();
+  paydm.AddCreditCard(autofill::test::GetCreditCard());
   Iban iban1;
   iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
-  autofill_client_.GetPersonalDataManager()
-      ->test_payments_data_manager()
-      .AddAsLocalIban(std::move(iban1));
+  paydm.AddAsLocalIban(std::move(iban1));
   Iban iban2;
   iban2.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_2)));
-  autofill_client_.GetPersonalDataManager()
-      ->test_payments_data_manager()
-      .AddAsLocalIban(std::move(iban2));
-  std::vector<Iban> ibans = autofill_client_.GetPersonalDataManager()
-                                ->test_payments_data_manager()
-                                .GetOrderedIbansToSuggest();
+  paydm.AddAsLocalIban(std::move(iban2));
+  std::vector<Iban> ibans = paydm.GetOrderedIbansToSuggest();
 
   EXPECT_CALL(autofill_client_,
               ShowTouchToFillIban(_, ElementsAreArray(ibans)));
@@ -958,6 +955,26 @@ TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
   EXPECT_CALL(autofill_client_, ShowTouchToFillIban).WillOnce(Return(true));
 
   TryToShowTouchToFill(/*expected_success=*/true);
+}
+
+TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
+       TryToShowTouchToFillFailsIfFlagOn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillSkipAndroidBottomSheetForIban);
+  autofill_client_.GetPersonalDataManager()
+      ->test_payments_data_manager()
+      .ClearAllLocalData();
+  Iban iban;
+  iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
+  autofill_client_.GetPersonalDataManager()
+      ->test_payments_data_manager()
+      .AddAsLocalIban(std::move(iban));
+
+  EXPECT_CALL(autofill_client_, ShowTouchToFillIban).Times(0);
+  TryToShowTouchToFill(/*expected_success=*/false);
+
+  browser_autofill_manager_.reset();
 }
 
 TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
@@ -982,7 +999,9 @@ TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
   std::string guid = ConfigureForIbans();
   TryToShowTouchToFill(/*expected_success=*/true);
 
-  EXPECT_CALL(*(autofill_client_.GetMockIbanAccessManager()), FetchValue);
+  EXPECT_CALL(
+      *autofill_client_.GetPaymentsAutofillClient()->GetIbanAccessManager(),
+      FetchValue);
   touch_to_fill_delegate_->IbanSuggestionSelected(Iban::Guid(guid));
 }
 
@@ -1003,7 +1022,9 @@ TEST_F(TouchToFillDelegateAndroidImplIbanUnitTest,
 
   TryToShowTouchToFill(/*expected_success=*/true);
 
-  EXPECT_CALL(*(autofill_client_.GetMockIbanAccessManager()), FetchValue);
+  EXPECT_CALL(
+      *autofill_client_.GetPaymentsAutofillClient()->GetIbanAccessManager(),
+      FetchValue);
   touch_to_fill_delegate_->IbanSuggestionSelected(
       Iban::InstrumentId(instrument_id));
 }

@@ -373,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Android.MediaPlayerSuccess" enum="MediaPlayerExitStatus"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>tguilbert@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>Android: Whether MediaPlayer exited without errors.</summary>
@@ -3350,6 +3350,16 @@ chromium-metrics-reviews@google.com.
   <token key="VideoCodec" variants="VideoCodec"/>
 </histogram>
 
+<histogram name="Media.EME.Widevine.LacrosBundledCdm"
+    enum="LacrosBundledWidevine" expires_after="2025-02-27">
+  <owner>jrummell@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    Reports which Widevine CDM was used by Lacros. Only reported by the browser
+    process when registering available CDMs during startup.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Widevine.SoftwareSecure.SystemCode"
     enum="CdmSystemCode" expires_after="2025-02-27">
   <owner>xhwang@chromium.org</owner>
@@ -4027,7 +4037,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.MediaDevices.EnumerateDevices.Latency" units="ms"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>
   <summary>
@@ -4039,7 +4049,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.MediaDevices.EnumerateDevices.Result"
-    enum="EnumerateDevicesResult" expires_after="2024-09-22">
+    enum="EnumerateDevicesResult" expires_after="2024-11-24">
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>
   <summary>
@@ -4098,7 +4108,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.MediaDevices.GetUserMedia.Latency" units="ms"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>
   <owner>video-cmi-apis@google.com</owner>
@@ -4160,6 +4170,16 @@ chromium-metrics-reviews@google.com.
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     Recorded when the MediaFoundationRenderer::CreateMediaEngine() fails.
+  </summary>
+</histogram>
+
+<histogram name="Media.MediaFoundationRenderer.D3D11CreateDeviceFailed"
+    enum="Hresult" expires_after="2024-10-01">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    Recorded when the MediaFoundationRenderer fails to execute
+    D3D11CreateDevice.
   </summary>
 </histogram>
 
@@ -5775,7 +5795,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Video.Roughness" units="ms" expires_after="2024-09-22">
+<histogram name="Media.Video.Roughness" units="ms" expires_after="2024-11-24">
   <owner>eugene@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
@@ -6103,13 +6123,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Width" units="pixels"
-    expires_after="2024-05-05">
+    expires_after="2025-05-05">
   <owner>mcasas@chromium.org</owner>
   <owner>handellm@chromium.org</owner>
   <owner>jophba@chromium.org</owner>
   <summary>
     Video Capture Device captured frame width in pixels. The collection is made
     in the VideoCaptureController upon reception of the first frame.
+
+    Warning: this histogram was expired from 2024-05-05 to 2024-05-21; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -6750,7 +6773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.{VaapiClientName}.VAAPIError" enum="VaapiFunctions"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>mcasas@chromium.org</owner>
   <owner>chromeos-gfx-video@chromium.org</owner>
   <summary>
@@ -6961,7 +6984,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.Cast.Channel.ConnectResult" enum="BooleanSuccess"
-    expires_after="2024-09-22">
+    expires_after="2024-11-24">
   <owner>mfoltz@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>

@@ -114,9 +114,9 @@ tast_disabled_tests_from_chrome_all = [
   "login.ChangePassword.consumer_update",
   "login.ChangePassword.no_consumer_update",
 
-  # b/336585651
-  "ui.ChromeCrashEarly.loose@reven-vmtest",
-  "ui.ChromeCrashEarly.strict@reven-vmtest",
+  # b/341794182, until LKGM R127-15898.0.0 lands
+  "arc.IntentForward.lacros",
+  "login.Chrome.lacros",
 
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
@@ -142,9 +142,6 @@ tast_disabled_tests_from_lacros_all = [
 
   # https://crbug.com/1376638
   "lacros.AudioRecord",
-
-  # https://crbug.com/1440735
-  "mlservice.WebHandwritingRecognition.lacros",
 
   # https://crbug.com/1446233
   "arc.IntentForward.lacros_vm",

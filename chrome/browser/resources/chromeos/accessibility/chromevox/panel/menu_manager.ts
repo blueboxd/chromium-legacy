@@ -274,6 +274,16 @@ export class MenuManager {
   }
 
   /**
+   * Advance the index of the current active menu item by |delta|.
+   * @param delta The number to add to the active menu item index.
+   */
+  advanceItemBy(delta: number): void {
+    if (this.activeMenu_) {
+      this.activeMenu_.advanceItemBy(delta);
+    }
+  }
+
+  /**
    * Clear any previous menus. The menus are all regenerated each time the
    * menus are opened.
    */
@@ -394,6 +404,83 @@ export class MenuManager {
       [CommandCategory.OVERVIEW]: jumpMenu,
       [CommandCategory.TABLES]: jumpMenu,
     };
+  }
+
+  /** @return True if the event was handled. */
+  onKeyDown(event: KeyboardEvent): boolean {
+    if (!this.activeMenu) {
+      return false;
+    }
+
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return false;
+    }
+
+    // We need special logic for navigating the search bar.
+    // If left/right arrow are pressed, we should adjust the search bar's
+    // cursor. We only want to advance the active menu if we are at the
+    // beginning/end of the search bar's contents.
+    if (this.searchMenu_ && event.target === this.searchMenu_.searchBar) {
+      const input = event.target as HTMLInputElement;
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowRight':
+          if (input.value) {
+            // TODO(b/314203187): Not null asserted, check that this is correct.
+            const cursorIndex =
+                input.selectionStart! + (event.key === 'ArrowRight' ? 1 : -1);
+            const queryLength = input.value.length;
+            if (cursorIndex >= 0 && cursorIndex <= queryLength) {
+              return false;
+            }
+          }
+          break;
+        case ' ':
+          return false;
+      }
+    }
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        this.advanceActiveMenuBy(-1);
+        break;
+      case 'ArrowRight':
+        this.advanceActiveMenuBy(1);
+        break;
+      case 'ArrowUp':
+        this.advanceItemBy(-1);
+        break;
+      case 'ArrowDown':
+        this.advanceItemBy(1);
+        break;
+      case 'Escape':
+        // TODO(b/314203187): Not null asserted, check that this is correct.
+        PanelInterface.instance!.closeMenusAndRestoreFocus();
+        break;
+      case 'PageUp':
+        this.advanceItemBy(10);
+        break;
+      case 'PageDown':
+        this.advanceItemBy(-10);
+        break;
+      case 'Home':
+        this.scrollToTop();
+        break;
+      case 'End':
+        this.scrollToBottom();
+        break;
+      case 'Enter':
+      case ' ':
+        // TODO(b/314203187): Not null asserted, check that this is correct.
+        PanelInterface.instance!.setPendingCallback(
+            this.getCallbackForCurrentItem());
+        PanelInterface.instance!.closeMenusAndRestoreFocus();
+        break;
+      default:
+        // Don't mark this event as handled.
+        return false;
+    }
+    return true;
   }
 
   /**
@@ -576,6 +663,16 @@ export class MenuManager {
               'panel_menu_item_none'), '', '', '', () => Promise.resolve());
     }
     this.searchMenu_.activateItem(0);
+  }
+
+  /** Sets the index of the current active menu to be the last index. */
+  scrollToBottom(): void {
+    this.activeMenu_!.scrollToBottom();
+  }
+
+  /** Sets the index of the current active menu to be 0. */
+  scrollToTop(): void {
+    this.activeMenu_!.scrollToTop();
   }
 
   // The following getters and setters are temporary during the migration from

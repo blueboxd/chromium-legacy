@@ -42,7 +42,12 @@
           </iron-icon>
           <div class="start settings-box-text">
             $i18n{appParentalControlsTitle}
-            <div class="secondary">$i18n{appParentalControlsSubtitle}</div>
+            <div class="secondary">
+              <localized-link
+                  localized-string=
+                      "[[i18nAdvanced('appParentalControlsSubtitle')]]">
+              </localized-link>
+            </div>
           </div>
           <template is="dom-if"
               if="[[!prefs.on_device_app_controls.setup_completed.value]]">
@@ -70,7 +75,9 @@
           <template is="dom-if" if="[[showParentalControlsSetupPinDialog_]]"
               restamp>
             <app-setup-pin-dialog id="setupPin"
-                on-close="onSetupPinDialogClose_" prefs="{{prefs}}">
+                on-close="onSetupPinDialogClose_"
+                on-success="onSetupPinSuccess_"
+                prefs="{{prefs}}">
             </app-setup-pin-dialog>
           </template>
           <template is="dom-if" if="[[showParentalControlsVerifyPinDialog_]]"
@@ -261,8 +268,11 @@
   <!-- On-device Apps Parental Controls -->
   <template is="dom-if" if="[[isAppParentalControlsFeatureAvailable_]]">
     <template is="dom-if" route-path="/app-parental-controls">
-      <os-settings-subpage page-title="$i18n{appParentalControlsTitle}">
-        <settings-app-parental-controls-subpage>
+      <os-settings-subpage page-title="$i18n{appParentalControlsTitle}"
+       search-label="$i18n{appParentalControlsSearchPrompt}"
+       search-term="{{searchTerm}}">
+        <settings-app-parental-controls-subpage search-term="[[searchTerm]]"
+            is-verified="[[isPinVerified_]]">
         </settings-app-parental-controls-subpage>
       </os-settings-subpage>
     </template>

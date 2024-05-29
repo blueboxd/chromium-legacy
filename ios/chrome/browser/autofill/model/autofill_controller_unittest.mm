@@ -485,7 +485,7 @@ TEST_F(AutofillControllerTest, ReadFormName) {
           ->GetAutofillManager();
   const auto& forms = autofill_manager.form_structures();
   const auto& form = *(forms.begin()->second);
-  EXPECT_EQ(u"form1", form.ToFormData().name);
+  EXPECT_EQ(u"form1", form.ToFormData().name());
 }
 
 // Checks that an HTML page containing a profile-type form which is submitted
@@ -515,7 +515,7 @@ TEST_F(AutofillControllerTest, ProfileImport) {
   WaitForCondition(^bool {
     return personal_data_manager->address_data_manager().GetProfiles().size();
   });
-  const std::vector<AutofillProfile*>& profiles =
+  const std::vector<const AutofillProfile*>& profiles =
       personal_data_manager->address_data_manager().GetProfiles();
   if (profiles.size() != 1)
     FAIL() << "Not exactly one profile found after attempted import";
@@ -1066,7 +1066,7 @@ TEST_F(AutofillControllerTest, ProfileImportAfterFormlessFormRemoval) {
   WaitForCondition(^bool {
     return personal_data_manager->address_data_manager().GetProfiles().size();
   });
-  const std::vector<AutofillProfile*>& profiles =
+  const std::vector<const AutofillProfile*>& profiles =
       personal_data_manager->address_data_manager().GetProfiles();
   if (profiles.size() != 1) {
     FAIL() << "Not exactly one profile found after attempted import";

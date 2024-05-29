@@ -124,8 +124,7 @@
 #include "chrome/browser/ash/input_method/editor_mediator_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/mahi/mahi_browser_delegate_ash.h"
-#include "chrome/browser/ash/passkeys/passkey_authenticator_service_ash.h"
-#include "chrome/browser/ash/passkeys/passkey_authenticator_service_factory_ash.h"
+#include "chrome/browser/ash/printing/print_preview/print_preview_webcontents_adapter_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
@@ -175,6 +174,8 @@
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
+#include "chromeos/services/chromebox_for_meetings/public/cpp/service_connection.h"
+#include "chromeos/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
@@ -332,6 +333,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       probe_service_ash_(std::make_unique<ash::ProbeServiceAsh>()),
       remoting_ash_(std::make_unique<RemotingAsh>()),
       resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
+      print_preview_webcontents_adapter_ash_(
+          std::make_unique<ash::printing::PrintPreviewWebcontentsAdapterAsh>()),
       screen_ai_downloader_ash_(std::make_unique<ScreenAIDownloaderAsh>()),
       screen_manager_ash_(std::make_unique<ScreenManagerAsh>()),
       search_controller_factory_ash_(
@@ -466,6 +469,12 @@ void CrosapiAsh::BindCertDatabase(
 void CrosapiAsh::BindCertProvisioning(
     mojo::PendingReceiver<mojom::CertProvisioning> receiver) {
   cert_provisioning_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindCfmServiceContext(
+    mojo::PendingReceiver<chromeos::cfm::mojom::CfmServiceContext> receiver) {
+  chromeos::cfm::ServiceConnection::GetInstance()->BindServiceContext(
+      std::move(receiver));
 }
 
 void CrosapiAsh::BindChapsService(
@@ -895,15 +904,9 @@ void CrosapiAsh::BindParentAccess(
   parent_access_ash_->BindReceiver(std::move(receiver));
 }
 
-void CrosapiAsh::BindPasskeyAuthenticator(
+void CrosapiAsh::BindPasskeyAuthenticatorDeprecated(
     mojo::PendingReceiver<mojom::PasskeyAuthenticator> receiver) {
-  auto* passkey_authenticator =
-      ash::PasskeyAuthenticatorServiceFactoryAsh::GetForProfile(
-          GetAshProfile());
-  if (!passkey_authenticator) {
-    return;
-  }
-  passkey_authenticator->BindReceiver(std::move(receiver));
+  NOTIMPLEMENTED();
 }
 
 void CrosapiAsh::BindPaymentAppInstance(
@@ -930,6 +933,11 @@ void CrosapiAsh::BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) {
 void CrosapiAsh::BindNonclosableAppToastService(
     mojo::PendingReceiver<mojom::NonclosableAppToastService> receiver) {
   nonclosable_app_toast_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindPrintPreviewCrosDelegate(
+    mojo::PendingReceiver<mojom::PrintPreviewCrosDelegate> receiver) {
+  print_preview_webcontents_adapter_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindPrintingMetrics(

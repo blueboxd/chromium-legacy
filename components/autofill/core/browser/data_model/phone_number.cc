@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -297,7 +298,9 @@ bool PhoneNumber::SetInfoWithVerificationStatusImpl(
   }
   // Store a formatted (i.e., pretty printed) version of the number if it
   // doesn't contain formatting marks.
-  if (base::ContainsOnlyChars(number_, u"+0123456789")) {
+  if (base::ContainsOnlyChars(number_, u"+0123456789") ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillPreferParsedPhoneNumber)) {
     number_ = cached_parsed_phone_.GetFormattedNumber();
   } else {
     // Strip `number_` of extensions, e.g. "(123)-123 ext. 123" -> "(123)-123".
@@ -331,50 +334,38 @@ PhoneNumber::PhoneCombineHelper::PhoneCombineHelper() = default;
 
 PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() = default;
 
-bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& type,
+void PhoneNumber::PhoneCombineHelper::SetInfo(FieldType field_type,
                                               const std::u16string& value) {
-  FieldType storable_type = type.GetStorableType();
-  if (storable_type == PHONE_HOME_COUNTRY_CODE) {
-    country_ = value;
-    return true;
+  CHECK_EQ(GroupTypeOfFieldType(field_type), FieldTypeGroup::kPhone);
+  switch (field_type) {
+    case PHONE_HOME_COUNTRY_CODE:
+      country_ = value;
+      return;
+    case PHONE_HOME_CITY_CODE:
+    case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
+      city_ = value;
+      return;
+    case PHONE_HOME_CITY_AND_NUMBER:
+    case PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX:
+      phone_ = value;
+      return;
+    case PHONE_HOME_WHOLE_NUMBER:
+      whole_number_ = value;
+      return;
+    case PHONE_HOME_NUMBER:
+    case PHONE_HOME_NUMBER_PREFIX:
+      phone_ = value;
+      return;
+    case PHONE_HOME_NUMBER_SUFFIX:
+      phone_.append(value);
+      return;
+    case PHONE_HOME_EXTENSION:
+      // PHONE_HOME_EXTENSION is not stored or filled, but it's still classified
+      // to prevent misclassifying such fields as something else.
+      return;
+    default:
+      NOTREACHED_NORETURN();
   }
-
-  if (storable_type == PHONE_HOME_CITY_CODE ||
-      storable_type == PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX) {
-    city_ = value;
-    return true;
-  }
-
-  if (storable_type == PHONE_HOME_CITY_AND_NUMBER ||
-      storable_type == PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX) {
-    phone_ = value;
-    return true;
-  }
-
-  if (storable_type == PHONE_HOME_WHOLE_NUMBER) {
-    whole_number_ = value;
-    return true;
-  }
-
-  if (storable_type == PHONE_HOME_NUMBER ||
-      storable_type == PHONE_HOME_NUMBER_PREFIX) {
-    phone_ = value;
-    return true;
-  }
-
-  if (storable_type == PHONE_HOME_NUMBER_SUFFIX) {
-    phone_.append(value);
-    return true;
-  }
-
-  // PHONE_HOME_EXTENSION is not stored or filled, but it's still classified to
-  // prevent misclassifying such fields as something else.
-  if (storable_type == PHONE_HOME_EXTENSION) {
-    return true;
-  }
-
-  CHECK_NE(type.group(), FieldTypeGroup::kPhone);
-  return false;
 }
 
 bool PhoneNumber::PhoneCombineHelper::ParseNumber(

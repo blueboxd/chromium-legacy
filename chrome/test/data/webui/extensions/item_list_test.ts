@@ -9,6 +9,7 @@ import type {ExtensionsItemListElement} from 'chrome://extensions/extensions.js'
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+
 import {createExtensionInfo, testVisible} from './test_util.js';
 
 suite('ExtensionItemListTest', function() {
@@ -31,7 +32,6 @@ suite('ExtensionItemListTest', function() {
       createExt({
         name: 'Alpha',
         id: 'a'.repeat(32),
-        safetyCheckText: {panelString: 'This extension contains malware.'},
       }),
       createExt({name: 'Bravo', id: 'b'.repeat(32)}),
       createExt({name: 'Charlie', id: 'c'.repeat(29) + 'wxy'}),
@@ -163,44 +163,103 @@ suite('ExtensionItemListTest', function() {
     loadTimeData.getString('browserManagedByOrg');
   });
 
-  test('SafetyCheckPanel', function() {
-    // The extension review panel should not be visible if
-    // safetyCheckShowReviewPanel and safetyHubShowReviewPanel are set to
-    // false.
-    loadTimeData.overrideValues({'safetyCheckShowReviewPanel': false});
-    loadTimeData.overrideValues({'safetyHubShowReviewPanel': false});
-
-    // set up the element again to capture the updated value of
-    // safetyCheckShowReviewPanel.
+  test('SafetyCheckPanel_Disabled', function() {
+    // Panel is hidden if safetyCheckShowReviewPanel and
+    // safetyHubShowReviewPanel are disabled.
+    loadTimeData.overrideValues(
+        {safetyCheckShowReviewPanel: false, safetyHubShowReviewPanel: false});
     setupElement();
-
     flush();
     boundTestVisible('extensions-review-panel', false);
-    // The extension review panel should be visible if the feature flag is set
-    // to true.
-    loadTimeData.overrideValues({'safetyCheckShowReviewPanel': true});
+  });
 
-    // set up the element again to capture the updated value of
-    // safetyCheckShowReviewPanel.
+  test('SafetyCheckPanel_EnabledSafetyCheck', function() {
+    // Panel is hidden if safetyCheckShowReviewPanel is enabled, there are no
+    // unsafe extensions and panel wasn't previously shown.
+    loadTimeData.overrideValues(
+        {safetyCheckShowReviewPanel: true, safetyHubShowReviewPanel: false});
     setupElement();
+    flush();
+    boundTestVisible('extensions-review-panel', false);
 
+    // Panel is visible if safetyCheckShowReviewPanel is enabled, and there are
+    // unsafe extensions.
+    itemList.push(
+        'extensions', createExtensionInfo({
+          name: 'Unsafe extension',
+          id: 'd'.repeat(32),
+          safetyCheckText: {panelString: 'This extension contains malware.'},
+        }));
     flush();
     boundTestVisible('extensions-review-panel', true);
+    const reviewPanel =
+        itemList.shadowRoot!.querySelector('extensions-review-panel');
+    assertTrue(!!reviewPanel);
+    assertEquals(1, reviewPanel.extensions.length);
 
-    // The extension review panel should  be visible if
-    // safetyHubShowReviewPanel is set to true.
-    loadTimeData.overrideValues({'safetyCheckShowReviewPanel': false});
-    loadTimeData.overrideValues({'safetyHubShowReviewPanel': true});
-    setupElement();
-
+    // Panel is visible if safetyCheckShowReviewPanel is enabled, there are no
+    // unsafe extensions but the panel was previously shown.
+    // For this, we set the unsafe extension as acknowledged.
+    itemList.set(
+        'extensions.3', createExtensionInfo({
+          name: 'Unsafe extension',
+          id: 'd'.repeat(32),
+          safetyCheckText: {panelString: 'This extension contains malware.'},
+          acknowledgeSafetyCheckWarning: true,
+        }));
     flush();
     boundTestVisible('extensions-review-panel', true);
+    assertTrue(!!reviewPanel);
+    // There are no unsafe extensions in the panel.
+    assertEquals(0, reviewPanel.extensions.length);
+  });
+
+  test('SafetyCheckPanel_EnabledSafetyHub', function() {
+    // Panel is hidden if safetyHubShowReviewPanel is enabled, there are no
+    // unsafe extensions and panel wasn't previously shown.
+    loadTimeData.overrideValues(
+        {safetyCheckShowReviewPanel: false, safetyHubShowReviewPanel: true});
+    setupElement();
+    flush();
+    boundTestVisible('extensions-review-panel', false);
+
+    // Panel is visible if safetyHubShowReviewPanel is enabled, and there are
+    // unsafe extensions.
+    itemList.push(
+        'extensions', createExtensionInfo({
+          name: 'Unsafe extension',
+          id: 'd'.repeat(32),
+          safetyCheckText: {panelString: 'This extension contains malware.'},
+        }));
+    flush();
+    boundTestVisible('extensions-review-panel', true);
+    const reviewPanel =
+        itemList.shadowRoot!.querySelector('extensions-review-panel');
+    assertTrue(!!reviewPanel);
+    assertEquals(1, reviewPanel.extensions.length);
+
+    // Panel is visible if safetyHubShowReviewPanel is enabled, there are no
+    // unsafe extensions but the panel was previously shown.
+    // For this, we set the unsafe extension as acknowledged.
+    itemList.set(
+        'extensions.3', createExtensionInfo({
+          name: 'Unsafe extension',
+          id: 'd'.repeat(32),
+          safetyCheckText: {panelString: 'This extension contains malware.'},
+          acknowledgeSafetyCheckWarning: true,
+        }));
+    flush();
+    boundTestVisible('extensions-review-panel', true);
+    assertTrue(!!reviewPanel);
+    // There are no unsafe extensions in the panel.
+    assertEquals(0, reviewPanel.extensions.length);
   });
 
   test('ManifestV2DeprecationPanel_Disabled', async function() {
     // Panel is hidden if panel is disabled.
     loadTimeData.overrideValues({'MV2DeprecationPanelEnabled': false});
     setupElement();
+    flush();
     boundTestVisible('extensions-mv2-deprecation-panel', false);
   });
 
@@ -253,5 +312,41 @@ suite('ExtensionItemListTest', function() {
     itemList.set('isMv2DeprecationWarningDismissed', true);
     flush();
     boundTestVisible('extensions-mv2-deprecation-panel', false);
+  });
+
+  test('ManifestV2DeprecationPanel_TitleVisibility', function() {
+    // Enable feature for both panels. Their visibility will be determined
+    // whether they have extensions to show.
+    loadTimeData.overrideValues({'MV2DeprecationPanelEnabled': true});
+    loadTimeData.overrideValues({'safetyHubShowReviewPanel': true});
+
+    // Show the MV2 deprecation panel by adding an extension affected by the
+    // mv2 deprecation.
+    itemList.push('extensions', createExtensionInfo({
+                    name: 'MV2 extension',
+                    id: 'd'.repeat(32),
+                    isAffectedByMV2Deprecation: true,
+                  }));
+    flush();
+    boundTestVisible('extensions-mv2-deprecation-panel', true);
+
+    // MV2 deprecation panel title is hidden when the review panel is hidden.
+    const mv2DeprecationPanel = itemList.shadowRoot!.querySelector<HTMLElement>(
+        'extensions-mv2-deprecation-panel');
+    assertTrue(!!mv2DeprecationPanel);
+    testVisible(mv2DeprecationPanel, '.panel-title', false);
+
+    // Show the review panel by adding an extension with safety check text.
+    itemList.push(
+        'extensions', createExtensionInfo({
+          name: 'Unsafe extension',
+          id: 'e'.repeat(32),
+          safetyCheckText: {panelString: 'This extension contains malware.'},
+        }));
+    flush();
+    boundTestVisible('extensions-review-panel', true);
+
+    // MV2 deprecation panel title is visible when the review panel is visible.
+    testVisible(mv2DeprecationPanel, '.panel-title', true);
   });
 });

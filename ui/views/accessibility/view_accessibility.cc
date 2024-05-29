@@ -35,7 +35,6 @@ bool IsValidRoleForViews(ax::mojom::Role role) {
     // These roles all have special meaning and shouldn't ever be
     // set on a View.
     case ax::mojom::Role::kDesktop:
-    case ax::mojom::Role::kDocument:  // Used for ARIA role="document".
     case ax::mojom::Role::kIframe:
     case ax::mojom::Role::kIframePresentational:
     case ax::mojom::Role::kPdfRoot:
@@ -45,6 +44,18 @@ bool IsValidRoleForViews(ax::mojom::Role role) {
     case ax::mojom::Role::kUnknown:
       return false;
 
+    // The role kDocument should not be allowed on Views, but it needs to be
+    // allowed temporarily for the CaptionBubbleLabel view. This is because the
+    // CaptionBubbleLabel is designed to be interacted with by a braille display
+    // in virtual buffer mode. In order to activate the virtual buffer in NVDA,
+    // we set the role to kDocument and the readonly restriction.
+    //
+    // TODO(crbug.com/339479333): Investigate this further to either add a
+    // views-specific role that maps to the document role on the various
+    // platform APIs, or remove this comment and update the allowed usage of the
+    // kDocument role.
+    case ax::mojom::Role::kDocument:  // Used for ARIA role="document".
+      return true;
     default:
       return true;
   }
@@ -170,6 +181,13 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     return;
   }
 
+  // Initialize the data with the attributes from the cache before updating it
+  // with the latest from the view. This is necessary to allow us to iteratively
+  // migrate the Views to use the new setters and reach the end goal of the
+  // ViewsAX project, which is to only return the cached data from here.
+  // TODO(ViewsAX): Remove this once the project is completed.
+  views::ViewAccessibilityUtils::Merge(/*source*/ data_, /*destination*/ *data);
+
   view_->GetAccessibleNodeData(data);
 
   // TODO(accessibility): This next check should be added to SetRole.
@@ -200,23 +218,6 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
                               scale_factor);
     }
   }
-
-  // ***IMPORTANT***
-  //
-  // This step absolutely needs to be at the very end of the function in order
-  // for us to catch all the attributes that have been set through a different
-  // way than the ViewsAX AXNodeData push system. See `data_` for more info.
-
-#if DCHECK_IS_ON()
-  // This will help keep track of the attributes that have already
-  // been migrated from the old system of computing AXNodeData for Views (pull),
-  // to the new system (push). This will help ensure that new Views don't use
-  // the old system for attributes that have already been migrated.
-  // TODO(accessibility): Remove once migration is complete.
-  views::ViewsAXCompletedAttributes::Validate(*data);
-#endif
-
-  views::ViewAccessibilityUtils::Merge(/*source*/ data_, /*destination*/ *data);
 
   // This was previously found earlier in the function. It has been moved here,
   // after the call to `ViewAccessibility::Merge`, so that we only check the
@@ -328,7 +329,7 @@ void ViewAccessibility::SetProperties(
     if (name_from.has_value()) {
       SetName(name.value(), name_from.value());
     } else {
-      SetName(name.value(), ax::mojom::NameFrom::kAttribute);
+      SetName(name.value());
     }
   }
 
@@ -376,12 +377,25 @@ void ViewAccessibility::SetCharacterOffsets(
                             offsets);
 }
 
+const std::vector<int32_t>& ViewAccessibility::GetCharacterOffsets() const {
+  return data_.GetIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets);
+}
+
 void ViewAccessibility::SetWordStarts(const std::vector<int32_t>& offsets) {
   data_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts, offsets);
 }
 
+const std::vector<int32_t>& ViewAccessibility::GetWordStarts() const {
+  return data_.GetIntListAttribute(ax::mojom::IntListAttribute::kWordStarts);
+}
+
 void ViewAccessibility::SetWordEnds(const std::vector<int32_t>& offsets) {
   data_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds, offsets);
+}
+
+const std::vector<int32_t>& ViewAccessibility::GetWordEnds() const {
+  return data_.GetIntListAttribute(ax::mojom::IntListAttribute::kWordEnds);
 }
 
 void ViewAccessibility::ClearTextOffsets() {
@@ -424,16 +438,14 @@ void ViewAccessibility::SetRole(const ax::mojom::Role role,
   SetRole(role);
 }
 
-void ViewAccessibility::SetName(const std::string& name,
+void ViewAccessibility::SetName(std::u16string name,
                                 ax::mojom::NameFrom name_from) {
-  DCHECK_NE(name_from, ax::mojom::NameFrom::kNone);
+  // Allow subclasses to adjust the name.
+  view_->AdjustAccessibleName(name, name_from);
+
   // Ensure we have a current `name_from` value. For instance, the name might
   // still be an empty string, but a view is now indicating that this is by
   // design by setting `NameFrom::kAttributeExplicitlyEmpty`.
-  DCHECK_EQ(name.empty(),
-            name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
-      << "If the name is being removed to improve the user experience, "
-         "|name_from| should be set to |kAttributeExplicitlyEmpty|.";
   data_.SetNameFrom(name_from);
 
   if (name == GetCachedName()) {
@@ -458,23 +470,22 @@ void ViewAccessibility::SetName(const std::string& name,
     data_.SetName(name);
   }
 
+  view_->OnAccessibleNameChanged(name);
   NotifyEvent(ax::mojom::Event::kTextChanged, true);
 }
 
-void ViewAccessibility::SetName(const std::u16string& name,
+void ViewAccessibility::SetName(const std::string& name,
                                 ax::mojom::NameFrom name_from) {
-  std::string string_name = base::UTF16ToUTF8(name);
+  std::u16string string_name = base::UTF8ToUTF16(name);
   SetName(string_name, name_from);
 }
 
 void ViewAccessibility::SetName(const std::string& name) {
-  SetName(name, static_cast<ax::mojom::NameFrom>(data_.GetIntAttribute(
-                    ax::mojom::IntAttribute::kNameFrom)));
+  SetName(name, GetCachedNameFrom());
 }
 
 void ViewAccessibility::SetName(const std::u16string& name) {
-  SetName(name, static_cast<ax::mojom::NameFrom>(data_.GetIntAttribute(
-                    ax::mojom::IntAttribute::kNameFrom)));
+  SetName(name, GetCachedNameFrom());
 }
 
 void ViewAccessibility::SetName(View& naming_view) {
@@ -495,8 +506,7 @@ void ViewAccessibility::SetName(View& naming_view) {
     DCHECK(!name.empty());
     SetName(name, ax::mojom::NameFrom::kRelatedElement);
   } else {
-    const std::string& name =
-        naming_view.GetViewAccessibility().GetCachedName();
+    std::u16string name = naming_view.GetViewAccessibility().GetCachedName();
     DCHECK(!name.empty());
     SetName(name, ax::mojom::NameFrom::kRelatedElement);
   }
@@ -506,8 +516,8 @@ void ViewAccessibility::SetName(View& naming_view) {
       {naming_view.GetViewAccessibility().GetUniqueId().Get()});
 }
 
-const std::string& ViewAccessibility::GetCachedName() const {
-  return data_.GetStringAttribute(ax::mojom::StringAttribute::kName);
+std::u16string ViewAccessibility::GetCachedName() const {
+  return data_.GetString16Attribute(ax::mojom::StringAttribute::kName);
 }
 
 ax::mojom::NameFrom ViewAccessibility::GetCachedNameFrom() const {
@@ -600,32 +610,13 @@ void ViewAccessibility::SetDescription(
 void ViewAccessibility::SetDescription(View& describing_view) {
   DCHECK_NE(view_, &describing_view);
 
-  const std::string& name =
-      describing_view.GetViewAccessibility().GetCachedName();
-  if (name.empty()) {
-    // TODO(javiercon): This is a temporary workaround for the scenarios where
-    // the name is set via View::SetAccessibleName, which means that
-    // ViewAccessibility's data_ will not have the name set. So we first check
-    // if it has been set via the old system, and if so we use it. Once
-    // SetAccessibleName is migrated to use the new system, remove this check
-    // but keep the DCHECK to make sure the name is not empty.
-    ui::AXNodeData data;
-    const_cast<View&>(describing_view).GetAccessibleNodeData(&data);
-    const std::string& view_name =
-        data.GetStringAttribute(ax::mojom::StringAttribute::kName).empty()
-            ? base::UTF16ToUTF8(describing_view.GetAccessibleName())
-            : data.GetStringAttribute(ax::mojom::StringAttribute::kName);
-    DCHECK(!view_name.empty());
-    SetDescription(view_name, ax::mojom::DescriptionFrom::kRelatedElement);
-    data_.AddIntListAttribute(
-        ax::mojom::IntListAttribute::kDescribedbyIds,
-        {describing_view.GetViewAccessibility().GetUniqueId().Get()});
-  } else {
-    SetDescription(name, ax::mojom::DescriptionFrom::kRelatedElement);
-    data_.AddIntListAttribute(
-        ax::mojom::IntListAttribute::kDescribedbyIds,
-        {describing_view.GetViewAccessibility().GetUniqueId().Get()});
-  }
+  std::u16string name = describing_view.GetViewAccessibility().GetCachedName();
+  DCHECK(!name.empty())
+      << "The describing view must have an accessible name set.";
+  SetDescription(name, ax::mojom::DescriptionFrom::kRelatedElement);
+  data_.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kDescribedbyIds,
+      {describing_view.GetViewAccessibility().GetUniqueId().Get()});
 }
 
 std::u16string ViewAccessibility::GetCachedDescription() const {

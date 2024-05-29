@@ -16,6 +16,7 @@
 namespace lens {
 
 constexpr char kResultsSearchBaseUrl[] = "https://www.google.com/search";
+constexpr char kResultsRedirectBaseUrl[] = "https://www.google.com/url";
 constexpr char kLanguage[] = "en-US";
 constexpr char kPageUrl[] = "https://www.google.com";
 constexpr char kPageTitle[] = "Page Title";
@@ -69,8 +70,25 @@ class LensOverlayUrlBuilderTest : public testing::Test {
 TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURL) {
   std::string text_query = "Apples";
   std::map<std::string, std::string> additional_params;
+  std::string expected_url =
+      base::StringPrintf("%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s",
+                         kResultsSearchBaseUrl, text_query.c_str(), kLanguage);
+
+  EXPECT_EQ(lens::BuildTextOnlySearchURL(
+                text_query,
+                /*page_url=*/std::nullopt,
+                /*page_title=*/std::nullopt, additional_params,
+                lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
+                /*use_dark_mode=*/false),
+            expected_url);
+}
+
+TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLForLensTextSelection) {
+  std::string text_query = "Apples";
+  std::map<std::string, std::string> additional_params;
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s",
+      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_fp=1&lns_mode=text&gsc=1&hl=%s",
       kResultsSearchBaseUrl, text_query.c_str(), kLanguage);
 
   EXPECT_EQ(lens::BuildTextOnlySearchURL(
@@ -78,6 +96,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURL) {
                 /*page_url=*/std::nullopt,
                 /*page_title=*/std::nullopt, additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kLensTextSelection,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -98,14 +117,15 @@ TEST_F(LensOverlayUrlBuilderTest,
       EncodeSearchContext(std::make_optional<GURL>(kPageUrl),
                           std::make_optional<std::string>(kPageTitle));
 
-  std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s",
-      kResultsSearchBaseUrl, text_query.c_str(), kLanguage);
+  std::string expected_url =
+      base::StringPrintf("%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s",
+                         kResultsSearchBaseUrl, text_query.c_str(), kLanguage);
 
   EXPECT_EQ(lens::BuildTextOnlySearchURL(
                 text_query, std::make_optional<GURL>(kPageUrl),
                 std::make_optional<std::string>(kPageTitle), additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -118,7 +138,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageUrlAndTitle) {
                           std::make_optional<std::string>(kPageTitle));
 
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s&masfc=c&"
+      "%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s&masfc=c&"
       "mactx=%s",
       kResultsSearchBaseUrl, text_query.c_str(), kLanguage,
       expected_search_context.c_str());
@@ -127,6 +147,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageUrlAndTitle) {
                 text_query, std::make_optional<GURL>(kPageUrl),
                 std::make_optional<std::string>(kPageTitle), additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -138,7 +159,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageUrl) {
       std::make_optional<GURL>(kPageUrl), /*page_title=*/std::nullopt);
 
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s&masfc=c&"
+      "%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s&masfc=c&"
       "mactx=%s",
       kResultsSearchBaseUrl, text_query.c_str(), kLanguage,
       expected_search_context.c_str());
@@ -147,6 +168,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageUrl) {
                 text_query, std::make_optional<GURL>(kPageUrl),
                 /*page_title=*/std::nullopt, additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -158,7 +180,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageTitle) {
       /*page_url=*/std::nullopt, std::make_optional<std::string>(kPageTitle));
 
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s&masfc=c&"
+      "%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s&masfc=c&"
       "mactx=%s",
       kResultsSearchBaseUrl, text_query.c_str(), kLanguage,
       expected_search_context.c_str());
@@ -168,6 +190,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageTitle) {
                 /*page_url=*/std::nullopt,
                 std::make_optional<std::string>(kPageTitle), additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -175,15 +198,16 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWithPageTitle) {
 TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLEmpty) {
   std::string text_query = "";
   std::map<std::string, std::string> additional_params;
-  std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=&lns_mode=text&gsc=1&hl=%s",
-      kResultsSearchBaseUrl, kLanguage);
+  std::string expected_url =
+      base::StringPrintf("%s?cs=0&source=chrome.cr.menu&q=&gsc=1&hl=%s",
+                         kResultsSearchBaseUrl, kLanguage);
 
   EXPECT_EQ(lens::BuildTextOnlySearchURL(
                 text_query,
                 /*page_url=*/std::nullopt,
                 /*page_title=*/std::nullopt, additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -194,14 +218,15 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLPunctuation) {
   std::string escaped_text_query =
       base::EscapeQueryParamValue(text_query, /*use_plus=*/true);
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s",
-      kResultsSearchBaseUrl, escaped_text_query.c_str(), kLanguage);
+      "%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s", kResultsSearchBaseUrl,
+      escaped_text_query.c_str(), kLanguage);
 
   EXPECT_EQ(lens::BuildTextOnlySearchURL(
                 text_query,
                 /*page_url=*/std::nullopt,
                 /*page_title=*/std::nullopt, additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -212,14 +237,15 @@ TEST_F(LensOverlayUrlBuilderTest, BuildTextOnlySearchURLWhitespace) {
   std::string escaped_text_query =
       base::EscapeQueryParamValue(text_query, /*use_plus=*/true);
   std::string expected_url = base::StringPrintf(
-      "%s?cs=0&source=chrome.cr.menu&q=%s&lns_mode=text&gsc=1&hl=%s",
-      kResultsSearchBaseUrl, escaped_text_query.c_str(), kLanguage);
+      "%s?cs=0&source=chrome.cr.menu&q=%s&gsc=1&hl=%s", kResultsSearchBaseUrl,
+      escaped_text_query.c_str(), kLanguage);
 
   EXPECT_EQ(lens::BuildTextOnlySearchURL(
                 text_query,
                 /*page_url=*/std::nullopt,
                 /*page_title=*/std::nullopt, additional_params,
                 lens::LensOverlayInvocationSource::kAppMenu,
+                lens::TextOnlyQueryType::kSearchBoxQuery,
                 /*use_dark_mode=*/false),
             expected_url);
 }
@@ -242,7 +268,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildLensSearchURLEmptyClusterInfo) {
 
   std::string expected_url = base::StringPrintf(
       "%s?cs=0&source=chrome.cr.menu&gsc=1&hl=%s&q=%s&lns_mode=mu&"
-      "gsessionid=&udm=24&vsrid=%s",
+      "lns_fp=1&gsessionid=&udm=24&vsrid=%s",
       kResultsSearchBaseUrl, kLanguage, escaped_text_query.c_str(),
       EncodeRequestId(request_id.get()).c_str());
 
@@ -273,7 +299,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildLensSearchURLWithSessionId) {
 
   std::string expected_url = base::StringPrintf(
       "%s?cs=0&source=chrome.cr.menu&gsc=1&hl=%s&q=%s&lns_mode=mu&"
-      "gsessionid=%s&udm=24&vsrid=%s",
+      "lns_fp=1&gsessionid=%s&udm=24&vsrid=%s",
       kResultsSearchBaseUrl, kLanguage, escaped_text_query.c_str(),
       search_session_id.c_str(), EncodeRequestId(request_id.get()).c_str());
 
@@ -308,7 +334,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildLensSearchURLWithNoTextQuery) {
 
   std::string expected_url = base::StringPrintf(
       "%s?cs=0&source=chrome.cr.menu&gsc=1&hl=%s&q=&lns_mode=un&"
-      "gsessionid=%s&udm=26&vsrid=%s",
+      "lns_fp=1&gsessionid=%s&udm=26&vsrid=%s",
       kResultsSearchBaseUrl, kLanguage, search_session_id.c_str(),
       encoded_request_id.c_str());
 
@@ -344,7 +370,7 @@ TEST_F(LensOverlayUrlBuilderTest, BuildLensSearchURLWithAdditionalParams) {
 
   std::string expected_url = base::StringPrintf(
       "%s?cs=0&source=chrome.cr.menu&param=value&gsc=1&hl=%s&q=&lns_"
-      "mode=un&gsessionid=%s&udm=26&"
+      "mode=un&lns_fp=1&gsessionid=%s&udm=26&"
       "vsrid=%s",
       kResultsSearchBaseUrl, kLanguage, search_session_id.c_str(),
       encoded_request_id.c_str());
@@ -482,6 +508,24 @@ TEST_F(LensOverlayUrlBuilderTest, RemoveViewportParamFromURL) {
 
   EXPECT_EQ(lens::RemoveUrlViewportParams(GURL(initial_url)),
             GURL(expected_url));
+}
+
+TEST_F(LensOverlayUrlBuilderTest, GetSearchResultsUrlFromRedirectUrl) {
+  std::string text_query = "Apples";
+  std::string viewport_width = "400";
+  std::string viewport_height = "500";
+  std::string relative_search_url = base::StringPrintf(
+      "/search?q=%s&gsc=1&hl=%s&biw=%s&bih=%s", text_query.c_str(), kLanguage,
+      viewport_width.c_str(), viewport_height.c_str());
+  std::string escaped_relative_search_url =
+      base::EscapeUrlEncodedData(relative_search_url, /*use_plus=*/false);
+  GURL search_url = GURL(kResultsSearchBaseUrl).Resolve(relative_search_url);
+
+  std::string initial_url =
+      base::StringPrintf("%s?url=%s", kResultsRedirectBaseUrl,
+                         escaped_relative_search_url.c_str());
+  EXPECT_EQ(lens::GetSearchResultsUrlFromRedirectUrl(GURL(initial_url)),
+            GURL(search_url));
 }
 
 }  // namespace lens

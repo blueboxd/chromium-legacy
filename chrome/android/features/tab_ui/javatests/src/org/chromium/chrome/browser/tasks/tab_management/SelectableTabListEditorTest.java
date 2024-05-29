@@ -63,7 +63,6 @@ import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
@@ -185,7 +184,6 @@ public class SelectableTabListEditorTest {
                                     mParentView,
                                     cta.getBrowserControlsManager(),
                                     currentTabModelFilterSupplier,
-                                    () -> mTabModelSelector.getModel(false),
                                     cta.getTabContentManager(),
                                     mSetRecyclerViewPosition,
                                     getMode(),
@@ -1155,7 +1153,7 @@ public class SelectableTabListEditorTest {
                     currentSnackbar.getController().onAction(null);
                 });
 
-        BookmarkFolderPickerActivity activity = BookmarkTestUtil.waitForFolderPickerActivity();
+        BookmarkEditActivity activity = BookmarkTestUtil.waitForEditActivity();
         activity.finish();
 
         mRobot.resultRobot.verifyTabListEditorIsVisible();

@@ -28,6 +28,7 @@ android_library("java") {
     "//components/optimization_guide/proto:optimization_guide_proto_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_core_core_java",
     "//ui/android:ui_java",
     "//url:url_java",
@@ -38,6 +39,12 @@ android_library("java") {
 android_resources("java_resources") {
   sources = [
     "java/res/drawable/bookmark.xml",
+    "java/res/drawable/bottom_bar_page_insights_icon.xml",
+    "java/res/drawable/bottom_button_highlight_layer_list.xml",
+    "java/res/drawable/bottom_button_ripple_effect.xml",
+    "java/res/layout/bottom_bar_button_even_layout.xml",
+    "java/res/layout/bottom_bar_button_non_spotlight_layout.xml",
+    "java/res/layout/bottom_bar_button_spotlight_layout.xml",
     "java/res/layout/google_bottom_bar_even.xml",
     "java/res/layout/google_bottom_bar_spotlight.xml",
     "java/res/values/colors.xml",
@@ -55,6 +62,7 @@ robolectric_library("junit") {
   sources = [
     "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/BottomBarConfigCreatorTest.java",
     "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/GoogleBottomBarActionsHandlerTest.java",
+    "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/GoogleBottomBarCoordinatorTest.java",
     "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/GoogleBottomBarViewCreatorTest.java",
   ]
   deps = [
@@ -66,9 +74,12 @@ robolectric_library("junit") {
     "//chrome/browser/android/browserservices/intents:java",
     "//chrome/browser/share:java",
     "//chrome/browser/tab:java",
+    "//chrome/browser/ui/android/google_bottom_bar:proto_java",
     "//chrome/browser/ui/android/page_insights:java",
     "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:guava_android_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
     "//third_party/junit",

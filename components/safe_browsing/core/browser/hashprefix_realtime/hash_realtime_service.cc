@@ -24,7 +24,6 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/oblivious_http_request.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -165,13 +164,11 @@ HashRealTimeService::HashRealTimeService(
 HashRealTimeService::~HashRealTimeService() = default;
 
 // static
-bool HashRealTimeService::CanCheckUrl(
-    const GURL& url,
-    network::mojom::RequestDestination request_destination) {
+bool HashRealTimeService::CanCheckUrl(const GURL& url) {
   if (VerdictCacheManager::has_artificial_cached_url()) {
     return true;
   }
-  return hash_realtime_utils::CanCheckUrl(url, request_destination);
+  return hash_realtime_utils::CanCheckUrl(url);
 }
 
 HashRealTimeService::SBThreatInfo::SBThreatInfo(SBThreatType threat_type,
@@ -324,18 +321,6 @@ void HashRealTimeService::StartLookupInternal(
     return;
   }
 
-  // If the ohttp_key_service_ is null, return early.
-  // TODO(crbug.com/333491722): A followup fix will attempt to avoid creating
-  // this service in cases where the OHTTP key service is null. Remove this
-  // block if the followup fix results in this codepath no longer being
-  // triggered.
-  if (!ohttp_key_service_) {
-    lookup_completer->CompleteLookup(/*is_lookup_successful=*/false,
-                                     /*sb_threat_type=*/std::nullopt,
-                                     OperationOutcome::kNoOhttpKeyService);
-    return;
-  }
-
   // Prepare request.
   auto request = std::make_unique<V5::SearchHashesRequest>();
   for (const auto& hash_prefix : hash_prefixes_to_request) {
@@ -362,9 +347,6 @@ void HashRealTimeService::OnGetOhttpKey(
     std::optional<std::string> key) {
   base::UmaHistogramBoolean("SafeBrowsing.HPRT.HasOhttpKey", key.has_value());
   if (!key.has_value()) {
-    backoff_operator_->ReportError();
-    base::UmaHistogramEnumeration("SafeBrowsing.HPRT.BackoffReportErrorReason",
-                                  BackoffReportErrorReason::kInvalidKey);
     lookup_completer->CompleteLookup(/*is_lookup_successful=*/false,
                                      /*sb_threat_type=*/std::nullopt,
                                      OperationOutcome::kOhttpKeyFetchFailed);
@@ -523,8 +505,6 @@ HashRealTimeService::ParseResponseAndUpdateBackoff(
           "SafeBrowsing.HPRT.Network.Result.WhenEnteringBackoff", net_error,
           response_code);
     }
-    base::UmaHistogramEnumeration("SafeBrowsing.HPRT.BackoffReportErrorReason",
-                                  BackoffReportErrorReason::kResponseError);
   }
   return response;
 }

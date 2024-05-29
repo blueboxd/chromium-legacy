@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -78,25 +79,31 @@ TEST(PhoneNumberTest, Matcher) {
                      {u"6502345678", {PHONE_HOME_CITY_AND_NUMBER}},
                      {u"(650)2345678", {PHONE_HOME_CITY_AND_NUMBER}}});
   // Set phone number so city_code = 650, number = 2345678.
-  MatchingTypesTest(u"650 234-5678", u"US",
-                    /*trunk_types_enabled=*/false,
-                    {{std::u16string(), {EMPTY_TYPE}},
-                     {u"1", {}},
-                     {u"16", {}},
-                     {u"165", {}},
-                     {u"1650", {}},
-                     {u"16502", {}},
-                     {u"165023", {}},
-                     {u"1650234", {}},
-                     // The international number is not recognized.
-                     {u"16502345678", {}},
-                     {u"650", {PHONE_HOME_CITY_CODE}},
-                     {u"2345678", {PHONE_HOME_NUMBER}},
-                     {u"234", {PHONE_HOME_NUMBER_PREFIX}},
-                     {u"5678", {PHONE_HOME_NUMBER_SUFFIX}},
-                     {u"2345", {}},
-                     {u"6502345678", {PHONE_HOME_CITY_AND_NUMBER}},
-                     {u"(650)2345678", {PHONE_HOME_CITY_AND_NUMBER}}});
+  MatchingTypesTest(
+      u"650 234-5678", u"US",
+      /*trunk_types_enabled=*/false,
+      {{std::u16string(), {EMPTY_TYPE}},
+       {u"1",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+            : FieldTypeSet{}},
+       {u"16", {}},
+       {u"165", {}},
+       {u"1650", {}},
+       {u"16502", {}},
+       {u"165023", {}},
+       {u"1650234", {}},
+       {u"16502345678",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+            : FieldTypeSet{}},
+       {u"650", {PHONE_HOME_CITY_CODE}},
+       {u"2345678", {PHONE_HOME_NUMBER}},
+       {u"234", {PHONE_HOME_NUMBER_PREFIX}},
+       {u"5678", {PHONE_HOME_NUMBER_SUFFIX}},
+       {u"2345", {}},
+       {u"6502345678", {PHONE_HOME_CITY_AND_NUMBER}},
+       {u"(650)2345678", {PHONE_HOME_CITY_AND_NUMBER}}});
 }
 
 TEST(PhoneNumberTest, Matcher_TrunkTypes) {
@@ -130,12 +137,27 @@ TEST(PhoneNumberTest, Matcher_TrunkTypes) {
   MatchingTypesTest(
       u"650 234-5678", u"US",
       /*trunk_types_enabled=*/true,
-      {{u"1", {}},
-       {u"+1", {}},
-       {u"(+1) United States", {}},
-       {u"US (+1)", {}},
+      {{u"1",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+            : FieldTypeSet{}},
+       {u"+1",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+            : FieldTypeSet{}},
+       {u"(+1) United States",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+            : FieldTypeSet{}},
+       {u"US (+1)",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+            : FieldTypeSet{}},
        // The international number is not recognized.
-       {u"16502345678", {}},
+       {u"16502345678",
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+            : FieldTypeSet{}},
        {u"650", {PHONE_HOME_CITY_CODE, PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX}},
        {u"2345678", {PHONE_HOME_NUMBER}},
        {u"234", {PHONE_HOME_NUMBER_PREFIX}},
@@ -201,25 +223,50 @@ TEST(PhoneNumberTest, Matcher_DE) {
                         {u"00491741234567", {PHONE_HOME_WHOLE_NUMBER}},
                         {u"004901741234567", {PHONE_HOME_WHOLE_NUMBER}},
                     });
-  MatchingTypesTest(u"0174 1234567", u"DE",
-                    /*trunk_types_enabled=*/false,
-                    {
-                        {u"49", {}},
-                        {u"+49", {}},
-                        {u"0049", {}},
-                        {u"(+49) DE", {}},
-                        {u"(0049) DE", {}},
-                        {u"174", {PHONE_HOME_CITY_CODE}},
-                        {u"0174", {}},
-                        {u"1234567", {PHONE_HOME_NUMBER}},
-                        {u"01741234567", {PHONE_HOME_CITY_AND_NUMBER}},
-                        {u"(0174)1234567", {PHONE_HOME_CITY_AND_NUMBER}},
-                        {u"0174 1234567", {PHONE_HOME_CITY_AND_NUMBER}},
-                        // The international phone number is unknown.
-                        {u"+491741234567", {}},
-                        {u"00491741234567", {}},
-                        {u"004901741234567", {}},
-                    });
+  MatchingTypesTest(
+      u"0174 1234567", u"DE",
+      /*trunk_types_enabled=*/false,
+      {
+          {u"49", base::FeatureList::IsEnabled(
+                      features::kAutofillInferCountryCallingCode)
+                      ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                      : FieldTypeSet{}},
+          {u"+49", base::FeatureList::IsEnabled(
+                       features::kAutofillInferCountryCallingCode)
+                       ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                       : FieldTypeSet{}},
+          {u"0049", base::FeatureList::IsEnabled(
+                        features::kAutofillInferCountryCallingCode)
+                        ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                        : FieldTypeSet{}},
+          {u"(+49) DE", base::FeatureList::IsEnabled(
+                            features::kAutofillInferCountryCallingCode)
+                            ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                            : FieldTypeSet{}},
+          {u"(0049) DE", base::FeatureList::IsEnabled(
+                             features::kAutofillInferCountryCallingCode)
+                             ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                             : FieldTypeSet{}},
+          {u"174", {PHONE_HOME_CITY_CODE}},
+          {u"0174", {}},
+          {u"1234567", {PHONE_HOME_NUMBER}},
+          {u"01741234567", {PHONE_HOME_CITY_AND_NUMBER}},
+          {u"(0174)1234567", {PHONE_HOME_CITY_AND_NUMBER}},
+          {u"0174 1234567", {PHONE_HOME_CITY_AND_NUMBER}},
+          // The international phone number is unknown.
+          {u"+491741234567", base::FeatureList::IsEnabled(
+                                 features::kAutofillInferCountryCallingCode)
+                                 ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                 : FieldTypeSet{}},
+          {u"00491741234567", base::FeatureList::IsEnabled(
+                                  features::kAutofillInferCountryCallingCode)
+                                  ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                  : FieldTypeSet{}},
+          {u"004901741234567", base::FeatureList::IsEnabled(
+                                   features::kAutofillInferCountryCallingCode)
+                                   ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                   : FieldTypeSet{}},
+      });
 }
 
 TEST(PhoneNumberTest, Matcher_TrunkTypes_DE) {
@@ -243,18 +290,36 @@ TEST(PhoneNumberTest, Matcher_TrunkTypes_DE) {
       u"0174 1234567", u"DE",
       /*trunk_types_enabled=*/true,
       {
-          {u"49", {}},
-          {u"+49", {}},
-          {u"0049", {}},
+          {u"49", base::FeatureList::IsEnabled(
+                      features::kAutofillInferCountryCallingCode)
+                      ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                      : FieldTypeSet{}},
+          {u"+49", base::FeatureList::IsEnabled(
+                       features::kAutofillInferCountryCallingCode)
+                       ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                       : FieldTypeSet{}},
+          {u"0049", base::FeatureList::IsEnabled(
+                        features::kAutofillInferCountryCallingCode)
+                        ? FieldTypeSet{PHONE_HOME_COUNTRY_CODE}
+                        : FieldTypeSet{}},
           {u"174", {PHONE_HOME_CITY_CODE}},
           {u"0174", {PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX}},
           {u"1234567", {PHONE_HOME_NUMBER}},
           {u"1741234567", {PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX}},
           {u"01741234567", {PHONE_HOME_CITY_AND_NUMBER}},
           // The international phone number is unknown.
-          {u"+491741234567", {}},
-          {u"00491741234567", {}},
-          {u"004901741234567", {}},
+          {u"+491741234567", base::FeatureList::IsEnabled(
+                                 features::kAutofillInferCountryCallingCode)
+                                 ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                 : FieldTypeSet{}},
+          {u"00491741234567", base::FeatureList::IsEnabled(
+                                  features::kAutofillInferCountryCallingCode)
+                                  ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                  : FieldTypeSet{}},
+          {u"004901741234567", base::FeatureList::IsEnabled(
+                                   features::kAutofillInferCountryCallingCode)
+                                   ? FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}
+                                   : FieldTypeSet{}},
       });
 }
 
@@ -271,22 +336,52 @@ TEST(PhoneNumberTest, SetInfo) {
   // Set the formatted info directly.
   EXPECT_TRUE(
       phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"(650) 234-5678", kLocale));
-  EXPECT_EQ(u"(650) 234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"1 650-234-5678"
+          : u"(650) 234-5678",
+      phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"16502345678"
+          : u"6502345678",
+      phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
 
   // Unformatted numbers should be formatted.
   EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"8887776666", kLocale));
-  EXPECT_EQ(u"(888) 777-6666", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"8887776666", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"1 888-777-6666"
+          : u"(888) 777-6666",
+      phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"18887776666"
+          : u"8887776666",
+      phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
 
   EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"+18887776666", kLocale));
   EXPECT_EQ(u"1 888-777-6666", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_EQ(u"18887776666", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
 
-  // Differently formatted numbers should be left alone.
+  // Differently formatted numbers should be left formatted as is, unless
+  // kAutofillPreferParsedPhoneNumbers is enabled.
   EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"800-432-8765", kLocale));
-  EXPECT_EQ(u"800-432-8765", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_EQ(u"8004328765", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillPreferParsedPhoneNumber)) {
+    EXPECT_EQ(
+        base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+            ? u"1 800-432-8765"
+            : u"(800) 432-8765",
+        phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  } else {
+    EXPECT_EQ(u"800-432-8765", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  }
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"18004328765"
+          : u"8004328765",
+      phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
 
   // SetRawInfo should not try to format.
   phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"8004328765");
@@ -304,14 +399,20 @@ TEST(PhoneNumberTest, SetInfo) {
   // effort as if it is a valid number.
   EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"5141231234", kLocale));
   EXPECT_EQ(u"5141231234", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
-  EXPECT_EQ(u"5141231234", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
+  EXPECT_EQ(
+      base::FeatureList::IsEnabled(features::kAutofillInferCountryCallingCode)
+          ? u"+15141231234"
+          : u"5141231234",
+      phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
   EXPECT_EQ(u"514", phone.GetInfo(PHONE_HOME_CITY_CODE, kLocale));
 }
 
 TEST(PhoneNumberTest, InferCountryCallingCode) {
   base::test::ScopedFeatureList complement_calling_code_enabled;
-  complement_calling_code_enabled.InitAndEnableFeature(
-      features::kAutofillInferCountryCallingCode);
+  complement_calling_code_enabled.InitWithFeatures(
+      {features::kAutofillPreferParsedPhoneNumber,
+       features::kAutofillInferCountryCallingCode},
+      /*disabled_features=*/{});
 
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   PhoneNumber phone(&profile);
@@ -333,13 +434,13 @@ TEST(PhoneNumberTest, InferCountryCallingCode) {
   EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
 
   // Pre-formatted number.
-  // In this case the raw info is kept as-is, while the calling code is inferred
-  // for the filling information.
+  // In this case the calling code is inferred for the raw info and the filling
+  // information.
   EXPECT_TRUE(
       phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"(650) 234-5678", kLocale));
   EXPECT_EQ(u"1", phone.GetInfo(PHONE_HOME_COUNTRY_CODE, kLocale));
   EXPECT_EQ(u"16502345678", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, kLocale));
-  EXPECT_EQ(u"(650) 234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(u"1 650-234-5678", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_EQ(u"6502345678", phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, kLocale));
 
   // Different country.
@@ -387,15 +488,14 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
   PhoneNumber::PhoneCombineHelper number1;
-  EXPECT_FALSE(number1.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"1"));
 
   // Ensure parsing is possible when falling back to detecting the country code
   // based on the app locale.
   std::u16string parsed_phone;
   PhoneNumber::PhoneCombineHelper number2;
-  EXPECT_TRUE(number2.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), u"650"));
-  EXPECT_TRUE(number2.SetInfo(AutofillType(PHONE_HOME_NUMBER_PREFIX), u"234"));
-  EXPECT_TRUE(number2.SetInfo(AutofillType(PHONE_HOME_NUMBER_SUFFIX), u"5682"));
+  number2.SetInfo(PHONE_HOME_CITY_CODE, u"650");
+  number2.SetInfo(PHONE_HOME_NUMBER_PREFIX, u"234");
+  number2.SetInfo(PHONE_HOME_NUMBER_SUFFIX, u"5682");
   EXPECT_TRUE(number2.ParseNumber(
       // No country code is specified here:
       AutofillProfile(i18n_model_definition::kLegacyHierarchyCountryCode),
@@ -416,7 +516,7 @@ TEST(PhoneNumberTest, HelperSetsAllPhoneFieldTypes) {
 
   base::ranges::for_each(fields, [](FieldType type) {
     PhoneNumber::PhoneCombineHelper helper;
-    EXPECT_TRUE(helper.SetInfo(AutofillType(type), u"123"));
+    helper.SetInfo(type, u"123");
   });
 }
 
@@ -624,7 +724,7 @@ TEST_P(PhoneImportAndGetTest, TestSettingAndParsing) {
   // Gather all data in the PhoneCombineHelper.
   PhoneNumber::PhoneCombineHelper number;
   for (const auto& [field_type, value] : test.observed_fields) {
-    EXPECT_TRUE(number.SetInfo(AutofillType(field_type), value));
+    number.SetInfo(field_type, value);
   }
 
   ASSERT_TRUE(PhoneNumber::ImportPhoneNumberToProfile(number, faked_app_locale,
@@ -668,22 +768,32 @@ INSTANTIATE_TEST_SUITE_P(
                                 {PHONE_HOME_CITY_AND_NUMBER, u"6502345678"}}},
         // If a number is given as city code and local number but does not have
         // a country code, the phone number is stored in national format. The
-        // country code is not inferred.
-        // This is not ideal (see b/322330285) because we cannot fill country
-        // codes for such a number, nor can we fill a phone number in
-        // international format.
+        // country code is not inferred, unless AutofillInferCountryCallingCode
+        // is enabled.
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_CITY_CODE, u"650"},
                                 {PHONE_HOME_NUMBER, u"2345680"}},
             .default_country = u"US",
-            .expected_stored_number = u"(650) 234-5680",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"1 650-234-5680"
+                    : u"(650) 234-5680",
             .expected_values = {{// No country code was set.
-                                 PHONE_HOME_COUNTRY_CODE, u""},
+                                 PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"1"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u"650"},
                                 {PHONE_HOME_NUMBER, u"2345680"},
                                 // Whole number is in national format because no
                                 // country code was set.
-                                {PHONE_HOME_WHOLE_NUMBER, u"6502345680"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"16502345680"
+                                     : u"6502345680"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"6502345680"}}},
         // If the city code is incorrect, the phone number cannot be interpreted
         // and is just stored as a sequence of digits.
@@ -691,23 +801,40 @@ INSTANTIATE_TEST_SUITE_P(
             .observed_fields = {{PHONE_HOME_CITY_CODE, u"123"},
                                 {PHONE_HOME_NUMBER, u"2345680"}},
             .default_country = u"US",
-            .expected_stored_number = u"1232345680",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+1 1232345680"
+                    : u"1232345680",
             .expected_values = {{// No country code was set.
-                                 PHONE_HOME_COUNTRY_CODE, u""},
+                                 PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"1"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u""},
                                 // Because the areacode is invalid the entire
                                 // number is interpreted as a local number and
                                 // also returned for PHONE_HOME_WHOLE_NUMBER and
                                 // PHONE_HOME_CITY_AND_NUMBER.
                                 {PHONE_HOME_NUMBER, u"1232345680"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"1232345680"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"+11232345680"
+                                     : u"1232345680"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"1232345680"}}},
         // If the phone number is submitted as PHONE_HOME_CITY_AND_NUMBER,
-        // the persisted internal value is a formatted national number.
+        // the persisted internal value is a formatted national number, unless
+        // AutofillInferCountryCallingCode is enabled.
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_CITY_AND_NUMBER, u"6502345681"}},
             .default_country = u"US",
-            .expected_stored_number = u"(650) 234-5681",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"1 650-234-5681"
+                    : u"(650) 234-5681",
             // .expected_values were already covered for this format above.
         },
 
@@ -718,7 +845,11 @@ INSTANTIATE_TEST_SUITE_P(
                                 {PHONE_HOME_NUMBER_PREFIX, u"234"},
                                 {PHONE_HOME_NUMBER_SUFFIX, u"5682"}},
             .default_country = u"US",
-            .expected_stored_number = u"(650) 234-5682",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"1 650-234-5682"
+                    : u"(650) 234-5682",
             // .expected_values were already covered for this format above.
         },
 
@@ -779,12 +910,18 @@ INSTANTIATE_TEST_SUITE_P(
 
         // If, however, the user has provided formatting, this is preserved for
         // PHONE_HOME_WHOLE_NUMBER. Note the broken whitespacing in the number.
+        // This is changed however when AutofillPreferParsedPhoneNumber is
+        // enabled.
         PhoneImportAndGetTestCase{
             // This time using PHONE_HOME_WHOLE_NUMBER:
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"+1 65 02 345681"}},
             .default_country = u"US",
             // The + from the input is reflected here:
-            .expected_stored_number = u"+1 65 02 345681",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillPreferParsedPhoneNumber)
+                    ? u"1 650-234-5681"
+                    : u"+1 65 02 345681",
             // Same expectations as above.
             .expected_values = {{PHONE_HOME_COUNTRY_CODE, u"1"},
                                 {PHONE_HOME_CITY_CODE, u"650"},
@@ -796,7 +933,11 @@ INSTANTIATE_TEST_SUITE_P(
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"1 65 02 345681"}},
             .default_country = u"US",
             // The lack of a + is refelected here:
-            .expected_stored_number = u"1 65 02 345681",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillPreferParsedPhoneNumber)
+                    ? u"1 650-234-5681"
+                    : u"1 65 02 345681",
             // Same expectations as above.
             .expected_values = {{PHONE_HOME_COUNTRY_CODE, u"1"},
                                 {PHONE_HOME_CITY_CODE, u"650"},
@@ -812,11 +953,23 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_CITY_AND_NUMBER, u"089 12 34 567"}},
             .default_country = u"DE",
-            .expected_stored_number = u"089 1234567",
-            .expected_values = {{PHONE_HOME_COUNTRY_CODE, u""},
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+49 89 1234567"
+                    : u"089 1234567",
+            .expected_values = {{PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"49"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u"89"},
                                 {PHONE_HOME_NUMBER, u"1234567"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"0891234567"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"49891234567"
+                                     : u"0891234567"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}}},
         // While we expected a PHONE_HOME_CITY_AND_NUMBER, the user entered an
         // international format (+49). The number is interpreted and stored in
@@ -870,7 +1023,11 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_CITY_AND_NUMBER, u"891234567"}},
             .default_country = u"DE",
-            .expected_stored_number = u"089 1234567",
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+49 89 1234567"
+                    : u"089 1234567",
             // .expected_values were already covered for this format above.
         },
 
@@ -883,11 +1040,23 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"0891234567"}},
             .default_country = u"DE",
-            .expected_stored_number = u"089 1234567",
-            .expected_values = {{PHONE_HOME_COUNTRY_CODE, u""},
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+49 89 1234567"
+                    : u"089 1234567",
+            .expected_values = {{PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"49"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u"89"},
                                 {PHONE_HOME_NUMBER, u"1234567"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"0891234567"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"+49891234567"
+                                     : u"0891234567"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}}},
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"+49891234567"}},
@@ -929,11 +1098,23 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"891234567"}},
             .default_country = u"DE",
-            .expected_stored_number = u"089 1234567",
-            .expected_values = {{PHONE_HOME_COUNTRY_CODE, u""},
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+49 89 1234567"
+                    : u"089 1234567",
+            .expected_values = {{PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"49"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u"89"},
                                 {PHONE_HOME_NUMBER, u"1234567"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"0891234567"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"+49891234567"
+                                     : u"0891234567"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}}},
 
         // What happens in case a US profile has a DE number?
@@ -965,11 +1146,23 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}},
             .default_country = u"US",
-            .expected_stored_number = u"0891234567",
-            .expected_values = {{PHONE_HOME_COUNTRY_CODE, u""},
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+1 0891234567"
+                    : u"0891234567",
+            .expected_values = {{PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"1"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u""},
                                 {PHONE_HOME_NUMBER, u"0891234567"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"0891234567"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"+10891234567"
+                                     : u"0891234567"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}}},
 
         // If an invalid 10 digit number is stored from a
@@ -978,11 +1171,23 @@ INSTANTIATE_TEST_SUITE_P(
         PhoneImportAndGetTestCase{
             .observed_fields = {{PHONE_HOME_WHOLE_NUMBER, u"0891234567"}},
             .default_country = u"US",
-            .expected_stored_number = u"0891234567",
-            .expected_values = {{PHONE_HOME_COUNTRY_CODE, u""},
+            .expected_stored_number =
+                base::FeatureList::IsEnabled(
+                    features::kAutofillInferCountryCallingCode)
+                    ? u"+1 0891234567"
+                    : u"0891234567",
+            .expected_values = {{PHONE_HOME_COUNTRY_CODE,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"1"
+                                     : u""},
                                 {PHONE_HOME_CITY_CODE, u""},
                                 {PHONE_HOME_NUMBER, u"0891234567"},
-                                {PHONE_HOME_WHOLE_NUMBER, u"0891234567"},
+                                {PHONE_HOME_WHOLE_NUMBER,
+                                 base::FeatureList::IsEnabled(
+                                     features::kAutofillInferCountryCallingCode)
+                                     ? u"+10891234567"
+                                     : u"0891234567"},
                                 {PHONE_HOME_CITY_AND_NUMBER, u"0891234567"}}}));
 
 }  // namespace autofill

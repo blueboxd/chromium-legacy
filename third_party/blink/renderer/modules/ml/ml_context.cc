@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 
-#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "components/ml/webnn/features.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -157,21 +156,17 @@ ScriptPromise<MLComputeResult> MLContext::compute(
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromise<MLComputeResult>();
+    return EmptyPromise();
   }
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
-      script_state, exception_state.GetContext());
-  auto promise = resolver->Promise();
 
   if (graph->Context() != this) {
-    resolver->RejectWithTypeError("The graph isn't built within this context.");
-  } else {
-    graph->Compute(std::move(scoped_trace), inputs, outputs, resolver,
-                   exception_state);
+    exception_state.ThrowTypeError(
+        "The graph isn't built within this context.");
+    return EmptyPromise();
   }
 
-  return promise;
+  return graph->Compute(std::move(scoped_trace), inputs, outputs, script_state,
+                        exception_state);
 }
 
 void MLContext::CreateWebNNGraph(
@@ -193,11 +188,7 @@ void MLContext::OnCreateWebNNContext(
     ScopedMLTrace scoped_trace,
     ScriptPromiseResolver<MLContext>* resolver,
     webnn::mojom::blink::CreateContextResultPtr result) {
-  base::ScopedClosureRunner runner(WTF::BindOnce(
-      [](MLContext* context, ScriptPromiseResolver<MLContext>* resolver) {
-        context->ml_->RemovePendingResolver(resolver);
-      },
-      WrapPersistent(this), WrapPersistent(resolver)));
+  ml_->RemovePendingResolver(resolver);
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state) {
     return;
@@ -206,7 +197,7 @@ void MLContext::OnCreateWebNNContext(
   if (result->is_error()) {
     const auto& create_context_error = result->get_error();
     resolver->RejectWithDOMException(
-        ConvertWebNNErrorCodeToDOMExceptionCode(create_context_error->code),
+        WebNNErrorCodeToDOMExceptionCode(create_context_error->code),
         create_context_error->message);
     return;
   }
@@ -310,13 +301,13 @@ ScriptPromise<DOMArrayBuffer> MLContext::readBuffer(
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromise<DOMArrayBuffer>();
+    return EmptyPromise();
   }
 
   if (src_buffer->context() != this) {
     exception_state.ThrowTypeError(
         "The source buffer wasn't created with this context.");
-    return ScriptPromise<DOMArrayBuffer>();
+    return EmptyPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<DOMArrayBuffer>>(

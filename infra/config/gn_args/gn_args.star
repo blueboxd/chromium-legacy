@@ -887,6 +887,13 @@ gn_args.config(
 gn_args.config(
     name = "no_reclient",
     args = {
+        "use_reclient": False,
+    },
+)
+
+gn_args.config(
+    name = "no_remoteexec",
+    args = {
         "use_remoteexec": False,
     },
 )
@@ -1018,7 +1025,7 @@ gn_args.config(
 )
 
 gn_args.config(
-    name = "reclient",
+    name = "remoteexec",
     args = {
         "use_remoteexec": True,
     },
@@ -1027,10 +1034,10 @@ gn_args.config(
 gn_args.config(
     name = "reclient_with_remoteexec_links",
     args = {
-        "use_remoteexec_links": True,
+        "use_reclient_links": True,
         "concurrent_links": 50,
     },
-    configs = ["reclient"],
+    configs = ["remoteexec"],
 )
 
 gn_args.config(

@@ -140,6 +140,12 @@ criteria = ["safe-to-run", "does-not-implement-crypto"]
 delta = "1.0.82 -> 1.0.83"
 notes = "No change to UB-risk profile either."
 
+[[audits.anyhow]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-run", "does-not-implement-crypto"]
+delta = "1.0.83 -> 1.0.86"
+notes = "Delta only updates the ensure macro implementation, still safe to run, no crypto"
+
 [[audits.autocfg]]
 who = "Lukasz Anforowicz <lukasza@chromium.org>"
 criteria = ["ub-risk-0", "safe-to-deploy", "does-not-implement-crypto"]
@@ -221,6 +227,16 @@ notes = """
 Grepped for \"unsafe\", \"crypt\", \"cipher\", \"fs\", \"net\" - there were no
 hits except for 8 occurrences of `unsafe`.  Additional `unsafe` review comments
 can be found in https://crrev.com/c/5445719.
+"""
+
+[[audits.bytemuck_derive]]
+who = "Lukasz Anforowicz <lukasza@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+delta = "1.6.0 -> 1.6.1"
+notes = """
+No behavior/code changes AFAICT - only adding
+`#[allow(clippy::multiple_bound_locations)]`, doc comments, and making
+some cosmetic changes in non-`.rs` files.
 """
 
 [[audits.bytes]]
@@ -502,6 +518,12 @@ who = "Adrian Taylor <adetaylor@chromium.org>"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
 delta = "1.10.0 -> 1.11.0"
 
+[[audits.either]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-run", "does-not-implement-crypto"]
+delta = "1.11.0 -> 1.12.0"
+notes = "Only changes the MSRV and adds a (safe) trait specialization."
+
 [[audits.fend-core]]
 who = "jiwan@chromium.org"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
@@ -549,8 +571,17 @@ notes = "Reviewed in https://crrev.com/c/5362378. No new use of unsafe."
 
 [[audits.font-types]]
 who = "danakj <danakj@chromium.org>"
-criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-1"]
 delta = "0.5.2 -> 0.5.3"
+
+[[audits.font-types]]
+who = "Lukasz Anforowicz <lukasza@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-1"]
+delta = "0.5.3 -> 0.5.4"
+notes = """
+The delta just adds `impl From<GlyphId> for u32` - no impact on `unsafe impl`s
+elsewhere.
+"""
 
 [[audits.getrandom]]
 who = "danakj@chromium.org"
@@ -649,27 +680,6 @@ in https://crrev.com/c/5347418.
 This crate has been added to Chromium in https://crrev.com/c/3321895.
 '''
 
-[[audits.libc]]
-who = "Lukasz Anforowicz <lukasza@chromium.org>"
-criteria = "ub-risk-4"
-version = "0.2.152"
-notes = """
-Discussions related to the `unsafe` audit can be found in
-https://crrev.com/c/5178771.  (This audit covered multiple crates that have
-been rolled when processing a backlog of crate updates - `libc` was one of
-them.)
-
-The audit found an unsound usage of `unsafe` when the `extra_traits` feature of
-the `libc` crate is enabled.  See https://github.com/rust-lang/libc/issues/3560
-for more details.
-"""
-
-[[audits.libc]]
-who = "danakj <danakj@chromium.org>"
-criteria = ["safe-to-run", "does-not-implement-crypto", "ub-risk-4"]
-delta = "0.2.153 -> 0.2.154"
-notes = "No change to unsafe risk profile here."
-
 [[audits.log]]
 who = "Lukasz Anforowicz <lukasza@chromium.org>"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
@@ -758,6 +768,12 @@ who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
 delta = "1.0.81 -> 1.0.82"
 
+[[audits.proc-macro2]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+delta = "1.0.82 -> 1.0.83"
+notes = "Substantive change is replacing String with Box<str>, saving memory."
+
 [[audits.prost]]
 who = "agl@chromium.org"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
@@ -768,6 +784,12 @@ who = "Adrian Taylor <adetaylor@chromium.org>"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
 delta = "0.12.3 -> 0.12.4"
 
+[[audits.prost]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-run", "does-not-implement-crypto"]
+delta = "0.12.4 -> 0.12.6"
+notes = "No concerning changes for safe-to-run."
+
 [[audits.prost-derive]]
 who = "agl@chromium.org"
 criteria = ["safe-to-run", "does-not-implement-crypto", "ub-risk-0"]
@@ -777,6 +799,12 @@ version = "0.12.3"
 who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-run", "does-not-implement-crypto", "ub-risk-0"]
 delta = "0.12.3 -> 0.12.5"
+
+[[audits.prost-derive]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-run", "does-not-implement-crypto"]
+delta = "0.12.5 -> 0.12.6"
+notes = "No changes here; presumably a bump of the `prost` crate."
 
 [[audits.qr_code]]
 who = "Lukasz Anforowicz <lukasza@chromium.org>"
@@ -858,6 +886,15 @@ relying on certification by the Chromium engineers who work on the library
 who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
 delta = "0.19.0 -> 0.19.1"
+
+[[audits.read-fonts]]
+who = "Lukasz Anforowicz <lukasza@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
+delta = "0.19.1 -> 0.19.2"
+notes = """
+The delta is a bug fix in `src/tables/cmap.rs`.
+No new `unsafe` - still `ub-risk-0`.
+"""
 
 [[audits.regex]]
 who = "danakj@chromium.org"
@@ -1009,6 +1046,12 @@ who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
 delta = "1.0.15 -> 1.0.16"
 
+[[audits.rustversion]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+delta = "1.0.16 -> 1.0.17"
+notes = "Just updates windows compat"
+
 [[audits.semver]]
 who = "danakj@chromium.org"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
@@ -1066,6 +1109,12 @@ who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
 delta = "1.0.198 -> 1.0.201"
 
+[[audits.serde]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+delta = "1.0.201 -> 1.0.202"
+notes = "Trivial changes"
+
 [[audits.serde_derive]]
 who = "Lukasz Anforowicz <lukasza@chromium.org>"
 criteria = "ub-risk-0"
@@ -1094,6 +1143,11 @@ notes = "Grepped for \"unsafe\", \"crypt\", \"cipher\", \"fs\", \"net\" - there 
 who = "danakj <danakj@chromium.org>"
 criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
 delta = "1.0.197 -> 1.0.201"
+
+[[audits.serde_derive]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+delta = "1.0.201 -> 1.0.202"
 
 [[audits.serde_json]]
 who = "danakj@chromium.org"
@@ -1185,6 +1239,17 @@ relying on certification by the Chromium engineers who work on the library
 who = "drott@chromium.org"
 criteria = ["ub-risk-1", "safe-to-deploy", "does-not-implement-crypto"]
 delta = "0.15.2 -> 0.15.4"
+
+[[audits.skrifa]]
+who = "Dustin J. Mitchell <djmitche@chromium.org>"
+criteria = ["safe-to-deploy", "crypto-safe", "ub-risk-0"]
+delta = "0.19.0 -> 0.19.1"
+notes = "Crate has `forbid_unsafe` and no unsafe code. Changes all appear font-related and safe."
+
+[[audits.skrifa]]
+who = "Lukasz Anforowicz <lukasza@chromium.org>"
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-0"]
+delta = "0.19.1 -> 0.19.2"
 
 [[audits.small_ctor]]
 who = "danakj@chromium.org"
@@ -1372,6 +1437,11 @@ Reviewed in https://crrev.com/c/5171063
 Previously reviewed during security review and the audit is grandparented in.
 """
 
+[[audits.winapi-util]]
+who = "danakj <danakj@chromium.org>"
+criteria = ["safe-to-run", "does-not-implement-crypto"]
+delta = "0.1.6 -> 0.1.8"
+
 [[audits.wycheproof]]
 who = "danakj@chromium.org"
 criteria = ["safe-to-run", "does-not-implement-crypto"]
@@ -1380,4 +1450,80 @@ notes = """
 Reviewed in https://crrev.com/c/5171063
 
 Previously reviewed during security review and the audit is grandparented in.
+"""
+
+[[trusted.libc]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 51017
+start = "2020-03-17"
+end = "2025-05-23"
+notes = """
+Chromium implicitly trusts the Rust toolchain (e.g. the `rustc` and
+`cargo` binaries maintained and published by the
+https://github.com/rust-lang organization and packaged and distributed
+via Chromium's `tools/rust/package_rust.py` scripts).  Here we extend
+this trust to the system libraries that are maintained and published by
+the same organization.
+
+user-id 51017 maps to https://crates.io/users/JohnTitor who has
+published https://crates.io/crates/libc/0.2.154
+"""
+
+[[trusted.libc]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 5820 # the8472
+start = "2020-03-17"
+end = "2025-05-23"
+notes = """
+Same justification as for the other `trusted.libc` entry above.
+
+user-id 5820 maps to https://crates.io/users/the8472 who has published
+https://crates.io/crates/libc/0.2.155
+"""
+
+[[trusted.windows-sys]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-11-15"
+end = "9999-05-15"
+notes = """
+This crate and its deps are published by Microsoft as the official Rust SDK for Windows APIs at https://github.com/microsoft/windows-rs
+
+user-id 64539 maps to https://crates.io/users/kennykerr who has published version 0.52.0.
+"""
+
+[[trusted.windows-targets]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2022-09-09"
+end = "9999-05-15"
+notes = """
+This crate is part of the official Rust SDK from Microsoft, see windows-sys.
+"""
+
+[[trusted.windows_aarch64_msvc]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-11-05"
+end = "9999-05-15"
+notes = """
+This crate is part of the official Rust SDK from Microsoft, see windows-sys.
+"""
+
+[[trusted.windows_i686_msvc]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-10-27"
+end = "9999-05-15"
+notes = """
+This crate is part of the official Rust SDK from Microsoft, see windows-sys.
+"""
+
+[[trusted.windows_x86_64_msvc]]
+criteria = ["safe-to-deploy", "does-not-implement-crypto", "ub-risk-2"]
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-10-27"
+end = "9999-05-15"
+notes = """
+This crate is part of the official Rust SDK from Microsoft, see windows-sys.
 """

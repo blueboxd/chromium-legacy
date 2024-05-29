@@ -218,26 +218,17 @@ Then, add the following GN args to your `args.gn`:
 
 ```
 use_remoteexec = true
-rbe_cfg_dir = "../../buildtools/reclient_cfgs/linux"
+reclient_cfg_dir = "../../buildtools/reclient_cfgs/linux"
 ```
+
+*** note
+If you are building an older version of Chrome with reclient you will need to
+use `rbe_cfg_dir = "../../buildtools/reclient_cfgs_linux"`
+***
 
 That's it. Remember to always use `autoninja` for building Chromium as described
 below, which handles the startup and shutdown of the reproxy daemon process
 that's required during the build, instead of directly invoking `ninja`.
-
-#### Use Goma (deprecated)
-
-*** note
-**Warning:** Goma is deprecated and Chromium will [remove support for building
-with Goma by end of January 2024](https://groups.google.com/a/chromium.org/g/chromium-dev/c/rajt7THxIng/m/ZoDB54wQBAAJ).
-***
-
-Please use the above instructions for reclient instead. If you have any issues
-migrating to reclient, please reach out to chromium-dev@chromium.org so that we
-can address them before the shutdown.
-
-If you need to refer to the older instructions for using Goma, you can still
-find them here: [Goma for Chromium contributors](https://chromium.googlesource.com/infra/goma/client/+/HEAD/doc/early-access-guide.md).
 
 #### Disable NaCl
 

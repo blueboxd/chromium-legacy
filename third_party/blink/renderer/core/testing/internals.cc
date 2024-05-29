@@ -196,7 +196,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
@@ -3413,6 +3412,13 @@ void Internals::setDarkPreferredColorScheme(Document* document) {
   settings->SetPreferredColorScheme(mojom::blink::PreferredColorScheme::kDark);
 }
 
+void Internals::setDarkPreferredRootScrollbarColorScheme(Document* document) {
+  DCHECK(document);
+  color_scheme_helper_.emplace(*document);
+  color_scheme_helper_->SetPreferredRootScrollbarColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+}
+
 void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
@@ -3475,7 +3481,7 @@ ScriptPromise<IDLAny> Internals::promiseCheck(ScriptState* script_state,
   }
   exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                     "Thrown from the native implementation.");
-  return ScriptPromise<IDLAny>();
+  return EmptyPromise();
 }
 
 ScriptPromise<IDLAny> Internals::promiseCheckWithoutExceptionState(
@@ -4055,18 +4061,18 @@ ScriptPromise<IDLUndefined> Internals::exemptUrlFromNetworkRevocation(
     ScriptState* script_state,
     const String& url) {
   if (!blink::features::IsFencedFramesEnabled()) {
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
   if (!base::FeatureList::IsEnabled(
           blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
   if (!base::FeatureList::IsEnabled(
           blink::features::kExemptUrlFromNetworkRevocationForTesting)) {
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
   if (!GetFrame()) {
-    return ScriptPromise<IDLUndefined>();
+    return EmptyPromise();
   }
   LocalFrame* frame = GetFrame();
   DCHECK(frame->GetDocument());

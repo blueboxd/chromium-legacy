@@ -701,7 +701,7 @@
     ],
 
     'official_mac_arm_pgo_with_symbols': [
-      'official', 'reclient', 'no_widevine_cdm_host_verification', 'arm64', 'disable_widevine_signing', 'minimal_symbols', 'pgo_phase_1', 'release', 'disable_stripping'
+      'official', 'reclient', 'no_widevine_cdm_host_verification', 'arm64', 'disable_widevine_signing', 'minimal_symbols', 'pgo_phase_1', 'release', 'disable_stripping', 'disable_pa_freelist_dispatcher'
     ],
 
     'official_mac_pgo_with_symbols': [
@@ -1172,6 +1172,10 @@
       'gn_args': 'devtools_skip_typecheck=false',
     },
 
+    'disable_pa_freelist_dispatcher': {
+      'gn_args': 'use_freelist_dispatcher = false'
+    },
+
     'disable_stripping': {
       'gn_args': 'enable_stripping=false',
     },
@@ -1324,7 +1328,7 @@
 
     # windows cross. crbug.com/1213717 crbug.com/1407983
     'reclient_win_cross': {
-      'gn_args': 'use_remoteexec=true rbe_cfg_dir="//buildtools/reclient_cfgs/win-cross"',
+      'gn_args': 'use_remoteexec=true reclient_cfg_dir="//buildtools/reclient_cfgs/win-cross"',
     },
 
     # Historically, a 'release' bot had DCHECKs turned off. DCHECKs are now

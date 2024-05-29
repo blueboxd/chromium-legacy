@@ -38,17 +38,18 @@ using blink::WebString;
 using testing::AllOf;
 using testing::ElementsAre;
 using testing::Field;
+using testing::Property;
 using testing::UnorderedElementsAre;
 
 namespace autofill {
 using CheckStatus = FormFieldData::CheckStatus;
 
 auto HasId(FormRendererId expected_id) {
-  return Field("renderer_id", &FormData::renderer_id, expected_id);
+  return Property("renderer_id", &FormData::renderer_id, expected_id);
 }
 
 auto HasName(std::string_view expected_name) {
-  return Field("name", &FormData::name, base::ASCIIToUTF16(expected_name));
+  return Property("name", &FormData::name, base::ASCIIToUTF16(expected_name));
 }
 
 auto IsToken(FrameToken expected_token, int expected_predecessor) {
@@ -60,8 +61,9 @@ auto IsToken(FrameToken expected_token, int expected_predecessor) {
 const FormData* GetFormByName(const std::vector<FormData>& forms,
                               std::string_view name) {
   for (const FormData& form : forms) {
-    if (form.name == ASCIIToUTF16(name))
+    if (form.name() == ASCIIToUTF16(name)) {
       return &form;
+    }
   }
   return nullptr;
 }
@@ -76,8 +78,6 @@ class FormCacheBrowserTest : public content::RenderViewTest {
     focus_test_utils_ = std::make_unique<test::FocusTestUtils>(
         base::BindRepeating(&FormCacheBrowserTest::ExecuteJavaScriptForTests,
                             base::Unretained(this)));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableSelectList);
     field_data_manager_ = base::MakeRefCounted<FieldDataManager>();
   }
   ~FormCacheBrowserTest() override = default;
@@ -100,7 +100,6 @@ class FormCacheBrowserTest : public content::RenderViewTest {
   std::unique_ptr<test::FocusTestUtils> focus_test_utils_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<FieldDataManager> field_data_manager_;
 };
 
@@ -124,12 +123,12 @@ TEST_F(FormCacheBrowserTest, UpdatedForms) {
   const FormData* form1 = GetFormByName(forms.updated_forms, "form1");
   ASSERT_TRUE(form1);
   EXPECT_EQ(3u, form1->fields.size());
-  EXPECT_TRUE(form1->child_frames.empty());
+  EXPECT_TRUE(form1->child_frames().empty());
 
   const FormData* unowned_form = GetFormByName(forms.updated_forms, "");
   ASSERT_TRUE(unowned_form);
   EXPECT_EQ(1u, unowned_form->fields.size());
-  EXPECT_TRUE(unowned_form->child_frames.empty());
+  EXPECT_TRUE(unowned_form->child_frames().empty());
 }
 
 TEST_F(FormCacheBrowserTest, RemovedForms) {
@@ -157,8 +156,8 @@ TEST_F(FormCacheBrowserTest, RemovedForms) {
 
   std::vector<FormRendererId> forms_renderer_id;
   for (const FormData& form : forms.updated_forms) {
-    if (form.renderer_id != FormRendererId()) {
-      forms_renderer_id.push_back(form.renderer_id);
+    if (form.renderer_id() != FormRendererId()) {
+      forms_renderer_id.push_back(form.renderer_id());
     }
   }
   ASSERT_EQ(forms_renderer_id.size(), 2u);
@@ -256,12 +255,12 @@ TEST_F(FormCacheBrowserTest, ExtractFrames) {
   const FormData* form1 = GetFormByName(forms.updated_forms, "form1");
   ASSERT_TRUE(form1);
   EXPECT_TRUE(form1->fields.empty());
-  EXPECT_THAT(form1->child_frames, ElementsAre(IsToken(frame1_token, -1)));
+  EXPECT_THAT(form1->child_frames(), ElementsAre(IsToken(frame1_token, -1)));
 
   const FormData* unowned_form = GetFormByName(forms.updated_forms, "");
   ASSERT_TRUE(unowned_form);
   EXPECT_TRUE(unowned_form->fields.empty());
-  EXPECT_THAT(unowned_form->child_frames,
+  EXPECT_THAT(unowned_form->child_frames(),
               ElementsAre(AllOf(IsToken(frame2_token, -1))));
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -18,6 +19,7 @@
 #include "components/commerce/core/mock_shopping_service.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/price_tracking_utils.h"
+#include "components/commerce/core/product_specifications/mock_product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_service.h"
 #include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
@@ -27,6 +29,7 @@
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/test/mock_model_type_change_processor.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,6 +93,7 @@ class MockDelegate : public ShoppingServiceHandler::Delegate {
   MOCK_METHOD(std::optional<GURL>, GetCurrentTabUrl, (), (override));
   MOCK_METHOD(void, ShowInsightsSidePanelUI, (), (override));
   MOCK_METHOD(void, OpenUrlInNewTab, (const GURL& url), (override));
+  MOCK_METHOD(void, SwitchToOrOpenTab, (const GURL& url), (override));
   MOCK_METHOD(void, ShowFeedback, (), (override));
   MOCK_METHOD(const bookmarks::BookmarkNode*,
               GetOrAddBookmarkForCurrentUrl,
@@ -106,32 +110,6 @@ class MockDelegate : public ShoppingServiceHandler::Delegate {
   void SetCurrentTabUkmSourceId(ukm::SourceId id) {
     ON_CALL(*this, GetCurrentTabUkmSourceId).WillByDefault(testing::Return(id));
   }
-};
-
-class MockProductSpecificationsService : public ProductSpecificationsService {
- public:
-  MockProductSpecificationsService() : ProductSpecificationsService(nullptr) {}
-  ~MockProductSpecificationsService() override = default;
-  MOCK_METHOD(const std::vector<ProductSpecificationsSet>,
-              GetAllProductSpecifications,
-              (),
-              (override));
-  MOCK_METHOD(const std::optional<ProductSpecificationsSet>,
-              GetSetByUuid,
-              (const base::Uuid& uuid),
-              (override));
-  MOCK_METHOD(const std::optional<ProductSpecificationsSet>,
-              AddProductSpecificationsSet,
-              (const std::string& name, const std::vector<GURL>& urls),
-              (override));
-  MOCK_METHOD(void,
-              DeleteProductSpecificationsSet,
-              (const std::string& uuid),
-              (override));
-  MOCK_METHOD(const std::optional<ProductSpecificationsSet>,
-              SetName,
-              (const base::Uuid& uuid, const std::string& name),
-              (override));
 };
 
 void GetEvaluationProductInfos(
@@ -653,6 +631,13 @@ TEST_F(ShoppingServiceHandlerTest, TestOpenUrlInNewTab) {
   handler_->OpenUrlInNewTab(url);
 }
 
+TEST_F(ShoppingServiceHandlerTest, TestSwitchToOrOpenTab) {
+  const GURL url = GURL("http://example.com/");
+  EXPECT_CALL(*delegate_, SwitchToOrOpenTab(url)).Times(1);
+
+  handler_->SwitchToOrOpenTab(url);
+}
+
 TEST_F(ShoppingServiceHandlerTest, TestShowFeedback) {
   EXPECT_CALL(*delegate_, ShowFeedback).Times(1);
 
@@ -785,8 +770,20 @@ TEST_F(ShoppingServiceHandlerTest, TestGetProductSpecifications) {
   ProductSpecifications::Product product;
   product.product_cluster_id = 12345L;
   product.title = "title";
-  product.product_dimension_values[1] = {"red"};
-  product.summary = "summary";
+
+  ProductSpecifications::Value value;
+  ProductSpecifications::Description desc;
+  ProductSpecifications::Description::Option option;
+  ProductSpecifications::DescriptionText desc_text;
+  desc_text.text = "red";
+  option.descriptions.push_back(desc_text);
+  desc.options.push_back(option);
+  value.descriptions.push_back(desc);
+  product.product_dimension_values[1] = value;
+
+  ProductSpecifications::DescriptionText product_desc;
+  product_desc.text = "summary";
+  product.summary.push_back(std::move(product_desc));
   specs.products.push_back(std::move(product));
 
   shopping_service_->SetResponseForGetProductSpecificationsForUrls(
@@ -928,6 +925,34 @@ TEST_F(ShoppingServiceHandlerTest, TestSetNameForProductSpecificationsSet) {
              shopping_service::mojom::ProductSpecificationsSetPtr set_ptr) {
             ASSERT_EQ(*uuid, set_ptr->uuid);
             ASSERT_EQ("set1", set_ptr->name);
+            ASSERT_EQ(1u, set_ptr->urls.size());
+            ASSERT_EQ("https://example.com/", set_ptr->urls[0]);
+          },
+          &uuid)
+          .Then(run_loop.QuitClosure()));
+
+  run_loop.Run();
+}
+
+TEST_F(ShoppingServiceHandlerTest, TestSetUrlsForProductSpecificationsSet) {
+  const base::Uuid& uuid = base::Uuid::GenerateRandomV4();
+  ProductSpecificationsSet updated_set = ProductSpecificationsSet(
+      uuid.AsLowercaseString(), 0, 0, {GURL("https://example.com/")}, "set1");
+  ON_CALL(*product_spec_service_, SetUrls)
+      .WillByDefault(testing::Return(std::move(updated_set)));
+
+  base::RunLoop run_loop;
+  // Attempt a call to |SetUrlsForProductSpecificationsSet| with an valid url,
+  // invalid url, and empty url.
+  handler_->SetUrlsForProductSpecificationsSet(
+      uuid, {GURL("https://example.com/"), GURL(), GURL("foo")},
+      base::BindOnce(
+          [](const base::Uuid* uuid,
+             shopping_service::mojom::ProductSpecificationsSetPtr set_ptr) {
+            ASSERT_EQ(*uuid, set_ptr->uuid);
+            ASSERT_EQ("set1", set_ptr->name);
+            // Ensure that the empty url and the invalid url have been filtered
+            // out.
             ASSERT_EQ(1u, set_ptr->urls.size());
             ASSERT_EQ("https://example.com/", set_ptr->urls[0]);
           },

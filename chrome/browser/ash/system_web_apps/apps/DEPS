@@ -23,6 +23,9 @@ include_rules = [
   "+chrome/browser/ash/assistant",
   "+chrome/browser/ash/borealis",
   "+chrome/browser/ash/camera_presence_notifier.h",
+  # TODO(b/342514059): Allow help app to depend on child_accounts without
+  # depending on chrome.
+  "+chrome/browser/ash/child_accounts",
   "+chrome/browser/ash/crosapi",
   "+chrome/browser/ash/crostini",
   "+chrome/browser/ash/drive",
@@ -57,6 +60,7 @@ include_rules = [
   "+chrome/browser/extensions/component_loader.h",
   "+chrome/browser/extensions/extension_tab_util.h",
   "+chrome/browser/lifetime",
+  "+chrome/browser/manta/manta_service_factory.h",
   "+chrome/browser/media/webrtc",
   "+chrome/browser/metrics",
   "+chrome/browser/notifications",
@@ -118,5 +122,8 @@ specific_include_rules = {
     "+ash/ambient/test/ambient_ash_test_helper.h",
     "+chrome/browser/ui/views/frame/browser_view.h",
     "+ui/message_center/message_center.h",
+  ],
+  "personalization_app_utils_unittest.cc": [
+    "+chrome/browser/signin/identity_manager_factory.h",
   ],
 }

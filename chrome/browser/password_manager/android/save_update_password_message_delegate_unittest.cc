@@ -305,8 +305,7 @@ SaveUpdatePasswordMessageDelegateTest::CreateFormManager(
   ON_CALL(*form_manager, GetURL()).WillByDefault(ReturnRef(password_form_url_));
   ON_CALL(*form_manager, GetBestMatches()).WillByDefault(Return(best_matches));
   ON_CALL(*form_manager, GetFederatedMatches())
-      .WillByDefault(Return(
-          std::vector<raw_ptr<const PasswordForm, VectorExperimental>>{}));
+      .WillByDefault(Return(base::span<const PasswordForm>()));
   ON_CALL(*form_manager, GetMetricsRecorder())
       .WillByDefault(Return(metrics_recorder_.get()));
   ON_CALL(*form_manager, Save())
@@ -1466,9 +1465,9 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_UPDATE_PASSWORD),
             GetMessageWrapper()->GetTitle());
 
-    EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
-                                               kAccountEmail16),
-              GetMessageWrapper()->GetDescription());
+  EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
+                                             kAccountEmail16),
+            GetMessageWrapper()->GetDescription());
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON),
             GetMessageWrapper()->GetPrimaryButtonText());
@@ -1490,9 +1489,9 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update);
 
-    EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
-                                               kAccountEmail16),
-              GetMessageWrapper()->GetDescription());
+  EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
+                                             kAccountEmail16),
+            GetMessageWrapper()->GetDescription());
 
   DismissMessage(messages::DismissReason::UNKNOWN);
 }
@@ -1517,9 +1516,9 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update, account_info);
 
-    EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
-                                               kAccountFullName16),
-              GetMessageWrapper()->GetDescription());
+  EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
+                                             kAccountFullName16),
+            GetMessageWrapper()->GetDescription());
   DismissMessage(messages::DismissReason::UNKNOWN);
 }
 
@@ -1535,9 +1534,9 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update);
 
-    EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
-                                               kAccountEmail16),
-              GetMessageWrapper()->GetDescription());
+  EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
+                                             kAccountEmail16),
+            GetMessageWrapper()->GetDescription());
 
   DismissMessage(messages::DismissReason::UNKNOWN);
 }
@@ -1612,8 +1611,8 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
 
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update, account_info);
-    EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
-                                               kAccountFullName16),
-              GetMessageWrapper()->GetDescription());
+  EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
+                                             kAccountFullName16),
+            GetMessageWrapper()->GetDescription());
   DismissMessage(messages::DismissReason::UNKNOWN);
 }

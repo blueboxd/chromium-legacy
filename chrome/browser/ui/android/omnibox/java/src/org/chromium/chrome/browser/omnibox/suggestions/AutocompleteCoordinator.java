@@ -56,7 +56,6 @@ import org.chromium.components.omnibox.action.OmniboxActionDelegate;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.AsyncViewStub;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -85,8 +84,8 @@ public class AutocompleteCoordinator
 
     /** An observer watching for changes to the visual state of the omnibox suggestions. */
     public interface OmniboxSuggestionsVisualStateObserver {
-        /** Called when the visibility of the omnibox suggestions changes. */
-        void onOmniboxSuggestionsVisibilityChanged(boolean visible);
+        /** Called when the Omnibox session state changes. */
+        void onOmniboxSessionStateChange(boolean isActive);
 
         /** Called when the background color of the omnibox suggestions changes. */
         void onOmniboxSuggestionsBackgroundColorChanged(@ColorInt int color);
@@ -114,13 +113,14 @@ public class AutocompleteCoordinator
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
         Context context = parent.getContext();
 
-        PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
         ModelList listItems = new ModelList();
-
-        listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
-        listModel.set(SuggestionListProperties.VISIBLE, false);
-        listModel.set(SuggestionListProperties.DRAW_OVER_ANCHOR, false);
-        listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
+        PropertyModel listModel =
+                new PropertyModel.Builder(SuggestionListProperties.ALL_KEYS)
+                        .with(SuggestionListProperties.EMBEDDER, dropdownEmbedder)
+                        .with(SuggestionListProperties.OMNIBOX_SESSION_ACTIVE, false)
+                        .with(SuggestionListProperties.DRAW_OVER_ANCHOR, false)
+                        .with(SuggestionListProperties.SUGGESTION_MODELS, listItems)
+                        .build();
 
         mMediator =
                 new AutocompleteMediator(
@@ -163,7 +163,7 @@ public class AutocompleteCoordinator
                 });
         LazyConstructionPropertyMcp.create(
                 listModel,
-                SuggestionListProperties.VISIBLE,
+                SuggestionListProperties.OMNIBOX_SESSION_ACTIVE,
                 viewProvider,
                 SuggestionListViewBinder::bind);
 
@@ -230,16 +230,6 @@ public class AutocompleteCoordinator
                 dropdown.forcePhoneStyleOmnibox(forcePhoneStyleOmnibox);
                 dropdown.setAdapter(mAdapter);
                 mRecycledViewPool.ifPresent(p -> dropdown.setRecycledViewPool(p));
-
-                if (!OmniboxFeatures.sAsyncViewInflation.isEnabled()) {
-                    // NOTE: Old style Suggestions dropdown visibility management relies on adding
-                    // and removing the view from the view hierarchy. The view inflated from XML is
-                    // automatically added to the hierarchy, which changes the precondition assumed
-                    // by the old logic. The lines below ensure the initial condition is what the
-                    // logic expects it to be.
-                    UiUtils.removeViewFromParent(dropdown);
-                }
-
                 mHolder = new SuggestionListViewHolder(container, dropdown);
                 for (int i = 0; i < mCallbacks.size(); i++) {
                     mCallbacks.get(i).onResult(mHolder);
@@ -470,10 +460,15 @@ public class AutocompleteCoordinator
      * @param profile The profile to expand the query for.
      * @param query The query to be expanded into a fully qualified URL if appropriate.
      * @return The AutocompleteMatch for a default / top match. This may be either SEARCH match
-     *     built with the user's default search engine, or a NAVIGATION match.
+     *     built with the user's default search engine, or a NAVIGATION match. The call might return
+     *     null if it is invoked before Native libraries are initialized, or if the Profile is
+     *     invalid.
      */
-    public static AutocompleteMatch classify(@NonNull Profile profile, @NonNull String query) {
-        return AutocompleteController.getForProfile(profile).classify(query);
+    public static @Nullable AutocompleteMatch classify(
+            @NonNull Profile profile, @NonNull String query) {
+        return AutocompleteController.getForProfile(profile)
+                .map(a -> a.classify(query))
+                .orElse(null);
     }
 
     /** Sends a zero suggest request to the server in order to pre-populate the result cache. */

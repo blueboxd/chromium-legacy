@@ -108,16 +108,9 @@ bool CachedMatchedProperties::DependenciesEqual(
     return false;
   }
   if (computed_style->HasVariableReferenceFromNonInheritedProperty()) {
-    if (RuntimeEnabledFeatures::CSSMPCImprovementsEnabled()) {
-      if (!base::ValuesEquivalent(parent_computed_style->InheritedVariables(),
-                                  state.ParentStyle()->InheritedVariables())) {
-        return false;
-      }
-    } else {
-      if (parent_computed_style->InheritedVariables() !=
-          state.ParentStyle()->InheritedVariables()) {
-        return false;
-      }
+    if (!base::ValuesEquivalent(parent_computed_style->InheritedVariables(),
+                                state.ParentStyle()->InheritedVariables())) {
+      return false;
     }
   }
 
@@ -331,6 +324,11 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
     return false;
   }
 
+  if (!state.GetElement().GetCascadeFilter().IsEmpty()) {
+    // The result of applying properties with the same matching declarations can
+    // be different if the cascade filter is different.
+    return false;
+  }
   return true;
 }
 

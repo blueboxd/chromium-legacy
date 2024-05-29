@@ -348,8 +348,6 @@ AwContents::~AwContents() {
   // Corresponds to "WebView Instance" in AwContents's constructor.
   TRACE_EVENT_END("android_webview.timeline",
                   perfetto::Track::FromPointer(this));
-  // TODO(crbug.com/40657156): Remove this once fixed.
-  PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
 }
 
 base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
@@ -1318,6 +1316,7 @@ jint AwContents::AddDocumentStartJavaScript(
   AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
                                       &native_allowed_origin_rule_strings);
   web_contents()->GetController().GetBackForwardCache().Flush();
+  web_contents()->CancelAllPrerendering();
   auto result = GetJsCommunicationHost()->AddDocumentStartJavaScript(
       base::android::ConvertJavaStringToUTF16(env, script),
       native_allowed_origin_rule_strings);
@@ -1331,6 +1330,7 @@ jint AwContents::AddDocumentStartJavaScript(
 }
 
 void AwContents::RemoveDocumentStartJavaScript(JNIEnv* env, jint script_id) {
+  web_contents()->CancelAllPrerendering();
   GetJsCommunicationHost()->RemoveDocumentStartJavaScript(script_id);
 }
 
@@ -1544,6 +1544,11 @@ void AwContents::ReadyToCommitNavigation(
                                               ->GetOrCreateWebPreferences()
                                               .allow_mixed_content_upgrades;
   navigation_handle->SetContentSettings(std::move(content_settings));
+}
+
+void AwContents::RenderViewReady() {
+  AwRenderProcess::SetRenderViewReady(
+      web_contents_->GetPrimaryMainFrame()->GetProcess());
 }
 
 bool AwContents::CanShowInterstitial() {

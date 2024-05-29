@@ -183,6 +183,7 @@
   E_CPONLY(kColorSysStateRippleNeutralOnProminent) \
   E_CPONLY(kColorSysStateRippleNeutralOnSubtle) \
   E_CPONLY(kColorSysStateRipplePrimary) \
+  E_CPONLY(kColorSysStateScrim) \
   E_CPONLY(kColorSysStateFocusRing) \
   E_CPONLY(kColorSysStateFocusHighlight) \
   E_CPONLY(kColorSysStateTextHighlight) \
@@ -246,6 +247,7 @@
   E_CPONLY(kColorAppMenuProfileRowChipHovered) \
   E_CPONLY(kColorAppMenuRowBackgroundHovered) \
   E_CPONLY(kColorAppMenuUpgradeRowBackground) \
+  E_CPONLY(kColorAppMenuUpgradeRowSubstringForeground) \
   E_CPONLY(kColorAvatarHeaderArt) \
   E_CPONLY(kColorAvatarIconGuest) \
   E_CPONLY(kColorAvatarIconIncognito) \
@@ -374,6 +376,7 @@
   E_CPONLY(kColorMenuDropmarker) \
   E_CPONLY(kColorMenuIcon) \
   E_CPONLY(kColorMenuIconDisabled) \
+  E_CPONLY(kColorMenuIconOnEmphasizedBackground) \
   E_CPONLY(kColorMenuItemBackgroundAlertedInitial) \
   E_CPONLY(kColorMenuItemBackgroundAlertedTarget) \
   E_CPONLY(kColorMenuItemBackgroundHighlighted) \

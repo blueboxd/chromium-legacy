@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/sequence_local_storage_slot.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1501,8 +1503,10 @@ void SkiaOutputSurfaceImpl::FlushGpuTasksWithImpl(
   gpu_task_sync_tokens_.clear();
   gpu_tasks_.clear();
 
-  if (event)
+  if (event) {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
     event->Wait();
+  }
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
@@ -1686,9 +1690,9 @@ gpu::Mailbox SkiaOutputSurfaceImpl::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     RenderPassAlphaType alpha_type,
     uint32_t usage,
-    base::StringPiece debug_label,
+    std::string_view debug_label,
     gpu::SurfaceHandle surface_handle) {
-  gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
 
   auto task =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CreateSharedImage,
@@ -1704,7 +1708,7 @@ gpu::Mailbox SkiaOutputSurfaceImpl::CreateSharedImage(
 gpu::Mailbox SkiaOutputSurfaceImpl::CreateSolidColorSharedImage(
     const SkColor4f& color,
     const gfx::ColorSpace& color_space) {
-  gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
 
   auto task = base::BindOnce(
       &SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage,

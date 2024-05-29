@@ -97,6 +97,7 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   void SetFileSuggestItems(
       const std::vector<BirchFileItem>& file_suggest_items);
   void SetRecentTabItems(const std::vector<BirchTabItem>& recent_tab_items);
+  void SetMostVisitedItems(const std::vector<BirchMostVisitedItem>& items);
   void SetSelfShareItems(
       const std::vector<BirchSelfShareItem>& self_share_items);
   void SetReleaseNotesItems(
@@ -122,7 +123,10 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   const std::vector<BirchTabItem>& GetTabsForTest() const {
     return recent_tab_data_.items;
   }
-  const std::vector<BirchSelfShareItem>& GetSelfShareItemsForTest() const {
+  const std::vector<BirchMostVisitedItem>& GetMostVisitedItemsForTest() const {
+    return most_visited_data_.items;
+  }
+  std::vector<BirchSelfShareItem>& GetSelfShareItemsForTest() {
     return self_share_data_.items;
   }
   const std::vector<BirchReleaseNotesItem>& GetReleaseNotesItemsForTest()
@@ -193,6 +197,7 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   void OnCalendarPrefChanged();
   void OnFileSuggestPrefChanged();
   void OnRecentTabPrefChanged();
+  void OnMostVisitedPrefChanged();
   void OnSelfSharePrefChanged();
   void OnWeatherPrefChanged();
   void OnReleaseNotesPrefChanged();
@@ -207,6 +212,13 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   template <typename T>
   void StartDataFetchIfNeeded(DataTypeInfo<T>& data_info,
                               BirchDataProvider* data_provider);
+
+  // Returns true if most visited items should be included in the results.
+  bool ShouldShowMostVisited();
+
+  // Returns the weather provider to use, depending on whether BirchWeatherV2
+  // feature is enabled. Returns nullptr if weather provider is disabled.
+  BirchDataProvider* GetWeatherProvider();
 
   // Whether this is a post-login fetch (occurring right after login).
   bool is_post_login_fetch_ = false;
@@ -223,6 +235,7 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   DataTypeInfo<BirchAttachmentItem> attachment_data_;
   DataTypeInfo<BirchFileItem> file_suggest_data_;
   DataTypeInfo<BirchTabItem> recent_tab_data_;
+  DataTypeInfo<BirchMostVisitedItem> most_visited_data_;
   DataTypeInfo<BirchSelfShareItem> self_share_data_;
   DataTypeInfo<BirchReleaseNotesItem> release_notes_data_;
   DataTypeInfo<BirchWeatherItem> weather_data_;
@@ -244,6 +257,7 @@ class ASH_EXPORT BirchModel : public SessionObserver,
   PrefChangeRegistrar calendar_pref_registrar_;
   PrefChangeRegistrar file_suggest_pref_registrar_;
   PrefChangeRegistrar recent_tab_pref_registrar_;
+  PrefChangeRegistrar most_visited_pref_registrar_;
   PrefChangeRegistrar self_share_pref_registrar_;
   PrefChangeRegistrar weather_pref_registrar_;
   PrefChangeRegistrar release_notes_pref_registrar_;
@@ -256,6 +270,10 @@ class ASH_EXPORT BirchModel : public SessionObserver,
 
   // Invoked when a data fetch completes.
   base::OnceClosure data_fetch_callback_for_test_;
+
+  // When we last returned a most visited item. Used to suppress showing the
+  // most visited items too often.
+  base::Time most_visited_last_shown_;
 };
 
 }  // namespace ash

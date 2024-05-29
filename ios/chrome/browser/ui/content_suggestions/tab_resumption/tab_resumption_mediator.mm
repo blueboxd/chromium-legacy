@@ -61,9 +61,10 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
 }  // namespace
 
 @interface TabResumptionMediator () <BooleanObserver,
+                                     IdentityManagerObserverBridgeDelegate,
+                                     MagicStackModuleDelegate,
                                      StartSurfaceRecentTabObserving,
                                      SyncedSessionsObserver,
-                                     IdentityManagerObserverBridgeDelegate,
                                      SyncObserverModelBridge,
                                      TabResumptionCommands>
 // readwrite override.
@@ -178,13 +179,15 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   [self.delegate logMagicStackEngagementForType:ContentSuggestionsModuleType::
                                                     kTabResumption];
 
+  NSUInteger index = [self.delegate
+      indexForMagicStackModule:ContentSuggestionsModuleType::kTabResumption];
   switch (item.itemType) {
     case TabResumptionItemType::kLastSyncedTab:
-      [self.NTPMetricsDelegate distantTabResumptionOpened];
+      [self.NTPMetricsDelegate distantTabResumptionOpenedAtIndex:index];
       [self openDistantTab];
       break;
     case TabResumptionItemType::kMostRecentTab: {
-      [self.NTPMetricsDelegate recentTabTileOpened];
+      [self.NTPMetricsDelegate recentTabTileOpenedAtIndex:index];
       [IntentDonationHelper donateIntent:IntentType::kOpenLatestTab];
       web::NavigationManager::WebLoadParams webLoadParams =
           web::NavigationManager::WebLoadParams(item.tabURL);
@@ -231,6 +234,21 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   }
 }
 
+#pragma mark - MagicStackModuleDelegate
+
+- (void)magicStackModule:(MagicStackModule*)magicStackModule
+     wasDisplayedAtIndex:(NSUInteger)index {
+  CHECK(self.itemConfig == magicStackModule);
+  switch (self.itemConfig.itemType) {
+    case TabResumptionItemType::kLastSyncedTab:
+      [self.NTPMetricsDelegate distantTabResumptionDisplayedAtIndex:index];
+      break;
+    case TabResumptionItemType::kMostRecentTab:
+      [self.NTPMetricsDelegate recentTabTileDisplayedAtIndex:index];
+      break;
+  }
+}
+
 #pragma mark - Boolean Observer
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
@@ -274,8 +292,8 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)webState {
   if (self.itemConfig && self.itemConfig.itemType == kMostRecentTab) {
-    self.itemConfig = nil;
     [self.delegate removeTabResumptionModule];
+    self.itemConfig = nil;
   }
 }
 
@@ -392,6 +410,8 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   item.syncedTime = tab->last_active_time;
   item.tabURL = tab->virtual_url;
   item.commandHandler = self;
+  item.delegate = self;
+  item.shouldShowSeeMore = IsTabResumption1_5Enabled();
 
   // Fetch the favicon.
   [self fetchFaviconForItem:item];
@@ -407,6 +427,8 @@ NSString* kStartSurfaceSceneEnterIntoBackgroundTime =
   item.syncedTime = openedTime;
   item.tabURL = webState->GetLastCommittedURL();
   item.commandHandler = self;
+  item.delegate = self;
+  item.shouldShowSeeMore = IsTabResumption1_5Enabled();
 
   // Fetch the favicon.
   [self fetchFaviconForItem:item];

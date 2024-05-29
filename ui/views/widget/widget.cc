@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -255,7 +256,7 @@ Widget::~Widget() {
 Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
                                        gfx::NativeView parent,
                                        const gfx::Rect& bounds) {
-  Widget::InitParams params;
+  Widget::InitParams params(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
   params.delegate = delegate;
   params.parent = parent;
   params.bounds = bounds;
@@ -265,7 +266,6 @@ Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
 Widget* Widget::CreateWindowWithParent(std::unique_ptr<WidgetDelegate> delegate,
                                        gfx::NativeView parent,
                                        const gfx::Rect& bounds) {
-  DCHECK(delegate->owned_by_widget());
   return CreateWindowWithParent(delegate.release(), parent, bounds);
 }
 
@@ -273,7 +273,7 @@ Widget* Widget::CreateWindowWithParent(std::unique_ptr<WidgetDelegate> delegate,
 Widget* Widget::CreateWindowWithContext(WidgetDelegate* delegate,
                                         gfx::NativeWindow context,
                                         const gfx::Rect& bounds) {
-  Widget::InitParams params;
+  Widget::InitParams params(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET);
   params.delegate = delegate;
   params.context = context;
   params.bounds = bounds;
@@ -285,7 +285,6 @@ Widget* Widget::CreateWindowWithContext(
     std::unique_ptr<WidgetDelegate> delegate,
     gfx::NativeWindow context,
     const gfx::Rect& bounds) {
-  DCHECK(delegate->owned_by_widget());
   return CreateWindowWithContext(delegate.release(), context, bounds);
 }
 
@@ -1119,8 +1118,15 @@ void Widget::RunShellDrag(View* view,
   }
 
   WidgetDeletionObserver widget_deletion_observer(this);
-  native_widget_->RunShellDrag(view, std::move(data), location, operation,
-                               source);
+  {
+    // Since application tasks are needed in drag-induced nested message loops
+    // which occur here, (notably bookmark and download dragging), application
+    // tasks need to run. Only views:: and ui::EventDispatcher stacks are
+    // present, which expect this re-entrancy.
+    base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
+    native_widget_->RunShellDrag(view, std::move(data), location, operation,
+                                 source);
+  }
 
   // The widget may be destroyed during the drag operation.
   if (!widget_deletion_observer.IsWidgetAlive())

@@ -816,8 +816,7 @@
       _accountSwitcherCoordinator = [[AccountSwitcherCoordinator alloc]
           initWithBaseViewController:self.baseViewController
                              browser:self.browser];
-      _accountSwitcherCoordinator.anchorPoint =
-          [identityDisc convertPoint:identityDisc.bounds.origin toView:nil];
+      _accountSwitcherCoordinator.anchorView = identityDisc;
       // TODO(crbug.com/336719423): Record signin metrics based on the selected
       // action from the account switcher.
       [_accountSwitcherCoordinator start];
@@ -1208,18 +1207,28 @@
 
 #pragma mark - NewTabPageMetricsDelegate
 
-- (void)recentTabTileOpened {
+- (void)recentTabTileOpenedAtIndex:(NSUInteger)index {
   RecordMagicStackClick(ContentSuggestionsModuleType::kTabResumption,
                         [self isStartSurface]);
   RecordHomeAction(IOSHomeActionType::kReturnToRecentTab,
                    [self isStartSurface]);
+  RecordMagicStackTabResumptionClick(true, [self isStartSurface], index);
 }
 
-- (void)distantTabResumptionOpened {
+- (void)distantTabResumptionOpenedAtIndex:(NSUInteger)index {
   RecordMagicStackClick(ContentSuggestionsModuleType::kTabResumption,
                         [self isStartSurface]);
   RecordHomeAction(IOSHomeActionType::kOpenDistantTabResumption,
                    [self isStartSurface]);
+  RecordMagicStackTabResumptionClick(false, [self isStartSurface], index);
+}
+
+- (void)recentTabTileDisplayedAtIndex:(NSUInteger)index {
+  LogTabResumptionImpression(true, [self isStartSurface], index);
+}
+
+- (void)distantTabResumptionDisplayedAtIndex:(NSUInteger)index {
+  LogTabResumptionImpression(false, [self isStartSurface], index);
 }
 
 - (void)feedArticleOpened {

@@ -33,7 +33,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
-#include "components/aggregation_service/features.h"
+#include "build/buildflag.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_level_epsilon.h"
@@ -103,8 +103,8 @@ struct AttributionSourceRecord {
   int attribution_logic;
   int64_t priority;
   std::string source_site;
-  int num_conversions;
-  int num_aggregatable_reports;
+  int num_attributions;
+  int num_aggregatable_attribution_reports;
   int event_level_active;
   int aggregatable_active;
   std::optional<uint64_t> debug_key;
@@ -337,7 +337,7 @@ class AttributionStorageSqlTest : public testing::Test {
     statement.BindTime(4, record.source_time);
     statement.BindTime(5, record.expiry_time);
     statement.BindTime(6, record.aggregatable_report_window_time);
-    statement.BindInt(7, record.num_conversions);
+    statement.BindInt(7, record.num_attributions);
     statement.BindInt(8, record.event_level_active);
     statement.BindInt(9, record.aggregatable_active);
     statement.BindInt(10, record.source_type);
@@ -351,7 +351,7 @@ class AttributionStorageSqlTest : public testing::Test {
       statement.BindNull(14);
     }
 
-    statement.BindInt(15, record.num_aggregatable_reports);
+    statement.BindInt(15, record.num_aggregatable_attribution_reports);
     statement.BindBlob(16, record.aggregation_keys);
     statement.BindBlob(17, record.filter_data);
     statement.BindBlob(18, record.read_only_source_data);
@@ -388,7 +388,6 @@ class AttributionStorageSqlTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::ScopedTempDir temp_directory_;
@@ -441,7 +440,7 @@ TEST_F(AttributionStorageSqlTest, DatabaseReopened_DataPersisted) {
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), SizeIs(1));
 }
 
-TEST_F(AttributionStorageSqlTest, CorruptDatabase_RecoveredOnOpen) {
+TEST_F(AttributionStorageSqlTest, CorruptDatabase_DeletedOnOpen) {
   OpenDatabase();
   AddReportToStorage();
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), SizeIs(1));
@@ -456,10 +455,12 @@ TEST_F(AttributionStorageSqlTest, CorruptDatabase_RecoveredOnOpen) {
   // Open that database and ensure that it does not fail.
   EXPECT_NO_FATAL_FAILURE(OpenDatabase());
 
-  // The database should have been recovered.
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), SizeIs(1));
+  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
 
   EXPECT_TRUE(expecter.SawExpectedErrors());
+
+  // The database should have been deleted.
+  EXPECT_FALSE(base::PathExists(db_path()));
 }
 
 TEST_F(AttributionStorageSqlTest, VersionTooNew_RazesDB) {
@@ -1083,21 +1084,28 @@ TEST_F(AttributionStorageSqlTest, MaxReportsPerDestination) {
   EXPECT_EQ(3u, rate_limit_rows);
 }
 
-TEST_F(AttributionStorageSqlTest, CantOpenDb_FailsSilentlyInRelease) {
-  base::CreateDirectoryAndGetError(db_path(), nullptr);
+TEST_F(AttributionStorageSqlTest, CantOpenDb_NoCrash) {
+  // Force db creation to fail by creating a directory where the file would go.
+  ASSERT_TRUE(base::CreateDirectoryAndGetError(db_path(), nullptr));
 
-  auto sql_storage = std::make_unique<AttributionResolverImpl>(
-      temp_directory_.GetPath(),
-      std::make_unique<ConfigurableStorageDelegate>());
-  sql_storage->set_ignore_errors_for_testing(true);
+  std::unique_ptr<AttributionResolver> storage =
+      std::make_unique<AttributionResolverImpl>(
+          temp_directory_.GetPath(),
+          std::make_unique<ConfigurableStorageDelegate>());
 
-  std::unique_ptr<AttributionResolver> storage = std::move(sql_storage);
-
-  // These calls should be no-ops.
-  storage->StoreSource(SourceBuilder().Build());
+  StoreSourceResult result = storage->StoreSource(SourceBuilder().Build());
+  ASSERT_TRUE(absl::holds_alternative<StoreSourceResult::InternalError>(
+      result.result()));
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kInternalError,
             storage->MaybeCreateAndStoreReport(DefaultTrigger())
                 .event_level_status());
+
+#if BUILDFLAG(IS_FUCHSIA)
+  EXPECT_FALSE(base::DirectoryExists(db_path()));
+#else
+  EXPECT_TRUE(base::DirectoryExists(db_path()));
+  EXPECT_TRUE(base::IsDirectoryEmpty(db_path()));
+#endif
 }
 
 TEST_F(AttributionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
@@ -2159,9 +2167,6 @@ TEST_F(AttributionStorageSqlTest,
       },
   };
 
-  base::test::ScopedFeatureList scoped_feature_list(
-      ::aggregation_service::kAggregationServiceMultipleCloudProviders);
-
   for (auto test_case : kTestCases) {
     OpenDatabase();
     storage()->StoreSource(SourceBuilder()
@@ -2270,9 +2275,6 @@ TEST_F(AttributionStorageSqlTest,
           .valid = false,
       },
   };
-
-  base::test::ScopedFeatureList scoped_feature_list(
-      ::aggregation_service::kAggregationServiceMultipleCloudProviders);
 
   for (auto test_case : kTestCases) {
     OpenDatabase();
@@ -2586,15 +2588,16 @@ TEST_F(AttributionStorageSqlTest,
   ASSERT_THAT(sources, SizeIs(1));
   CloseDatabase();
 
-  AttributionSourceRecord source_record{.source_id = 2,
-                                        .source_type = 3,
-                                        .attribution_logic = 5,
-                                        .num_conversions = -1,
-                                        .num_aggregatable_reports = -1,
-                                        .event_level_active = 2,
-                                        .aggregation_keys = "foo",
-                                        .filter_data = "bar",
-                                        .read_only_source_data = "baz"};
+  AttributionSourceRecord source_record{
+      .source_id = 2,
+      .source_type = 3,
+      .attribution_logic = 5,
+      .num_attributions = -1,
+      .num_aggregatable_attribution_reports = -1,
+      .event_level_active = 2,
+      .aggregation_keys = "foo",
+      .filter_data = "bar",
+      .read_only_source_data = "baz"};
   AttributionReportRecord report_record{
       .report_id = 1,
       .source_id = 2,

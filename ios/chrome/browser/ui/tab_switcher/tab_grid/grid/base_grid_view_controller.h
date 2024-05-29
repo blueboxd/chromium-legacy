@@ -47,10 +47,6 @@ class WebStateID;
 // Tells the delegate that an item was moved.
 - (void)gridViewControllerDidMoveItem:
     (BaseGridViewController*)gridViewController;
-// Tells the delegate that the the number of items in `gridViewController`
-// changed to `count`.
-- (void)gridViewController:(BaseGridViewController*)gridViewController
-        didChangeItemCount:(NSUInteger)count;
 // Tells the delegate that the item with `itemID` was removed.
 - (void)gridViewController:(BaseGridViewController*)gridViewController
        didRemoveItemWIthID:(web::WebStateID)itemID;
@@ -88,10 +84,9 @@ class WebStateID;
 - (void)didTapInactiveTabsSettingsLinkInGridViewController:
     (BaseGridViewController*)gridViewController;
 
-// Tells the delegate that the item with `itemID` has been long pressed to
-// request the context menu.
-- (void)gridViewController:(BaseGridViewController*)gridViewController
-    didRequestContextMenuForItemWithID:(web::WebStateID)itemID;
+// Tells the delegate that a context menu has been requested.
+- (void)gridViewControllerDidRequestContextMenu:
+    (BaseGridViewController*)gridViewController;
 
 @end
 

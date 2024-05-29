@@ -126,7 +126,7 @@ void ManagePasswordsTest::SetupManagingPasswords(
   std::vector<password_manager::PasswordForm> forms = {password_form_,
                                                        federated_form};
   GetController()->OnPasswordAutofilled(
-      forms, embedded_test_server()->GetOrigin(), nullptr);
+      forms, embedded_test_server()->GetOrigin(), {});
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
@@ -199,8 +199,7 @@ void ManagePasswordsTest::SetupMovingPasswords() {
       .WillByDefault(ReturnRef(*test_form()));
   ON_CALL(*form_manager, GetFederatedMatches)
       .WillByDefault(
-          Return(std::vector<raw_ptr<const password_manager::PasswordForm,
-                                     VectorExperimental>>{}));
+          Return(std::vector<const password_manager::PasswordForm>{}));
   ON_CALL(*form_manager, GetURL).WillByDefault(ReturnRef(test_form()->url));
   GetController()->OnShowMoveToAccountBubble(std::move(form_manager));
   // Clearing the mock here ensures that |GetBestMatches| won't be called with a
@@ -264,7 +263,7 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager(
     password_manager::PasswordStoreInterface* profile_store,
     password_manager::PasswordStoreInterface* account_store) {
   autofill::FormData observed_form;
-  observed_form.url = password_form_.url;
+  observed_form.set_url(password_form_.url);
   autofill::FormFieldData field;
   field.set_form_control_type(autofill::FormControlType::kInputText);
   observed_form.fields.push_back(field);
@@ -294,7 +293,7 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager(
        password_manager::InsecurityMetadata(
            base::Time(), password_manager::IsMuted(false),
            password_manager::TriggerBackendNotification(false))});
-  fetcher_.set_insecure_credentials({&insecure_credential_});
+  fetcher_.set_insecure_credentials({insecure_credential_});
 
   fetcher_.NotifyFetchCompleted();
 

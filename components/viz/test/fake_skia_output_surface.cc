@@ -5,6 +5,7 @@
 #include "components/viz/test/fake_skia_output_surface.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -428,15 +429,15 @@ gpu::Mailbox FakeSkiaOutputSurface::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     RenderPassAlphaType alpha_type,
     uint32_t usage,
-    base::StringPiece debug_label,
+    std::string_view debug_label,
     gpu::SurfaceHandle surface_handle) {
-  return gpu::Mailbox::GenerateForSharedImage();
+  return gpu::Mailbox::Generate();
 }
 
 gpu::Mailbox FakeSkiaOutputSurface::CreateSolidColorSharedImage(
     const SkColor4f& color,
     const gfx::ColorSpace& color_space) {
-  return gpu::Mailbox::GenerateForSharedImage();
+  return gpu::Mailbox::Generate();
 }
 
 void FakeSkiaOutputSurface::SetSharedImagePurgeable(const gpu::Mailbox& mailbox,

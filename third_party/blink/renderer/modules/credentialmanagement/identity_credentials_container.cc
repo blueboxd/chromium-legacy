@@ -46,8 +46,8 @@ ScriptPromise<IDLNullable<Credential>> IdentityCredentialsContainer::get(
           script_state, exception_state.GetContext());
 
   if (IsDigitalIdentityCredentialType(*options)) {
-    return DiscoverDigitalIdentityCredentialFromExternalSource(resolver,
-                                                               *options);
+    return DiscoverDigitalIdentityCredentialFromExternalSource(
+        resolver, exception_state, *options);
   }
 
   resolver->Resolve(nullptr);
@@ -61,7 +61,7 @@ ScriptPromise<Credential> IdentityCredentialsContainer::store(
   exception_state.ThrowDOMException(
       DOMExceptionCode::kNotSupportedError,
       "Store operation not supported for this credential type.");
-  return ScriptPromise<Credential>();
+  return EmptyPromise();
 }
 
 ScriptPromise<IDLNullable<Credential>> IdentityCredentialsContainer::create(
@@ -76,7 +76,7 @@ ScriptPromise<IDLNullable<Credential>> IdentityCredentialsContainer::create(
 
 ScriptPromise<IDLUndefined> IdentityCredentialsContainer::preventSilentAccess(
     ScriptState* script_state) {
-  return ScriptPromise<IDLUndefined>();
+  return EmptyPromise();
 }
 
 void IdentityCredentialsContainer::Trace(Visitor* visitor) const {

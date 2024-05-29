@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -157,7 +158,7 @@ base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
                              callback);
 }
 
-void FailedSkiaFlush(base::StringPiece msg) {
+void FailedSkiaFlush(std::string_view msg) {
   static auto* kCrashKey = base::debug::AllocateCrashKeyString(
       "sk_flush_failed", base::debug::CrashKeySize::Size64);
   base::debug::SetCrashKeyString(kCrashKey, msg);
@@ -819,7 +820,7 @@ SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
     SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    base::StringPiece debug_label) {
+    std::string_view debug_label) {
   // The SharedImage created here will serve as the destination of a
   // CopyOutputRequest and will eventually make it back to the client
   // that issued that request. Thus, the usage here needs to capture the variety
@@ -830,7 +831,7 @@ SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
                               gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
                               gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
 
-  gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
   bool result = shared_image_factory_->CreateSharedImage(
       mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage,
@@ -2335,9 +2336,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
     return true;
   }
 #elif BUILDFLAG(IS_MAC)
-  if (features::UseGpuVsync()) {
-    presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
-  }
+  presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
 #elif BUILDFLAG(IS_CHROMEOS)
   if (!presenter_) {
     return false;
@@ -2374,9 +2373,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForMetal() {
     CHECK(presenter_);
 
 #if BUILDFLAG(IS_MAC)
-    if (features::UseGpuVsync()) {
-      presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
-    }
+    presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
 #endif  // BUILDFLAG(IS_MAC)
     output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
         std::make_unique<OutputPresenterGL>(

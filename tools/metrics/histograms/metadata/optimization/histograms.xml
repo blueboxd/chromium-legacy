@@ -62,6 +62,7 @@ chromium-metrics-reviews@google.com.
   <variant name="PageVisibility" summary="Page visibility"/>
   <variant name="PainfulPageLoad" summary="Painful page load"/>
   <variant name="PassageEmbedder" summary="Text embedding for passages"/>
+  <variant name="PhraseSegmentation" summary="Phrase segmentation"/>
   <variant name="PreloadingHeuristics" summary="Speculation-rule preloading"/>
   <variant name="SegmentationAdaptiveToolbar"
       summary="Segmentation: Adaptive toolbar button"/>
@@ -98,6 +99,8 @@ chromium-metrics-reviews@google.com.
   <variant name="TextClassifier" summary="Smart text selection"/>
   <variant name="TextEmbedder" summary="Generic Text Embedding"/>
   <variant name="TextSafety" summary="Classifies safety of the text"/>
+  <variant name="URLVisitResumptionRanker"
+      summary="URL Visit resumption ranker"/>
   <variant name="VisualSearchClassification"
       summary="Classifies images on the page"/>
   <variant name="WebAppInstallationPromo"
@@ -1121,17 +1124,6 @@ chromium-metrics-reviews@google.com.
     model quality logs upload request.
   </summary>
   <token key="ModelExecutionFeature" variants="ModelExecutionFeature"/>
-</histogram>
-
-<histogram name="OptimizationGuide.ModelQualityLogEntry.UploadedOnDestruction"
-    enum="Boolean" expires_after="2024-07-30">
-  <owner>sreejakshetty@chromium.org</owner>
-  <owner>chrome-intelligence-core@google.com</owner>
-  <summary>
-    Records whether the model quality logs are uploaded during destruction or
-    not which means feature teams have manually called UploadModelQualityLogs.
-    Recorded once for lifetime of ModelQualityLogEntry.
-  </summary>
 </histogram>
 
 <histogram

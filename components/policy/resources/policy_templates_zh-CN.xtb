@@ -394,6 +394,7 @@ First-Party Set 中的所有网站都必须是采用 HTTPS 协议的可注册网
 <translation id="1305400589435476516">如果此政策已启用，系统将允许设备使用数据漫游功能。
 
       如果此政策已停用或未设置，数据漫游功能将不可用。</translation>
+<translation id="1306041796676461437">停用可扩展的企业单点登录支持功能</translation>
 <translation id="1308526987406924874">通过设置此政策，您可以罗列一些网址格式，从而指定哪些网站无法请求用户授权其访问串行端口。
 
       如果您未设置此政策，那么，倘若 <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME" /> 已设置，系统便会将它应用于所有网站，否则就会应用用户的个人设置。
@@ -466,6 +467,7 @@ First-Party Set 中的所有网站都必须是采用 HTTPS 协议的可注册网
       系统会卸载已舍弃的页面并完全回收其资源。与该页面关联的标签页会保留在标签栏中，但切换到它会触发完全重新加载。
       </translation>
 <translation id="138847842893090358">报告操作系统更新状态</translation>
+<translation id="1389138080311956934">尽可能节省内存。</translation>
 <translation id="1390529781843037070">如果此政策已启用或未设置，用户便可通过 <ph name="PRODUCT_NAME" /> 的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印<ph name="PRODUCT_NAME" /> 可以将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。这不会妨碍用户在网站上提交打印任务。
 
       如果此政策已停用，用户将无法通过 <ph name="PRODUCT_NAME" /> 的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。
@@ -2186,15 +2188,6 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="2699836109975228367">为登录屏幕启用单声道音频</translation>
 <translation id="2702023190395322609">启用媒体推荐内容</translation>
 <translation id="2702682139813393777">强制通过 cmd.exe 启动 Windows 原生消息传递主机</translation>
-<translation id="2703733412051211941">在计算机处于闲置状态时触发操作。
-
-      设置此政策后，只要设备处于闲置状态（未发生用户输入）的时长达到此处指定的时长（以分钟为单位），浏览器就会运行 <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" /> 政策中配置的操作。
-
-      如果未设置此政策，系统将不会运行任何操作。
-
-      最低阈值为 1 分钟。
-
-      “用户输入”由操作系统 API 定义，包括移动鼠标或使用键盘输入内容等操作。</translation>
 <translation id="270582584528242502">在用户尝试退出时不显示警告对话框</translation>
 <translation id="2706708761587205154">仅允许在有 PIN 码的情况下打印</translation>
 <translation id="2707733461906745082">资料分离</translation>
@@ -3101,6 +3094,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 
       日后，当内嵌登录全面支持所有 SSO 登录流程时，该实验性设置将会取消。</translation>
 <translation id="3435796032110614169">允许删除打印任务记录</translation>
+<translation id="3435896845095436175">启用</translation>
 <translation id="3436217793443508863">当使用电池供电时系统应在设备闲置多久（以毫秒为单位）后锁定屏幕</translation>
 <translation id="3437924696598384725">允许用户管理 VPN 连接</translation>
 <translation id="3441664787678256816">允许企业与这台计算机建立远程支持连接</translation>
@@ -3320,6 +3314,15 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="3606571057705314194">在浏览器启动时停用个人资料选择器</translation>
 <translation id="3608206578291537084">启用加密报告管道</translation>
 <translation id="3608281460204780443">在 <ph name="PRODUCT_OS_NAME" /> 启动器和新标签页中显示 Chrome 应用商店的图标</translation>
+<translation id="3608411984079625468">通过企业单点登录扩展程序为使用身份验证提供方服务的账号配置自动用户登录。
+
+如果此政策设为 1 (<ph name="POLICY_VALUE_ENABLED" />) 或未设置，在设备上具有单点登录扩展程序的身份验证提供方将使用该扩展程序对尝试登录的用户进行身份验证。
+
+如果此政策设为 0 (<ph name="POLICY_VALUE_DISABLED" />)，系统会停用上述自动登录功能。
+
+此功能适用于 MacOS Catalina 及以上的系统。
+
+注意：此政策不适用于无痕模式或访客模式。</translation>
 <translation id="3612482251405108708">在锁屏上自动启动在线重新身份验证</translation>
 <translation id="3616490235694929053">此政策用于控制是否让系统在用户首次登录期间向其显示“显示大小”设置界面。
       如果此政策设为 false，系统将不会显示“显示大小”设置界面。
@@ -3724,29 +3727,6 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="3982465141749620677">在标签页中提示重新验证身份</translation>
 <translation id="398294729592983401">允许用户在设备上开启或关闭 <ph name="PRIVACY_SANDBOX_NAME" /> 数字“指纹”收集保护设置。</translation>
 <translation id="3983162212222338509">系统 DNS 解析可能在网络进程中运行，也可能在网络进程外运行，或部分在网络进程中、部分在网络进程外运行，具体取决于系统配置和功能标志。</translation>
-<translation id="3984773186203819634">在达到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策所设的超时时限后要运行的一系列操作。
-
-      如果 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策未设置，此政策将不会产生任何影响。
-
-      达到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策所设的超时时限后，浏览器会运行此政策中配置的操作。
-
-      如果此政策为空或未设置，<ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策将不会产生任何影响。
-
-      支持的操作如下：
-
-      “<ph name="CLOSE_BROWSERS_ACTION" />”：关闭该个人资料的所有浏览器窗口和 PWA。在 Android 和 iOS 设备上不受支持。
-
-      “<ph name="CLOSE_TABS_ACTION" />”：关闭已打开窗口中所有打开的标签页。仅适用于 iOS 设备。
-
-      “<ph name="SHOW_PROFILE_PICKER_ACTION" />”：显示“个人资料选择器”窗口。在 Android 和 iOS 设备上不受支持。
-
-      “<ph name="SIGN_OUT_ACTION" />”：退出当前登录用户的账号。仅适用于 iOS 设备。
-
-      “<ph name="CLEAR_BROWSING_HISTORY_ACTION" />”“<ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />”“<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />”“<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />”“<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />”“<ph name="CLEAR_AUTOFILL_ACTION" />”“<ph name="CLEAR_SITE_SETTINGS_ACTION" />”“<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />”：清除相应的浏览数据。有关详情，请参阅 <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" /> 政策。iOS 设备上支持的类型包括“<ph name="CLEAR_BROWSING_HISTORY_ACTION" />”“<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />”“<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />”“<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />”和“<ph name="CLEAR_AUTOFILL_ACTION" />”
-
-      “<ph name="RELOAD_PAGES_ACTION" />”：重新加载所有网页。对于某些页面，系统可能会提示用户先进行确认。在 iOS 设备上不受支持。
-
-      如果既未通过设置 <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策停用“<ph name="CHROME_SYNC_NAME" />”，也未停用 <ph name="BROWSER_SIGNIN_POLICY_NAME" />，设置“<ph name="CLEAR_BROWSING_HISTORY_ACTION" />”“<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />”“<ph name="CLEAR_AUTOFILL_ACTION" />”和“<ph name="CLEAR_SITE_SETTINGS_ACTION" />”将为相应的数据类型停用同步功能。</translation>
 <translation id="3986700049001404598">允许用户通过 Chrome 任务管理器终止进程</translation>
 <translation id="398884292557092447">如果此政策设为 True 或未设置，则用户可以控制界面中的信用卡信息自动填充建议。
 
@@ -3846,11 +3826,6 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="4051723201852944592">启用窗口遮挡</translation>
 <translation id="4052529125939620019">在浏览器启动时加载 CryptoToken 组件扩展程序</translation>
 <translation id="4053157306171963473">停用设备活动时长报告功能</translation>
-<translation id="4055758693679485627">以列表形式配置，系统应在用户关闭所有浏览器窗口时删除哪些类型的浏览数据。可用的数据类型包括浏览记录 (<ph name="DATA_TYPE_BROWSING_HISTORY" />)、下载记录 (<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />)、Cookie (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />)、缓存 <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />、自动填充 (<ph name="DATA_TYPE_AUTOFILL" />)、密码 (<ph name="DATA_TYPE_PASSWORD" />)、网站设置 (<ph name="DATA_TYPE_SITE_SETTINGS" />) 和托管的应用数据 (<ph name="DATA_TYPE_HOSTED_APP_DATA" />)。此政策不会优先于 <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME" />。
-
-截至 Chrome 114，此政策要求将 <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策设为 true。从 Chrome 115 开始，如果既未通过设置 <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策停用“<ph name="CHROME_SYNC_NAME" />”，也未停用 <ph name="BROWSER_SIGNIN_POLICY_NAME" />，设置此政策会为相应的数据类型停用同步功能。
-
-      如果用户未彻底退出 <ph name="PRODUCT_NAME" />（例如发生浏览器或操作系统崩溃的情况），系统将在下次加载个人资料时清除浏览数据。</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
 <translation id="4057442294431066708">此政策旨在控制用于在“重新映射键盘按键”子页面中将事件重新映射到 F11/F12 的选定快捷键选项。这些设置仅适用于 ChromeOS 键盘；如果未设置此政策，这些设置默认处于停用状态。</translation>
 <translation id="4061590579642538878">报告有关崩溃报告的信息。</translation>
@@ -3866,6 +3841,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 如需详细了解有效<ph name="URL_LABEL" />格式，请访问 https://support.google.com/chrome/a?p=url_blocklist_filter_format。</translation>
 <translation id="4070039109671307724">其他</translation>
 <translation id="4072225853834793549">为登录屏幕停用无障碍快捷方式</translation>
+<translation id="4074922053013383215">适中节省内存。</translation>
 <translation id="4075675819066819571">将文件架放置到屏幕左侧</translation>
 <translation id="4079306023113982053">控制该用户能否使用 <ph name="BOREALIS_NAME" />。
 
@@ -4237,6 +4213,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="4389073105055031853">允许用户管理所有证书</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
 <translation id="4389113579547582722">允许显示弹出式提醒“App Store 评分”</translation>
+<translation id="4394049700291259645">停用</translation>
 <translation id="4395619678972620537">如果已启用此政策，WebRTC 对等连接可以降级至已过时的 TLS/DTLS（DTLS 1.0、TLS 1.0 和 TLS 1.1）协议版本。
       如果已停用或未设置此政策，这些 TLS/DTLS 版本会被停用。
 
@@ -4244,6 +4221,15 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="439661169333921592">禁止在登录屏幕上使用键盘焦点突出显示</translation>
 <translation id="4397045637922200204">停用账号恢复服务</translation>
 <translation id="4397464099112037398">默认的窗口放置权限设置</translation>
+<translation id="4398803806072237638">我们正在将 <ph name="PRODUCT_NAME" /> 中 CSS 自定义状态功能的 <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> 语法更改为 <ph name="CUSTOM_STATE_NEW_SYNTAX" />，以使其符合 <ph name="FIREFOX_PRODUCT_NAME" /> 和 <ph name="SAFARI_PRODUCT_NAME" /> 中的相关更改。此政策允许启用已弃用的旧语法，直至 M133。
+
+此弃用可能会导致部分仅限 <ph name="PRODUCT_NAME" /> 的网站无法正常运作，这些网站使用了已弃用的 <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> 语法。
+
+如果此政策已启用，已弃用的旧语法将会启用。
+
+如果此政策已停用，已弃用的旧语法将会停用。
+
+如果此政策未设置，已弃用的旧语法将会停用。</translation>
 <translation id="4401196752827224189">从 M110 开始，不安全情境中的 WebSQL 将被移除。此政策用于重新启用该 API。
           如果此政策设为 true，不安全情境中的 WebSQL 将可用。
           如果此政策设为 false 或未设置，不安全情境中的 WebSQL 在 M109 之前将一直可用，然后从 M110 起将不再可用。
@@ -4268,15 +4254,6 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 <translation id="4426986640594727372">允许访问系统地理定位</translation>
 <translation id="4427173305799125784">PDF 查看器无法在 PDF 文件中添加注释</translation>
 <translation id="4432762137771104529">启用安全浏览扩展报告功能</translation>
-<translation id="4434531680131327140">为 <ph name="PRODUCT_NAME" /> 配置浏览数据生命周期设置。此政策让管理员能够（按数据类型）配置浏览器对数据的删除时间点。这对需要处理敏感客户数据的客户非常有用。
-
-      可用的数据类型有<ph name="DATA_TYPE_BROWSING_HISTORY" />、<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />、<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />、<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />、<ph name="DATA_TYPE_PASSWORD" />、<ph name="DATA_TYPE_AUTOFILL" />、<ph name="DATA_TYPE_SITE_SETTINGS" />和<ph name="DATA_TYPE_HOSTED_APP_DATA" />。不过，<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />和<ph name="DATA_TYPE_HOSTED_APP_DATA" />在 Android 上不受支持。
-
-      浏览器会自动移除留存时长已超过<ph name="TIME_TO_LIVE_IN_HOURS" />值的所选类型数据。可设置的最小值为 1 小时。
-
-      浏览器启动 15 秒后便会开始删除过期数据，运行期间则会每 30 分钟删除一次。
-
-      截至 Chrome 114，此政策要求将 <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策设为 true。从 Chrome 115 开始，如果既未通过设置 <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策停用“<ph name="CHROME_SYNC_NAME" />”，也未停用 <ph name="BROWSER_SIGNIN_POLICY_NAME" />，设置此政策会为相应的数据类型停用同步功能。</translation>
 <translation id="443454694385851356">旧版（不安全）</translation>
 <translation id="4435032708588431506">允许使用 QUIC</translation>
 <translation id="443665821428652897">在浏览器关闭时清除网站数据（已弃用）</translation>
@@ -4558,6 +4535,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
 
 仅当 <ph name="CHROME_OS_RELEASE_CHANNEL_DELEGATED_POLICY_NAME" /> 设为 False 时，设置 <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME" /> 才会产生影响。</translation>
 <translation id="4638906910792947645">启用产品内调查问卷</translation>
+<translation id="4641557638919545432">将启用已弃用的旧语法。</translation>
 <translation id="4646626362889216307">通过设置此政策，您可以允许合并来自多个不同来源并具有相同范围及级别的所选政策。这项合并操作会涵盖每个来源中的字典的第一级密钥。系统会优先应用来自优先级最高的来源的密钥。
 
       若要允许合并所有受支持的字典政策，请使用通配符“*”。
@@ -5214,6 +5192,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
       设置设备壁纸政策后，如果还没有任何用户登录 Chrome 操作系统设备，该设备将下载相应壁纸图片并在登录屏幕上使用它。一旦用户登录设备，用户的壁纸政策就会生效。
 
       如果未设置此设备壁纸政策，则由用户的壁纸政策（如果已设置）来决定要显示的图片。</translation>
+<translation id="5217106427763720473">启用可扩展的企业单点登录支持功能</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
 <translation id="5222325605346216869">强制执行后台 JavaScript 计时器节流</translation>
 <translation id="5223606242837275233">不允许网站根据网址将网页滚动到特定文本片段</translation>
@@ -5264,6 +5243,7 @@ IPv4 地址的前缀为 0010；IPv6 地址的前缀为 0020。对于双栈网络
       此处的“Version”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。  </translation>
 <translation id="5247584184349816217">为锁定屏幕启用屏保。</translation>
 <translation id="5247973380763021389">禁止用户级云政策覆盖计算机级云政策。</translation>
+<translation id="5249006530384016395">控制是否为 CSS 自定义状态启用已弃用的 <ph name="CUSTOM_STATE_DEPRECATED_SYNTAX" /> 语法</translation>
 <translation id="5249453807420671499">用户可以添加 Kerberos 账号</translation>
 <translation id="5249555581286638799">启用高效模式</translation>
 <translation id="5252210248395576403">此政策旨在授权快速解答功能访问所选内容并将相关信息发送给服务器，以获得翻译结果。
@@ -8541,6 +8521,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
       如果此政策设为 False 或未设置，系统可能会屏蔽其他来源的或不重要的 <ph name="FLASH_PLUGIN_NAME" /> 内容。
 
       注意：如需控制哪些网站可以运行 <ph name="FLASH_PLUGIN_NAME" />，请参阅 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />、<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 和 <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策。</translation>
+<translation id="7801163363326128751">更改省内存模式的节省量</translation>
 <translation id="7804859754080118507">报告已注册的设备上的网络连接和信号强度事件。
 
       如果此政策设为 false 或未设置，系统不会报告这些信息。
@@ -9121,6 +9102,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8274926413890711289">启用精细报告控件</translation>
 <translation id="8275103737670730746">允许在不使用以往用户手势的情况下调用文件或目录选择器 API</translation>
 <translation id="8278133379873210419">禁止显示从其他来源的子框架触发的 JavaScript 对话框</translation>
+<translation id="8284028944941138279">均衡节省内存。</translation>
 <translation id="8284296539558710573">跨域 HTTP 身份验证提示</translation>
 <translation id="8284527236880877730">如果 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 已停用，您可以通过设置 <ph name="PRESENTATION_SCREEN_DIM_DELAY_SCALE_POLICY_NAME" /> 来指定：当设备处于演示模式时，系统应该对屏幕变暗延迟时间采取的调整幅度（百分比）。调整屏幕变暗延迟时间时，系统会随之调整屏幕关闭延迟时间、屏幕锁定延迟时间和闲置延迟时间，以使它们保持在原有设置下与屏幕变暗延迟时间的间隔。
 
@@ -9288,9 +9270,6 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
       在 Chrome 115 之后，此政策将被移除。</translation>
 <translation id="841395160262233331">启动器键/搜索键将无法更改功能键的行为，并且用户无法更改此设置。</translation>
-<translation id="8415506434606458373">通过设置此政策，您可允许列出的源使用 Device Attributes API 获取设备属性（例如序列号、主机名）。
-
-源必须对应于使用 <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" /> 或 <ph name="ISOLATED_WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />（自 125 版起）政策强制安装的 Web 应用或设置为自助服务终端应用。如需了解 Device Attributes API 规范，请参阅 https://wicg.github.io/WebApiDevice/device_attributes。</translation>
 <translation id="8415953438346821074">如果您启用了此设置，存储在 <ph name="PRODUCT_NAME" /> 个人资料中的设置（例如书签、自动填充数据、密码等）也会被写入一个存储在漫游用户个人资料文件夹内的文件中，或被写入一个由管理员通过 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置中。启用此政策会停用云同步。
 
       如果您停用了或未设置此政策，系统将会仅使用常规的本地个人资料。</translation>
@@ -9540,6 +9519,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
 如果此政策未设置，系统每 24 小时会上传一次此类报告。
 如果此政策已设置，所设值便决定了两次连续的报告上传操作之间应间隔的小时数。</translation>
+<translation id="8613622696148230463">已弃用的旧语法将会停用。</translation>
 <translation id="8618037841203431360">此政策旨在控制是否报告政策数据和政策提取时间。
 
 如果 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策未设置或已停用，系统将忽略此政策；

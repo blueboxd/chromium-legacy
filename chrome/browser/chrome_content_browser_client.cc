@@ -47,6 +47,7 @@
 #include "build/chromeos_buildflags.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"  // PLATFORM_CFM
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/ai/ai_manager_impl.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate_impl_client.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -97,7 +98,6 @@
 #include "chrome/browser/memory/chrome_browser_main_extra_parts_memory.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
-#include "chrome/browser/model_execution/model_manager_impl.h"
 #include "chrome/browser/navigation_predictor/anchor_element_preloader.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -512,6 +512,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/chrome_content_browser_client_isolated_web_apps_part.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/webid/digital_identity_provider_desktop.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -2498,7 +2499,7 @@ void ChromeContentBrowserClient::CheckGetAllScreensMediaAllowed(
     base::OnceCallback<void(bool)> callback) {
   capture_policy::CheckGetAllScreensMediaAllowed(
       render_frame_host->GetBrowserContext(),
-      render_frame_host->GetMainFrame()->GetLastCommittedOrigin().GetURL(),
+      render_frame_host->GetLastCommittedOrigin().GetURL(),
       std::move(callback));
 }
 
@@ -3523,6 +3524,7 @@ bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
 
 bool ChromeContentBrowserClient::IsFullCookieAccessAllowed(
     content::BrowserContext* browser_context,
+    content::RenderFrameHost* rfh,
     const GURL& url,
     const blink::StorageKey& storage_key) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -4983,6 +4985,12 @@ void ChromeContentBrowserClient::SessionEnding(
 
 bool ChromeContentBrowserClient::ShouldEnableAudioProcessHighPriority() {
   return IsAudioProcessHighPriorityEnabled();
+}
+
+bool ChromeContentBrowserClient::ShouldUseSkiaFontManager(
+    const GURL& site_url) {
+  return (base::FeatureList::IsEnabled(features::kSkiaFontService) &&
+          IsTopChromeWebUIURL(site_url));
 }
 
 #endif  // BUILDFLAG(IS_WIN)
@@ -7868,7 +7876,8 @@ void RunDigitalIdentityCallback(
 
 }  // anonymous namespace
 
-void ChromeContentBrowserClient::ShowDigitalIdentityInterstitialIfNeeded(
+content::ContentBrowserClient::DigitalIdentityInterstitialAbortCallback
+ChromeContentBrowserClient::ShowDigitalIdentityInterstitialIfNeeded(
     content::WebContents& web_contents,
     const url::Origin& origin,
     bool is_only_requesting_age,
@@ -7877,17 +7886,21 @@ void ChromeContentBrowserClient::ShowDigitalIdentityInterstitialIfNeeded(
       std::make_unique<DigitalIdentitySafetyInterstitialBridgeAndroid>();
   auto* bridge_ptr = bridge.get();
   // Callback takes ownership of |bridge|.
-  bridge_ptr->ShowInterstitialIfNeeded(
+  return bridge_ptr->ShowInterstitialIfNeeded(
       web_contents, origin, is_only_requesting_age,
       base::BindOnce(&RunDigitalIdentityCallback, std::move(bridge),
                      std::move(callback)));
 }
+#endif
 
 std::unique_ptr<content::DigitalIdentityProvider>
 ChromeContentBrowserClient::CreateDigitalIdentityProvider() {
+#if BUILDFLAG(IS_ANDROID)
   return std::make_unique<DigitalIdentityProviderAndroid>();
-}
+#else
+  return std::make_unique<DigitalIdentityProviderDesktop>();
 #endif
+}
 
 bool ChromeContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
     content::BrowserContext* browser_context) {
@@ -8421,10 +8434,10 @@ bool ChromeContentBrowserClient::ShouldSuppressAXLoadComplete(
          url == GURL(chrome::kChromeUINewTabPageURL);
 }
 
-void ChromeContentBrowserClient::BindModelManager(
+void ChromeContentBrowserClient::BindAIManager(
     content::RenderFrameHost* rfh,
-    mojo::PendingReceiver<blink::mojom::ModelManager> receiver) {
-  ModelManagerImpl::Create(rfh, std::move(receiver));
+    mojo::PendingReceiver<blink::mojom::AIManager> receiver) {
+  AIManagerImpl::Create(rfh, std::move(receiver));
 }
 
 #if !BUILDFLAG(IS_ANDROID)

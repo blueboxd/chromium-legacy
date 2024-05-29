@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/relative_utils.h"
 #include "third_party/blink/renderer/core/layout/space_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -1745,7 +1744,7 @@ void GridLayoutAlgorithm::InitializeTrackSizes(
     } else {
       // If this grid has a standalone axis, invalidate its min/max sizes cache,
       // since they're only valid for the current step of the sizing algorithm.
-      Node().InvalidateMinMaxSizesCache();
+      Node().InvalidateSubgridMinMaxSizesCache();
 
       auto& track_collection = layout_data.SizingCollection(track_direction);
       CacheGridItemsProperties(track_collection, &grid_items);

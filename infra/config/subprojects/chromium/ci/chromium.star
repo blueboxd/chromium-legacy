@@ -79,7 +79,7 @@ ci.builder(
         configs = [
             "android_builder_without_codecs",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
             "strip_debug_info",
         ],
@@ -136,7 +136,7 @@ ci.builder(
         configs = [
             "android_builder_without_codecs",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
             "strip_debug_info",
             "arm64",
@@ -190,7 +190,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "official_optimize",
-            "reclient",
+            "remoteexec",
             "android_builder_without_codecs",
             "full_symbols",
         ],
@@ -235,7 +235,7 @@ ci.builder(
         configs = [
             "chromeos",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "use_cups",
         ],
     ),
@@ -314,7 +314,7 @@ ci.builder(
         configs = [
             "lacros_on_linux",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "also_build_ash_chrome",
         ],
     ),
@@ -371,7 +371,7 @@ ci.builder(
         configs = [
             "chromeos_device",
             "dcheck_off",
-            "reclient",
+            "remoteexec",
             "amd64-generic-crostoolchain",
             "ozone_headless",
             "lacros",
@@ -431,7 +431,7 @@ ci.builder(
         configs = [
             "chromeos_device",
             "dcheck_off",
-            "reclient",
+            "remoteexec",
             "arm-generic-crostoolchain",
             "ozone_headless",
             "lacros",
@@ -491,7 +491,7 @@ ci.builder(
         configs = [
             "chromeos_device",
             "dcheck_off",
-            "reclient",
+            "remoteexec",
             "arm64-generic-crostoolchain",
             "ozone_headless",
             "lacros",
@@ -546,7 +546,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "updater",
         ],
     ),
@@ -594,7 +594,7 @@ ci.builder(
         ),
     ),
     gn_args = gn_args.config(
-        configs = ["official_optimize", "reclient"],
+        configs = ["official_optimize", "remoteexec"],
     ),
     targets = targets.bundle(
         additional_compile_targets = "all",
@@ -636,7 +636,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "mac_strip",
             "minimal_symbols",
         ],
@@ -644,8 +644,9 @@ ci.builder(
     targets = targets.bundle(
         additional_compile_targets = "all",
     ),
-    cores = 12,
+    cores = None,
     os = os.MAC_DEFAULT,
+    cpu = cpu.ARM64,
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -685,7 +686,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "mac_strip",
             "minimal_symbols",
             "arm64",
@@ -739,7 +740,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "official_optimize",
-            "reclient",
+            "remoteexec",
         ],
     ),
     targets = targets.bundle(
@@ -778,7 +779,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
         ],
     ),
@@ -830,7 +831,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "official_optimize",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
         ],
     ),
@@ -870,7 +871,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "x86",
             "minimal_symbols",
         ],
@@ -923,7 +924,7 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "official_optimize",
-            "reclient",
+            "remoteexec",
             "x86",
         ],
     ),

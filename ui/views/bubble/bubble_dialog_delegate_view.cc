@@ -162,9 +162,10 @@ class BubbleDialogFrameView : public BubbleFrameView {
 
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
-  DCHECK(bubble->owned_by_widget());
   Widget* bubble_widget = new BubbleWidget();
-  Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
+  Widget::InitParams bubble_params(
+      Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+      Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   bubble_params.accept_events = bubble->accept_events();
@@ -502,7 +503,6 @@ BubbleDialogDelegate::~BubbleDialogDelegate() {
 Widget* BubbleDialogDelegate::CreateBubble(
     std::unique_ptr<BubbleDialogDelegate> bubble_delegate_unique) {
   BubbleDialogDelegate* const bubble_delegate = bubble_delegate_unique.get();
-  DCHECK(bubble_delegate->owned_by_widget());
 
   // On Mac, MODAL_TYPE_WINDOW is implemented using sheets, which can't be
   // anchored at a specific point - they are always placed near the top center
@@ -541,6 +541,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    bool autosize)
     : BubbleDialogDelegate(anchor_view, arrow, shadow, autosize) {
   bubble_uma_logger().set_bubble_view(this);
+  SetOwnedByWidget(false);
 }
 
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
@@ -909,7 +910,7 @@ void BubbleDialogDelegate::BubbleUmaLogger::LogMetric(
                         bubble_name.value())) {
       return;
     }
-  } else if (!views_metrics::IsValidBubbleNameVariant(bubble_name.value())) {
+  } else if (!views_metrics::IsValidBubbleName(bubble_name.value())) {
     return;
   }
 

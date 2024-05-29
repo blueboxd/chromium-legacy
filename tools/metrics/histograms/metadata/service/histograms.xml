@@ -238,18 +238,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.CountFeature.DropOut"
-    enum="CountFeatureDropOutReason" expires_after="2024-10-01">
-  <owner>yyanagisawa@chromium.org</owner>
-  <owner>chrome-worker@google.com</owner>
-  <summary>
-    The reason of not calling ServiceWorkerContainer::CountFeature is recorded
-    when ServiceWorkerContainerHost::CountFeature is called. This UMA is for
-    investigating crbug.com/40918057. With this UMA, we can decide which drop
-    out path can be removed.
-  </summary>
-</histogram>
-
 <histogram name="ServiceWorker.CountUse.CallerInterface"
     enum="WorkerOrWorkletInterfaceNameType" expires_after="2024-10-01">
   <owner>yyanagisawa@chromium.org</owner>
@@ -441,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.{Resource}.FetchResponseFrom"
-    enum="ServiceWorkerFetchResponseFrom" expires_after="2024-06-30">
+    enum="ServiceWorkerFetchResponseFrom" expires_after="2024-12-01">
   <owner>sisidovski@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -958,7 +946,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ServiceWorker.LoadTiming.Subresource.AutoPreloadResponseReceivedToFetchHandlerEnd.{ServiceWorkerFetchResponseFromName}"
-    units="ms" expires_after="2024-06-01">
+    units="ms" expires_after="2024-12-01">
   <owner>sisidovski@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1237,17 +1225,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.PostMessage.IsExecutionReady" enum="Boolean"
-    expires_after="2024-10-01">
-  <owner>yyanagisawa@chromium.org</owner>
-  <owner>chrome-worker@google.com</owner>
-  <summary>
-    When PostMessage is used before the ServiceWorker client get execution
-    ready, it gets fails with the bad message. This metric checks the number of
-    the PostMessage calls before the client gets ready.
-  </summary>
-</histogram>
-
 <histogram name="ServiceWorker.PostMessage.QueueSize" units="count"
     expires_after="2024-10-01">
   <owner>yyanagisawa@chromium.org</owner>
@@ -1366,7 +1343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartNewWorker.Time" units="ms"
-    expires_after="2024-06-30">
+    expires_after="2024-12-01">
   <owner>yyanagisawa@chromium.org</owner>
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1992,6 +1969,19 @@ chromium-metrics-reviews@google.com.
     The time in ms from when a dedicated worker starts to fetch a classic script
     until the script starts to be evaluated. The value can only be taken for
     PlzDedicatedWorker.
+  </summary>
+</histogram>
+
+<histogram name="Worker.TopLevelScript.Initialization2GlobalScopeCreation"
+    units="ms" expires_after="2024-10-01">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The time in ms from when a worker thread initialization starts until the
+    dedicated worker global scope is going to be made. This does not include the
+    global scope creation time. Unfortunately, this does not measure a time from
+    worker thread creation. It just measures from when the initialization
+    starts.
   </summary>
 </histogram>
 

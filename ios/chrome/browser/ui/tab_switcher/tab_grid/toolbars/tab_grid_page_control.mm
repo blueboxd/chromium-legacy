@@ -111,6 +111,9 @@ const CGFloat kScrolledToTopBackgroundAlpha = 0.25;
 const CGFloat kUnselectedSymbolSize = 22.;
 const CGFloat kSelectedSymbolSize = 24.;
 
+// The animation timing for the highlight background.
+const CGFloat kHighlightAnimationDuration = 0.15;
+
 // Returns the point that's at the center of `rect`.
 CGPoint RectCenter(CGRect rect) {
   return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
@@ -136,11 +139,7 @@ TabGridPage ThirdTabGridPage() {
 }  // namespace
 
 @interface TabGridPageControl () <UIGestureRecognizerDelegate,
-                                  UIPointerInteractionDelegate> {
-  UIAccessibilityElement* _incognitoAccessibilityElement;
-  UIAccessibilityElement* _regularAccessibilityElement;
-  UIAccessibilityElement* _thirdPanelAccessibilityElement;
-}
+                                  UIPointerInteractionDelegate>
 
 // The grey background for all the segments.
 @property(nonatomic, weak) UIView* background;
@@ -199,7 +198,14 @@ TabGridPage ThirdTabGridPage() {
 
 @end
 
-@implementation TabGridPageControl
+@implementation TabGridPageControl {
+  UIAccessibilityElement* _incognitoAccessibilityElement;
+  UIAccessibilityElement* _regularAccessibilityElement;
+  UIAccessibilityElement* _thirdPanelAccessibilityElement;
+
+  // Highlight view for the last control.
+  UIView* _highlightView;
+}
 
 + (instancetype)pageControl {
   return [[TabGridPageControl alloc] init];
@@ -319,13 +325,8 @@ TabGridPage ThirdTabGridPage() {
 // the text in both labels (the regular and the  "selected" versions that's
 // visible when the slider is over a segment), and an ivar to store values that
 // are set before the labels are created.
-- (void)setRegularTabCount:(NSUInteger)regularTabCount {
-  _regularTabCount = regularTabCount;
-  [self updateRegularLabels];
-}
-
-- (void)setPinnedTabCount:(NSUInteger)pinnedTabCount {
-  _pinnedTabCount = pinnedTabCount;
+- (void)setTabCount:(NSUInteger)tabCount {
+  _tabCount = tabCount;
   [self updateRegularLabels];
 }
 
@@ -365,6 +366,56 @@ TabGridPage ThirdTabGridPage() {
   } else {
     self.sliderPosition = newPosition;
   }
+}
+
+- (void)highlightLastPageControl {
+  UIView* highlightBackground = [[UIView alloc] init];
+  highlightBackground.translatesAutoresizingMaskIntoConstraints = NO;
+  highlightBackground.backgroundColor = [UIColor colorNamed:kBlueColor];
+  highlightBackground.layer.cornerRadius = kSliderCornerRadius;
+
+  [self insertSubview:highlightBackground aboveSubview:self.background];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [highlightBackground.trailingAnchor
+        constraintEqualToAnchor:self.thirdPanelGuide.trailingAnchor],
+    [highlightBackground.topAnchor
+        constraintEqualToAnchor:self.sliderView.topAnchor],
+    [highlightBackground.bottomAnchor
+        constraintEqualToAnchor:self.sliderView.bottomAnchor],
+    [highlightBackground.leadingAnchor
+        constraintEqualToAnchor:self.regularGuide.centerXAnchor],
+  ]];
+
+  highlightBackground.alpha = 0;
+  [UIView animateWithDuration:kHighlightAnimationDuration
+                   animations:^{
+                     highlightBackground.alpha = 1;
+                   }];
+
+  self.thirdPanelNotSelectedIcon.tintColor = UIColor.blackColor;
+
+  _highlightView = highlightBackground;
+}
+
+- (void)resetLastPageControlHighlight {
+  UIView* highlightView = _highlightView;
+  [UIView animateWithDuration:kHighlightAnimationDuration
+      animations:^{
+        highlightView.alpha = 0;
+      }
+      completion:^(BOOL finished) {
+        [highlightView removeFromSuperview];
+      }];
+  _highlightView = nil;
+  self.thirdPanelNotSelectedIcon.tintColor =
+      [UIColor colorNamed:kStaticGrey300Color];
+}
+
+- (CGRect)lastSegmentFrame {
+  return [self.thirdPanelGuide.owningView
+      convertRect:self.thirdPanelGuide.layoutFrame
+           toView:nil];
 }
 
 #pragma mark - UIResponder
@@ -677,7 +728,7 @@ TabGridPage ThirdTabGridPage() {
 
   // Update the label text, in case these properties have been set before the
   // views were set up.
-  self.regularTabCount = _regularTabCount;
+  self.tabCount = _tabCount;
 
   // Mark the control's layout as dirty so the the guides will be computed, then
   // force a layout now so it won't be triggered later (perhaps during an
@@ -696,11 +747,10 @@ TabGridPage ThirdTabGridPage() {
 
 // Updates the labels displaying the regular tab count.
 - (void)updateRegularLabels {
-  NSUInteger totalTabsCount = self.regularTabCount + self.pinnedTabCount;
   self.regularLabel.attributedText =
-      TextForTabCount(totalTabsCount, kLabelSize * kLabelSizeToFontSize);
-  self.regularSelectedLabel.attributedText = TextForTabCount(
-      totalTabsCount, kSelectedLabelSize * kLabelSizeToFontSize);
+      TextForTabCount(_tabCount, kLabelSize * kLabelSizeToFontSize);
+  self.regularSelectedLabel.attributedText =
+      TextForTabCount(_tabCount, kSelectedLabelSize * kLabelSizeToFontSize);
 }
 
 // Creates a label for use in this control.

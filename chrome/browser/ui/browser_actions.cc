@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/lens/lens_overlay_controller.h"
 #include "chrome/browser/ui/lens/lens_overlay_side_panel_coordinator.h"
+#include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/history_clusters/history_clusters_side_panel_utils.h"
@@ -42,6 +43,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace {
@@ -51,29 +53,29 @@ actions::ActionItem::ActionItemBuilder ChromeMenuAction(
     int title_id,
     int tooltip_id,
     const gfx::VectorIcon& icon) {
+  auto clean_text = [](int str_id) {
+    return gfx::RemoveAccelerator(l10n_util::GetStringUTF16(str_id));
+  };
   return actions::ActionItem::Builder(callback)
       .SetActionId(action_id)
-      .SetText(l10n_util::GetStringUTF16(title_id))
-      .SetTooltipText(l10n_util::GetStringUTF16(tooltip_id))
+      .SetText(clean_text(title_id))
+      .SetTooltipText(clean_text(tooltip_id))
       .SetImage(ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon))
       .SetProperty(actions::kActionItemPinnableKey, true);
 }
 
 actions::ActionItem::ActionItemBuilder SidePanelAction(
     SidePanelEntryId id,
-    std::optional<int> title_id,
+    int title_id,
     int tooltip_id,
     const gfx::VectorIcon& icon,
     actions::ActionId action_id,
     Browser* browser,
     bool is_pinnable) {
-  return actions::ActionItem::Builder(
-             CreateToggleSidePanelActionCallback(
-                 SidePanelEntryKey(id), browser))
+  return actions::ActionItem::Builder(CreateToggleSidePanelActionCallback(
+                                          SidePanelEntryKey(id), browser))
       .SetActionId(action_id)
-      .SetText(title_id.has_value()
-                   ? l10n_util::GetStringUTF16(title_id.value())
-                   : std::u16string())
+      .SetText(l10n_util::GetStringUTF16(title_id))
       .SetTooltipText(l10n_util::GetStringUTF16(tooltip_id))
       .SetImage(ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon))
       .SetProperty(actions::kActionItemPinnableKey, is_pinnable);
@@ -176,7 +178,7 @@ void BrowserActions::InitializeBrowserActions() {
     root_action_item_->AddChild(
         actions::ActionItem::Builder(callback)
             .SetActionId(kActionSidePanelShowLensOverlayResults)
-            .SetText(std::u16string())
+            .SetText(l10n_util::GetStringUTF16(IDS_SHOW_LENS_OVERLAY))
             .SetTooltipText(l10n_util::GetStringUTF16(
                 IDS_SIDE_PANEL_LENS_OVERLAY_TOOLBAR_TOOLTIP))
             .SetImage(ui::ImageModel::FromVectorIcon(
@@ -308,5 +310,17 @@ void BrowserActions::InitializeBrowserActions() {
                            base::Unretained(browser)),
                        kActionShowTranslate, IDS_SHOW_TRANSLATE,
                        IDS_TOOLTIP_TRANSLATE, kTranslateIcon)
+          .Build());
+
+  root_action_item_->AddChild(
+      ChromeMenuAction(base::BindRepeating(
+                           [](Browser* browser, actions::ActionItem* item,
+                              actions::ActionInvocationContext context) {
+                             chrome::GenerateQRCode(browser);
+                           },
+                           base::Unretained(browser)),
+                       kActionQrCodeGenerator, IDS_APP_MENU_CREATE_QR_CODE,
+                       IDS_APP_MENU_CREATE_QR_CODE, kQrCodeChromeRefreshIcon)
+          .SetEnabled(false)
           .Build());
 }

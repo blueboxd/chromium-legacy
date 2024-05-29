@@ -17,6 +17,10 @@
 namespace ash {
 class MahiMediaAppClient;
 }
+
+namespace aura {
+class Window;
+}
 namespace chromeos {
 using GetMediaAppContentCallback =
     base::OnceCallback<void(crosapi::mojom::MahiPageContentPtr)>;
@@ -51,14 +55,39 @@ class COMPONENT_EXPORT(MAHI_PUBLIC_CPP) MahiMediaAppContentManager {
 
   // Client registration/removal.
   virtual void AddClient(base::UnguessableToken client_id,
-                         raw_ptr<ash::MahiMediaAppClient> client) = 0;
+                         ash::MahiMediaAppClient* client) = 0;
   virtual void RemoveClient(base::UnguessableToken client_id) = 0;
+
+  // Whether a Window* is observed by `MahiMediaAppContentManager`. Callers may
+  // suppress focus events of this window (i.e. not report to Mahi system) to
+  // avoid overriding the media app pdf focus events.
+  virtual bool ObservingWindow(const aura::Window* window) const = 0;
 
  protected:
   MahiMediaAppContentManager();
 
   // Keeps track of the current active client (i.e. media app window).
   base::UnguessableToken active_client_id_;
+};
+
+// A scoped object that set the global instance of
+// `chromeos::MahiMediaAppEventsProxy::Get()` to the provided object pointer.
+// The real instance will be restored when this scoped object is destructed.
+// This class is used in testing and mocking.
+class COMPONENT_EXPORT(MAHI_PUBLIC_CPP) ScopedMahiMediaAppContentManagerSetter {
+ public:
+  explicit ScopedMahiMediaAppContentManagerSetter(
+      MahiMediaAppContentManager* proxy);
+  ScopedMahiMediaAppContentManagerSetter(
+      const ScopedMahiMediaAppContentManagerSetter&) = delete;
+  ScopedMahiMediaAppContentManagerSetter& operator=(
+      const ScopedMahiMediaAppContentManagerSetter&) = delete;
+  ~ScopedMahiMediaAppContentManagerSetter();
+
+ private:
+  static ScopedMahiMediaAppContentManagerSetter* instance_;
+
+  raw_ptr<MahiMediaAppContentManager> real_content_manager_instance_ = nullptr;
 };
 
 }  // namespace chromeos

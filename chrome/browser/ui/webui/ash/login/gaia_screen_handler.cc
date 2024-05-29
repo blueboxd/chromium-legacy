@@ -406,9 +406,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     const bool* collect_stats_consent) {
   base::Value::Dict params;
 
-  // TODO(https://crbug.com/1338102): Looks like `forceReload` isn't used
-  //                                  anywhere further. Remove?
-  params.Set("forceReload", context.force_reload);
   params.Set("gaiaId", context.gaia_id);
   params.Set("readOnlyEmail", true);
   params.Set("email", context.email);
@@ -1404,7 +1401,6 @@ void GaiaScreenHandler::LoadAuthenticator(bool force) {
 
   frame_state_ = FRAME_STATE_LOADING;
   login::GaiaContext context;
-  context.force_reload = force;
   context.email = populated_account_id_.GetUserEmail();
 
   if (!context.email.empty()) {
@@ -1682,26 +1678,12 @@ GaiaScreenHandler::GaiaScreenMode GaiaScreenHandler::GetGaiaScreenMode(
       em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
     if (email.empty()) {
       return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
-    } else if (features::IsGaiaReauthEndpointEnabled()) {
+    } else {
       // Email is not empty, i.e. this is an existing user going through reauth.
       // This means they should use Gaia reauth endpoint regardless of
       // LoginAuthenticationBehavior policy and this should be reflected in
       // their screen mode.
       return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
-    }
-    user_manager::KnownUser known_user(g_browser_process->local_state());
-    // If there's a populated email, we must check first that this user is using
-    // SAML in order to decide whether to show the interstitial page.
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(known_user.GetAccountId(
-            email, std::string() /* id */, AccountType::UNKNOWN));
-
-    // TODO(b/259675128): we shouldn't rely on `user->using_saml()` when
-    // deciding which IdP page to show because this flag can be outdated. Admin
-    // could have changed the IdP to GAIA since last authentication and we
-    // wouldn't know about it.
-    if (user && user->using_saml()) {
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
     }
   }
 

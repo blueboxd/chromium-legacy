@@ -7,7 +7,7 @@ import type {ReadAnythingElement} from 'chrome-untrusted://read-anything-side-pa
 import {NEXT_GRANULARITY_EVENT, PauseActionSource, PREVIOUS_GRANULARITY_EVENT, RATE_EVENT, WordBoundaryMode} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertFalse, assertGT, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
-import {emitEvent, suppressInnocuousErrors} from './common.js';
+import {emitEvent, suppressInnocuousErrors, waitForPlayFromSelection} from './common.js';
 import {FakeSpeechSynthesis} from './fake_speech_synthesis.js';
 
 // TODO: b/323960128 - Add tests for word boundaries here or in a
@@ -25,9 +25,11 @@ suite('Speech', () => {
     'It\'s time to try defying gravity.',
     'I think I\'ll try defying gravity.',
     'Kiss me goodbye, I\'m defying gravity.',
-    'And you won\'t bring me down',
+    'And you won\'t bring me down.',
   ];
+
   const leafIds = [3, 5];
+  const totalSentences = paragraph1.length + paragraph2.length;
   const axTree = {
     rootId: 1,
     nodes: [
@@ -62,6 +64,11 @@ suite('Speech', () => {
     ],
   };
 
+  function getSpokenTexts(): string[] {
+    return speechSynthesis.spokenUtterances.map(
+        utterance => utterance.text.trim());
+  }
+
   setup(() => {
     suppressInnocuousErrors();
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -94,11 +101,8 @@ suite('Speech', () => {
     });
 
     test('speaks all text by sentences', () => {
-      assertEquals(
-          speechSynthesis.spokenUtterances.length,
-          paragraph1.length + paragraph2.length);
-      const utteranceTexts = speechSynthesis.spokenUtterances.map(
-          utterance => utterance.text.trim());
+      assertEquals(speechSynthesis.spokenUtterances.length, totalSentences);
+      const utteranceTexts = getSpokenTexts();
       assertTrue(
           paragraph1.every(sentence => utteranceTexts.includes(sentence)));
       assertTrue(
@@ -165,6 +169,140 @@ suite('Speech', () => {
     });
   });
 
+  suite('with text selected', () => {
+    async function selectAndPlay(
+        baseTree: any, anchorId: number, anchorOffset: number, focusId: number,
+        focusOffset: number, isBackward: boolean = false): Promise<void> {
+      const selectedTree = Object.assign(
+          {
+            selection: {
+              anchor_object_id: anchorId,
+              focus_object_id: focusId,
+              anchor_offset: anchorOffset,
+              focus_offset: focusOffset,
+              is_backward: isBackward,
+            },
+          },
+          baseTree);
+      chrome.readingMode.setContentForTesting(selectedTree, leafIds);
+      app.updateSelection();
+      app.playSpeech();
+      return waitForPlayFromSelection();
+    }
+
+    test('first play starts from selected node', async () => {
+      await selectAndPlay(axTree, 5, 0, 5, 7);
+
+      const utteranceTexts = getSpokenTexts();
+      assertEquals(utteranceTexts.length, totalSentences - paragraph1.length);
+      assertTrue(
+          paragraph2.every(sentence => utteranceTexts.includes(sentence)));
+    });
+
+    test('selection is cleared after play', async () => {
+      await selectAndPlay(axTree, 5, 0, 5, 10);
+      assertEquals(app.getSelection().type, 'None');
+    });
+
+    test(
+        'when selection starts in middle of node, play from beginning of node',
+        async () => {
+          await selectAndPlay(axTree, 5, 10, 5, 20);
+
+          const utteranceTexts = getSpokenTexts();
+          assertEquals(
+              utteranceTexts.length, totalSentences - paragraph1.length);
+          assertTrue(
+              paragraph2.every(sentence => utteranceTexts.includes(sentence)));
+        });
+
+    test('when selection crosses nodes, play from earlier node', async () => {
+      await selectAndPlay(axTree, 3, 10, 5, 10);
+
+      const utteranceTexts = getSpokenTexts();
+      assertEquals(utteranceTexts.length, totalSentences);
+      assertTrue(
+          paragraph1.every(sentence => utteranceTexts.includes(sentence)));
+      assertTrue(
+          paragraph2.every(sentence => utteranceTexts.includes(sentence)));
+    });
+
+    test('when selection is backward, play from earlier node', async () => {
+      await selectAndPlay(axTree, 5, 10, 3, 10, /*isBackward=*/ true);
+
+      const utteranceTexts = getSpokenTexts();
+      assertEquals(utteranceTexts.length, totalSentences);
+      assertTrue(
+          paragraph1.every(sentence => utteranceTexts.includes(sentence)));
+      assertTrue(
+          paragraph2.every(sentence => utteranceTexts.includes(sentence)));
+    });
+
+    test(
+        'after speech started, cancels speech and plays from selection',
+        async () => {
+          app.speechPlayingState.speechStarted = true;
+
+          await selectAndPlay(axTree, 5, 0, 5, 10);
+
+          assertTrue(speechSynthesis.canceled);
+          const utteranceTexts = getSpokenTexts();
+          assertEquals(
+              utteranceTexts.length, totalSentences - paragraph1.length);
+          assertTrue(
+              paragraph2.every(sentence => utteranceTexts.includes(sentence)));
+        });
+
+    test('play from selection when node split across sentences', async () => {
+      const fragment1 = ' This is a sentence';
+      const fragment2 = ' that ends in the next node. ';
+      const fragment3 =
+          'And a following sentence in the same node to be selected.';
+      const splitNodeTree = {
+        rootId: 1,
+        nodes: [
+          {
+            id: 1,
+            role: 'rootWebArea',
+            htmlTag: '#document',
+            childIds: [2],
+          },
+          {
+            id: 2,
+            role: 'paragraph',
+            htmlTag: 'p',
+            childIds: [3, 5],
+          },
+          {
+            id: 3,
+            role: 'link',
+            htmlTag: 'a',
+            url: 'http://www.google.com',
+            childIds: [4],
+          },
+          {
+            id: 4,
+            role: 'staticText',
+            name: fragment1,
+          },
+          {
+            id: 5,
+            role: 'staticText',
+            name: fragment2 + fragment3,
+          },
+        ],
+      };
+      await selectAndPlay(
+          splitNodeTree, 5, fragment2.length + 1, 5,
+          fragment2.length + fragment3.length);
+
+      const utteranceTexts = getSpokenTexts();
+      // We shouldn't speak fragment2 even though it's in the same node
+      // because the selection only covers fragment 3.
+      assertEquals(utteranceTexts.length, 1);
+      assertTrue(utteranceTexts.includes(fragment3));
+    });
+  });
 
   suite('on pause via pause button', () => {
     setup(() => {
@@ -205,13 +343,12 @@ suite('Speech', () => {
 
   test('next granularity plays from there', () => {
     chrome.readingMode.initAxPositionWithNode(2);
-    const expectedNumSentences = paragraph1.length + paragraph2.length - 1;
+    const expectedNumSentences = totalSentences - 1;
 
     emitEvent(app, NEXT_GRANULARITY_EVENT);
 
     assertEquals(speechSynthesis.spokenUtterances.length, expectedNumSentences);
-    const utteranceTexts = speechSynthesis.spokenUtterances.map(
-        utterance => utterance.text.trim());
+    const utteranceTexts = getSpokenTexts();
     assertFalse(utteranceTexts.includes(paragraph1[0]!));
     assertTrue(paragraph2.every(sentence => utteranceTexts.includes(sentence)));
   });
@@ -227,10 +364,11 @@ suite('Speech', () => {
     assertEquals(speechSynthesis.spokenUtterances[0]!.text, paragraph2.at(-1)!);
   });
 
-  test('very long text uses max speech length', () => {
+
+  suite('very long text', () => {
     const longSentences =
         'A kingdom of isolation, and it looks like I am the queen and the ' +
-        'wind is howling like this swirling storm inside, Couldn\t keep it ' +
+        'wind is howling like this swirling storm inside, Couldn\'t keep it ' +
         'in, heaven knows I tried, but don\'t let them in, don\'t let them ' +
         'see, be the good girl you always have to be, and conceal, don\'t ' +
         'feel, don\'t let them know.' +
@@ -244,34 +382,78 @@ suite('Speech', () => {
         'for me- I\'m free- let it go let it go I am one with the wind and ' +
         'sky let it go let it go you\'ll never see me cry- here I stand and ' +
         'here I stay- let the storm rage on';
-    const leafs = [2];
-    const longTree = {
-      rootId: 1,
-      nodes: [
-        {
-          id: 1,
-          role: 'rootWebArea',
-          htmlTag: '#document',
-          childIds: [2],
-        },
-        {
-          id: 2,
-          role: 'staticText',
-          name: longSentences,
-        },
-      ],
-    };
-    const expectedNumSegments =
-        Math.ceil(longSentences.length / app.maxSpeechLength);
+    setup(() => {
+      const leafs = [2];
 
-    chrome.readingMode.setContentForTesting(longTree, leafs);
-    app.playSpeech();
+      const longTree = {
+        rootId: 1,
+        nodes: [
+          {
+            id: 1,
+            role: 'rootWebArea',
+            htmlTag: '#document',
+            childIds: [2],
+          },
+          {
+            id: 2,
+            role: 'staticText',
+            name: longSentences,
+          },
+        ],
+      };
 
-    assertEquals(speechSynthesis.spokenUtterances.length, expectedNumSegments);
-    const spoken =
-        speechSynthesis.spokenUtterances.map(utterance => utterance.text)
-            .join('');
-    assertEquals(spoken, longSentences);
+      chrome.readingMode.setContentForTesting(longTree, leafs);
+    });
+
+    test('uses max speech length', () => {
+      const expectedNumSegments =
+          Math.ceil(longSentences.length / app.maxSpeechLength);
+
+      app.playSpeech();
+
+      assertEquals(
+          speechSynthesis.spokenUtterances.length, expectedNumSegments);
+      const spoken =
+          speechSynthesis.spokenUtterances.map(utterance => utterance.text)
+              .join('');
+      assertEquals(spoken, longSentences);
+    });
+
+    test('on text-too-long error smaller text segment plays', () => {
+      // Remote voices already reduce the size of a speech segment to avoid
+      // the bug where speech stops without an error callback.
+      speechSynthesis.useLocalVoices();
+      chrome.readingMode.onVoiceChange = () => {};
+      emitEvent(
+          app, 'select-voice',
+          {detail: {selectedVoice: speechSynthesis.getVoices()[5]}});
+
+      speechSynthesis.triggerErrorEventOnNextSpeak('text-too-long');
+      app.playSpeech();
+
+      assertFalse(speechSynthesis.speaking);
+      assertTrue(speechSynthesis.canceled);
+      assertFalse(speechSynthesis.paused);
+      assertEquals(speechSynthesis.spokenUtterances.length, 3);
+
+      // The first utterance should contain the entire text, but it should
+      // be canceled. The second utterance should be the smaller text
+      // segment after receiving the text-too-long error. The third utterance
+      // should be the remaining text, as there is no longer a text-too-long
+      // error triggered.
+      const accessibleTextLength = app.getAccessibleTextLength(longSentences);
+      assertEquals(speechSynthesis.spokenUtterances[0]!.text, longSentences);
+      assertEquals(
+          speechSynthesis.spokenUtterances[1]!.text,
+          longSentences.substring(0, accessibleTextLength));
+      assertEquals(
+          speechSynthesis.spokenUtterances[2]!.text,
+          longSentences.substring(accessibleTextLength));
+      assertEquals(speechSynthesis.canceledUtterances.length, 1);
+      assertEquals(
+          speechSynthesis.canceledUtterances[0]!,
+          speechSynthesis.spokenUtterances[0]!);
+    });
   });
 
   suite('while playing', () => {
@@ -435,9 +617,7 @@ suite('Speech', () => {
 
         assertTrue(speechSynthesis.canceled);
         assertFalse(speechSynthesis.paused);
-        assertEquals(
-            speechSynthesis.spokenUtterances.length,
-            paragraph1.length + paragraph2.length);
+        assertEquals(speechSynthesis.spokenUtterances.length, totalSentences);
       });
     });
   });

@@ -1183,6 +1183,12 @@
   <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE" desc="The message shown when mounting a new SMB share fails due to an authentication failure.">
     Error mounting share. Please check your credentials and try again.
   </message>
+  <message name="IDS_SETTINGS_IN_SESSION_AUTH_ORIGIN_NAME_PROMPT" desc="Text shown in the auth dialog to indicate we are currently authenticating for ChromeOS settings">
+    <ph name="ORIGIN_NAME">$1<ex>Chrome</ex></ph> would like to confirm it's you
+  </message>
+  <message name="IDS_SETTINGS_IN_SESSION_AUTH_ORIGIN_NAME_PROMPT_LOCATION" desc="Location in text shown in the auth dialog to indicate we are currently authenticating for ChromeOS settings">
+    ChromeOS Settings
+  </message>
   <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE" desc="The message shown when mounting a new SMB share fails because the share cannot be found.">
     Error mounting share. The specified share was not found on the network.
   </message>
@@ -1281,18 +1287,6 @@
   </message>
   <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_DESCRIPTION" desc="The description for the checkbox that enables controlling the mouse cursor and keyboard with face movements." translateable="false">
     Use face and gaze movement to control cursor and keyboard
-  </message>
-  <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_LABEL" desc="Label for the option to configure the feature that enables controlling the mouse cursor and keyboard with face movements." translateable="false">
-    Cursor control
-  </message>
-  <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_DESCRIPTION" desc="Label description for the option to configure the feature that enables controlling the mouse cursor and keyboard with face movements." translateable="false">
-    Cursor calibration and movement settings
-  </message>
-  <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_LABEL" desc="Label for the option to configure facial expressions for Face Gaze." translateable="false">
-    Facial expressions
-  </message>
-  <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_DESCRIPTION" desc="Label description for the option to configure facial expressions for Face Gaze." translateable="false">
-    Use facial expressions to click and trigger key presses
   </message>
   <message name="IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_UP_LABEL" desc="Label description for a slider that adjusts the cursor speed up for Face Gaze. This makes the cursor move faster or slower as the head moves up." translateable="false">
     Move up
@@ -3346,6 +3340,15 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_AUDIO_INPUT_NOISE_CANCELLATION_TITLE" desc="In Device Settings, the title of the noise cancellation toggle under the input section in audio settings subpage.">
     Noise cancellation
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_INPUT_STYLE_TRANSFER_TITLE" desc="In Device Settings, the title of the style transfer toggle under the input section in audio settings subpage.">
+    Studio mic
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_INPUT_STYLE_TRANSFER_BADGE" desc="In Device Settings, the badge of the style transfer toggle under the input section in audio settings subpage.">
+    Experimental
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_INPUT_STYLE_TRANSFER_DESCRIPTION" desc="In Device Settings, the description of the allowance of style transfer toggle under the input section in audio settings subpage.">
+    Enhance your built-in microphone sound with various effects
   </message>
   <message name="IDS_SETTINGS_AUDIO_DEVICE_FRONT_MIC_LABEL" desc="In Device Settings, the label used for the front microphone.">
     Front microphone
@@ -6240,24 +6243,45 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   <message name="IDS_SETTINGS_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_TITLE" desc="The label for the notfications Do Not Disturb toggle that lets the user silence all app notifications.">
     Do Not Disturb
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE" desc="The title of the Parental Controls PIN verification dialog which lets the user access the App Parental Controls subpage.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL" desc="The label for the settings row that takes the user to a page for setting up on-device parental controls for apps.">
+    Parental controls for apps
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL" desc="The sublabel that describes the feature where users can set up on-device parental controls to block or enable apps.">
+    Block apps installed on this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. To restrict downloading apps or content, go to Google Play Settings. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$2"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SET_UP_BUTTON" desc="Text for the button that allows users to set up a PIN for on-device parental controls.">
+    Set up
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SEARCH_PROMPT" desc="Text for the prompt in the search bar of the app parental controls page.">
+    Search apps
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_NO_APPS_FOUND_TEXT" desc="Text shown when the app parental controls page has no apps to show.">
+    No apps found
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_ACCESS_DIALOG_TITLE" desc="The title of the Parental Controls PIN verification dialog which lets the user access the App Parental Controls subpage.">
     Enter your PIN for parental controls
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE" desc="The subtitle of the dialog which lets the user set up a PIN for App Parental Controls.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_SUBTITLE" desc="The subtitle of the dialog which lets the user set up a PIN for App Parental Controls.">
     Use this PIN to change parental controls settings.
     If you forget the PIN, powerwash this device and set up again.
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_TITLE" desc="The title of the dialog which lets the user set up a PIN for App Parental Controls.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CHOOSE_PIN_TITLE" desc="The title of the dialog which lets the user set up a PIN for App Parental Controls.">
     Set up your PIN
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE" desc="The title of the dialog which lets the user confirm a PIN for App Parental Controls.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_CONFIRM_PIN_TITLE" desc="The title of the dialog which lets the user confirm a PIN for App Parental Controls.">
     Confirm your PIN
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME" desc="The name of the link which sends the user to an article with instructions to follow in the case of a forgotten App Parental Controls PIN.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_FORGOT_PIN_LINK_NAME" desc="The name of the link which sends the user to an article with instructions to follow in the case of a forgotten App Parental Controls PIN.">
     Forgot PIN?
   </message>
-  <message name="IDS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT" desc="The text displayed under the PIN input section that notifies the user that the re-entered PIN does not match the first PIN entered.">
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_MISMATCH_ERROR_TEXT" desc="The text displayed under the PIN input section that notifies the user that the re-entered PIN does not match the first PIN entered.">
     PINs do not match
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_WRONG_LENGTH_ERROR_TEXT" desc="The text displayed under the PIN input section that notifies the user that the PIN should not be shorter than 6 digits">
+     PIN must be 6 digits
+  </message>
+  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_PIN_NUMERIC_ERROR_TEXT" desc="The text displayed under the PIN input section that notifies the user that the PIN should only consist of digits">
+    PIN must use numbers only
   </message>
    <message name="IDS_OS_SETTINGS_REVAMP_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_DESCRIPTION" desc="The text description of the Do Not Disturb toggle within help icon tooltip.">
     Notifications won't pop up on the screen. You can still see notifications by clicking the Do Not Disturb icon on the bottom right of your screen.
@@ -6331,15 +6355,6 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   </message>
   <message name="IDS_OS_SETTINGS_APP_LANGUAGE_DIALOG_UPDATE_BUTTON_TEXT" desc="The dialog confirm button to update app language with selected locale.">
     Update
-  </message>
-  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL" desc="The label for the settings row that takes the user to a page for setting up on-device parental controls for apps.">
-    Parental controls
-  </message>
-  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL" desc="The sublabel that describes the feature where users can set up on-device parental controls to block or enable apps.">
-    Manage access and block apps on this Chromebook.
-  </message>
-  <message name="IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SET_UP_BUTTON" desc="Text for the button that allows users to set up a PIN for on-device parental controls.">
-    Set up
   </message>
 
    <!-- Apps > Manage your apps > Borealis -->
@@ -6452,7 +6467,7 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
     System
   </message>
   <message name="IDS_SETTINGS_STORAGE_ITEM_ENCRYPTION_LABEL" desc="In Device Settings > Storage, label for the algorithm used for storage encryption.">
-    Encrypted using
+    User data encryption
   </message>
   <message name="IDS_SETTINGS_STORAGE_ITEM_ENCRYPTION_AES_128" desc="In Device Settings > Storage, string for the algorithm used for storage encryption.">
     AES-128

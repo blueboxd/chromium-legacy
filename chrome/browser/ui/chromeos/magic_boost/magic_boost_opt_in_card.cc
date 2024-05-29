@@ -6,8 +6,12 @@
 
 #include <string>
 
+#include "build/branding_buildflags.h"
+#include "chrome/browser/chromeos/mahi/mahi_prefs_controller.h"
+#include "chrome/browser/ui/chromeos/magic_boost/magic_boost_constants.h"
+#include "chrome/browser/ui/chromeos/magic_boost/magic_boost_controller.h"
 #include "chrome/browser/ui/views/editor_menu/utils/utils.h"
-#include "components/vector_icons/vector_icons.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
@@ -24,6 +28,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/unique_widget_ptr.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chromeos/ash/resources/internal/strings/grit/ash_internal_strings.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 namespace chromeos {
 
@@ -54,29 +62,25 @@ constexpr int kBetweenImageAndTextSpacing = 16;
 constexpr int kBetweenContentsAndButtonsSpacing = 16;
 constexpr int kBetweenLabelsSpacing = 4;
 
-// Placeholder values
-// TODO(b/339528642): Resolve with real strings.
-const std::u16string title_text = u"Title text";
-const std::u16string body_text =
+// Placeholder strings
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const std::u16string kPlaceholderTitleText = u"Title text";
+const std::u16string kPlaceholderBodyText =
     u"Body text that is multi-line which means it can span from one line to up "
     u"to three lines for this case";
-const std::u16string secondary_button_text = u"No thanks";
-const std::u16string primary_button_text = u"Try it";
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// Placeholder callbacks
-// TODO(b/340940507): Implement button callbacks.
-base::RepeatingClosure primary_callback =
-    base::BindRepeating([]() { LOG(ERROR) << "Primary button pressed"; });
-base::RepeatingClosure secondary_callback =
-    base::BindRepeating([]() { LOG(ERROR) << "Secondary button pressed"; });
+// Content strings
+const std::u16string kSecondaryButtonText = u"No thanks";
+const std::u16string kPrimaryButtonText = u"Try it";
 
 // Font lists
-const gfx::FontList body_text_font_list =
+const gfx::FontList kBodyTextFontList =
     gfx::FontList({"Google Sans", "Roboto"},
                   gfx::Font::NORMAL,
                   /*font_size=*/12,
                   gfx::Font::Weight::NORMAL);
-const gfx::FontList title_text_font_list =
+const gfx::FontList kTitleTextFontList =
     gfx::FontList({"Google Sans", "Roboto"},
                   gfx::Font::NORMAL,
                   /*font_size=*/14,
@@ -86,7 +90,7 @@ const gfx::FontList title_text_font_list =
 
 // MagicBoostOptInCard --------------------------------------------------------
 
-MagicBoostOptInCard::MagicBoostOptInCard() {
+MagicBoostOptInCard::MagicBoostOptInCard(const bool include_orca) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetInteriorMargin(kInteriorMargin)
@@ -124,7 +128,7 @@ MagicBoostOptInCard::MagicBoostOptInCard() {
               views::Builder<views::ImageView>()
                   .SetPreferredSize(gfx::Size(kImageViewSize, kImageViewSize))
                   .SetImage(ui::ImageModel::FromVectorIcon(
-                      vector_icons::kUsbIcon, ui::kColorSysOnPrimaryContainer,
+                      kMahiSparkIcon, ui::kColorSysOnPrimaryContainer,
                       kImageViewIconSize))
                   .SetBackground(views::CreateThemedSolidBackground(
                       ui::kColorSysPrimaryContainer))
@@ -155,24 +159,37 @@ MagicBoostOptInCard::MagicBoostOptInCard() {
               views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                        views::MaximumFlexSizeRule::kUnbounded,
                                        /*adjust_height_for_width=*/true))
-          .AddChildren(views::Builder<views::Label>()
-                           .SetText(title_text)
-                           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                           .SetEnabledColorId(ui::kColorSysOnSurface)
-                           .SetAutoColorReadabilityEnabled(false)
-                           .SetSubpixelRenderingEnabled(false)
-                           .SetFontList(title_text_font_list)
-                           .SetMultiLine(true)
-                           .SetMaxLines(kTitleLabelMaxLines),
-                       views::Builder<views::Label>()
-                           .SetText(body_text)
-                           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                           .SetEnabledColorId(ui::kColorSysOnSurface)
-                           .SetAutoColorReadabilityEnabled(false)
-                           .SetSubpixelRenderingEnabled(false)
-                           .SetFontList(body_text_font_list)
-                           .SetMultiLine(true)
-                           .SetMaxLines(kBodyLabelMaxLines))
+          .AddChildren(
+              views::Builder<views::Label>()
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .SetText(l10n_util::GetStringUTF16(
+                      include_orca ? IDS_MAGIC_BOOST_OPT_IN_CARD_TITLE
+                                   : IDS_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_TITLE))
+#else
+                  .SetText(kPlaceholderTitleText)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                  .SetEnabledColorId(ui::kColorSysOnSurface)
+                  .SetAutoColorReadabilityEnabled(false)
+                  .SetSubpixelRenderingEnabled(false)
+                  .SetFontList(kTitleTextFontList)
+                  .SetMultiLine(true)
+                  .SetMaxLines(kTitleLabelMaxLines),
+              views::Builder<views::Label>()
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .SetText(l10n_util::GetStringUTF16(
+                      include_orca ? IDS_MAGIC_BOOST_OPT_IN_CARD_BODY
+                                   : IDS_MAGIC_BOOST_OPT_IN_CARD_NO_ORCA_BODY))
+#else
+                  .SetText(kPlaceholderBodyText)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+                  .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                  .SetEnabledColorId(ui::kColorSysOnSurface)
+                  .SetAutoColorReadabilityEnabled(false)
+                  .SetSubpixelRenderingEnabled(false)
+                  .SetFontList(kBodyTextFontList)
+                  .SetMultiLine(true)
+                  .SetMaxLines(kBodyLabelMaxLines))
           .Build());
 
   // Create buttons container that holds two buttons.
@@ -186,15 +203,21 @@ MagicBoostOptInCard::MagicBoostOptInCard() {
                                       kButtonsContainerHeight))
           .AddChildren(views::Builder<views::MdTextButton>()
                            .CopyAddressTo(&secondary_button_)
-                           .SetText(secondary_button_text)
-                           .SetAccessibleName(secondary_button_text)
+                           .SetID(magic_boost::ViewId::OptInCardSecondaryButton)
+                           .SetText(kSecondaryButtonText)
+                           .SetAccessibleName(kSecondaryButtonText)
                            .SetStyle(ui::ButtonStyle::kText)
-                           .SetCallback(std::move(secondary_callback)),
+                           .SetCallback(base::BindRepeating(
+                               &MagicBoostOptInCard::OnSecondaryButtonPressed,
+                               weak_ptr_factory_.GetWeakPtr())),
                        views::Builder<views::MdTextButton>()
-                           .SetText(primary_button_text)
-                           .SetAccessibleName(primary_button_text)
+                           .SetID(magic_boost::ViewId::OptInCardPrimaryButton)
+                           .SetText(kPrimaryButtonText)
+                           .SetAccessibleName(kPrimaryButtonText)
                            .SetStyle(ui::ButtonStyle::kProminent)
-                           .SetCallback(std::move(primary_callback)))
+                           .SetCallback(base::BindRepeating(
+                               &MagicBoostOptInCard::OnPrimaryButtonPressed,
+                               weak_ptr_factory_.GetWeakPtr())))
           .Build());
 }
 
@@ -202,20 +225,22 @@ MagicBoostOptInCard::~MagicBoostOptInCard() = default;
 
 // static
 views::UniqueWidgetPtr MagicBoostOptInCard::CreateWidget(
-    const gfx::Rect& anchor_view_bounds) {
-  views::Widget::InitParams params;
+    const gfx::Rect& anchor_view_bounds,
+    const bool include_orca) {
+  views::Widget::InitParams params(
+      views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.shadow_elevation = 2;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.name = GetWidgetName();
 
   views::UniqueWidgetPtr widget =
       std::make_unique<views::Widget>(std::move(params));
-  MagicBoostOptInCard* magic_boost_opt_in_card =
-      widget->SetContentsView(std::make_unique<MagicBoostOptInCard>());
+  MagicBoostOptInCard* magic_boost_opt_in_card = widget->SetContentsView(
+      std::make_unique<MagicBoostOptInCard>(include_orca));
   magic_boost_opt_in_card->UpdateWidgetBounds(anchor_view_bounds);
 
   return widget;
@@ -236,6 +261,21 @@ void MagicBoostOptInCard::UpdateWidgetBounds(
 void MagicBoostOptInCard::RequestFocus() {
   views::View::RequestFocus();
   secondary_button_->RequestFocus();
+}
+
+void MagicBoostOptInCard::OnPrimaryButtonPressed() {
+  auto* controller = MagicBoostController::Get();
+  controller->CloseOptInUi();
+  controller->ShowDisclaimerUi();
+}
+
+void MagicBoostOptInCard::OnSecondaryButtonPressed() {
+  auto* controller = MagicBoostController::Get();
+  controller->CloseOptInUi();
+  // TODO(b/341158134): Disable opt-in card from showing again when "No thanks"
+  // is pressed. We should also use `MagicBoostState::Get()` here instead when
+  // it is available.
+  mahi::MahiPrefsController::Get()->SetMahiEnabled(false);
 }
 
 BEGIN_METADATA(MagicBoostOptInCard)

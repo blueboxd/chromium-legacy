@@ -4,9 +4,6 @@
 package org.chromium.chrome.browser.ui.google_bottom_bar;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.IntDef;
@@ -38,7 +35,9 @@ public class BottomBarConfigCreator {
                     103,
                     ButtonId.PIH_BASIC,
                     104,
-                    ButtonId.ADD_NOTES);
+                    ButtonId.ADD_NOTES,
+                    105,
+                    ButtonId.CUSTOM);
     private static final List<Integer> DEFAULT_BUTTON_ID_LIST =
             List.of(ButtonId.SAVE, ButtonId.PIH_BASIC, ButtonId.SHARE);
     private final Context mContext;
@@ -189,7 +188,7 @@ public class BottomBarConfigCreator {
                         id,
                         UiUtils.getTintedDrawable(
                                 mContext,
-                                R.drawable.page_insights_icon,
+                                R.drawable.bottom_bar_page_insights_icon,
                                 R.color.default_icon_color_baseline),
                         mContext.getString(
                                 R.string.google_bottom_bar_page_insights_button_description),
@@ -229,9 +228,9 @@ public class BottomBarConfigCreator {
     }
 
     /**
-     * Each button is encoded as: 1 - Page Insights Hub with basic icon 2 - Chrome Share 3 - Google
-     * App Save 4 - Google App Add notes 5 - Chrome Refresh 6 - Page Insights Hub with coloured icon
-     * 7 - Page Insights Hub with expanded icon
+     * Each button is encoded as: 1 - Page Insights Hub with basic icon 2 - Chrome Share 3 - Save 4
+     * - Add notes 5 - Chrome Refresh 6 - Page Insights Hub with coloured icon 7 - Page Insights Hub
+     * with expanded icon 8 - Custom button
      */
     @IntDef({
         ButtonId.PIH_BASIC,
@@ -241,6 +240,7 @@ public class BottomBarConfigCreator {
         ButtonId.REFRESH,
         ButtonId.PIH_COLORED,
         ButtonId.PIH_EXPANDED,
+        ButtonId.CUSTOM,
         ButtonId.MAX_BUTTON_ID,
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -252,7 +252,8 @@ public class BottomBarConfigCreator {
         int REFRESH = 5;
         int PIH_COLORED = 6;
         int PIH_EXPANDED = 7;
-        int MAX_BUTTON_ID = PIH_EXPANDED;
+        int CUSTOM = 8;
+        int MAX_BUTTON_ID = CUSTOM;
     }
 
     /**
@@ -263,25 +264,13 @@ public class BottomBarConfigCreator {
         return code > 0 && code <= ButtonId.MAX_BUTTON_ID;
     }
 
-    private static Drawable getScaledAndTintedIcon(
-            Context context, Drawable drawable, int tintColorId) {
-        if (drawable instanceof BitmapDrawable) {
-            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-            Resources resource = context.getResources();
-            int dimen = resource.getDimensionPixelSize(R.dimen.google_bottom_bar_button_image_size);
-            BitmapDrawable bitmapDrawable =
-                    new BitmapDrawable(
-                            context.getResources(),
-                            Bitmap.createScaledBitmap(bitmap, dimen, dimen, true));
-            bitmapDrawable.setTint(context.getColor(tintColorId));
-            return bitmapDrawable;
-        }
+    private static Drawable getTintedIcon(Context context, Drawable drawable, int tintColorId) {
         drawable.setTint(context.getColor(tintColorId));
         return drawable;
     }
 
     private static ButtonConfig getButtonConfigFromCustomButtonParams(
-            Context context, @ButtonId int buttonId, CustomButtonParams params) {
+            Context context, int buttonId, CustomButtonParams params) {
         return new ButtonConfig(
                 buttonId,
                 getIconDrawable(context, buttonId, params),
@@ -294,8 +283,10 @@ public class BottomBarConfigCreator {
         // Always use pageInsights icon provided by Chrome
         return isPageInsightsButton(buttonId)
                 ? UiUtils.getTintedDrawable(
-                        context, R.drawable.page_insights_icon, R.color.default_icon_color_baseline)
-                : getScaledAndTintedIcon(
+                        context,
+                        R.drawable.bottom_bar_page_insights_icon,
+                        R.color.default_icon_color_baseline)
+                : getTintedIcon(
                         context, params.getIcon(context), R.color.default_icon_color_baseline);
     }
 

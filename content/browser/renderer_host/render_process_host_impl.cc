@@ -1155,6 +1155,10 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   }
 
+  void GetInterfacesForTesting(std::vector<std::string>& out) {
+    binders_->GetInterfacesForTesting(out);  // IN-TEST
+  }
+
  private:
   // mojom::ChildProcessHost implementation:
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
@@ -1412,7 +1416,12 @@ RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
       flags |= RenderProcessFlags::kPdf;
     }
   }
-
+#if BUILDFLAG(IS_WIN)
+  if (site_instance && GetContentClient()->browser()->ShouldUseSkiaFontManager(
+                           site_instance->GetSiteURL())) {
+    flags |= RenderProcessFlags::kSkiaFontManager;
+  }
+#endif
   return new RenderProcessHostImpl(browser_context, storage_partition_impl,
                                    flags);
 }
@@ -3365,6 +3374,10 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   command_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,
       base::NumberToString(display::win::GetDPIScale()));
+
+  if (!!(flags_ & RenderProcessFlags::kSkiaFontManager)) {
+    command_line->AppendSwitch(switches::kUseSkiaFontManager);
+  }
 #endif
 
   AppendCompositorCommandLineFlags(command_line);
@@ -3497,7 +3510,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kSkiaFontCacheLimitMb,
     switches::kSkiaResourceCacheLimitMb,
     switches::kTestType,
-    switches::kTimeZoneForTesting,
     switches::kTouchEventFeatureDetection,
     switches::kTraceToConsole,
     switches::kUseCmdDecoder,
@@ -4468,7 +4480,17 @@ bool RenderProcessHostImpl::IsSuitableHost(
     // where this case can happen is when the spare RenderProcessHost gets
     // used.
     CHECK(!host_has_web_ui_bindings);
-    CHECK(process_lock.is_invalid());
+    // TODO(crbug.com/40889283): This CHECK is failing in the wild, so set some
+    // crash keys to help figure out why.
+    if (!process_lock.is_invalid()) {
+      SCOPED_CRASH_KEY_STRING256("Bug40889283", "process_lock",
+                                 process_lock.ToString());
+      SCOPED_CRASH_KEY_STRING256("Bug40889283", "site_info",
+                                 site_info.GetDebugString());
+      CHECK(false) << "IsSuitableHost found a process that is marked as unused "
+                      "but has a valid process lock: "
+                   << process_lock;
+    }
   } else {
     // WebUI checks.
     bool url_is_for_web_ui =
@@ -5247,6 +5269,8 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     DCHECK(child_process_launcher_.get());
     DCHECK(!child_process_launcher_->IsStarting());
 #if BUILDFLAG(IS_ANDROID)
+    // TODO(339097516): Remove the following CHECK when the issue is fixed.
+    CHECK(child_process_launcher_->GetProcess().IsValid());
     child_process_launcher_->SetRenderProcessPriority(priority_);
 #elif BUILDFLAG(IS_MAC)
     if (base::FeatureList::IsEnabled(
@@ -5671,5 +5695,12 @@ void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
 }
 
 #endif
+
+void RenderProcessHostImpl::GetBoundInterfacesForTesting(
+    std::vector<std::string>& out) {
+  io_thread_host_impl_->AsyncCall(&IOThreadHostImpl::GetInterfacesForTesting)
+      .WithArgs(std::ref(out));
+  io_thread_host_impl_->FlushPostedTasksForTesting();  // IN-TEST
+}
 
 }  // namespace content

@@ -121,15 +121,16 @@ void VerifyFormGroupValues(const FormGroup& form_group,
   }
 }
 
-std::unique_ptr<PrefService> PrefServiceForTesting() {
-  scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-      new user_prefs::PrefRegistrySyncable());
-  signin::IdentityManager::RegisterProfilePrefs(registry.get());
+std::unique_ptr<AutofillTestingPrefService> PrefServiceForTesting() {
+  auto pref_service = std::make_unique<AutofillTestingPrefService>();
+  user_prefs::PrefRegistrySyncable* registry = pref_service->registry();
+  signin::IdentityManager::RegisterProfilePrefs(registry);
   registry->RegisterBooleanPref(
       RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   registry->RegisterBooleanPref(::prefs::kMixedFormsWarningsEnabled, true);
   registry->RegisterStringPref(prefs::kAutofillStatesDataDir, "");
-  return PrefServiceForTesting(registry.get());
+  prefs::RegisterProfilePrefs(registry);
+  return pref_service;
 }
 
 std::unique_ptr<PrefService> PrefServiceForTesting(
@@ -143,18 +144,18 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
 
 [[nodiscard]] FormData CreateTestAddressFormData(const char* unique_id) {
   FormData form;
-  form.host_frame = MakeLocalFrameToken();
-  form.renderer_id = MakeFormRendererId();
-  form.name = u"MyForm" + ASCIIToUTF16(unique_id ? unique_id : "");
-  form.button_titles = {std::make_pair(
-      u"Submit", mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  form.is_action_empty = true;
-  form.main_frame_origin =
-      url::Origin::Create(GURL("https://myform_root.com/form.html"));
-  form.submission_event =
-      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+  form.set_host_frame(MakeLocalFrameToken());
+  form.set_renderer_id(MakeFormRendererId());
+  form.set_name(u"MyForm" + ASCIIToUTF16(unique_id ? unique_id : ""));
+  form.set_button_titles({std::make_pair(
+      u"Submit", mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)});
+  form.set_url(GURL("https://myform.com/form.html"));
+  form.set_action(GURL("https://myform.com/submit.html"));
+  form.set_is_action_empty(true);
+  form.set_main_frame_origin(
+      url::Origin::Create(GURL("https://myform_root.com/form.html")));
+  form.set_submission_event(
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 
   form.fields.push_back(CreateTestFormField("First Name", "firstname", "",
                                             FormControlType::kInputText));
@@ -689,7 +690,7 @@ void SetUpCreditCardAndBenefitData(
       benefit);
   personal_data.payments_data_manager().AddCreditCardBenefitForTest(benefit);
   card.set_issuer_id(issuer_id);
-  personal_data.AddServerCreditCard(card);
+  personal_data.test_payments_data_manager().AddServerCreditCard(card);
 }
 
 void SetProfileInfo(AutofillProfile* profile,
@@ -857,15 +858,16 @@ void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
   FormData form;
   FormFieldData field;
-  form.host_frame = MakeLocalFrameToken();
-  form.renderer_id = MakeFormRendererId();
+  form.set_host_frame(MakeLocalFrameToken());
+  form.set_renderer_id(MakeFormRendererId());
   field.set_host_frame(MakeLocalFrameToken());
   field.set_renderer_id(MakeFieldRendererId());
   field.set_is_focusable(true);
   field.set_should_autocomplete(true);
   field.set_bounds(gfx::RectF(100.f, 100.f));
   autofill_external_delegate->OnQuery(
-      form, field, AutofillSuggestionTriggerSource::kFormControlElementClicked);
+      form, field, /*caret_bounds=*/gfx::Rect(),
+      AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(u"Test suggestion"));

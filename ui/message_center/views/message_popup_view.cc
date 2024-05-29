@@ -131,7 +131,9 @@ void MessagePopupView::AutoCollapse() {
 }
 
 void MessagePopupView::Show() {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_POPUP);
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
 // TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -179,13 +181,9 @@ void MessagePopupView::Show() {
 }
 
 void MessagePopupView::Close() {
-  if (!GetWidget()) {
-    DeleteDelegate();
-    return;
-  }
-
-  if (!GetWidget()->IsClosed())
+  if (GetWidget() && !GetWidget()->IsClosed()) {
     GetWidget()->CloseNow();
+  }
 }
 
 void MessagePopupView::OnDidChangeFocus(views::View* before, views::View* now) {
@@ -244,6 +242,7 @@ void MessagePopupView::AddedToWidget() {
   if (focus_manager_) {
     focus_manager_->AddFocusChangeListener(this);
   }
+  view_added_to_widget_ = true;
 }
 
 void MessagePopupView::RemovedFromWidget() {

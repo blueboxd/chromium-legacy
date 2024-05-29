@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
-#include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
 #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
 #include "chrome/browser/ui/webui/net_export_ui.h"
@@ -159,8 +158,6 @@
 #include "chrome/browser/ui/webui/system/system_info_ui.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_ui.h"
 #include "chrome/browser/ui/webui/webui_gallery/webui_gallery_ui.h"
-#include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
-#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "media/base/media_switches.h"
@@ -172,12 +169,15 @@
 #include "ash/webui/file_manager/url_constants.h"
 #include "ash/webui/files_internals/url_constants.h"
 #include "ash/webui/help_app_ui/url_constants.h"
+#include "ash/webui/mall/url_constants.h"
 #include "ash/webui/multidevice_debug/url_constants.h"
 #include "ash/webui/print_preview_cros/url_constants.h"
 #include "ash/webui/vc_background_ui/url_constants.h"
 #include "chrome/browser/ash/extensions/url_constants.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cellular_setup/mobile_setup_ui.h"
+#include "chromeos/ash/components/kiosk/vision/webui/constants.h"
+#include "chromeos/ash/components/kiosk/vision/webui/ui_controller.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -233,6 +233,11 @@
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
+#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #endif
 
 #if BUILDFLAG(ENABLE_WEBUI_CERTIFICATE_VIEWER)
@@ -320,6 +325,15 @@ template <>
 WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
   return new AboutUI(web_ui, url.host());
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+template <>
+WebUIController* NewWebUI<ash::kiosk_vision::UIController>(WebUI* web_ui,
+                                                           const GURL& url) {
+  return new ash::kiosk_vision::UIController(
+      web_ui, base::BindRepeating(webui::SetupWebUIDataSource));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 template <>
 WebUIController* NewWebUI<commerce::CommerceInternalsUI>(WebUI* web_ui,
@@ -437,6 +451,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       security_interstitials::kChromeUIConnectionMonitoringDetectedHost) {
     return &NewWebUI<security_interstitials::KnownInterceptionDisclosureUI>;
   }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (url.host_piece() ==
+      ash::kiosk_vision::kChromeUIKioskVisionInternalsHost) {
+    return &NewWebUI<ash::kiosk_vision::UIController>;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   if (url.host_piece() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
   if (url.host_piece() == chrome::kChromeUINetInternalsHost)
@@ -666,10 +686,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIWebuiGalleryHost) {
     return &NewWebUI<WebuiGalleryUI>;
   }
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   if (url.host_piece() == chrome::kChromeUIWhatsNewHost &&
       whats_new::IsEnabled()) {
     return &NewWebUI<WhatsNewUI>;
   }
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   if (url.host_piece() == chrome::kChromeUIOmniboxPopupHost &&
       base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
     return &NewWebUI<OmniboxPopupUI>;
@@ -810,9 +832,6 @@ ChromeWebUIControllerFactory::CreateWebUIControllerForURL(WebUI* web_ui,
   if (!function)
     return nullptr;
 
-  if (web_ui->GetWebContents()->GetPrimaryMainFrame())
-    webui::LogWebUIUrl(url);
-
   return base::WrapUnique((*function)(web_ui, url));
 }
 
@@ -944,8 +963,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUINewTabPageHost)
     return NewTabPageUI::GetFaviconResourceBytes(scale_factor);
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   if (page_url.host_piece() == chrome::kChromeUIWhatsNewHost)
     return WhatsNewUI::GetFaviconResourceBytes(scale_factor);
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   // Bookmarks are part of NTP on Android.
   if (page_url.host_piece() == chrome::kChromeUIBookmarksHost)
@@ -1026,6 +1047,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(ash::kChromeUICameraAppURL),
     GURL(ash::kChromeUIFilesInternalsURL),
     GURL(ash::kChromeUIHelpAppURL),
+    GURL(ash::kChromeUIMallUrl),
     GURL(ash::kChromeUIPrintPreviewCrosURL),
     GURL(ash::multidevice::kChromeUIProximityAuthURL),
     GURL(ash::vc_background_ui::kChromeUIVcBackgroundURL),

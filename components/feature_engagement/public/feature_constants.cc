@@ -480,7 +480,7 @@ BASE_FEATURE(kIPHBadgedTranslateManualTriggerFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDiscoverFeedHeaderFeature,
              "IPH_DiscoverFeedHeaderMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDefaultSiteViewFeature,
              "IPH_DefaultSiteView",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -752,6 +752,9 @@ BASE_FEATURE(kIPHDesktopPWAsLinkCapturingLaunch,
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 BASE_FEATURE(kIPHiOSPasswordPromoDesktopFeature,
              "IPH_iOSPasswordPromoDesktop",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSAddressPromoDesktopFeature,
+             "IPH_iOSAddressPromoDesktop",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID) &&
         // BUILDFLAG(GOOGLE_CHROME_BRANDING)

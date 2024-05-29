@@ -53,6 +53,12 @@ inline constexpr char kAdvancedProtectionDownloadLearnMoreURL[] =
 inline constexpr char kAppNotificationsBrowserSettingsURL[] =
     "chrome://settings/content/notifications";
 
+// "Learn more" URL for App Parental Controls.
+// char16_t is used here because this constant may be used to set the src
+// attribute of iframe elements.
+inline constexpr char16_t kAppParentalControlsLearnMoreUrl[] =
+    u"https://support.google.com/chromebook?p=local_app_controls";
+
 // "Learn more" URL for Battery Saver Mode.
 inline constexpr char kBatterySaverModeLearnMoreUrl[] =
     "https://support.google.com/chrome?p=chrome_battery_saver";
@@ -316,6 +322,10 @@ inline constexpr char16_t kMemorySaverModeTabDiscardingHelpUrl[] =
 // The URL to the help center article of Incognito mode.
 inline constexpr char16_t kIncognitoHelpCenterURL[] =
     u"https://support.google.com/chrome?p=incognito";
+
+// The URL for the Help Center page about IP Protection.
+inline constexpr char kIpProtectionHelpCenterURL[] =
+    "https://support.google.com/chrome?p=ip_protection";
 
 // The URL for "Learn more" page for Isolated Web Apps.
 // TODO(crbug.com/40281470): Update this URL with proper user-facing explainer.

@@ -40,7 +40,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
-            "reclient",
+            "remoteexec",
         ],
     ),
     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
@@ -64,7 +64,7 @@ try_.builder(
             "asan",
             "shared",
             "release",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
             "chromeos_codecs",
@@ -136,7 +136,7 @@ try_.builder(
             "asan",
             "shared",
             "release",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
             "chromeos_codecs",
@@ -160,7 +160,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
         ],
@@ -175,7 +175,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_try_builder",
-            "reclient",
+            "remoteexec",
             "dcheck_off",
         ],
     ),
@@ -248,7 +248,7 @@ try_.builder(
         configs = [
             "gpu_tests",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
             "mbi_mode_per_render_process_host",
@@ -287,7 +287,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
         ],
@@ -305,7 +305,7 @@ try_.builder(
             "asan",
             "shared",
             "release",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
             "chromeos_codecs",
@@ -478,13 +478,7 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
-    gn_args = gn_args.config(
-        configs = [
-            "msan",
-            "release_builder",
-            "reclient",
-        ],
-    ),
+    gn_args = "ci/WebKit Linux MSAN",
     # At this time, MSan is only compatibly with Focal. See
     # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
@@ -515,7 +509,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
         ],
     ),
     siso_remote_jobs = siso.remote_jobs.LOW_JOBS_FOR_CQ,
@@ -625,7 +619,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
         ],
@@ -645,7 +639,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "debug_try_builder",
-            "reclient",
+            "remoteexec",
         ],
     ),
     builderless = not settings.is_main,
@@ -676,7 +670,7 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "release_builder",
-            "reclient",
+            "remoteexec",
             "no_symbols",
             "dcheck_always_on",
         ],
@@ -695,7 +689,7 @@ try_.builder(
         configs = [
             "gpu_tests",
             "debug_try_builder",
-            "reclient",
+            "remoteexec",
         ],
     ),
     caches = [
@@ -887,7 +881,7 @@ try_.gpu.optional_tests_builder(
         configs = [
             "gpu_fyi_tests",
             "release_builder",
-            "reclient",
+            "remoteexec",
             "minimal_symbols",
             "dcheck_always_on",
         ],

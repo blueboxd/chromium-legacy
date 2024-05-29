@@ -38,6 +38,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/dice_response_handler.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
@@ -72,6 +73,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -251,8 +253,9 @@ std::unique_ptr<HttpResponse> HandleEnableSyncURL(
     const std::string& main_email,
     const base::RepeatingCallback<void(base::OnceClosure)>& callback,
     const HttpRequest& request) {
-  if (!net::test_server::ShouldHandle(request, kEnableSyncURL))
+  if (!net::test_server::ShouldHandle(request, kEnableSyncURL)) {
     return nullptr;
+  }
 
   std::unique_ptr<BlockedHttpResponse> http_response =
       std::make_unique<BlockedHttpResponse>(callback);
@@ -1269,6 +1272,195 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Incognito) {
       incognito_browser->profile()));
 }
 
+class DiceExplicitSigninRollbackBrowserTest : public InProcessBrowserTest {
+ public:
+  struct AccountStorageStatus {
+    bool autofill_sync_toggle_available = false;
+    syncer::UserSelectableTypeSet user_selectable_type_set;
+  };
+
+  // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    client_helper_.SetUp();
+  }
+
+  DiceExplicitSigninRollbackBrowserTest() {
+    std::vector<base::test::FeatureRef> features = {
+        syncer::kSyncEnableContactInfoDataTypeInTransportMode,
+        switches::kExplicitBrowserSigninUIOnDesktop};
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    if (content::IsPreTest()) {
+      // PRE_ test has explicit signin.
+      enabled_features = std::move(features);
+    } else {
+      // Non-PRE_ test has implicit signin.
+      disabled_features = std::move(features);
+    }
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  signin::IdentityManager* GetIdentityManager() {
+    return IdentityManagerFactory::GetForProfile(browser()->profile());
+  }
+
+  AccountStorageStatus GetAccountStorageStatus() {
+    syncer::SyncUserSettings* settings =
+        SyncServiceFactory::GetForProfile(browser()->profile())
+            ->GetUserSettings();
+    return {.autofill_sync_toggle_available =
+                autofill::PersonalDataManagerFactory::GetForProfile(
+                    browser()->profile())
+                    ->address_data_manager()
+                    .IsAutofillSyncToggleAvailable(),
+            .user_selectable_type_set = settings->GetSelectedTypes()};
+  }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return client_helper_.test_url_loader_factory();
+  }
+
+ private:
+  ChromeSigninClientWithURLLoaderHelper client_helper_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest, PRE_Rollback) {
+  signin::AccountAvailabilityOptionsBuilder builder;
+  signin::MakeAccountAvailable(
+      GetIdentityManager(),
+      builder.AsPrimary(signin::ConsentLevel::kSignin)
+          .WithAccessPoint(signin_metrics::AccessPoint::
+                               ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE)
+          .Build(kMainGmailEmail));
+  ASSERT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            signin::ConsentLevel::kSignin);
+
+  ASSERT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kExplicitBrowserSignin));
+
+  // Butter for autofill is enabled.
+  AccountStorageStatus account_storage_status = GetAccountStorageStatus();
+  EXPECT_TRUE(account_storage_status.autofill_sync_toggle_available);
+  EXPECT_TRUE(account_storage_status.user_selectable_type_set.HasAll(
+      {syncer::UserSelectableType::kAutofill,
+       syncer::UserSelectableType::kPasswords}));
+  // Cookie migration is complete.
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kCookieClearOnExitMigrationNoticeComplete));
+}
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest, Rollback) {
+  Profile* profile = browser()->profile();
+  // The user is now signed in implicitly.
+  ASSERT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            signin::ConsentLevel::kSignin);
+  ASSERT_TRUE(gaia::AreEmailsSame(
+      GetIdentityManager()
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+          .email,
+      kMainGmailEmail));
+  ASSERT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kExplicitBrowserSignin));
+  // Account storage is disabled.
+  AccountStorageStatus account_storage_status = GetAccountStorageStatus();
+  EXPECT_FALSE(account_storage_status.user_selectable_type_set.HasAny(
+      {syncer::UserSelectableType::kAutofill,
+       syncer::UserSelectableType::kPasswords}));
+  // Cookie migration is required.
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kCookieClearOnExitMigrationNoticeComplete));
+  // And cannot be completed by changing cookie settings.
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(profile).get();
+  settings->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kCookieClearOnExitMigrationNoticeComplete));
+}
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest,
+                       PRE_RollbackSigninPending) {
+  signin::MakeAccountAvailable(
+      GetIdentityManager(),
+      signin::AccountAvailabilityOptionsBuilder()
+          .AsPrimary(signin::ConsentLevel::kSignin)
+          .WithAccessPoint(signin_metrics::AccessPoint::
+                               ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE)
+          .Build(kMainGmailEmail));
+  ASSERT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            signin::ConsentLevel::kSignin);
+  ASSERT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kExplicitBrowserSignin));
+
+  // Induce SigninPending
+  signin::SetInvalidRefreshTokenForPrimaryAccount(GetIdentityManager());
+
+  // Still signed in.
+  EXPECT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            signin::ConsentLevel::kSignin);
+  // But account is in error.
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          GetIdentityManager()->GetPrimaryAccountId(
+              signin::ConsentLevel::kSignin)));
+}
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest,
+                       RollbackSigninPending) {
+  // After rollback, a signin pending state should transition to signed out.
+  EXPECT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            std::nullopt);
+}
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest,
+                       PRE_RollbackWebSigninOnly) {
+  // Signin on the web only.
+  AccountInfo account_info = signin::MakeAccountAvailable(
+      GetIdentityManager(),
+      signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
+          .WithAccessPoint(signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN)
+          .WithCookie()
+          .Build(kMainGmailEmail));
+  ASSERT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            std::nullopt);
+  ASSERT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kExplicitBrowserSignin));
+
+  // Signed in on the web.
+  EXPECT_TRUE(GetIdentityManager()->HasAccountWithRefreshToken(
+      account_info.account_id));
+  signin::AccountsInCookieJarInfo cookie_jar =
+      GetIdentityManager()->GetAccountsInCookieJar();
+  ASSERT_TRUE(cookie_jar.accounts_are_fresh);
+  ASSERT_EQ(cookie_jar.signed_in_accounts.size(), 1u);
+  EXPECT_TRUE(gaia::AreEmailsSame(cookie_jar.signed_in_accounts[0].email,
+                                  kMainGmailEmail));
+}
+
+IN_PROC_BROWSER_TEST_F(DiceExplicitSigninRollbackBrowserTest,
+                       RollbackWebSigninOnly) {
+  signin::TriggerListAccount(GetIdentityManager(), test_url_loader_factory());
+  // After rollback, Chrome would be implicitly signed in.
+  EXPECT_EQ(signin::GetPrimaryAccountConsentLevel(GetIdentityManager()),
+            signin::ConsentLevel::kSignin);
+  CoreAccountInfo primary_account = GetIdentityManager()->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kSignin);
+  EXPECT_TRUE(gaia::AreEmailsSame(primary_account.email, kMainGmailEmail));
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kExplicitBrowserSignin));
+
+  // Signed in on the web as well.
+  EXPECT_TRUE(GetIdentityManager()->HasAccountWithRefreshToken(
+      primary_account.account_id));
+  signin::AccountsInCookieJarInfo cookie_jar =
+      GetIdentityManager()->GetAccountsInCookieJar();
+  ASSERT_TRUE(cookie_jar.accounts_are_fresh);
+  ASSERT_EQ(cookie_jar.signed_in_accounts.size(), 1u);
+  EXPECT_TRUE(gaia::AreEmailsSame(cookie_jar.signed_in_accounts[0].email,
+                                  kMainGmailEmail));
+}
+
 class DiceExplicitSigninBrowserTest : public InProcessBrowserTest {
  public:
   struct AccountStorageStatus {
@@ -1374,7 +1566,7 @@ IN_PROC_BROWSER_TEST_F(DiceExplicitSigninBrowserTest, Migration) {
       prefs::kCookieClearOnExitMigrationNoticeComplete));
 }
 
-class DiceBrowserTextWithExplicitSignin : public DiceBrowserTest {
+class DiceBrowserTestWithExplicitSignin : public DiceBrowserTest {
  public:
   // Sets the user choice for Chrome Signin on `main_email_`.
   void SetChromeSigninChoice(ChromeSigninUserChoice choice) {
@@ -1395,7 +1587,7 @@ class DiceBrowserTextWithExplicitSignin : public DiceBrowserTest {
       switches::kExplicitBrowserSigninUIOnDesktop};
 };
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
+IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithExplicitSignin,
                        SigninWithChoiceRemembered_NoChoiceDefault) {
   // Sign in with no prior user action -- same as
   // `ChromeSigninUserChoice::kNoChoice`.
@@ -1409,7 +1601,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
       main_email_));
 }
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
+IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithExplicitSignin,
                        SigninWithChoiceRemembered_NoChoice) {
   // Simulates no previous choice yet.
   SetChromeSigninChoice(ChromeSigninUserChoice::kNoChoice);
@@ -1424,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
       main_email_));
 }
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
+IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithExplicitSignin,
                        SigninWithChoiceRemembered_DoNotSignin) {
   // Simulates a previous choice done with do not sign in.
   SetChromeSigninChoice(ChromeSigninUserChoice::kDoNotSignin);
@@ -1439,7 +1631,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
       main_email_));
 }
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
+IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithExplicitSignin,
                        SigninWithChoiceRemembered_AlwaysAsk) {
   // Simulates a previous choice done with always ask, expecting the Chrome
   // Signin bubble to show.
@@ -1451,7 +1643,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
       GetIdentityManager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 }
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTextWithExplicitSignin,
+IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithExplicitSignin,
                        SigninWithChoiceRemembered_Signin) {
   base::HistogramTester histogram_tester;
 

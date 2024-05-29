@@ -534,7 +534,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 class PaintPreviewContext : public PrintContext {
  public:
   explicit PaintPreviewContext(LocalFrame* frame) : PrintContext(frame) {
-    use_printing_layout_ = false;
+    use_paginated_layout_ = false;
   }
   PaintPreviewContext(const PaintPreviewContext&) = delete;
   PaintPreviewContext& operator=(const PaintPreviewContext&) = delete;
@@ -836,10 +836,6 @@ bool WebLocalFrameImpl::DispatchedPagehideAndStillHidden() const {
     return false;
   // We might have dispatched pagehide without unloading the document.
   return ViewImpl()->GetPage()->DispatchedPagehideAndStillHidden();
-}
-
-bool WebLocalFrameImpl::UsePrintingLayout() const {
-  return print_context_ ? print_context_->use_printing_layout() : false;
 }
 
 void WebLocalFrameImpl::CopyToFindPboard() {
@@ -2531,7 +2527,12 @@ void WebLocalFrameImpl::DidFinish() {
   if (!Client())
     return;
 
-  if (base::FeatureList::IsEnabled(::features::kWarmUpCompositor)) {
+  if (base::FeatureList::IsEnabled(::features::kWarmUpCompositor) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kPrerender2WarmUpCompositor) &&
+      blink::features::kPrerender2WarmUpCompositorTriggerPoint.Get() ==
+          blink::features::Prerender2WarmUpCompositorTriggerPoint::
+              kDidFinishLoad) {
     // If the page is under prerendering, the page requests warm-up compositor
     // to minimize its activation time. Please see crbug.com/41496019 for more
     // details.

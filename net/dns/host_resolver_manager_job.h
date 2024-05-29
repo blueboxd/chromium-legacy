@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef NET_DNS_HOST_RESOLVER_MANAGER_JOB_H_
 #define NET_DNS_HOST_RESOLVER_MANAGER_JOB_H_
 
@@ -95,6 +100,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // Similar to CancelRequest(), if `request` was the last active one, finishes
   // this job.
   void CancelServiceEndpointRequest(ServiceEndpointRequestImpl* request);
+
+  // Similar to ChangeRequestPriority(), but for a ServiceEndpointRequest.
+  void ChangeServiceEndpointRequestPriority(ServiceEndpointRequestImpl* request,
+                                            RequestPriority priority);
 
   // Called from AbortJobsWithoutTargetNetwork(). Completes all requests and
   // destroys the job. This currently assumes the abort is due to a network

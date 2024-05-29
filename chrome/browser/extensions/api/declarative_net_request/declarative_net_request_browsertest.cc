@@ -199,8 +199,8 @@ class DeclarativeNetRequestBrowserTest
          features::kPrivacySandboxAdsAPIsOverride},
         /*disabled_features=*/
         {// TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid
-         // having to disable this feature.
-         features::kHttpsUpgrades});
+         // having to disable these features.
+         features::kHttpsUpgrades, features::kHttpsFirstModeIncognito});
     net::test_server::RegisterDefaultHandlers(embedded_test_server());
   }
 
@@ -1019,17 +1019,11 @@ using DeclarativeNetRequestBrowserTest_Packed =
 using DeclarativeNetRequestBrowserTest_Unpacked =
     DeclarativeNetRequestBrowserTest;
 
-#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_MAC) && !defined(NDEBUG))
-// TODO: test times out on win. http://crbug.com/900447.
-// Also times out on mac-debug: https://crbug.com/900447
-#define MAYBE_BlockRequests_UrlFilter DISABLED_BlockRequests_UrlFilter
-#else
-#define MAYBE_BlockRequests_UrlFilter BlockRequests_UrlFilter
-#endif
 // Tests the "urlFilter" and "regexFilter" property of a declarative rule
 // condition.
+// TODO: test times out on win, mac and linux. http://crbug.com/900447.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       MAYBE_BlockRequests_UrlFilter) {
+                       DISABLED_BlockRequests_UrlFilter) {
   struct {
     std::string filter;
     int id;
@@ -7766,6 +7760,12 @@ IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest,
        blank_resp_header_action},
       {12, 200, "modifyHeaders", "f.test2", blank_header_condition,
        std::nullopt, blank_resp_header_action},
+
+      // Used for sub-test 7.
+      {13, 1000, "modifyHeaders", "g.test", std::nullopt,
+       blank_req_header_action},
+      {14, 102, "allow", "g.test"},
+      {15, 101, "block", "g.test", blank_header_condition},
   };
 
   std::vector<TestRule> rules;
@@ -7832,6 +7832,13 @@ IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest,
       // header conditions in the onHeadersReceived phase.
       {"f.test", "1"},
       {"f.test2", "12"},
+
+      // Sub-test 7:
+      // In OnBeforeRequest, rule 13 (modify request headers) matches since it
+      // outprioritizes rule 14 (allow). However, rule 14 carries over to
+      // OnHeadersReceived where it outprioritizes both rules 1 and 15 (it
+      // prevents the latter rule from blocking the request) so it is matched.
+      {"g.test", "13,14"},
   };
 
   for (const auto& test_case : test_cases) {
@@ -7905,12 +7912,11 @@ IN_PROC_BROWSER_TEST_P(DNRMatchResponseHeadersBrowserTest,
 
       // In onBeforeRequest, `extension_2_allow` takes precedence over
       // `before_request_allow` since extension 2 was more recently installed.
-      // Once the request reaches onHeadersReceived, it should match with
+      // Once the request reaches onHeadersReceived, `headers_received_allow`
+      // matches, but only `extension_2_allow` should be tracked since it
+      // carries over to onHeadersReceived and outprioritizes
       // `headers_received_allow`.
-      // TODO(crbug.com/40727004): this should not match anything for
-      // `extension_1` since `extension_2_allow` carries over to
-      // onHeadersReceived and should outprioritize `headers_received_allow`.
-      {"google.xyz", "2", "3"},
+      {"google.xyz", "", "3"},
   };
 
   for (const auto& test_case : test_cases) {

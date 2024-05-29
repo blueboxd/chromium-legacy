@@ -26,6 +26,7 @@ import {MAXIMUM_GET_SEA_PEN_THUMBNAILS_TEXT_BYTES, SeaPenQuery, SeaPenThumbnail}
 import {getSeaPenThumbnails} from './sea_pen_controller.js';
 import {getTemplate} from './sea_pen_input_query_element.html.js';
 import {getSeaPenProvider} from './sea_pen_interface_provider.js';
+import {logNumWordsInTextQuery} from './sea_pen_metrics_logger.js';
 import {WithSeaPenStore} from './sea_pen_store.js';
 
 export interface SeaPenInputQueryElement {
@@ -43,6 +44,12 @@ export class SeaPenInputQueryElement extends WithSeaPenStore {
   static get properties() {
     return {
       textValue_: String,
+
+      seaPenQuery_: {
+        type: Object,
+        value: null,
+        observer: 'onSeaPenQueryChanged_',
+      },
 
       thumbnails_: {
         type: Object,
@@ -73,6 +80,7 @@ export class SeaPenInputQueryElement extends WithSeaPenStore {
   }
 
   private textValue_: string;
+  private seaPenQuery_: SeaPenQuery|null;
   private thumbnails_: SeaPenThumbnail[]|null;
   private thumbnailsLoading_: boolean;
   private searchButtonText_: string|null;
@@ -85,13 +93,24 @@ export class SeaPenInputQueryElement extends WithSeaPenStore {
         'thumbnails_', state => state.thumbnails);
     this.watch<SeaPenInputQueryElement['thumbnailsLoading_']>(
         'thumbnailsLoading_', state => state.loading.thumbnails);
+    this.watch<SeaPenInputQueryElement['seaPenQuery_']>(
+        'seaPenQuery_', state => state.currentSeaPenQuery);
     this.updateFromStore();
 
     this.$.queryInput.focusInput();
   }
 
+  private onSeaPenQueryChanged_(seaPenQuery: SeaPenQuery|null) {
+    if (!seaPenQuery || !seaPenQuery.textQuery) {
+      return;
+    }
+    this.textValue_ = seaPenQuery.textQuery;
+  }
+
   private onClickInputQuerySearchButton_(event: Event) {
     assert(this.textValue_, 'input query should not be empty.');
+    // This only works for English. We only support English queries for now.
+    logNumWordsInTextQuery(this.textValue_.split(/\s+/).length);
     const query: SeaPenQuery = {
       textQuery: this.textValue_,
     };

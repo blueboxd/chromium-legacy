@@ -18,6 +18,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace ash::standalone_browser::migrator_util {
+enum class PolicyInitState;
+}  // namespace ash::standalone_browser::migrator_util
+
 namespace aura {
 class Window;
 }  // namespace aura
@@ -105,23 +109,6 @@ enum class MigrationStatus {
   kMaxValue = kMaxAttemptReached,
 };
 
-extern const ComponentInfo kLacrosDogfoodCanaryInfo;
-extern const ComponentInfo kLacrosDogfoodDevInfo;
-extern const ComponentInfo kLacrosDogfoodBetaInfo;
-extern const ComponentInfo kLacrosDogfoodStableInfo;
-
-// The default update channel to leverage for Lacros when the channel is
-// unknown.
-extern const version_info::Channel kLacrosDefaultChannel;
-
-// A command-line switch that can also be set from chrome://flags for selecting
-// the channel for Lacros updates.
-extern const char kLacrosStabilitySwitch[];
-extern const char kLacrosStabilityChannelCanary[];
-extern const char kLacrosStabilityChannelDev[];
-extern const char kLacrosStabilityChannelBeta[];
-extern const char kLacrosStabilityChannelStable[];
-
 // The internal name in about_flags.cc for the `LacrosDataBackwardMigrationMode`
 // policy.
 inline constexpr const char
@@ -163,19 +150,13 @@ bool IsLacrosAllowedToBeEnabled();
 // Returns true if the Lacros feature is enabled for the primary user.
 bool IsLacrosEnabled();
 
-// Represents whether the function is being called before the Policy is
-// initialized or not.
-enum class PolicyInitState {
-  kBeforeInit,
-  kAfterInit,
-};
-
 // Similar to `IsLacrosEnabled()` but does not check if profile migration has
 // been completed. This is to be used inside `BrowserDataMigrator`. Unlike
 // `IsLacrosEnabled()` it can be called before the primary user profile is
 // created.
-bool IsLacrosEnabledForMigration(const user_manager::User* user,
-                                 PolicyInitState policy_init_state);
+bool IsLacrosEnabledForMigration(
+    const user_manager::User* user,
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state);
 
 // Returns true if Ash browser is enabled. Returns false iff Lacros is
 // enabled and is the only browser.
@@ -265,8 +246,9 @@ void ClearLacrosDataBackwardMigrationModeCacheForTest();
 
 // Returns true if profile migraiton is enabled. If profile migration is
 // enabled, the completion of it is required to enable Lacros.
-bool IsProfileMigrationEnabled(const user_manager::User* user,
-                               PolicyInitState policy_init_state);
+bool IsProfileMigrationEnabled(
+    const user_manager::User* user,
+    ash::standalone_browser::migrator_util::PolicyInitState policy_init_state);
 
 // Returns true if the profile migration is enabled, but not yet completed.
 bool IsProfileMigrationAvailable();

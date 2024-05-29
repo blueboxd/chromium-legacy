@@ -6,9 +6,14 @@ package org.chromium.base.test.transit;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Log;
+import org.chromium.base.test.transit.ConditionWaiter.ConditionWait;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** A transition into and/or out of {@link ConditionalState}s. */
 public abstract class Transition {
@@ -21,22 +26,121 @@ public abstract class Transition {
         void triggerTransition();
     }
 
+    private static final String TAG = "Transit";
+    private static int sLastTripId;
+
+    protected final int mId;
     protected final TransitionOptions mOptions;
+    protected final List<ConditionalState> mExitedStates;
+    protected final List<ConditionalState> mEnteredStates;
     @Nullable protected final Trigger mTrigger;
 
-    Transition(TransitionOptions options, @Nullable Trigger trigger) {
+    protected List<ConditionWait> mWaits;
+
+    Transition(
+            TransitionOptions options,
+            List<ConditionalState> exitedStates,
+            List<ConditionalState> enteredStates,
+            @Nullable Trigger trigger) {
+        mId = ++sLastTripId;
         mOptions = options;
+        mExitedStates = exitedStates;
+        mEnteredStates = enteredStates;
         mTrigger = trigger;
+    }
+
+    void transitionSync() {
+        Log.i(TAG, "%s: started", toDebugString());
+        onBeforeTransition();
+        performTransitionWithRetries();
+        onAfterTransition();
+        Log.i(TAG, "%s: finished", toDebugString());
+
+        PublicTransitConfig.maybePauseAfterTransition(this);
+    }
+
+    protected void onBeforeTransition() {
+        for (ConditionalState exited : mExitedStates) {
+            exited.setStateTransitioningFrom();
+        }
+        for (ConditionalState entered : mEnteredStates) {
+            entered.setStateTransitioningTo();
+        }
+
+        mWaits = createWaits();
+        try {
+            ConditionWaiter.preCheck(mWaits, mOptions, mTrigger);
+        } catch (Throwable e) {
+            throw newTransitionException(e);
+        }
+        for (ConditionWait wait : mWaits) {
+            wait.getCondition().onStartMonitoring();
+        }
+    }
+
+    protected void performTransitionWithRetries() {
+        if (mOptions.mTries == 1) {
+            triggerTransition();
+            Log.i(TAG, "%s: waiting for conditions", toDebugString());
+            waitUntilConditionsFulfilled();
+        } else {
+            for (int tryNumber = 1; tryNumber <= mOptions.mTries; tryNumber++) {
+                try {
+                    triggerTransition();
+                    Log.i(
+                            TAG,
+                            "%s: try #%d/%d, waiting for conditions",
+                            toDebugString(),
+                            tryNumber,
+                            mOptions.mTries);
+                    waitUntilConditionsFulfilled();
+                    break;
+                } catch (TravelException e) {
+                    Log.w(TAG, "%s: try #%d failed", toDebugString(), tryNumber, e);
+                    if (tryNumber >= mOptions.mTries) {
+                        throw e;
+                    }
+                }
+            }
+        }
     }
 
     protected void triggerTransition() {
         if (mTrigger != null) {
+            Log.i(TAG, "%s: will run trigger", toDebugString());
             try {
                 mTrigger.triggerTransition();
-            } catch (Exception e) {
+                Log.i(TAG, "%s: finished running trigger", toDebugString());
+            } catch (Throwable e) {
                 throw TravelException.newTravelException(
-                        "Exception thrown by Transition trigger for " + toDebugString(), e);
+                        String.format("%s: trigger threw ", toDebugString()), e);
             }
+        } else {
+            Log.i(TAG, "%s is triggerless", toDebugString());
+        }
+    }
+
+    protected void waitUntilConditionsFulfilled() {
+        // Throws CriteriaNotSatisfiedException if any conditions aren't met within the timeout and
+        // prints the state of all conditions. The timeout can be reduced when explicitly looking
+        // for flakiness due to tight timeouts.
+        try {
+            ConditionWaiter.waitFor(mWaits, mOptions);
+        } catch (Throwable e) {
+            throw newTransitionException(e);
+        }
+    }
+
+    protected void onAfterTransition() {
+        for (ConditionalState exited : mExitedStates) {
+            exited.setStateFinished();
+        }
+        for (ConditionalState entered : mEnteredStates) {
+            entered.setStateActive();
+        }
+
+        for (ConditionWait wait : mWaits) {
+            wait.getCondition().onStopMonitoring();
         }
     }
 
@@ -53,6 +157,9 @@ public abstract class Transition {
     /** Should return a String representation of the Transition for debugging. */
     public abstract String toDebugString();
 
+    /** Should create the {@link ConditionWait}s. */
+    protected abstract List<ConditionWait> createWaits();
+
     @Override
     public String toString() {
         return toDebugString();
@@ -64,6 +171,50 @@ public abstract class Transition {
         } else {
             return mOptions.mTransitionConditions;
         }
+    }
+
+    protected static ArrayList<ConditionWait> calculateConditionWaits(
+            Elements originElements,
+            Elements destinationElements,
+            List<Condition> transitionConditions) {
+        ArrayList<ConditionWait> waits = new ArrayList<>();
+
+        // Create ENTER Conditions for Views that should appear and LogicalElements that should
+        // be true.
+        Set<String> destinationElementIds = new HashSet<>();
+        for (ElementInState element : destinationElements.getElementsInState()) {
+            destinationElementIds.add(element.getId());
+            @Nullable Condition enterCondition = element.getEnterCondition();
+            if (enterCondition != null) {
+                waits.add(new ConditionWait(enterCondition, ConditionWaiter.ConditionOrigin.ENTER));
+            }
+        }
+
+        // Add extra ENTER Conditions.
+        for (Condition enterCondition : destinationElements.getOtherEnterConditions()) {
+            waits.add(new ConditionWait(enterCondition, ConditionWaiter.ConditionOrigin.ENTER));
+        }
+
+        // Create EXIT Conditions for Views that should disappear and LogicalElements that should
+        // be false.
+        for (ElementInState element : originElements.getElementsInState()) {
+            Condition exitCondition = element.getExitCondition(destinationElementIds);
+            if (exitCondition != null) {
+                waits.add(new ConditionWait(exitCondition, ConditionWaiter.ConditionOrigin.EXIT));
+            }
+        }
+
+        // Add extra EXIT Conditions.
+        for (Condition exitCondition : originElements.getOtherExitConditions()) {
+            waits.add(new ConditionWait(exitCondition, ConditionWaiter.ConditionOrigin.EXIT));
+        }
+
+        // Add transition (TRSTN) conditions
+        for (Condition condition : transitionConditions) {
+            waits.add(new ConditionWait(condition, ConditionWaiter.ConditionOrigin.TRANSITION));
+        }
+
+        return waits;
     }
 
     /**

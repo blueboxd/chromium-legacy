@@ -89,7 +89,7 @@ struct URLVisitAggregate {
     ~TabData();
     // The last active tab associated with a given URL visit.
     Tab last_active_tab;
-    // Timestamp for when a tab associated wit the given URL visit was last
+    // Timestamp for when a tab associated with the given URL visit was last
     // activated.
     base::Time last_active;
     // Whether there is a tab for the given URL visit that is pinned.
@@ -98,7 +98,7 @@ struct URLVisitAggregate {
     bool in_group = false;
     // The number of opened tabs for the given URL visit aggregate in a time
     // period.
-    size_t tab_count = 0;
+    size_t tab_count = 1;
   };
 
   struct HistoryData {
@@ -126,7 +126,7 @@ struct URLVisitAggregate {
 
     // The number of history visits associated with the URL visit aggregate in a
     // time period.
-    size_t visit_count = 0;
+    size_t visit_count = 1;
   };
 
   URLVisitAggregate();
@@ -147,6 +147,13 @@ struct URLVisitAggregate {
 
   // Whether the visit is bookmarked or not.
   bool bookmarked = false;
+
+  // The number of times the visits associated with the aggregate where on the
+  // foreground.
+  size_t num_times_active = 0;
+
+  // A score associated with the aggregate, if any.
+  std::optional<float> score = std::nullopt;
 };
 
 // Helper to visit each variant of URLVisitVariant.

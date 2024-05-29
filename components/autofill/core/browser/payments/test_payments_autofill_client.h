@@ -7,8 +7,10 @@
 
 #include "base/memory/raw_ref.h"
 #include "components/autofill/core/browser/data_model/iban.h"
+#include "components/autofill/core/browser/mock_iban_manager.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
+#include "components/autofill/core/browser/payments/mock_iban_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test/test_credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
@@ -56,6 +58,7 @@ class TestPaymentsAutofillClient : public PaymentsAutofillClient {
       LegalMessageLines legal_message_lines,
       bool should_show_prompt,
       PaymentsAutofillClient::SaveIbanPromptCallback callback) override;
+  bool CloseWebauthnDialog() override;
 
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   TestPaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
@@ -74,6 +77,14 @@ class TestPaymentsAutofillClient : public PaymentsAutofillClient {
   CreditCardCvcAuthenticator& GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   TestCreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
+  void ShowMandatoryReauthOptInPrompt(
+      base::OnceClosure accept_mandatory_reauth_callback,
+      base::OnceClosure cancel_mandatory_reauth_callback,
+      base::RepeatingClosure close_mandatory_reauth_callback) override;
+  MockIbanManager* GetIbanManager() override;
+  MockIbanAccessManager* GetIbanAccessManager() override;
+
+  bool GetMandatoryReauthOptInPromptWasShown();
 
   void set_migration_card_selections(
       const std::vector<std::string>& migration_card_selection) {
@@ -174,6 +185,14 @@ class TestPaymentsAutofillClient : public PaymentsAutofillClient {
 
   std::unique_ptr<TestCreditCardRiskBasedAuthenticator>
       risk_based_authenticator_;
+
+  // Populated if mandatory re-auth opt-in was offered, or re-offered,
+  // respectively.
+  bool mandatory_reauth_opt_in_prompt_was_shown_ = false;
+
+  std::unique_ptr<MockIbanManager> mock_iban_manager_;
+
+  std::unique_ptr<MockIbanAccessManager> mock_iban_access_manager_;
 };
 
 }  // namespace payments

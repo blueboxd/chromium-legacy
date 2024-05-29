@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/settings/model/sync/utils/account_error_ui_info.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -227,20 +228,30 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
           toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
       break;
     case SyncSettingsAccountState::kSignedIn:
+      BOOL would_clear_data_on_signout =
+          _authenticationService->HasPrimaryIdentityManaged(
+              signin::ConsentLevel::kSignin) &&
+          base::FeatureList::IsEnabled(
+              kClearDeviceDataOnSignOutForManagedUsers);
       [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
       TableViewTextHeaderFooterItem* headerItem =
           [[TableViewTextHeaderFooterItem alloc]
               initWithType:TypesListHeaderOrFooterType];
       headerItem.text = l10n_util::GetNSString(
           IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER);
+
       [model setHeader:headerItem
           forSectionWithIdentifier:SyncDataTypeSectionIdentifier];
 
       TableViewTextHeaderFooterItem* footerItem =
           [[TableViewTextHeaderFooterItem alloc]
               initWithType:TypesListHeaderOrFooterType];
-      footerItem.subtitle = l10n_util::GetNSString(
-          IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION);
+      footerItem.subtitle = headerItem.text =
+          would_clear_data_on_signout
+              ? l10n_util::GetNSString(
+                    IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION_FOR_MANAGED_ACCOUNT)
+              : l10n_util::GetNSString(
+                    IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION);
       [model setFooter:footerItem
           forSectionWithIdentifier:SyncDataTypeSectionIdentifier];
       break;
@@ -557,7 +568,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   NSInteger syncDataTypeSectionIndex =
       [model sectionForSectionIdentifier:SyncDataTypeSectionIdentifier];
   CHECK_NE(NSNotFound, syncDataTypeSectionIndex);
-  [model insertSectionWithIdentifier:SignOutSectionIdentifier
+  [model insertSectionWithIdentifier:ManageAndSignOutSectionIdentifier
                              atIndex:syncDataTypeSectionIndex + 1];
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:SignOutAndTurnOffSyncItemType];
@@ -565,18 +576,18 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   item.textColor = [UIColor colorNamed:kRedColor];
   self.signOutAndTurnOffSyncItem = item;
   [model addItem:self.signOutAndTurnOffSyncItem
-      toSectionWithIdentifier:SignOutSectionIdentifier];
+      toSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
 
   if (self.forcedSigninEnabled) {
     [model setFooter:[self createForcedSigninFooterItem]
-        forSectionWithIdentifier:SignOutSectionIdentifier];
+        forSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
   }
 }
 
 - (void)updateSignOutSection {
   TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasSignOutSection =
-      [model hasSectionForSectionIdentifier:SignOutSectionIdentifier];
+      [model hasSectionForSectionIdentifier:ManageAndSignOutSectionIdentifier];
 
   switch (self.syncAccountState) {
     case SyncSettingsAccountState::kSignedOut:
@@ -585,8 +596,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       // There should be a sign-out section. Load it if it's not there yet.
       if (!hasSignOutSection) {
         [self loadSignOutAndManageAccountsSection];
-        NSUInteger sectionIndex =
-            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+        NSUInteger sectionIndex = [model
+            sectionForSectionIdentifier:ManageAndSignOutSectionIdentifier];
         [self.consumer
             insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
               rowAnimation:NO];
@@ -597,8 +608,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       if (!hasSignOutSection) {
         [self loadSignOutAndTurnOffSyncSection];
         DCHECK(self.signOutAndTurnOffSyncItem);
-        NSUInteger sectionIndex =
-            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+        NSUInteger sectionIndex = [model
+            sectionForSectionIdentifier:ManageAndSignOutSectionIdentifier];
         [self.consumer
             insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
               rowAnimation:NO];
@@ -622,7 +633,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
                 sectionForSectionIdentifier:AdvancedSettingsSectionIdentifier]
           : [model sectionForSectionIdentifier:SyncDataTypeSectionIdentifier];
   CHECK_NE(NSNotFound, previousSection);
-  [model insertSectionWithIdentifier:SignOutSectionIdentifier
+  [model insertSectionWithIdentifier:ManageAndSignOutSectionIdentifier
                              atIndex:previousSection + 1];
 
   // Creates items in the manage accounts and sign-out section.
@@ -632,23 +643,26 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   item.text =
       GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_GOOGLE_ACCOUNT_ITEM);
   item.textColor = [UIColor colorNamed:kBlueColor];
-  [model addItem:item toSectionWithIdentifier:SignOutSectionIdentifier];
+  [model addItem:item
+      toSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
 
   // Manage accounts on this device item.
   item = [[TableViewTextItem alloc] initWithType:ManageAccountsItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_ACCOUNTS_ITEM);
   item.textColor = [UIColor colorNamed:kBlueColor];
-  [model addItem:item toSectionWithIdentifier:SignOutSectionIdentifier];
+  [model addItem:item
+      toSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
 
   // Sign out item.
   item = [[TableViewTextItem alloc] initWithType:SignOutItemType];
   item.text = GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM);
   item.textColor = [UIColor colorNamed:kBlueColor];
-  [model addItem:item toSectionWithIdentifier:SignOutSectionIdentifier];
+  [model addItem:item
+      toSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
 
   if (self.forcedSigninEnabled) {
     [model setFooter:[self createForcedSigninFooterItem]
-        forSectionWithIdentifier:SignOutSectionIdentifier];
+        forSectionWithIdentifier:ManageAndSignOutSectionIdentifier];
   }
 }
 
@@ -899,7 +913,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case syncer::UserSelectableType::kApps:
     case syncer::UserSelectableType::kSavedTabGroups:
     case syncer::UserSelectableType::kSharedTabGroupData:
-    case syncer::UserSelectableType::kCompare:
+    case syncer::UserSelectableType::kProductComparison:
     case syncer::UserSelectableType::kCookies:
       NOTREACHED_IN_MIGRATION();
       break;

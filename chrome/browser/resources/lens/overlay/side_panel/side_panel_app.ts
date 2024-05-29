@@ -62,6 +62,11 @@ export class LensSidePanelAppElement extends PolymerElement {
         value: loadTimeData.getString('resultsLoadingUrl'),
         readOnly: true,
       },
+      darkMode: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('darkMode'),
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -77,6 +82,7 @@ export class LensSidePanelAppElement extends PolymerElement {
 
   private browserProxy: SidePanelBrowserProxy =
       SidePanelBrowserProxyImpl.getInstance();
+  private darkMode: boolean;
   private listenerIds: number[];
   private pageHandler: LensSidePanelPageHandlerInterface;
 
@@ -132,6 +138,11 @@ export class LensSidePanelAppElement extends PolymerElement {
     // to force a reload. We cannot get the currently displayed URL from the
     // frame because of cross-origin restrictions.
     this.$.results.src = url.href;
+    // Remove focus from the input when results are loaded. Does not have
+    // any effect if input is not focused.
+    this.shadowRoot!.querySelector<HTMLElement>('cr-realbox')
+        ?.shadowRoot!.querySelector<HTMLElement>('input')
+        ?.blur();
   }
 
   private setBackArrowVisible(visible: boolean) {

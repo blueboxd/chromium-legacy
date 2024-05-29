@@ -454,6 +454,13 @@ namespace {
 
 internal::PartitionLock g_stack_trace_buffer_lock;
 
+constexpr size_t kDanglingPtrStackTraceSize =
+    PA_BUILDFLAG(IS_DEBUG)
+        ? 32  // Symbolizing large stack traces can be expensive in debug
+              // builds. We prefer displaying a reasonably sized one instead
+              // of timing out.
+        : base::debug::StackTrace::kMaxTraces;
+
 struct DanglingPointerFreeInfo {
   debug::StackTrace stack_trace;
   debug::TaskTrace task_trace;
@@ -476,7 +483,11 @@ void DanglingRawPtrDetected(uintptr_t id) {
 
   for (std::optional<DanglingPointerFreeInfo>& entry : g_stack_trace_buffer) {
     if (!entry) {
-      entry = {debug::StackTrace(), debug::TaskTrace(), id};
+      entry = {
+          debug::StackTrace(kDanglingPtrStackTraceSize),
+          debug::TaskTrace(),
+          id,
+      };
       return;
     }
   }
@@ -634,7 +645,8 @@ void DanglingRawPtrReleased(uintptr_t id) {
   // This is called from raw_ptr<>'s release operation. Making allocations is
   // allowed. In particular, symbolizing and printing the StackTraces may
   // allocate memory.
-  debug::StackTrace stack_trace_release;
+
+  debug::StackTrace stack_trace_release(kDanglingPtrStackTraceSize);
   debug::TaskTrace task_trace_release;
   std::optional<DanglingPointerFreeInfo> free_info =
       TakeDanglingPointerFreeInfo(id);
@@ -1448,6 +1460,9 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
 
 void PartitionAllocSupport::OnForegrounded(bool has_main_frame) {
 #if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // Other changes are renderer-only, not this one.
+  MemoryReclaimerSupport::Instance().SetForegrounded(true);
+
   {
     base::AutoLock scoped_lock(lock_);
     if (established_process_type_ != switches::kRendererProcess) {
@@ -1466,12 +1481,13 @@ void PartitionAllocSupport::OnForegrounded(bool has_main_frame) {
     allocator_shim::AdjustDefaultAllocatorForForeground();
   }
 #endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-  MemoryReclaimerSupport::Instance().SetForegrounded(true);
 }
 
 void PartitionAllocSupport::OnBackgrounded() {
 #if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // Other changes are renderer-only, not this one.
+  MemoryReclaimerSupport::Instance().SetForegrounded(false);
+
   {
     base::AutoLock scoped_lock(lock_);
     if (established_process_type_ != switches::kRendererProcess) {
@@ -1505,8 +1521,6 @@ void PartitionAllocSupport::OnBackgrounded() {
     allocator_shim::AdjustDefaultAllocatorForBackground();
   }
 #endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-  MemoryReclaimerSupport::Instance().SetForegrounded(false);
 }
 
 #if PA_BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)

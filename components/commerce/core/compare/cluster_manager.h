@@ -31,6 +31,8 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
       base::RepeatingCallback<void(const GURL&, ProductInfoCallback)>;
   using GetOpenUrlInfosCallback =
       base::RepeatingCallback<const std::vector<UrlInfo>()>;
+  using GetEntryPointInfoCallback =
+      base::OnceCallback<void(std::optional<EntryPointInfo>)>;
 
   class Observer : public base::CheckedObserver {
    public:
@@ -68,19 +70,23 @@ class ClusterManager : public ProductSpecificationsSet::Observer {
   // Gets a product group that the given product can be clustered into. If
   // this candidate product is already in a product group, empty result
   // is returned.
-  std::optional<ProductGroup> GetProductGroupForCandidateProduct(
+  virtual std::optional<ProductGroup> GetProductGroupForCandidateProduct(
       const GURL& product_url);
 
   // Gets information to decide if entry point should show on navivation to
   // `url` and return it. The returned EntryPointInfo will include `url`
   // if it can be clustered into a group.
-  std::optional<EntryPointInfo> GetEntryPointInfoForNavigation(GURL url);
+  virtual void GetEntryPointInfoForNavigation(
+      const GURL& url,
+      GetEntryPointInfoCallback callback);
 
   // Gets information to decide if entry point should show on selection and
   // return it. `old_url` is the URL of the tab before selection.
   // `new_url` is the URL of the tab after selection.
-  std::optional<EntryPointInfo> GetEntryPointInfoForSelection(GURL old_url,
-                                                              GURL new_url);
+  virtual void GetEntryPointInfoForSelection(
+      const GURL& old_url,
+      const GURL& new_url,
+      GetEntryPointInfoCallback callback);
 
   // Finds similar candidate products for a product group.
   std::vector<GURL> FindSimilarCandidateProductsForProductGroup(

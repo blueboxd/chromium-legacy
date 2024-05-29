@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "chrome/browser/push_notification/metrics/push_notification_metrics.h"
 #include "chrome/browser/push_notification/prefs/push_notification_prefs.h"
 #include "chrome/browser/push_notification/protos/notifications_multi_login_update.pb.h"
 #include "chrome/browser/push_notification/server_client/push_notification_desktop_api_call_flow_impl.h"
@@ -67,7 +68,9 @@ void PushNotificationServiceDesktopImpl::ShutdownHandler() {
 }
 
 void PushNotificationServiceDesktopImpl::OnStoreReset() {
-  // TODO(b/337874846): Clear prefs here.
+  // Reset prefs.
+  pref_service_->SetString(
+      prefs::kPushNotificationRepresentativeTargetIdPrefName, std::string());
 }
 
 void PushNotificationServiceDesktopImpl::OnMessage(
@@ -133,19 +136,25 @@ void PushNotificationServiceDesktopImpl::Initialize() {
           kPushNotificationSenderId, kPushNotificationScope,
           /*time_to_live=*/base::TimeDelta(), /*flags=*/{},
           base::BindOnce(&PushNotificationServiceDesktopImpl::OnTokenReceived,
-                         base::Unretained(this)));
+                         base::Unretained(this), /*token_request_start_time=*/
+                         base::TimeTicks::Now()));
 }
 
 void PushNotificationServiceDesktopImpl::OnTokenReceived(
+    base::TimeTicks token_request_start_time,
     const std::string& token,
     instance_id::InstanceID::Result result) {
   if (result != instance_id::InstanceID::Result::SUCCESS) {
     LOG(ERROR) << "Failed to retrieve GCM token: " << result;
-
+    metrics::RecordPushNotificationGcmTokenRetrievalResult(/*success=*/false);
     initialization_on_demand_scheduler_->HandleResult(/*success=*/false);
     return;
   }
 
+  metrics::RecordPushNotificationGcmTokenRetrievalResult(/*success=*/true);
+  metrics::RecordPushNotificationServiceTimeToRetrieveToken(
+      /*total_retrieval_time=*/base::TimeTicks::Now() -
+      token_request_start_time);
   VLOG(1) << "Successfully retrieved GCM token. ";
   token_ = token;
 
@@ -153,6 +162,9 @@ void PushNotificationServiceDesktopImpl::OnTokenReceived(
   instance_id_driver_->GetInstanceID(kPushNotificationAppId)
       ->gcm_driver()
       ->AddAppHandler(kPushNotificationAppId, this);
+
+  std::string representative_target_id = pref_service_->GetString(
+      prefs::kPushNotificationRepresentativeTargetIdPrefName);
 
   // Create the `NotificationsMultiLoginUpdateRequest` proto which is used to
   // make the registration API call.
@@ -167,6 +179,16 @@ void PushNotificationServiceDesktopImpl::OnTokenReceived(
       ->mutable_delivery_address()
       ->mutable_gcm_device_address()
       ->set_application_id(kPushNotificationAppId);
+
+  // `representative_target_id` is left empty the first time we register with
+  // the Push Notification Service. It is then returned to us in the response
+  // proto and stored in prefs. When we have a stored representative target id,
+  // we use it to help the Push Notification Service stablize the target across
+  // registrations if the GCM registration token changes.
+  if (!representative_target_id.empty()) {
+    request_proto.mutable_target()->set_representative_target_id(
+        representative_target_id);
+  }
   request_proto.add_registrations();
   request_proto.set_registration_reason(
       push_notification::proto::RegistrationReason::COLLABORATOR_API_CALL);
@@ -182,26 +204,41 @@ void PushNotificationServiceDesktopImpl::OnTokenReceived(
       request_proto,
       base::BindOnce(&PushNotificationServiceDesktopImpl::
                          OnPushNotificationRegistrationSuccess,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*api_call_start_time=*/base::TimeTicks::Now()),
       base::BindOnce(&PushNotificationServiceDesktopImpl::
                          OnPushNotificationRegistrationFailure,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*api_call_start_time=*/base::TimeTicks::Now()));
 }
 
 void PushNotificationServiceDesktopImpl::OnPushNotificationRegistrationSuccess(
+    base::TimeTicks api_call_start_time,
     const proto::NotificationsMultiLoginUpdateResponse& response) {
+  metrics::
+      RecordPushNotificationServiceTimeToReceiveRegistrationSuccessResponse(
+          /*registration_response_time=*/base::TimeTicks::Now() -
+          api_call_start_time);
+  metrics::RecordPushNotificationServiceRegistrationResult(/*success=*/true);
   VLOG(1) << __func__ << ": Push notification service registration successful";
   is_initialized_ = true;
   server_client_.reset();
   initialization_on_demand_scheduler_->HandleResult(/*success=*/true);
-
-  // TODO(b/321305351): Use response proto to update prefs with response
-  // information for later calls.
+  CHECK(response.registration_results_size() == 1);
+  pref_service_->SetString(
+      prefs::kPushNotificationRepresentativeTargetIdPrefName,
+      response.registration_results(0).target().representative_target_id());
 }
 
 void PushNotificationServiceDesktopImpl::OnPushNotificationRegistrationFailure(
+    base::TimeTicks api_call_start_time,
     PushNotificationDesktopApiCallFlow::PushNotificationApiCallFlowError
         error) {
+  metrics::
+      RecordPushNotificationServiceTimeToReceiveRegistrationFailureResponse(
+          /*registration_response_time=*/base::TimeTicks::Now() -
+          api_call_start_time);
+  metrics::RecordPushNotificationServiceRegistrationResult(/*success=*/false);
   LOG(ERROR) << __func__
              << ": Push notification service registration failure: " << error;
   server_client_.reset();

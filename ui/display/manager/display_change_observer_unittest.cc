@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "base/command_line.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
@@ -533,7 +532,7 @@ TEST_P(DisplayChangeObserverTest, WCGDisplayColorSpaces) {
 
   const auto color_space = display_color_spaces.GetRasterColorSpace();
   EXPECT_TRUE(color_space.IsValid());
-  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::P3);
+  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT709);
   EXPECT_EQ(color_space.GetTransferID(), gfx::ColorSpace::TransferID::SRGB);
 }
 

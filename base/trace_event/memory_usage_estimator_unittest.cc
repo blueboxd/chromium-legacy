@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/341324165): Fix and remove.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/trace_event/memory_usage_estimator.h"
 
 #include <stdlib.h>
@@ -98,7 +103,7 @@ TEST(EstimateMemoryUsageTest, Arrays) {
       char payload[10];
     };
     Item* array = new Item[7];
-    EXPECT_EQ(70u, EstimateMemoryUsage(array, 7));
+    EXPECT_EQ(70u, EstimateMemoryUsage(base::span<const Item>(array, 7u)));
     delete[] array;
   }
 }
@@ -120,15 +125,6 @@ TEST(EstimateMemoryUsageTest, UniquePtr) {
   {
     std::unique_ptr<Data*> ptr(new Data*());
     EXPECT_EQ(sizeof(void*), EstimateMemoryUsage(ptr));
-  }
-
-  // With an array
-  {
-    struct Item {
-      uint32_t payload[10];
-    };
-    std::unique_ptr<Item[]> ptr(new Item[7]);
-    EXPECT_EQ(280u, EstimateMemoryUsage(ptr, 7));
   }
 }
 
